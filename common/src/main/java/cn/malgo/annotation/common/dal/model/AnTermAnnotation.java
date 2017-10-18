@@ -16,6 +16,21 @@ public class AnTermAnnotation {
     private String termId;
 
     /**
+     * 术语的状态:
+    INIT("待人工标注"),
+    PROCESSING("标注中"),
+    FINISH("标注完成");
+     */
+    @Column(name = "STATE")
+    private String state;
+
+    /**
+     * 修改人
+     */
+    @Column(name = "MODIFIER")
+    private String modifier;
+
+    /**
      * 创建时间
      */
     @Column(name = "GMT_CREATED")
@@ -29,6 +44,12 @@ public class AnTermAnnotation {
 
     @Column(name = "MEMO")
     private String memo;
+
+    /**
+     * 术语内容
+     */
+    @Column(name = "TERM")
+    private String term;
 
     /**
      * 自动标注结果
@@ -87,6 +108,54 @@ public class AnTermAnnotation {
     }
 
     /**
+     * 获取术语的状态:
+    INIT("待人工标注"),
+    PROCESSING("标注中"),
+    FINISH("标注完成");
+     *
+     * @return STATE - 术语的状态:
+    INIT("待人工标注"),
+    PROCESSING("标注中"),
+    FINISH("标注完成");
+     */
+    public String getState() {
+        return state;
+    }
+
+    /**
+     * 设置术语的状态:
+    INIT("待人工标注"),
+    PROCESSING("标注中"),
+    FINISH("标注完成");
+     *
+     * @param state 术语的状态:
+    INIT("待人工标注"),
+    PROCESSING("标注中"),
+    FINISH("标注完成");
+     */
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    /**
+     * 获取修改人
+     *
+     * @return MODIFIER - 修改人
+     */
+    public String getModifier() {
+        return modifier;
+    }
+
+    /**
+     * 设置修改人
+     *
+     * @param modifier 修改人
+     */
+    public void setModifier(String modifier) {
+        this.modifier = modifier;
+    }
+
+    /**
      * 获取创建时间
      *
      * @return GMT_CREATED - 创建时间
@@ -134,6 +203,24 @@ public class AnTermAnnotation {
      */
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    /**
+     * 获取术语内容
+     *
+     * @return TERM - 术语内容
+     */
+    public String getTerm() {
+        return term;
+    }
+
+    /**
+     * 设置术语内容
+     *
+     * @param term 术语内容
+     */
+    public void setTerm(String term) {
+        this.term = term;
     }
 
     /**
