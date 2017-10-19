@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.malgo.annotation.common.dal.mapper.AnTermAnnotationMapper">
-  <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.AnTermAnnotation">
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="ID" jdbcType="VARCHAR" property="id" />
-    <result column="TERM_ID" jdbcType="VARCHAR" property="termId" />
-    <result column="STATE" jdbcType="VARCHAR" property="state" />
-    <result column="MODIFIER" jdbcType="VARCHAR" property="modifier" />
-    <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated" />
-    <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified" />
-    <result column="MEMO" jdbcType="VARCHAR" property="memo" />
-    <result column="TERM" jdbcType="LONGVARCHAR" property="term" />
-    <result column="AUTO_ANNOTATION" jdbcType="LONGVARCHAR" property="autoAnnotation" />
-    <result column="MANUAL_ANNOTATION" jdbcType="LONGVARCHAR" property="manualAnnotation" />
-    <result column="FINAL_ANNOTATION" jdbcType="LONGVARCHAR" property="finalAnnotation" />
-    <result column="NEW_TERMS" jdbcType="LONGVARCHAR" property="newTerms" />
-  </resultMap>
+    <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.AnTermAnnotation">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="TERM_ID" jdbcType="VARCHAR" property="termId"/>
+        <result column="STATE" jdbcType="VARCHAR" property="state"/>
+        <result column="MODIFIER" jdbcType="VARCHAR" property="modifier"/>
+        <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated"/>
+        <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
+        <result column="TERM" jdbcType="LONGVARCHAR" property="term"/>
+        <result column="AUTO_ANNOTATION" jdbcType="LONGVARCHAR" property="autoAnnotation"/>
+        <result column="MANUAL_ANNOTATION" jdbcType="LONGVARCHAR" property="manualAnnotation"/>
+        <result column="FINAL_ANNOTATION" jdbcType="LONGVARCHAR" property="finalAnnotation"/>
+        <result column="NEW_TERMS" jdbcType="LONGVARCHAR" property="newTerms"/>
+    </resultMap>
 
-  <sql id="ALL_COLUMN">
+    <sql id="ALL_COLUMN">
     ID,
     TERM_ID,
     STATE,
@@ -34,14 +34,20 @@
     NEW_TERMS
   </sql>
 
-  <select id="selectByState" resultMap="BaseResultMap">
-    SELECT <include refid="ALL_COLUMN" />
-    FROM AN_TERM_ANNOTATION WHERE STATE = #{state}
-  </select>
+    <select id="selectByStateModifier" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_TERM_ANNOTATION WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND STATE = #{state}
+        </if>
+        AND MODIFIER = #{modifier}
+    </select>
 
-  <select id="selectByTermId" resultMap="BaseResultMap">
-    SELECT <include refid="ALL_COLUMN"/>
-    FROM AN_TERM_ANNOTATION WHERE TERM_ID = #{termId}
-  </select>
+    <select id="selectByTermId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_TERM_ANNOTATION WHERE TERM_ID = #{termId}
+    </select>
 
 </mapper>

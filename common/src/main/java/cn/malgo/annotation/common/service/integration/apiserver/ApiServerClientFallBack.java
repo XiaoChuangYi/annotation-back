@@ -1,11 +1,15 @@
 package cn.malgo.annotation.common.service.integration.apiserver;
 
 import java.text.MessageFormat;
+import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.fastjson.JSONObject;
+
+import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
+import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.util.log.LogUtil;
 import feign.hystrix.FallbackFactory;
 
@@ -36,8 +40,15 @@ public class ApiServerClientFallBack implements FallbackFactory<ApiServerClient>
 
             @Override
             public String phraseUpdatePosWithNewTerm(JSONObject body) {
-                LogUtil.error(logger, cause, MessageFormat.format(
-                    "调用二次,参数内容:{0}",body.toJSONString()));
+                LogUtil.error(logger, cause,
+                    MessageFormat.format("调用二次,参数内容:{0}", body.toJSONString()));
+                return null;
+            }
+
+            @Override
+            public List<AnnotationResult> batchPhraseUpdatePosWithNewTerm(List<UpdateAnnotationRequest> updateAnnotationDTOList) {
+                LogUtil.error(logger, cause, MessageFormat.format("批量请求附带新词和手工标注的最终标注:{0}",
+                    JSONObject.toJSONString(updateAnnotationDTOList)));
                 return null;
             }
         };

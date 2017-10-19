@@ -1,6 +1,7 @@
 package cn.malgo.annotation.core.service.annotation;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService;
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.term.TermService;
@@ -40,13 +42,32 @@ public class AnnotationService {
 
     /**
      * 根据状态分页查询标注
-     * @param annotationStateEnum
+     * @param annotationState
      * @return
      */
-    public Page<AnTermAnnotation> queryOnePage(AnnotationStateEnum annotationStateEnum, int pageNum,
+    public Page<AnTermAnnotation> queryOnePage(String annotationState, String userId, int pageNum,
                                                int pageSize) {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        anTermAnnotationMapper.selectByState(annotationStateEnum.name());
+        anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
+        return pageInfo;
+    }
+
+    /**
+     * 分页查询标注信息后,加入新词和手工标注重新自动标注
+     * @param annotationState
+     * @return
+     */
+    public Page<AnTermAnnotation> queryOnePageAndRefresh(String annotationState, String userId,
+                                                         String manualAnnotation,
+                                                         List<TermTypeVO> newTerms, int pageNum,
+                                                         int pageSize) {
+        Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        List<AnTermAnnotation> anTermAnnotationList = anTermAnnotationMapper
+            .selectByStateModifier(annotationState, userId);
+        if(anTermAnnotationList.size()>0){
+            apiServerService.batchPhraseUpdatePosWithNewTerm(anTermAnnotationList, manualAnnotation,
+                    newTerms);
+        }
         return pageInfo;
     }
 
@@ -71,11 +92,26 @@ public class AnnotationService {
     }
 
     /**
-     * 通过annotationId 来自动标注
+     * 通过annotationId 来自动标注,此时需要根据用户标注的新词来调用apiServer的接口来处理
      * 用户手动标注后,调用apiServer,合成手动标注和自动标注
      * @param anId
+     * @param manual
+     * @param newTerms
      */
-    public void autoAnnotationByAnId(String anId) {
+    public AnTermAnnotation autoAnnotationByAnId(String anId, String manual,
+                                                 List<TermTypeVO> newTerms) {
+        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(anId);
+
+        String newTermsStr = TermTypeVO.convertToString(newTerms);
+
+        String finalAnnotation = apiServerService.phraseUpdatePosWithNewTerm(
+            anTermAnnotation.getTerm(), newTermsStr, anTermAnnotation.getAutoAnnotation(), manual);
+
+        updateManualAnnotation(anId, manual, newTermsStr, finalAnnotation);
+
+        AnTermAnnotation result = anTermAnnotationMapper.selectByPrimaryKey(anId);
+
+        return result;
 
     }
 
@@ -113,6 +149,27 @@ public class AnnotationService {
 
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
         AssertUtil.state(updateResult > 0, "更新自动标注失败");
+    }
+
+    /**
+     * 更新手工标注
+     * @param anId
+     * @param manualAnnotation
+     * @param newTerms
+     * @param finalAnnotation
+     */
+    private void updateManualAnnotation(String anId, String manualAnnotation, String newTerms,
+                                        String finalAnnotation) {
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setFinalAnnotation(finalAnnotation);
+        anTermAnnotation.setManualAnnotation(manualAnnotation);
+        anTermAnnotation.setNewTerms(newTerms);
+        anTermAnnotation.setGmtModified(new Date());
+        anTermAnnotation.setState(AnnotationStateEnum.PROCESSING.name());
+
+        int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+        AssertUtil.state(updateResult > 0, "更新手工标注失败");
     }
 
 }

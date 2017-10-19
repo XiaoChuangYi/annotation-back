@@ -57,13 +57,19 @@ public class AnTermAnnotationTest {
 
     @Test
     public void testQueryOnePage() {
-        Page<AnTermAnnotation> page = annotationService.queryOnePage(AnnotationStateEnum.FINISH, 0,
-            10);
+        Page<AnTermAnnotation> page = annotationService
+            .queryOnePage(AnnotationStateEnum.FINISH.name(), "11111111111111111111", 0, 10);
         System.out.println(page);
     }
 
     @Test
     public void autoAnnotation() {
         annotationService.autoAnnotationByTermId("7307206713306857472");
+    }
+
+    @Test
+    public void testManualAnnotation() {
+//        annotationService.autoAnnotationByAnId("7307559044527505408", "12",
+//            "[[\"展神经\",\"Body-structure\"],[\"面\",\"Zone\"],[\"胰头\",\"Body-structure\"]]");
     }
 }
