@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.malgo.annotation.common.dal.model.AnTerm;
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -116,5 +118,38 @@ public class ApiServerService {
         }
 
         return anTermAnnotationList;
+    }
+
+    /**
+     * 批量获取自动标注
+     * @param termList
+     * @return
+     */
+    public List<AnnotationResult> batchPhraseTokenize(List<AnTerm> termList){
+
+        List<TermVO> termVOList = convertToTermVOList(termList);
+
+        List<AnnotationResult> result = apiServerClient.batchPhraseTokenize(termVOList);
+
+        return result;
+
+    }
+
+
+    /**
+     * 术语模型转换
+     * @param anTermList
+     * @return
+     */
+    private List<TermVO> convertToTermVOList(List<AnTerm> anTermList){
+
+        List<TermVO> termVOList = new ArrayList<>();
+        for(AnTerm anTerm : anTermList){
+            TermVO termVO = new TermVO();
+            termVO.setText(anTerm.getTerm());
+            termVO.setId(anTerm.getId());
+            termVOList.add(termVO);
+        }
+        return termVOList;
     }
 }

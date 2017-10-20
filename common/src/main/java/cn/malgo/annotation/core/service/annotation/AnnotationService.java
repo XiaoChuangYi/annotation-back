@@ -1,7 +1,9 @@
 package cn.malgo.annotation.core.service.annotation;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService;
+import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
@@ -54,6 +57,7 @@ public class AnnotationService {
 
     /**
      * 分页查询标注信息后,加入新词和手工标注重新自动标注
+     * 同时更新最新的标注结果
      * @param annotationState
      * @return
      */
@@ -64,9 +68,15 @@ public class AnnotationService {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         List<AnTermAnnotation> anTermAnnotationList = anTermAnnotationMapper
             .selectByStateModifier(annotationState, userId);
-        if(anTermAnnotationList.size()>0){
+        if (anTermAnnotationList.size() > 0) {
             apiServerService.batchPhraseUpdatePosWithNewTerm(anTermAnnotationList, manualAnnotation,
-                    newTerms);
+                newTerms);
+            Date currentDate = new Date();
+            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+                anTermAnnotation.setGmtModified(currentDate);
+                anTermAnnotation.setState(AnnotationStateEnum.PROCESSING.name());
+                anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+            }
         }
         return pageInfo;
     }
@@ -89,6 +99,29 @@ public class AnnotationService {
         } else {
             updateAutoAnnotation(anTermAnnotation.getId(), autoAnnotation);
         }
+    }
+
+    /**
+     * 批量自动标注
+     * @param termList
+     */
+    public void autoAnnotationByTermList(List<AnTerm> termList) {
+
+        Map<String, String> termMap = new HashMap<>();
+        for (AnTerm anTerm : termList) {
+            termMap.put(anTerm.getId(), anTerm.getTerm());
+        }
+
+        List<AnnotationResult> annotationResultList = apiServerService
+            .batchPhraseTokenize(termList);
+
+        if (annotationResultList != null) {
+            for (AnnotationResult annotationResult : annotationResultList) {
+                saveTermAnnotation(annotationResult.getId(), termMap.get(annotationResult.getId()),
+                    annotationResult.getAnnotation());
+            }
+        }
+
     }
 
     /**
@@ -116,17 +149,38 @@ public class AnnotationService {
     }
 
     /**
+     * 结束标注
+     * @param anId
+     */
+    public void finishAnnotation(String anId){
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());
+        anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+    }
+
+    /**
      * 保存标注,主要用于标注自动标注
      * @param anTerm
      * @param autoAnnotation
      */
     private void saveTermAnnotation(AnTerm anTerm, String autoAnnotation) {
+        saveTermAnnotation(anTerm.getId(), anTerm.getTerm(), autoAnnotation);
+    }
+
+    /**
+     * 保存标注,主要用于标注自动标注
+     * @param termId
+     * @param term
+     * @param autoAnnotation
+     */
+    private void saveTermAnnotation(String termId, String term, String autoAnnotation) {
 
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(id);
-        anTermAnnotation.setTermId(anTerm.getId());
-        anTermAnnotation.setTerm(anTerm.getTerm());
+        anTermAnnotation.setTermId(termId);
+        anTermAnnotation.setTerm(term);
         anTermAnnotation.setAutoAnnotation(autoAnnotation);
         anTermAnnotation.setFinalAnnotation(autoAnnotation);
         anTermAnnotation.setState(AnnotationStateEnum.INIT.name());

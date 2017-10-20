@@ -1,17 +1,24 @@
 package cn.malgo.annotation.web.controller.annotation;
 
-import com.alibaba.fastjson.JSONArray;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.annotation.web.controller.annotation.request.AnnotationQueryRequest;
 import cn.malgo.annotation.web.controller.annotation.request.UpdateAnnotationRequest;
+import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 
@@ -42,29 +49,23 @@ public class AnnotationController {
     }
 
     /**
-     * 获取用于渲染的配置数据
-     * @return
-     */
-    @RequestMapping(value = { "config.do" })
-    public ResultVO<JSONObject> configDemo() {
-
-        return null;
-    }
-
-    /**
      * 分页查询标注信息,不使用新词获取一页标注数据
      * @param request
      * @return
      */
     @RequestMapping(value = { "/list.do" })
-    public ResultVO<PageVO> getOnePage(AnnotationQueryRequest request) {
+    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(AnnotationQueryRequest request) {
         //基础参数检查
         AnnotationQueryRequest.check(request);
 
         //分页查询
         Page<AnTermAnnotation> page = annotationService.queryOnePage(request.getState(),
             request.getUserId(), request.getPageNum(), request.getPageSize());
-        PageVO pageVO = new PageVO(page);
+
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
+        PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
+        pageVO.setDataList(annotationBratVOList);
+
         return ResultVO.success(pageVO);
     }
 
@@ -91,17 +92,48 @@ public class AnnotationController {
      * @param request
      * @return
      */
-    @RequestMapping(value = {"/updateAndRefresh.do"})
-    public ResultVO<PageVO> updateTermAnnotationRefreshPage(UpdateAnnotationRequest request) {
+    @RequestMapping(value = { "/updateAndRefresh.do" })
+    public ResultVO<PageVO<AnnotationBratVO>> updateTermAnnotationRefreshPage(UpdateAnnotationRequest request) {
         //基础参数检查
         UpdateAnnotationRequest.check(request);
 
-        //分页查询
+        //更新单条标注信息
+        annotationService.autoAnnotationByAnId(request.getId(), request.getManualAnnotation(),
+            request.getNewTerms());
+
+        //分页查询,且批量调用apiServer获取最新的标注,保存到数据库
         Page<AnTermAnnotation> page = annotationService.queryOnePageAndRefresh(request.getState(),
             request.getUserId(), request.getManualAnnotation(), request.getNewTerms(),
             request.getPageNum(), request.getPageSize());
 
-        PageVO pageVO = new PageVO(page);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
+        PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
+        pageVO.setDataList(annotationBratVOList);
+
         return ResultVO.success(pageVO);
+    }
+
+    /**
+     * 标注ID
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/finish.do")
+    public ResultVO finishAnnotation(String id) {
+        AssertUtil.notBlank(id, "标注ID为空");
+        annotationService.finishAnnotation(id);
+        return ResultVO.success();
+    }
+
+    private List<AnnotationBratVO> convertAnnotationBratVOList(List<AnTermAnnotation> anTermAnnotationList) {
+        List<AnnotationBratVO> annotationBratVOList = new ArrayList<>();
+        for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
+            JSONObject bratJson = AnnotationConvert.convertToBratFormat(anTermAnnotation);
+            AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+            BeanUtils.copyProperties(anTermAnnotation, annotationBratVO);
+            annotationBratVO.setBrat(bratJson);
+            annotationBratVOList.add(annotationBratVO);
+        }
+        return annotationBratVOList;
     }
 }

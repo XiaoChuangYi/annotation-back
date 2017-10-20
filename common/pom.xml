@@ -18,6 +18,22 @@
     </properties>
 
     <dependencies>
+
+        <!-- malgo 依赖 begin-->
+        <dependency>
+            <groupId>cn.malgo.core</groupId>
+            <artifactId>BaseDefinition</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- malgo 依赖 end-->
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -143,18 +159,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.qcloud</groupId>
-            <artifactId>cos_api</artifactId>
-            <version>4.4</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-core</artifactId>
             <version>9.0.6</version>
@@ -176,6 +180,7 @@
             <artifactId>poi</artifactId>
             <version>3.14</version>
         </dependency>
+
 
     </dependencies>
 

@@ -1,18 +1,18 @@
 package cn.malgo.annotation.common.service.integration.apiserver.request;
 
-import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
-
 import java.util.List;
+
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 
 /**
  * Created by 张钟 on 2017/10/18.
  */
 public class UpdateAnnotationRequest {
-    private String id;
-    private String text;
-    private List<TermTypeVO> newTerms; // list of pair < word, type >
-    private String autoAnnotation;
-    private String manualAnnotation;
+    private String           id;
+    private String           text;
+    private List<TermTypeVO> newTerms;             // list of pair < word, type >
+    private String           autoAnnotation;
+    private String           manualAnnotation = "";
 
     public String getId() {
         return id;

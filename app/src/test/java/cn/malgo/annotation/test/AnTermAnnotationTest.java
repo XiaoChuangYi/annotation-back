@@ -1,5 +1,8 @@
 package cn.malgo.annotation.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.mapper.AnTermAnnotationMapper;
+import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
@@ -69,7 +73,26 @@ public class AnTermAnnotationTest {
 
     @Test
     public void testManualAnnotation() {
-//        annotationService.autoAnnotationByAnId("7307559044527505408", "12",
-//            "[[\"展神经\",\"Body-structure\"],[\"面\",\"Zone\"],[\"胰头\",\"Body-structure\"]]");
+        //        annotationService.autoAnnotationByAnId("7307559044527505408", "12",
+        //            "[[\"展神经\",\"Body-structure\"],[\"面\",\"Zone\"],[\"胰头\",\"Body-structure\"]]");
+    }
+
+    @Test
+    public void testBatchAutoAnnotation() {
+
+        List<AnTerm> termList = new ArrayList<>();
+        AnTerm termVO = new AnTerm();
+        termVO.setId("123456");
+        termVO.setTerm("胸部CT");
+        termList.add(termVO);
+
+        AnTerm termVO2 = new AnTerm();
+        termVO2.setId("456789");
+        termVO2.setTerm("舌前三分之二，腹面");
+        termList.add(termVO2);
+
+        annotationService.autoAnnotationByTermList(termList);
+
+        System.out.println("123456");
     }
 }

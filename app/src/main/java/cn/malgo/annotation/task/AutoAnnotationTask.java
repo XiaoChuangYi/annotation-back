@@ -1,15 +1,19 @@
 package cn.malgo.annotation.task;
 
 import java.text.MessageFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import cn.malgo.annotation.common.util.ip.IpUtil;
 import cn.malgo.annotation.common.util.log.LogUtil;
+import cn.malgo.annotation.core.service.annotation.AsyncAnnotationService;
 
 /**
  *
@@ -17,12 +21,15 @@ import cn.malgo.annotation.common.util.log.LogUtil;
  * @date 2017/9/26
  */
 @Component
-public class PointGrantTask {
+public class AutoAnnotationTask {
 
-    private Logger logger = Logger.getLogger(PointGrantTask.class);
+    private Logger                 logger = Logger.getLogger(AutoAnnotationTask.class);
 
     @Value("${spring.task.server.host}")
-    private String taskServerIp;
+    private String                 taskServerIp;
+
+    @Autowired
+    private AsyncAnnotationService asyncAnnotationService;
 
     @Scheduled(cron = "0 5 0 * * ?")
     public void executeFileDownLoadTask() {
@@ -37,11 +44,12 @@ public class PointGrantTask {
         int pageNum = 1;
         int pageSize = 10;
 
-        Date currentDate = new Date();
         int successCount = 0;
         int failCount = 0;
-        do {
 
+        do {
+            List<Future<Boolean>> futureList = new ArrayList<>();
+            Future<Boolean> future = asyncAnnotationService.asyncAutoAnnotation(null);
         } while (false);
 
         LogUtil.info(logger,

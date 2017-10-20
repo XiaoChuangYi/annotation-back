@@ -1,14 +1,18 @@
 package cn.malgo.annotation.common.service.integration.apiserver;
 
-import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
-import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
-import com.alibaba.fastjson.JSONObject;
+import java.util.List;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
+import com.alibaba.fastjson.JSONObject;
+
+import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
+import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 
 /**
  *
@@ -35,6 +39,14 @@ public interface ApiServerClient {
     String phraseTokenize(@RequestParam("text") String text);
 
     /**
+     * 批量自动标注
+     * @param texts
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.POST, value = "/api/batchPhraseTokenize")
+    List<AnnotationResult> batchPhraseTokenize(@RequestBody List<TermVO> texts);
+
+    /**
      * 自动标注,通过给定的新词和手工标注
      * @param body
      * @return
@@ -48,5 +60,5 @@ public interface ApiServerClient {
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/batchPhraseUpdatePosWithNewTerm")
-    List<AnnotationResult>  batchPhraseUpdatePosWithNewTerm(List<UpdateAnnotationRequest> updateAnnotationDTOList);
+    List<AnnotationResult> batchPhraseUpdatePosWithNewTerm(List<UpdateAnnotationRequest> updateAnnotationDTOList);
 }

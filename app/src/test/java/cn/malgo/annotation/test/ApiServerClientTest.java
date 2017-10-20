@@ -3,6 +3,7 @@ package cn.malgo.annotation.test;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,23 @@ public class ApiServerClientTest {
     }
 
     @Test
+    public void test2() {
+        List<TermVO> termVOList = new ArrayList<>();
+        TermVO termVO = new TermVO();
+        termVO.setId("123456");
+        termVO.setText("胸部CT");
+        termVOList.add(termVO);
+
+        TermVO termVO2 = new TermVO();
+        termVO2.setId("456789");
+        termVO2.setText("舌前三分之二，腹面");
+        termVOList.add(termVO2);
+
+        List<AnnotationResult> results = apiServerClient.batchPhraseTokenize(termVOList);
+        System.out.println(results);
+    }
+
+    @Test
     public void testPhraseUpdatePosWithNewTerm() {
 
         JSONObject jsonObject = new JSONObject();
@@ -58,15 +76,16 @@ public class ApiServerClientTest {
         List<UpdateAnnotationRequest> annotationRequestList = new ArrayList<>();
         UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
 
-        TermTypeVO termTypeVO = new TermTypeVO();
-        List<TermTypeVO> termTypeVOList = new ArrayList<>();
-        termTypeVOList.add(termTypeVO);
+        String newTermsStr = "[{\"term\":\"展神经\",\"type\":\"Body-structure\"},{\"term\":\"面\",\"type\":\"Zone\"},{\"term\":\"胰头\",\"type\":\"Body-structure\"}]";
+        JSONArray jsonArray = JSONArray.parseArray(newTermsStr);
+        List<TermTypeVO> termTypeVOList = jsonArray.toJavaList(TermTypeVO.class);
 
         updateAnnotationRequest.setNewTerms(termTypeVOList);
         updateAnnotationRequest.setAutoAnnotation(
             "T1\tToken 0 2\t舌前\nT2\tToken 2 6\t三分之二\nT3\tToken 6 7\t，\nT4\tToken 7 9\t腹面");
-        updateAnnotationRequest.setId("id");
+        updateAnnotationRequest.setId("1234567890");
         updateAnnotationRequest.setText("舌前三分之二，腹面");
+        updateAnnotationRequest.setManualAnnotation("");
 
         annotationRequestList.add(updateAnnotationRequest);
 

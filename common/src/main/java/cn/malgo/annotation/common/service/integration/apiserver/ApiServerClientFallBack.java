@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 import cn.malgo.annotation.common.util.log.LogUtil;
 import feign.hystrix.FallbackFactory;
 
@@ -39,9 +40,16 @@ public class ApiServerClientFallBack implements FallbackFactory<ApiServerClient>
             }
 
             @Override
+            public List<AnnotationResult> batchPhraseTokenize(List<TermVO> texts) {
+                LogUtil.error(logger, cause,
+                    MessageFormat.format("调用自动标注接口异常,文本内容:{0}", JSONObject.toJSONString(texts)));
+                return null;
+            }
+
+            @Override
             public String phraseUpdatePosWithNewTerm(JSONObject body) {
                 LogUtil.error(logger, cause,
-                    MessageFormat.format("调用二次,参数内容:{0}", body.toJSONString()));
+                    MessageFormat.format("自动标注,通过给定的新词和手工标注失败,参数内容:{0}", body.toJSONString()));
                 return null;
             }
 

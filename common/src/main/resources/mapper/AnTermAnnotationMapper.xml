@@ -42,6 +42,7 @@
             AND STATE = #{state}
         </if>
         AND MODIFIER = #{modifier}
+        ORDER BY STATE DESC
     </select>
 
     <select id="selectByTermId" resultMap="BaseResultMap">
