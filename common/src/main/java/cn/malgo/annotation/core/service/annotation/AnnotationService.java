@@ -2,15 +2,11 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
-import cn.malgo.common.security.SecurityUtil;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -26,6 +22,7 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  *
@@ -60,34 +57,10 @@ public class AnnotationService {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
         decryptAES(pageInfo.getResult());
-        return pageInfo;
-    }
-
-    /**
-     * 分页查询标注信息后,加入新词和手工标注重新自动标注
-     * 同时更新最新的标注结果
-     * @param annotationState
-     * @return
-     */
-    public Page<AnTermAnnotation> queryOnePageAndRefresh(String annotationState, String userId,
-                                                         String manualAnnotation,
-                                                         List<TermTypeVO> newTerms, int pageNum,
-                                                         int pageSize) {
-        Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        List<AnTermAnnotation> anTermAnnotationList = anTermAnnotationMapper
-            .selectByStateModifier(annotationState, userId);
-        if (anTermAnnotationList.size() > 0) {
-            apiServerService.batchPhraseUpdatePosWithNewTerm(anTermAnnotationList, manualAnnotation,
-                newTerms);
-            Date currentDate = new Date();
-            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
-                anTermAnnotation.setGmtModified(currentDate);
-                anTermAnnotation.setState(AnnotationStateEnum.PROCESSING.name());
-                anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
-            }
+        apiServerService.batchPhraseUpdatePosWithNewTerm(pageInfo.getResult());
+        for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+            updateFinalAnnotation(anTermAnnotation.getId(), anTermAnnotation.getFinalAnnotation());
         }
-        //解密标注信息
-        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
 
@@ -143,14 +116,20 @@ public class AnnotationService {
      */
     public AnTermAnnotation autoAnnotationByAnId(String anId, String manual,
                                                  List<TermTypeVO> newTerms) {
-        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(anId);
+        AnTermAnnotation anTermAnnotation = queryByAnId(anId);
+
+        List<AnTermAnnotation> anTermAnnotationList = new ArrayList<>();
 
         String newTermsStr = TermTypeVO.convertToString(newTerms);
+        anTermAnnotation.setNewTerms(newTermsStr);
+        anTermAnnotation.setManualAnnotation(manual);
+        anTermAnnotationList.add(anTermAnnotation);
 
-        String finalAnnotation = apiServerService.phraseUpdatePosWithNewTerm(
-            anTermAnnotation.getTerm(), newTermsStr, anTermAnnotation.getAutoAnnotation(), manual);
+        List<AnTermAnnotation> finalAnnotationList = apiServerService
+            .batchPhraseUpdatePosWithNewTerm(anTermAnnotationList);
 
-        updateManualAnnotation(anId, manual, newTermsStr, finalAnnotation);
+        updateManualAnnotation(anId, manual, newTermsStr,
+            finalAnnotationList.get(0).getFinalAnnotation());
 
         AnTermAnnotation result = anTermAnnotationMapper.selectByPrimaryKey(anId);
 
@@ -166,19 +145,13 @@ public class AnnotationService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public void finishAnnotation(String anId) {
-        AnTermAnnotation anTermAnnotationOld = anTermAnnotationMapper.selectByPrimaryKey(anId);
+        AnTermAnnotation anTermAnnotationOld = queryByAnId(anId);
 
         //如果存在新词,保存新词到词库
         String newTermsStr = anTermAnnotationOld.getNewTerms();
-        if (StringUtils.isNotBlank(newTermsStr)) {
-            JSONArray jsonArray = JSONArray.parseArray(newTermsStr);
-            for (Object obj : jsonArray) {
-                JSONObject jsonObject = (JSONObject) obj;
-                Set<String> set = jsonObject.keySet();
-                String termStr = set.iterator().next();
-                String termType = jsonObject.getString(termStr);
-                atomicTermService.saveAtomicTerm(termStr, termType);
-            }
+        List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(newTermsStr);
+        for (TermTypeVO termTypeVO : termTypeVOList) {
+            atomicTermService.saveAtomicTerm(termTypeVO);
         }
 
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
@@ -238,6 +211,23 @@ public class AnnotationService {
     }
 
     /**
+     * 更新最终标注
+     * @param anId
+     * @param finalAnnotation
+     */
+    private void updateFinalAnnotation(String anId, String finalAnnotation) {
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setFinalAnnotation(securityFinalAnnotation);
+        anTermAnnotation.setGmtModified(new Date());
+
+        int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
+
+    /**
      * 更新手工标注
      * @param anId
      * @param manualAnnotation
@@ -259,6 +249,12 @@ public class AnnotationService {
 
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
         AssertUtil.state(updateResult > 0, "更新手工标注失败");
+    }
+
+    public AnTermAnnotation queryByAnId(String id) {
+        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(id);
+        decryptAES(anTermAnnotation);
+        return anTermAnnotation;
     }
 
     private void decryptAES(List<AnTermAnnotation> anTermAnnotationList) {

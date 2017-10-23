@@ -48,11 +48,11 @@ public interface ApiServerClient {
 
     /**
      * 自动标注,通过给定的新词和手工标注
-     * @param body
+     * @param updateAnnotationRequest
      * @return
      */
     @RequestMapping(method = RequestMethod.POST, value = "/api/phraseUpdatePosWithNewTerm")
-    String phraseUpdatePosWithNewTerm(JSONObject body);
+    String phraseUpdatePosWithNewTerm(UpdateAnnotationRequest updateAnnotationRequest);
 
     /**
      * 批量请求附带新词的和手工标注的最终标注

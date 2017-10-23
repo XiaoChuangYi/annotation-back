@@ -60,15 +60,6 @@ public class ApiServerClientTest {
     @Test
     public void testPhraseUpdatePosWithNewTerm() {
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("text", "舌前三分之二，腹面");
-        jsonObject.put("new_terms", JSONArray.parseArray(
-            "[[\"展神经\",\"Body-structure\"],[\"面\",\"Zone\"],[\"胰头\",\"Body-structure\"]]"));
-        jsonObject.put("Token",
-            "T1\tToken 0 2\t舌前\nT2\tToken 2 6\t三分之二\nT3\tToken 6 7\t，\nT4\tToken 7 9\t腹面");
-        jsonObject.put("Manual", "Manual");
-        String result = apiServerClient.phraseUpdatePosWithNewTerm(jsonObject);
-        System.out.println(result);
     }
 
     @Test

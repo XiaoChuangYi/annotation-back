@@ -47,11 +47,10 @@ public class ApiServerClientFallBack implements FallbackFactory<ApiServerClient>
             }
 
             @Override
-            public String phraseUpdatePosWithNewTerm(JSONObject body) {
-                LogUtil.error(logger, cause,
-                    MessageFormat.format("自动标注,通过给定的新词和手工标注失败,参数内容:{0}", body.toJSONString()));
-                return null;
-            }
+            public String phraseUpdatePosWithNewTerm(UpdateAnnotationRequest updateAnnotationRequest) {
+                LogUtil.error(logger, cause, MessageFormat.format("单条请求附带新词和手工标注的最终标注:{0}",
+                        JSONObject.toJSONString(updateAnnotationRequest)));
+                return null;            }
 
             @Override
             public List<AnnotationResult> batchPhraseUpdatePosWithNewTerm(List<UpdateAnnotationRequest> updateAnnotationDTOList) {

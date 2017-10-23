@@ -1,11 +1,10 @@
 package cn.malgo.annotation.common.service.integration.apiserver.vo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Created by 张钟 on 2017/10/18.
@@ -29,6 +28,29 @@ public class TermTypeVO {
             maps.add(tempMap);
         }
         return JSONArray.toJSONString(maps);
+    }
+
+    /**
+     * 将json格式的newTerm string 格式化bean 的list
+     * @param termTypeString
+     * @return
+     */
+    public static List<TermTypeVO> convertFromString(String termTypeString){
+        List<TermTypeVO> termTypeVOList = new ArrayList<>();
+        if (StringUtils.isNotBlank(termTypeString)) {
+            JSONArray jsonArray = JSONArray.parseArray(termTypeString);
+            for (Object obj : jsonArray) {
+                JSONObject jsonObject = (JSONObject) obj;
+                Set<String> set = jsonObject.keySet();
+                String termStr = set.iterator().next();
+                String termType = jsonObject.getString(termStr);
+                TermTypeVO termTypeVO = new TermTypeVO();
+                termTypeVO.setTerm(termStr);
+                termTypeVO.setType(termType);
+                termTypeVOList.add(termTypeVO);
+            }
+        }
+        return termTypeVOList;
     }
 
     public String getTerm() {

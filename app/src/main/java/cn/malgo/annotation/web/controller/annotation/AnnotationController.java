@@ -75,31 +75,6 @@ public class AnnotationController {
         return ResultVO.success(anTermAnnotation);
     }
 
-    /**
-     * 更新指定的标注后,刷新当前页面中的其他标注
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = { "/updateAndRefresh.do" })
-    public ResultVO<PageVO<AnnotationBratVO>> updateTermAnnotationRefreshPage(UpdateAnnotationRequest request) {
-        //基础参数检查
-        UpdateAnnotationRequest.check(request);
-
-        //更新单条标注信息
-        annotationService.autoAnnotationByAnId(request.getId(), request.getManualAnnotation(),
-            request.getNewTerms());
-
-        //分页查询,且批量调用apiServer获取最新的标注,保存到数据库
-        Page<AnTermAnnotation> page = annotationService.queryOnePageAndRefresh(request.getState(),
-            request.getUserId(), request.getManualAnnotation(), request.getNewTerms(),
-            request.getPageNum(), request.getPageSize());
-
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
-        PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
-        pageVO.setDataList(annotationBratVOList);
-
-        return ResultVO.success(pageVO);
-    }
 
     /**
      * 标注ID
