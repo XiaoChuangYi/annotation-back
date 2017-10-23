@@ -19,7 +19,7 @@ public class AnnotationBratVO {
 
     private Date       gmtModified;
 
-    private JSONObject brat;
+    private JSONObject bratData;
 
     public String getId() {
         return id;
@@ -53,11 +53,11 @@ public class AnnotationBratVO {
         this.gmtModified = gmtModified;
     }
 
-    public JSONObject getBrat() {
-        return brat;
+    public JSONObject getBratData() {
+        return bratData;
     }
 
-    public void setBrat(JSONObject brat) {
-        this.brat = brat;
+    public void setBratData(JSONObject bratData) {
+        this.bratData = bratData;
     }
 }

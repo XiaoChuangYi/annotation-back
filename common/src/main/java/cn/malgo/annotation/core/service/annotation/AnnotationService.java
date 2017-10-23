@@ -1,13 +1,13 @@
 package cn.malgo.annotation.core.service.annotation;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -20,7 +20,9 @@ import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.common.util.bean.MapUtils;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
 
 /**
@@ -42,6 +44,9 @@ public class AnnotationService {
 
     @Autowired
     private TermService            termService;
+
+    @Autowired
+    private AtomicTermService      atomicTermService;
 
     /**
      * 根据状态分页查询标注
@@ -152,7 +157,22 @@ public class AnnotationService {
      * 结束标注
      * @param anId
      */
-    public void finishAnnotation(String anId){
+    public void finishAnnotation(String anId) {
+        AnTermAnnotation anTermAnnotationOld = anTermAnnotationMapper.selectByPrimaryKey(anId);
+
+        //如果存在新词,保存新词到词库
+        String newTermsStr = anTermAnnotationOld.getNewTerms();
+        if (StringUtils.isNotBlank(newTermsStr)) {
+            JSONArray jsonArray = JSONArray.parseArray(newTermsStr);
+            for (Object obj : jsonArray) {
+                JSONObject jsonObject = (JSONObject)obj;
+                Set<String> set = jsonObject.keySet();
+                String termStr = set.iterator().next();
+                String termType = jsonObject.getString(termStr);
+                atomicTermService.saveAtomicTerm(termStr, termType);
+            }
+        }
+
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(anId);
         anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());

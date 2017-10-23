@@ -95,4 +95,10 @@ public class AnTermAnnotationTest {
 
         System.out.println("123456");
     }
+
+    @Test
+    public void finish(){
+        annotationService.finishAnnotation("7307559044527505408");
+    }
+
 }

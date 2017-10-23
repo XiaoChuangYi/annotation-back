@@ -7,7 +7,9 @@ import cn.malgo.annotation.web.request.PageRequest;
 import java.util.List;
 
 /**
- * Created by 张钟 on 2017/10/19.
+ *
+ * @author 张钟
+ * @date 2017/10/19
  */
 public class UpdateAnnotationRequest extends PageRequest {
 

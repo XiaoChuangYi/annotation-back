@@ -22,6 +22,12 @@ public class AnAtomicTerm {
     private String type;
 
     /**
+     * 状态
+     */
+    @Column(name = "STATE")
+    private String state;
+
+    /**
      * 创建时间
      */
     @Column(name = "GMT_CREATED")
@@ -117,5 +123,13 @@ public class AnAtomicTerm {
      */
     public void setGmtModified(Date gmtModified) {
         this.gmtModified = gmtModified;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }
