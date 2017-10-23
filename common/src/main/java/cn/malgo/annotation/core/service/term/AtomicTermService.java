@@ -2,8 +2,8 @@ package cn.malgo.annotation.core.service.term;
 
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.common.util.security.SecurityUtil;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.common.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +46,7 @@ public class AtomicTermService {
      */
     public void saveAtomicTerm(String term, String termType) {
 
-        String securityTerm = SecurityUtil.cryptAES(term);
+        String securityTerm = SecurityUtil.cryptAESBase64(term);
 
         AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTerm(securityTerm);
 

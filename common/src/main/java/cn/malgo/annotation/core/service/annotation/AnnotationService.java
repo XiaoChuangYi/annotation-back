@@ -2,12 +2,15 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
-import com.alibaba.fastjson.JSONObject;
+import cn.malgo.common.security.SecurityUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -20,12 +23,9 @@ import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.common.util.bean.MapUtils;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -59,6 +59,7 @@ public class AnnotationService {
                                                int pageSize) {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
+        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
 
@@ -85,6 +86,8 @@ public class AnnotationService {
                 anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
             }
         }
+        //解密标注信息
+        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
 
@@ -151,6 +154,8 @@ public class AnnotationService {
 
         AnTermAnnotation result = anTermAnnotationMapper.selectByPrimaryKey(anId);
 
+        decryptAES(result);
+
         return result;
 
     }
@@ -168,7 +173,7 @@ public class AnnotationService {
         if (StringUtils.isNotBlank(newTermsStr)) {
             JSONArray jsonArray = JSONArray.parseArray(newTermsStr);
             for (Object obj : jsonArray) {
-                JSONObject jsonObject = (JSONObject)obj;
+                JSONObject jsonObject = (JSONObject) obj;
                 Set<String> set = jsonObject.keySet();
                 String termStr = set.iterator().next();
                 String termType = jsonObject.getString(termStr);
@@ -199,13 +204,15 @@ public class AnnotationService {
      */
     private void saveTermAnnotation(String termId, String term, String autoAnnotation) {
 
+        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(id);
         anTermAnnotation.setTermId(termId);
         anTermAnnotation.setTerm(term);
-        anTermAnnotation.setAutoAnnotation(autoAnnotation);
-        anTermAnnotation.setFinalAnnotation(autoAnnotation);
+        anTermAnnotation.setAutoAnnotation(securityAnnotation);
+        anTermAnnotation.setFinalAnnotation(securityAnnotation);
         anTermAnnotation.setState(AnnotationStateEnum.INIT.name());
 
         int saveResult = anTermAnnotationMapper.insert(anTermAnnotation);
@@ -218,10 +225,12 @@ public class AnnotationService {
      * @param autoAnnotation
      */
     private void updateAutoAnnotation(String anId, String autoAnnotation) {
+        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(anId);
-        anTermAnnotation.setAutoAnnotation(autoAnnotation);
-        anTermAnnotation.setFinalAnnotation(autoAnnotation);
+        anTermAnnotation.setAutoAnnotation(securityAnnotation);
+        anTermAnnotation.setFinalAnnotation(securityAnnotation);
         anTermAnnotation.setGmtModified(new Date());
 
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
@@ -237,16 +246,34 @@ public class AnnotationService {
      */
     private void updateManualAnnotation(String anId, String manualAnnotation, String newTerms,
                                         String finalAnnotation) {
+        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(anId);
-        anTermAnnotation.setFinalAnnotation(finalAnnotation);
-        anTermAnnotation.setManualAnnotation(manualAnnotation);
+        anTermAnnotation.setFinalAnnotation(securityFinalAnnotation);
+        anTermAnnotation.setManualAnnotation(securityManualAnnotation);
         anTermAnnotation.setNewTerms(newTerms);
         anTermAnnotation.setGmtModified(new Date());
         anTermAnnotation.setState(AnnotationStateEnum.PROCESSING.name());
 
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
         AssertUtil.state(updateResult > 0, "更新手工标注失败");
+    }
+
+    private void decryptAES(List<AnTermAnnotation> anTermAnnotationList) {
+        for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
+            decryptAES(anTermAnnotation);
+        }
+    }
+
+    private void decryptAES(AnTermAnnotation anTermAnnotation) {
+        anTermAnnotation
+            .setAutoAnnotation(SecurityUtil.decryptAESBase64(anTermAnnotation.getAutoAnnotation()));
+        anTermAnnotation.setManualAnnotation(
+            SecurityUtil.decryptAESBase64(anTermAnnotation.getManualAnnotation()));
+        anTermAnnotation.setFinalAnnotation(
+            SecurityUtil.decryptAESBase64(anTermAnnotation.getFinalAnnotation()));
     }
 
 }

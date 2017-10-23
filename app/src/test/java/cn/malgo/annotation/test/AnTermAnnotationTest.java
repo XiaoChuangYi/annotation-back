@@ -62,7 +62,7 @@ public class AnTermAnnotationTest {
     @Test
     public void testQueryOnePage() {
         Page<AnTermAnnotation> page = annotationService
-            .queryOnePage(AnnotationStateEnum.FINISH.name(), "11111111111111111111", 0, 10);
+            .queryOnePage(AnnotationStateEnum.INIT.name(), "11111111111111111111", 0, 10);
         System.out.println(page);
     }
 
