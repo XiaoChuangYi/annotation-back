@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 public class AesCryptoHelper {
 
     // 客户端统一的 key，
-    public static final String SEED       = "YZYX666666";
+    public static final String SEED       = "MALGO569823";
 
 
     /**

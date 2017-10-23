@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.service.term;
 
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.common.util.security.SecurityUtil;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,13 +46,15 @@ public class AtomicTermService {
      */
     public void saveAtomicTerm(String term, String termType) {
 
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTerm(term);
+        String securityTerm = SecurityUtil.cryptAES(term);
+
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTerm(securityTerm);
 
         if (anAtomicTermOld == null) {
             String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
             AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
             anAtomicTermNew.setId(id);
-            anAtomicTermNew.setTerm(term);
+            anAtomicTermNew.setTerm(securityTerm);
             anAtomicTermNew.setType(termType);
             anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
 
@@ -60,7 +63,7 @@ public class AtomicTermService {
         }else{
 
             anAtomicTermOld.setType(termType);
-            anAtomicTermOld.setTerm(term);
+            anAtomicTermOld.setTerm(securityTerm);
             anAtomicTermOld.setGmtModified(new Date());
 
             int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);
