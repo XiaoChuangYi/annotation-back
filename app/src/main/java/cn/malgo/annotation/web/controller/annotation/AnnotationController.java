@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 
@@ -34,7 +33,6 @@ public class AnnotationController {
 
     @Autowired
     private AnnotationService annotationService;
-
 
     /**
      * 分页查询标注信息,不使用新词获取一页标注数据
@@ -68,13 +66,15 @@ public class AnnotationController {
         //基础参数检查
         UpdateAnnotationRequest.check(request);
 
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(request.getId());
+        AssertUtil.state(request.getUserId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+
         //更新单条标注信息
-        AnTermAnnotation anTermAnnotation = annotationService.autoAnnotationByAnId(request.getId(),
+        AnTermAnnotation anTermAnnotationNew = annotationService.autoAnnotationByAnId(request.getId(),
             request.getManualAnnotation(), request.getNewTerms());
 
-        return ResultVO.success(anTermAnnotation);
+        return ResultVO.success(anTermAnnotationNew);
     }
-
 
     /**
      * 标注ID
@@ -82,9 +82,28 @@ public class AnnotationController {
      * @return
      */
     @RequestMapping(value = "/finish.do")
-    public ResultVO finishAnnotation(String id) {
+    public ResultVO finishAnnotation(String id,String userId) {
         AssertUtil.notBlank(id, "标注ID为空");
+        AssertUtil.notBlank(userId, "用户ID为空");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(id);
+        AssertUtil.state(userId.equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
         annotationService.finishAnnotation(id);
+        return ResultVO.success();
+    }
+
+    /**
+     * 设置术语的状态为无法识别
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/unRecognize.do")
+    public ResultVO setUnRecognize(String id, String userId) {
+        AssertUtil.notBlank(id, "术语ID为空");
+        AssertUtil.notBlank(userId, "用户ID为空");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(id);
+        AssertUtil.state(userId.equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+
+        annotationService.setUnRecognize(id);
         return ResultVO.success();
     }
 

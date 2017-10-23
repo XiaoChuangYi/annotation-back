@@ -2,11 +2,18 @@ package cn.malgo.annotation.web.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import cn.malgo.annotation.common.util.AssertUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.alibaba.fastjson.JSON;
+
+import cn.malgo.annotation.web.result.ResultVO;
 
 /**
  * Created by ZhangZhong on 2017/5/6.
@@ -21,6 +28,19 @@ public class LoginInterceptor implements HandlerInterceptor {
                              Object handler) throws Exception {
 
         response.setHeader("Content-type", "text/html;charset=UTF-8");
+        HttpSession httpSession = request.getSession();
+        String userId = (String) httpSession.getAttribute("userId");
+        String userIdParam = request.getParameter("userId");
+        AssertUtil.state(StringUtils.equals(userId,userIdParam),"非法用户");
+        if (StringUtils.isBlank(userId)) {
+            ResultVO failResult = new ResultVO(true, false, true, "请重新登录!");
+            response.getWriter().write(JSON.toJSONString(failResult));
+            return false;
+        }
+
+        //        Map<String, String[]> m = new HashMap<String, String[]>(request.getParameterMap());
+        //        m.put("userId", new String[] { userId });
+        //        request = new ParameterRequestWrapper(request, m);
 
         return true;
 

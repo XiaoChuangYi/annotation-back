@@ -161,6 +161,19 @@ public class AnnotationService {
     }
 
     /**
+     * 设置术语的状态为无法识别
+     * @param anId
+     */
+    public void setUnRecognize(String anId) {
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setState(AnnotationStateEnum.UN_RECOGNIZE.name());
+        int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+
+        AssertUtil.state(updateResult > 0, "设置术语状态为未识别异常");
+    }
+
+    /**
      * 保存标注,主要用于标注自动标注
      * @param anTerm
      * @param autoAnnotation

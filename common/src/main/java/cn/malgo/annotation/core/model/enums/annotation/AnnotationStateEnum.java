@@ -9,6 +9,8 @@ public enum AnnotationStateEnum {
 
     PROCESSING("标注中"),
 
+    UN_RECOGNIZE("无法识别"),
+
     FINISH("标注完成");
 
     private String message;
