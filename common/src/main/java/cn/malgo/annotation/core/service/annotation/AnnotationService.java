@@ -24,6 +24,8 @@ import cn.malgo.annotation.common.util.bean.MapUtils;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -157,6 +159,7 @@ public class AnnotationService {
      * 结束标注
      * @param anId
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void finishAnnotation(String anId) {
         AnTermAnnotation anTermAnnotationOld = anTermAnnotationMapper.selectByPrimaryKey(anId);
 
