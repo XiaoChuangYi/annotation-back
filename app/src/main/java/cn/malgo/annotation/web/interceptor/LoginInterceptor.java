@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.common.util.AssertUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -16,7 +17,9 @@ import com.alibaba.fastjson.JSON;
 import cn.malgo.annotation.web.result.ResultVO;
 
 /**
- * Created by ZhangZhong on 2017/5/6.
+ *
+ * @author ZhangZhong
+ * @date 2017/5/6
  */
 @ControllerAdvice
 public class LoginInterceptor implements HandlerInterceptor {
@@ -29,8 +32,8 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         response.setHeader("Content-type", "text/html;charset=UTF-8");
         HttpSession httpSession = request.getSession();
-        String userId = (String) httpSession.getAttribute("userId");
-        if (StringUtils.isBlank(userId)) {
+        CrmAccount crmAccount = (CrmAccount) httpSession.getAttribute("currentAccount");
+        if (crmAccount==null) {
             ResultVO failResult = new ResultVO(true, false, true, "请重新登录!");
             response.getWriter().write(JSON.toJSONString(failResult));
             return false;

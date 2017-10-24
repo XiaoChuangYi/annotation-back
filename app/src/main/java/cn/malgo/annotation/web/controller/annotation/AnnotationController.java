@@ -3,12 +3,12 @@ package cn.malgo.annotation.web.controller.annotation;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.malgo.annotation.web.controller.common.BaseController;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
@@ -31,9 +31,8 @@ import cn.malgo.annotation.web.result.ResultVO;
  */
 
 @RestController
-@SessionAttributes("currentAccount")
 @RequestMapping(value = { "/annotation" })
-public class AnnotationController {
+public class AnnotationController extends BaseController{
 
     @Autowired
     private AnnotationService annotationService;
