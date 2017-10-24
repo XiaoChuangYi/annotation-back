@@ -16,12 +16,7 @@ public class UpdateAnnotationRequest extends PageRequest {
     /**
      * 标注ID
      */
-    private String id;
-
-    /**
-     * 修改人
-     */
-    private String userId;
+    private String anId;
 
     /**
      * 备注
@@ -47,24 +42,15 @@ public class UpdateAnnotationRequest extends PageRequest {
 
     public static void check(UpdateAnnotationRequest request) {
         AssertUtil.notNull(request,"更新单条标注请求对象为空");
-        AssertUtil.notBlank(request.getId(),"标注ID为空");
-        AssertUtil.notBlank(request.getUserId(),"用户ID为空");
+        AssertUtil.notBlank(request.getAnId(),"标注ID为空");
     }
 
-    public String getId() {
-        return id;
+    public String getAnId() {
+        return anId;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setAnId(String anId) {
+        this.anId = anId;
     }
 
     public String getMemo() {

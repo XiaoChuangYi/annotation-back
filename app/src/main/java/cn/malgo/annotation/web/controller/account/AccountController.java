@@ -41,7 +41,7 @@ public class AccountController {
 
         CrmAccount crmAccount = accountService.checkPwd(accountNo,loginPwd);
         HttpSession httpSession = request.getSession();
-        httpSession.setAttribute("userId",crmAccount.getId());
+        httpSession.setAttribute("currentAccount",crmAccount);
 
         Cookie cookie = new Cookie("userId",crmAccount.getId());//创建新cookie
         cookie.setMaxAge(1*60 * 60);// 设置存在时间为5分钟

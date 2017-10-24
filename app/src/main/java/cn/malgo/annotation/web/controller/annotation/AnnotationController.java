@@ -5,13 +5,16 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
@@ -28,6 +31,7 @@ import cn.malgo.annotation.web.result.ResultVO;
  */
 
 @RestController
+@SessionAttributes("currentAccount")
 @RequestMapping(value = { "/annotation" })
 public class AnnotationController {
 
@@ -40,13 +44,14 @@ public class AnnotationController {
      * @return
      */
     @RequestMapping(value = { "/list.do" })
-    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(AnnotationQueryRequest request) {
+    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(AnnotationQueryRequest request,
+                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount) {
         //基础参数检查
         AnnotationQueryRequest.check(request);
 
         //分页查询
         Page<AnTermAnnotation> page = annotationService.queryOnePage(request.getState(),
-            request.getUserId(), request.getPageNum(), request.getPageSize());
+            crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
         PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
@@ -61,49 +66,50 @@ public class AnnotationController {
      * @return
      */
     @RequestMapping(value = { "/updateSingle.do" })
-    public ResultVO<AnTermAnnotation> updateTermAnnotation(UpdateAnnotationRequest request) {
+    public ResultVO<AnTermAnnotation> updateTermAnnotation(UpdateAnnotationRequest request,
+                                                           @ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
         //基础参数检查
         UpdateAnnotationRequest.check(request);
 
-        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(request.getId());
-        AssertUtil.state(request.getUserId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(request.getAnId());
+        AssertUtil.state(crmAccount.getId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
 
         //更新单条标注信息
-        AnTermAnnotation anTermAnnotationNew = annotationService.autoAnnotationByAnId(request.getId(),
-            request.getManualAnnotation(), request.getNewTerms());
+        AnTermAnnotation anTermAnnotationNew = annotationService.autoAnnotationByAnId(
+            request.getAnId(), request.getManualAnnotation(), request.getNewTerms());
 
         return ResultVO.success(anTermAnnotationNew);
     }
 
     /**
      * 标注ID
-     * @param id
+     * @param anId
      * @return
      */
     @RequestMapping(value = "/finish.do")
-    public ResultVO finishAnnotation(String id,String userId) {
-        AssertUtil.notBlank(id, "标注ID为空");
-        AssertUtil.notBlank(userId, "用户ID为空");
-        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(id);
-        AssertUtil.state(userId.equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
-        annotationService.finishAnnotation(id);
+    public ResultVO finishAnnotation(String anId,
+                                     @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+        AssertUtil.notBlank(anId, "标注ID为空");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(anId);
+        AssertUtil.state(crmAccount.getId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+        annotationService.finishAnnotation(anId);
         return ResultVO.success();
     }
 
     /**
      * 设置术语的状态为无法识别
-     * @param id
+     * @param anId
      * @return
      */
     @RequestMapping(value = "/unRecognize.do")
-    public ResultVO setUnRecognize(String id, String userId) {
-        AssertUtil.notBlank(id, "术语ID为空");
-        AssertUtil.notBlank(userId, "用户ID为空");
-        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(id);
-        AssertUtil.state(userId.equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+    public ResultVO setUnRecognize(String anId,
+                                   @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+        AssertUtil.notBlank(anId, "术语ID为空");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(anId);
+        AssertUtil.state(crmAccount.getId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
 
-        annotationService.setUnRecognize(id);
+        annotationService.setUnRecognize(anId);
         return ResultVO.success();
     }
 

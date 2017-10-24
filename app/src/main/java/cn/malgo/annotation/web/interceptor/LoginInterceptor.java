@@ -30,17 +30,11 @@ public class LoginInterceptor implements HandlerInterceptor {
         response.setHeader("Content-type", "text/html;charset=UTF-8");
         HttpSession httpSession = request.getSession();
         String userId = (String) httpSession.getAttribute("userId");
-        String userIdParam = request.getParameter("userId");
-        AssertUtil.state(StringUtils.equals(userId,userIdParam),"非法用户");
         if (StringUtils.isBlank(userId)) {
             ResultVO failResult = new ResultVO(true, false, true, "请重新登录!");
             response.getWriter().write(JSON.toJSONString(failResult));
             return false;
         }
-
-        //        Map<String, String[]> m = new HashMap<String, String[]>(request.getParameterMap());
-        //        m.put("userId", new String[] { userId });
-        //        request = new ParameterRequestWrapper(request, m);
 
         return true;
 
