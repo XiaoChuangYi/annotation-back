@@ -6,14 +6,12 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import cn.malgo.annotation.common.util.ip.IpUtil;
 import cn.malgo.annotation.common.util.log.LogUtil;
-import cn.malgo.annotation.core.service.annotation.AsyncAnnotationService;
 
 /**
  *
@@ -23,13 +21,10 @@ import cn.malgo.annotation.core.service.annotation.AsyncAnnotationService;
 @Component
 public class AutoAnnotationTask {
 
-    private Logger                 logger = Logger.getLogger(AutoAnnotationTask.class);
+    private Logger logger = Logger.getLogger(AutoAnnotationTask.class);
 
     @Value("${spring.task.server.host}")
-    private String                 taskServerIp;
-
-    @Autowired
-    private AsyncAnnotationService asyncAnnotationService;
+    private String taskServerIp;
 
     @Scheduled(cron = "0 5 0 * * ?")
     public void executeFileDownLoadTask() {
@@ -49,7 +44,6 @@ public class AutoAnnotationTask {
 
         do {
             List<Future<Boolean>> futureList = new ArrayList<>();
-            Future<Boolean> future = asyncAnnotationService.asyncAutoAnnotation(null);
         } while (false);
 
         LogUtil.info(logger,

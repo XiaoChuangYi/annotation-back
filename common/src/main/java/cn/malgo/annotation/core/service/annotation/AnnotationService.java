@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
+import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -188,6 +189,7 @@ public class AnnotationService {
      * @param term
      * @param autoAnnotation
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     private void saveTermAnnotation(String termId, String term, String autoAnnotation) {
 
         String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
@@ -203,6 +205,9 @@ public class AnnotationService {
 
         int saveResult = anTermAnnotationMapper.insert(anTermAnnotation);
         AssertUtil.state(saveResult > 0, "保存自动标注失败");
+
+        termService.updateTermState(termId, TermStateEnum.FINISH);
+
     }
 
     /**

@@ -15,11 +15,24 @@
         <version>1.5.1.RELEASE</version>
     </parent>
 
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://116.62.160.143:8081/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>http://116.62.160.143:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>central</id>
             <name>Central Repository</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <url>http://116.62.160.143:8081/nexus/content/repositories/central/</url>
             <layout>default</layout>
             <snapshots>
                 <enabled>false</enabled>
