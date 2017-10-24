@@ -65,9 +65,8 @@ public class AnnotationController extends BaseController{
      * @return
      */
     @RequestMapping(value = { "/updateSingle.do" })
-    public ResultVO<AnTermAnnotation> updateTermAnnotation(UpdateAnnotationRequest request,
+    public ResultVO<AnnotationBratVO> updateTermAnnotation(UpdateAnnotationRequest request,
                                                            @ModelAttribute("currentAccount") CrmAccount crmAccount) {
-
         //基础参数检查
         UpdateAnnotationRequest.check(request);
 
@@ -78,7 +77,9 @@ public class AnnotationController extends BaseController{
         AnTermAnnotation anTermAnnotationNew = annotationService.autoAnnotationByAnId(
             request.getAnId(), request.getManualAnnotation(), request.getNewTerms());
 
-        return ResultVO.success(anTermAnnotationNew);
+        AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotationNew);
+
+        return ResultVO.success(annotationBratVO);
     }
 
     /**
@@ -115,12 +116,18 @@ public class AnnotationController extends BaseController{
     private List<AnnotationBratVO> convertAnnotationBratVOList(List<AnTermAnnotation> anTermAnnotationList) {
         List<AnnotationBratVO> annotationBratVOList = new ArrayList<>();
         for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
-            JSONObject bratJson = AnnotationConvert.convertToBratFormat(anTermAnnotation);
-            AnnotationBratVO annotationBratVO = new AnnotationBratVO();
-            BeanUtils.copyProperties(anTermAnnotation, annotationBratVO);
-            annotationBratVO.setBratData(bratJson);
+            AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotation);
             annotationBratVOList.add(annotationBratVO);
         }
         return annotationBratVOList;
     }
+
+    private AnnotationBratVO convertFromAnTermAnnotation(AnTermAnnotation anTermAnnotation){
+        JSONObject bratJson = AnnotationConvert.convertToBratFormat(anTermAnnotation);
+        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+        BeanUtils.copyProperties(anTermAnnotation, annotationBratVO);
+        annotationBratVO.setBratData(bratJson);
+        return annotationBratVO;
+    }
+
 }

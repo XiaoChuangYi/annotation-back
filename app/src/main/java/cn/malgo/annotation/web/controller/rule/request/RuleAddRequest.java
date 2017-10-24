@@ -1,6 +1,11 @@
 package cn.malgo.annotation.web.controller.rule.request;
 
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
+import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
+import cn.malgo.core.definition.EntityRule;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author 张钟
@@ -21,6 +26,13 @@ public class RuleAddRequest {
         AssertUtil.notBlank(ruleAddRequest.getRuleName(),"规则名称为空");
         AssertUtil.notBlank(ruleAddRequest.getRuleValue(),"规则内容为空");
         AssertUtil.notBlank(ruleAddRequest.getRuleType(),"规则类型为空");
+
+        try {
+            JSON.parseObject(ruleAddRequest.getRuleValue()).toJavaObject(EntityRule.class);
+        }catch (Exception e){
+            throw new BaseRuntimeException(BaseResultCodeEnum.ILLEGAL_ARGUMENT, "规则格式错误");
+        }
+
     }
 
     public String getRuleValue() {
