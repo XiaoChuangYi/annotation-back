@@ -1,6 +1,5 @@
 package cn.malgo.annotation.test;
 
-import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +8,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
+import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  * Created by 张钟 on 2017/10/17.
@@ -45,7 +46,7 @@ public class TermTest {
     }
 
     @Test
-    public void testAtomicMapper(){
+    public void testAtomicMapper() {
 
         AnAtomicTerm anAtomicTerm = new AnAtomicTerm();
         anAtomicTerm.setType("310004");
@@ -54,4 +55,11 @@ public class TermTest {
         int insertResult = anAtomicTermMapper.insert(anAtomicTerm);
         System.out.println(insertResult);
     }
+
+    @Test
+    public void testDecrypt() {
+        String result = SecurityUtil.decryptAESBase64("G/guUYLy1m0m7Kv+OM/ZQw==\n");
+        System.out.println(result);
+    }
+
 }

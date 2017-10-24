@@ -4,6 +4,8 @@ import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.util.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
 
     /**
@@ -12,4 +14,11 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @return
      */
     AnAtomicTerm selectByTerm(@Param("term") String term);
+
+    /**
+     * 查询全部原子术语
+     * @return
+     */
+    @Override
+    List<AnAtomicTerm> selectAll();
 }
