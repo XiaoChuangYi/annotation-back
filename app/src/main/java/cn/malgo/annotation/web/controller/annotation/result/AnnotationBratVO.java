@@ -2,6 +2,7 @@ package cn.malgo.annotation.web.controller.annotation.result;
 
 import java.util.Date;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -18,6 +19,8 @@ public class AnnotationBratVO {
     private Date       gmtCreated;
 
     private Date       gmtModified;
+
+    private JSONArray  newTerms;
 
     private JSONObject bratData;
 
@@ -59,5 +62,13 @@ public class AnnotationBratVO {
 
     public void setBratData(JSONObject bratData) {
         this.bratData = bratData;
+    }
+
+    public JSONArray getNewTerms() {
+        return newTerms;
+    }
+
+    public void setNewTerms(JSONArray newTerms) {
+        this.newTerms = newTerms;
     }
 }

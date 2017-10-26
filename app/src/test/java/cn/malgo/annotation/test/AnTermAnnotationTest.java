@@ -16,6 +16,7 @@ import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 
@@ -97,8 +98,23 @@ public class AnTermAnnotationTest {
     }
 
     @Test
-    public void finish(){
+    public void finish() {
         annotationService.finishAnnotation("7307559044527505408");
+    }
+
+    @Test
+    public void getNewTag() {
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("7309720136175042560");
+        String newAnnotation = AnnotationConvert.addNewTag(
+                anTermAnnotation.getManualAnnotation(), "body", "12", "23", "身体");
+        System.out.println(newAnnotation);
+    }
+
+    @Test
+    public void deleteTag() {
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("7309720136175042560");
+        String newAnnotation = AnnotationConvert.deleteTag(anTermAnnotation.getManualAnnotation(),"T3");
+        System.out.println(newAnnotation);
     }
 
 }

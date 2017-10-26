@@ -19,4 +19,9 @@ public class IndexController {
         return "index";
     }
 
+    @RequestMapping(value = "/demo.htm")
+    public String demo(){
+        return "demo";
+    }
+
 }

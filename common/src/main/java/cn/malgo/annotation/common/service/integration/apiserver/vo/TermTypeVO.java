@@ -2,9 +2,10 @@ package cn.malgo.annotation.common.service.integration.apiserver.vo;
 
 import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Created by 张钟 on 2017/10/18.
@@ -21,6 +22,9 @@ public class TermTypeVO {
      * @return
      */
     public static String convertToString(List<TermTypeVO> termTypeVOList) {
+        if (termTypeVOList == null || termTypeVOList.isEmpty()) {
+            return "";
+        }
         List<Map<String, String>> maps = new ArrayList<>();
         for (TermTypeVO termTypeVO : termTypeVOList) {
             Map<String, String> tempMap = new HashMap();
@@ -35,7 +39,7 @@ public class TermTypeVO {
      * @param termTypeString
      * @return
      */
-    public static List<TermTypeVO> convertFromString(String termTypeString){
+    public static List<TermTypeVO> convertFromString(String termTypeString) {
         List<TermTypeVO> termTypeVOList = new ArrayList<>();
         if (StringUtils.isNotBlank(termTypeString)) {
             JSONArray jsonArray = JSONArray.parseArray(termTypeString);
