@@ -28,8 +28,8 @@
       FROM AN_ATOMIC_TERM WHERE TERM = #{term}
     </select>
 
-    <select id="selectAll" resultMap="BaseResultMap">
-      SELECT <include refid="ALL_COLUMN"/>
-      FROM AN_ATOMIC_TERM
+    <select id="selectByState" resultMap="BaseResultMap">
+        SELECT <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE STATE = #{state}
     </select>
 </mapper>

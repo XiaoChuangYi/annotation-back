@@ -3,6 +3,8 @@ package cn.malgo.annotation.core.service.term;
 import java.util.Date;
 import java.util.List;
 
+import cn.malgo.common.LogUtil;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,9 @@ import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.common.security.SecurityUtil;
+import sun.reflect.generics.reflectiveObjects.LazyReflectiveObjectGenerator;
 
 /**
  *
@@ -22,6 +26,9 @@ import cn.malgo.common.security.SecurityUtil;
  */
 @Service
 public class AtomicTermService {
+
+    private Logger logger = Logger.getLogger(AtomicTermService.class);
+
 
     @Autowired
     private SequenceGenerator  sequenceGenerator;
@@ -34,9 +41,9 @@ public class AtomicTermService {
      * @param termTypeVO
      * @param fromAnId 新词来源的标注ID
      */
-    public void saveAtomicTerm(String fromAnId,TermTypeVO termTypeVO) {
+    public void saveAtomicTerm(String fromAnId, TermTypeVO termTypeVO) {
 
-        saveAtomicTerm(fromAnId,termTypeVO.getTerm(), termTypeVO.getType());
+        saveAtomicTerm(fromAnId, termTypeVO.getTerm(), termTypeVO.getType());
 
     }
 
@@ -46,7 +53,7 @@ public class AtomicTermService {
      * @param term
      * @param termType
      */
-    public void saveAtomicTerm(String fromAnId,String term, String termType) {
+    public void saveAtomicTerm(String fromAnId, String term, String termType) {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
 
@@ -81,14 +88,18 @@ public class AtomicTermService {
      */
     public void batchCrypt() {
 
-        List<AnAtomicTerm> anAtomicTermList = anAtomicTermMapper.selectAll();
+        List<AnAtomicTerm> anAtomicTermList = anAtomicTermMapper
+            .selectByState(AnnotationStateEnum.UN_ENCRYPTED.name());
+        int count = anAtomicTermList.size();
 
         for (AnAtomicTerm anAtomicTerm : anAtomicTermList) {
-            if (anAtomicTerm.getTerm().length() < 16) {
-                String securityTerm = SecurityUtil.cryptAESBase64(anAtomicTerm.getTerm());
-                anAtomicTerm.setTerm(securityTerm);
-                anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
-            }
+            LogUtil.info(logger,"批量更新原子术语,剩余:"+count);
+
+            String securityTerm = SecurityUtil.cryptAESBase64(anAtomicTerm.getTerm());
+            anAtomicTerm.setTerm(securityTerm);
+            anAtomicTerm.setState(CommonStatusEnum.ENABLE.name());
+            anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
+            count--;
         }
 
     }

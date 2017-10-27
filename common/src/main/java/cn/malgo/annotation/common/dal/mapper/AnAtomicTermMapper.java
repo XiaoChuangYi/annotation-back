@@ -19,6 +19,5 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * 查询全部原子术语
      * @return
      */
-    @Override
-    List<AnAtomicTerm> selectAll();
+    List<AnAtomicTerm> selectByState(@Param("state") String state);
 }

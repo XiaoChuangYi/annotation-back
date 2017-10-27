@@ -62,4 +62,5 @@ public class TermTest {
         System.out.println(result);
     }
 
+
 }
