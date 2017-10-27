@@ -9,6 +9,7 @@
         <result column="TERM" property="term" jdbcType="VARCHAR"/>
         <result column="TYPE" property="type" jdbcType="VARCHAR"/>
         <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="FROM_ANID" property="fromAnId" jdbcType="VARCHAR"/>
         <result column="GMT_CREATED" property="gmtCreated" jdbcType="TIMESTAMP"/>
         <result column="GMT_MODIFIED" property="gmtModified" jdbcType="TIMESTAMP"/>
     </resultMap>

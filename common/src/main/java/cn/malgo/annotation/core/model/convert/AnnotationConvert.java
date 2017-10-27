@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.model.convert;
 
 import java.text.MessageFormat;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -109,11 +110,12 @@ public class AnnotationConvert {
      * @return
      */
     public static String addNewTerm(String oldTerms, String newTerm, String newTermType) {
+        JSONArray termArray;
         if (StringUtils.isBlank(oldTerms)) {
-            return "";
+            termArray = new JSONArray();
+        }else{
+            termArray = JSONArray.parseArray(oldTerms);
         }
-
-        JSONArray termArray = JSONArray.parseArray(oldTerms);
 
         //检查是否已经存在要添加的新词,如果已经存在,直接返回
         for (Object object : termArray) {

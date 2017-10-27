@@ -28,6 +28,12 @@ public class AnAtomicTerm {
     private String state;
 
     /**
+     * 新词来源
+     */
+    @Column(name = "FROM_ANID")
+    private String fromAnId;
+
+    /**
      * 创建时间
      */
     @Column(name = "GMT_CREATED")
@@ -131,5 +137,13 @@ public class AnAtomicTerm {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getFromAnId() {
+        return fromAnId;
+    }
+
+    public void setFromAnId(String fromAnId) {
+        this.fromAnId = fromAnId;
     }
 }

@@ -32,19 +32,21 @@ public class AtomicTermService {
     /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
      * @param termTypeVO
+     * @param fromAnId 新词来源的标注ID
      */
-    public void saveAtomicTerm(TermTypeVO termTypeVO) {
+    public void saveAtomicTerm(String fromAnId,TermTypeVO termTypeVO) {
 
-        saveAtomicTerm(termTypeVO.getTerm(), termTypeVO.getType());
+        saveAtomicTerm(fromAnId,termTypeVO.getTerm(), termTypeVO.getType());
 
     }
 
     /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
+     * @param fromAnId 新词来源的标注ID
      * @param term
      * @param termType
      */
-    public void saveAtomicTerm(String term, String termType) {
+    public void saveAtomicTerm(String fromAnId,String term, String termType) {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
 
@@ -54,6 +56,7 @@ public class AtomicTermService {
             String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
             AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
             anAtomicTermNew.setId(id);
+            anAtomicTermNew.setFromAnId(fromAnId);
             anAtomicTermNew.setTerm(securityTerm);
             anAtomicTermNew.setType(termType);
             anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
@@ -64,6 +67,7 @@ public class AtomicTermService {
 
             anAtomicTermOld.setType(termType);
             anAtomicTermOld.setTerm(securityTerm);
+            anAtomicTermOld.setFromAnId(fromAnId);
             anAtomicTermOld.setGmtModified(new Date());
 
             int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);

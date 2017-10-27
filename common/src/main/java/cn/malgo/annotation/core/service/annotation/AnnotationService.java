@@ -54,7 +54,7 @@ public class AnnotationService {
 
     /**
      * 根据状态分页查询标注
-     * @param userId
+     * @param
      * @return
      */
     public Page<AnTermAnnotation> queryOnePageThroughApiServer(String userId, int pageNum,
@@ -168,7 +168,7 @@ public class AnnotationService {
         String newTermsStr = anTermAnnotationOld.getNewTerms();
         List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(newTermsStr);
         for (TermTypeVO termTypeVO : termTypeVOList) {
-            atomicTermService.saveAtomicTerm(termTypeVO);
+            atomicTermService.saveAtomicTerm(anId,termTypeVO);
         }
 
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
