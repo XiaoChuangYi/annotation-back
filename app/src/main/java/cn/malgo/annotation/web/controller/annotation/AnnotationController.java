@@ -185,7 +185,8 @@ public class AnnotationController extends BaseController {
 
         //如果删除后的新词与删除前的一致,则无需更新删除后的新词
         if(newTermsAfterDelete.equals(anTermAnnotation.getNewTerms())){
-            return ResultVO.success();
+            AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotation);
+            return ResultVO.success(annotationBratVO);
         }
 
         //构建最新的新词列表
