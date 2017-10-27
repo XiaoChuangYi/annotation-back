@@ -17,7 +17,6 @@ import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 
 /**
@@ -63,7 +62,7 @@ public class AnTermAnnotationTest {
     @Test
     public void testQueryOnePage() {
         Page<AnTermAnnotation> page = annotationService
-            .queryOnePage(AnnotationStateEnum.INIT.name(), "11111111111111111111", 0, 10);
+            .queryOnePageThroughApiServer("11111111111111111111", 0, 10);
         System.out.println(page);
     }
 
@@ -105,15 +104,16 @@ public class AnTermAnnotationTest {
     @Test
     public void getNewTag() {
         AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("7309720136175042560");
-        String newAnnotation = AnnotationConvert.addNewTag(
-                anTermAnnotation.getManualAnnotation(), "body", "12", "23", "身体");
+        String newAnnotation = AnnotationConvert.addNewTag(anTermAnnotation.getManualAnnotation(),
+            "body", "12", "23", "身体");
         System.out.println(newAnnotation);
     }
 
     @Test
     public void deleteTag() {
         AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("7309720136175042560");
-        String newAnnotation = AnnotationConvert.deleteTag(anTermAnnotation.getManualAnnotation(),"T3");
+        String newAnnotation = AnnotationConvert.deleteTag(anTermAnnotation.getManualAnnotation(),
+            "T3");
         System.out.println(newAnnotation);
     }
 

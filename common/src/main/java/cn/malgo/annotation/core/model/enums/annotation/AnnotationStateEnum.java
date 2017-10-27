@@ -11,7 +11,9 @@ public enum AnnotationStateEnum {
 
     UN_RECOGNIZE("无法识别"),
 
-    FINISH("标注完成");
+    FINISH("标注完成"),
+
+    UN_ENCRYPTED("未加密");
 
     private String message;
 

@@ -19,9 +19,9 @@ public class IndexController {
         return "index";
     }
 
-    @RequestMapping(value = "/demo.htm")
-    public String demo(){
-        return "demo";
+    @RequestMapping(value = "/login.htm")
+    public String login(){
+        return "login";
     }
 
 }

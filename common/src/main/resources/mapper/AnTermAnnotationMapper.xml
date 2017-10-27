@@ -45,6 +45,20 @@
         ORDER BY STATE DESC
     </select>
 
+    <select id="selectByStateListModifier" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_TERM_ANNOTATION WHERE 1=1
+        <if test="stateList!=null">
+            AND STATE IN
+            <foreach collection="stateList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        AND MODIFIER = #{modifier}
+        ORDER BY STATE DESC , ID DESC
+    </select>
+
     <select id="selectByTermId" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>

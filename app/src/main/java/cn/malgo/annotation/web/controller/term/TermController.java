@@ -1,6 +1,11 @@
 package cn.malgo.annotation.web.controller.term;
 
+import cn.malgo.annotation.common.dal.model.CrmAccount;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
+import cn.malgo.annotation.web.controller.common.BaseController;
+import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,10 +19,13 @@ import cn.malgo.annotation.web.result.ResultVO;
  */
 @RestController
 @RequestMapping(value = "/term")
-public class TermController {
+public class TermController extends BaseController{
 
     @Autowired
     private AtomicTermService atomicTermService;
+
+    @Autowired
+    private AnnotationService annotationService;
 
     @Autowired
     private TermService       termService;
@@ -40,6 +48,19 @@ public class TermController {
     public ResultVO batchAutoAnnotation(){
         termService.batchAutoAnnotation();
         return ResultVO.success();
+    }
+
+    /**
+     * 批量加密标注信息
+     * @return
+     */
+    @RequestMapping(value = "/encrypt.do")
+    public ResultVO encryptAnnotation(@ModelAttribute("currentAccount") CrmAccount crmAccount) {
+
+        annotationService.updateUNEncryptedAnnotation(crmAccount.getId());
+
+        return ResultVO.success();
+
     }
 
 }

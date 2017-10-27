@@ -2,7 +2,7 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
-import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,7 +20,9 @@ import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.common.util.log.LogUtil;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.common.security.SecurityUtil;
@@ -32,6 +34,8 @@ import cn.malgo.common.security.SecurityUtil;
  */
 @Service
 public class AnnotationService {
+
+    private Logger                 logger = Logger.getLogger(AnnotationService.class);
 
     @Autowired
     private SequenceGenerator      sequenceGenerator;
@@ -50,18 +54,30 @@ public class AnnotationService {
 
     /**
      * 根据状态分页查询标注
-     * @param annotationState
+     * @param userId
      * @return
      */
-    public Page<AnTermAnnotation> queryOnePage(String annotationState, String userId, int pageNum,
-                                               int pageSize) {
+    public Page<AnTermAnnotation> queryOnePageThroughApiServer(String userId, int pageNum,
+                                                               int pageSize) {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.PROCESSING.name());
+        stateList.add(AnnotationStateEnum.INIT.name());
+
+        anTermAnnotationMapper.selectByStateListModifier(stateList, userId);
         decryptAES(pageInfo.getResult());
         apiServerService.batchPhraseUpdatePosWithNewTerm(pageInfo.getResult());
         for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
             updateFinalAnnotation(anTermAnnotation.getId(), anTermAnnotation.getFinalAnnotation());
         }
+        return pageInfo;
+    }
+
+    public Page<AnTermAnnotation> queryOnePageDirectly(String annotationState, String userId, int pageNum,
+                                                       int pageSize){
+        Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
+        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
 
@@ -172,6 +188,53 @@ public class AnnotationService {
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
 
         AssertUtil.state(updateResult > 0, "设置术语状态为未识别异常");
+    }
+
+    /**
+     * 分页查询标注,未解密
+     * @param annotationState
+     * @param userId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnTermAnnotation> queryOnePageUNEncrypted(String annotationState, String userId,
+                                                          int pageNum, int pageSize) {
+        Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
+        return pageInfo;
+    }
+
+    /**
+     * 更新标注
+     */
+    public void updateUNEncryptedAnnotation(String userId) {
+
+        int batchCount = 1;
+        Page<AnTermAnnotation> page = null;
+        do {
+            LogUtil.info(logger, "开始处理第" + batchCount + "批次");
+            page = queryOnePageUNEncrypted(AnnotationStateEnum.UN_ENCRYPTED.name(), userId, 1, 10);
+            AnTermAnnotation anTermAnnotation_temp = null;
+            try {
+                for (AnTermAnnotation anTermAnnotation : page.getResult()) {
+                    anTermAnnotation_temp = anTermAnnotation;
+                    anTermAnnotation.setAutoAnnotation(
+                        SecurityUtil.cryptAESBase64(anTermAnnotation.getAutoAnnotation()));
+                    anTermAnnotation.setFinalAnnotation(
+                        SecurityUtil.cryptAESBase64(anTermAnnotation.getFinalAnnotation()));
+                    anTermAnnotation.setManualAnnotation(
+                        SecurityUtil.cryptAESBase64(anTermAnnotation.getManualAnnotation()));
+                    anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());
+                    anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+                }
+            } catch (Exception e) {
+                LogUtil.info(logger, "加密失败anId" + anTermAnnotation_temp.getId());
+            }
+            LogUtil.info(logger, "结束处理第" + batchCount + "批次,剩余:"+(page.getTotal()-10));
+            batchCount++;
+        } while (page.getTotal() > 10);
+
     }
 
     /**

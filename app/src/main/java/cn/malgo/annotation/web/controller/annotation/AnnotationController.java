@@ -20,9 +20,13 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationOptionEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.web.controller.annotation.request.*;
+import cn.malgo.annotation.web.controller.annotation.request.AddAnnotationRequest;
+import cn.malgo.annotation.web.controller.annotation.request.DeleteAnnotationRequest;
+import cn.malgo.annotation.web.controller.annotation.request.DeleteNewTermsRequest;
+import cn.malgo.annotation.web.controller.annotation.request.UpdateAnnotationRequest;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
+import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 
@@ -45,13 +49,11 @@ public class AnnotationController extends BaseController {
      * @return
      */
     @RequestMapping(value = { "/list.do" })
-    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(AnnotationQueryRequest request,
+    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(PageRequest request,
                                                          @ModelAttribute("currentAccount") CrmAccount crmAccount) {
-        //基础参数检查
-        AnnotationQueryRequest.check(request);
 
         //分页查询
-        Page<AnTermAnnotation> page = annotationService.queryOnePage(request.getState(),
+        Page<AnTermAnnotation> page = annotationService.queryOnePageThroughApiServer(
             crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
@@ -184,7 +186,7 @@ public class AnnotationController extends BaseController {
             request.getTerm(), request.getTermType());
 
         //如果删除后的新词与删除前的一致,则无需更新删除后的新词
-        if(newTermsAfterDelete.equals(anTermAnnotation.getNewTerms())){
+        if (newTermsAfterDelete.equals(anTermAnnotation.getNewTerms())) {
             AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotation);
             return ResultVO.success(annotationBratVO);
         }
@@ -193,8 +195,8 @@ public class AnnotationController extends BaseController {
         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsAfterDelete);
 
         //更新单条标注信息,先调用apiServer获取,后保存到数据库
-        AnTermAnnotation anTermAnnotationNew = annotationService
-                .autoAnnotationByAnId(anTermAnnotation.getId(), anTermAnnotation.getManualAnnotation(), newTerms);
+        AnTermAnnotation anTermAnnotationNew = annotationService.autoAnnotationByAnId(
+            anTermAnnotation.getId(), anTermAnnotation.getManualAnnotation(), newTerms);
 
         AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotationNew);
 
