@@ -35,70 +35,130 @@
 </head>
 <body class="easyui-layout">
 
-<div data-options="region:'north',split:true" style="height:60px;"></div>
-<#--<div data-options="region:'south',title:'South Title',split:true" style="height:100px;"></div>-->
-<#--<div data-options="region:'east',title:'工具栏',split:true" style="width:200px;"></div>-->
-<div data-options="region:'west',title:'菜单',split:true" style="width:200px;"></div>
+<div data-options="region:'north',split:false" style="height:60px;">
+<#include "head.ftl">
+</div>
+<#--<div data-options="region:'south',title:'South Title',split:false" style="height:100px;"></div>-->
+<#--<div data-options="region:'east',title:'工具栏',split:false" style="width:200px;"></div>-->
+<div data-options="region:'west',title:'菜单',split:false" style="width:200px;">
+<#include "menu.ftl">
+</div>
 <div data-options="region:'center'" style="background:#eee;">
-    <div id="tt" class="easyui-tabs" style="width:100%;height:100%;">
+    <div id="tt" class="easyui-tabs" data-options="fit:true">
         <div title="标注管理" style="display:none;">
+
             <div class="easyui-layout" data-options="fit:true">
-                <div data-options="region:'center'">
-
-                    <table>
-                        <th>
-                        <td>
-                            <div id="brat1">
-
-                            </div>
-                        </td>
-                        <td>
-                            <div style="width: 100px;">
-                                <button>JJ</button>
-                            </div>
-                        </td>
-                        </th>
-                    </table>
+                <div data-options="region:'north',split:false" style="height: 100px">
 
                 </div>
-
-
-            </div>
-
-            <div data-options="region:'east',title:'新词列表',split:true" style="width:300px;">
-
+                <div data-options="region:'center',title:'数据框'">
+                    <table id="dg" style="width:100%;height:50%"
+                           data-options="rownumbers:true,singleSelect:true,pagination:true,url:'/static/json/datagrid.json',method:'get'">
+                        <thead>
+                        <tr>
+                            <th data-options="field:'itemid',width:100">Item ID</th>
+                            <th data-options="field:'productid',width:100">Product</th>
+                            <th data-options="field:'listprice',width:80,align:'right'">List Price</th>
+                            <th data-options="field:'unitcost',width:80,align:'right'">Unit Cost</th>
+                            <th data-options="field:'attr1',width:240">Attribute</th>
+                            <th data-options="field:'status',width:60,align:'center'">Status</th>
+                        </tr>
+                        </thead>
+                    </table>
+                    <table class="easyui-datagrid" title="DataGrid Complex Toolbar" style="width:100%;height:50%"
+                           data-options="rownumbers:true,singleSelect:true,url:'/static/json/datagrid.json',method:'get',toolbar:'#tb',footer:'#ft'">
+                        <thead>
+                        <tr>
+                            <th data-options="field:'itemid',width:80">Item ID</th>
+                            <th data-options="field:'productid',width:100">Product</th>
+                            <th data-options="field:'listprice',width:80,align:'right'">List Price</th>
+                            <th data-options="field:'unitcost',width:80,align:'right'">Unit Cost</th>
+                            <th data-options="field:'attr1',width:240">Attribute</th>
+                            <th data-options="field:'status',width:60,align:'center'">Status</th>
+                        </tr>
+                        </thead>
+                    </table>
+                    <div id="tb" style="padding:2px 5px;">
+                        <div style="padding-bottom: 4px">
+                            Date From: <input class="easyui-datebox" style="width:110px">
+                            To: <input class="easyui-datebox" style="width:110px">
+                            Language:
+                            <select class="easyui-combobox" panelHeight="auto" style="width:100px">
+                                <option value="java">Java</option>
+                                <option value="c">C</option>
+                                <option value="basic">Basic</option>
+                                <option value="perl">Perl</option>
+                                <option value="python">Python</option>
+                            </select>
+                        </div>
+                        <div style="padding-bottom: 4px">
+                            Date From: <input class="easyui-datebox" style="width:110px">
+                            To: <input class="easyui-datebox" style="width:110px">
+                            Language:
+                            <select class="easyui-combobox" panelHeight="auto" style="width:100px">
+                                <option value="java">Java</option>
+                                <option value="c">C</option>
+                                <option value="basic">Basic</option>
+                                <option value="perl">Perl</option>
+                                <option value="python">Python</option>
+                            </select>
+                        </div>
+                        Date From: <input class="easyui-datebox" style="width:110px">
+                        To: <input class="easyui-datebox" style="width:110px">
+                        Language:
+                        <select class="easyui-combobox" panelHeight="auto" style="width:100px">
+                            <option value="java">Java</option>
+                            <option value="c">C</option>
+                            <option value="basic">Basic</option>
+                            <option value="perl">Perl</option>
+                            <option value="python">Python</option>
+                        </select>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-search">Search</a>
+                    </div>
+                    <div id="ft" style="padding:2px 5px;">
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"></a>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>
+                        <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>
+                    </div>
+                </div>
             </div>
 
         </div>
-
+        <div title="Tab2" data-options="closable:true" style="overflow:auto;display:none;">
+            tab2
+        </div>
+        <div title="Tab3" data-options="iconCls:'icon-reload',closable:true" style="display:none;">
+            tab3
+        </div>
     </div>
-    <div title="Tab2" data-options="closable:true" style="overflow:auto;display:none;">
-        tab2
-    </div>
-    <div title="Tab3" data-options="iconCls:'icon-reload',closable:true" style="display:none;">
-        tab3
-    </div>
-</div>
 
 </div>
 </body>
 <script>
     $(function () {
 
-        var webFontURLs = [
-            '${request.contextPath}/static/brat/fonts/Astloch-Bold.ttf',
-            '${request.contextPath}/static/brat/fonts/PT_Sans-Caption-Web-Regular.ttf',
-            '${request.contextPath}/static/brat/fonts/Liberation_Sans-Regular.ttf'
-        ];
-        $.getJSON("${request.contextPath}/static/json/config.json", function (config) {
-            console.log(config);
-            $.getJSON("${request.contextPath}/static/json/demo.json", function (data) {
-                console.log(data);
-                console.log(data.dataList[0]);
-                Util.embed('brat1', config, data.dataList[0].bratData, webFontURLs)
-            });
+        var pager = $('#dg').datagrid().datagrid('getPager');    // get the pager of datagrid
+        pager.pagination({
+            buttons: [{
+                iconCls: 'icon-search',
+                handler: function () {
+                    alert('search');
+                }
+            }, {
+                iconCls: 'icon-add',
+                handler: function () {
+                    alert('add');
+                }
+            }, {
+                iconCls: 'icon-edit',
+                handler: function () {
+                    alert('edit');
+                }
+            }]
         });
-    })
-    ;
+
+    });
 </script>
 </html>
