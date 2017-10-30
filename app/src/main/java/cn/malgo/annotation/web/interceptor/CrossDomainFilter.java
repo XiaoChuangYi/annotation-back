@@ -31,7 +31,7 @@ public class CrossDomainFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse res,
                          FilterChain chain) throws IOException, ServletException {
-        if (!EnvironmentEnum.prod.name().equals(env)) {
+//        if (!EnvironmentEnum.prod.name().equals(env)) {
             HttpServletRequest request = (HttpServletRequest) req;
             HttpServletResponse response = (HttpServletResponse) res;
             response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
@@ -41,7 +41,7 @@ public class CrossDomainFilter implements Filter {
             response.setHeader("Access-Control-Allow-Headers",
                 "Content-Type, Content-Length, Authorization, Accept, X-Requested-With");
             chain.doFilter(req, res);
-        }
+//        }
     }
 
     @Override
