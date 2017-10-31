@@ -20,7 +20,7 @@ public class AnnotationBratVO {
 
     private Date       gmtModified;
 
-    private String     memo;
+    private JSONArray     memo;
 
     private JSONArray  newTerms;
 
@@ -74,11 +74,11 @@ public class AnnotationBratVO {
         this.newTerms = newTerms;
     }
 
-    public String getMemo() {
+    public JSONArray getMemo() {
         return memo;
     }
 
-    public void setMemo(String memo) {
+    public void setMemo(JSONArray memo) {
         this.memo = memo;
     }
 }

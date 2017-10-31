@@ -262,6 +262,7 @@ public class AnnotationController extends BaseController {
         for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
             AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(anTermAnnotation);
             annotationBratVOList.add(annotationBratVO);
+            annotationBratVO.setMemo(JSONArray.parseArray(anTermAnnotation.getMemo()));
         }
         return annotationBratVOList;
     }
