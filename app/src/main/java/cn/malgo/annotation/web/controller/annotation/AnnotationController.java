@@ -20,10 +20,7 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationOptionEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.web.controller.annotation.request.AddAnnotationRequest;
-import cn.malgo.annotation.web.controller.annotation.request.DeleteAnnotationRequest;
-import cn.malgo.annotation.web.controller.annotation.request.DeleteNewTermsRequest;
-import cn.malgo.annotation.web.controller.annotation.request.UpdateAnnotationRequest;
+import cn.malgo.annotation.web.controller.annotation.request.*;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.request.PageRequest;
@@ -49,11 +46,31 @@ public class AnnotationController extends BaseController {
      * @return
      */
     @RequestMapping(value = { "/list.do" })
-    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(PageRequest request,
-                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+    public ResultVO<PageVO<AnnotationBratVO>> getOnePageThroughApiServer(PageRequest request,
+                                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
         //分页查询
         Page<AnTermAnnotation> page = annotationService.queryOnePageThroughApiServer(
+            crmAccount.getId(), request.getPageNum(), request.getPageSize());
+
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
+        PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
+        pageVO.setDataList(annotationBratVOList);
+
+        return ResultVO.success(pageVO);
+    }
+
+    /**
+     * 分页查询标注信息,不使用新词获取一页标注数据
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = { "/queryDirectly.do" })
+    public ResultVO<PageVO<AnnotationBratVO>> getOnePage(QueryDirectlyRequest request,
+                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+
+        //分页查询
+        Page<AnTermAnnotation> page = annotationService.queryOnePageDirectly(request.getState(),
             crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
@@ -235,6 +252,11 @@ public class AnnotationController extends BaseController {
         return ResultVO.success();
     }
 
+    /**
+     * 模型转换,标注模型转换成brat模型
+     * @param anTermAnnotationList
+     * @return
+     */
     private List<AnnotationBratVO> convertAnnotationBratVOList(List<AnTermAnnotation> anTermAnnotationList) {
         List<AnnotationBratVO> annotationBratVOList = new ArrayList<>();
         for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
@@ -244,6 +266,11 @@ public class AnnotationController extends BaseController {
         return annotationBratVOList;
     }
 
+    /**
+     * 模型转换,标注模型转换成brat模型
+     * @param anTermAnnotation
+     * @return
+     */
     private AnnotationBratVO convertFromAnTermAnnotation(AnTermAnnotation anTermAnnotation) {
         JSONObject bratJson = AnnotationConvert.convertToBratFormat(anTermAnnotation);
         AnnotationBratVO annotationBratVO = new AnnotationBratVO();

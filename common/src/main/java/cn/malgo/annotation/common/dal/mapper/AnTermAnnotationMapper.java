@@ -19,13 +19,23 @@ public interface AnTermAnnotationMapper extends CommonMapper<AnTermAnnotation> {
                                                  @Param("modifier") String modifier);
 
     /**
-     * 根据术语状态查询术语
+     * 根据术语状态和修改人查询术语
      * @param stateList
      * @param modifier
      * @return
      */
     List<AnTermAnnotation> selectByStateListModifier(@Param("stateList") List<String> stateList,
                                                  @Param("modifier") String modifier);
+
+    /**
+     * 根据术语状态查询术语
+     * @param stateList
+     * @return
+     */
+    List<AnTermAnnotation> selectByStateList(@Param("stateList") List<String> stateList);
+
+
+
 
     /**
      * 通过TermId 查询标注信息

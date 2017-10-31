@@ -16,6 +16,7 @@ import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
+import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 
@@ -115,6 +116,24 @@ public class AnTermAnnotationTest {
         String newAnnotation = AnnotationConvert.deleteTag(anTermAnnotation.getManualAnnotation(),
             "T3");
         System.out.println(newAnnotation);
+    }
+
+    @Test
+    public void testConvertToModel() {
+        String text = "T1\tBody-structure-unconfirmed 2 5\t支气管\n"
+                      + "T2\tBody-structure-unconfirmed 5 7\t动脉\n"
+                      + "T3\tTreatment-unconfirmed 9 11\t化疗\n"
+                      + "T4\tTreatment-unconfirmed 7 9\t灌注\n" + "T5\tSpace-unconfirmed 0 1\t左\n"
+                      + "T6\tProcedure-unconfirmed 11 12\t术\n"
+                      + "T7\tBody-structure-unconfirmed 1 2\t肺";
+        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+            .convertAnnotationModelList(text);
+        System.out.println(termAnnotationModelList);
+    }
+
+    @Test
+    public void testBatchCheckAmbiguity(){
+        annotationService.batchCheckAmbiguity();
     }
 
 }

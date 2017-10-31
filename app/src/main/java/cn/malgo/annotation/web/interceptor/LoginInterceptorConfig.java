@@ -21,7 +21,6 @@ public class LoginInterceptorConfig extends WebMvcConfigurerAdapter {
         // excludePathPatterns 用户排除拦截
         List<String> excludePathPatterns = new ArrayList<>();
         excludePathPatterns.add("/*/anonymous/*.do");
-        excludePathPatterns.add("/login.htm");
 
         InterceptorRegistration interceptorRegistration = registry
             .addInterceptor(new LoginInterceptor()).addPathPatterns("/**");

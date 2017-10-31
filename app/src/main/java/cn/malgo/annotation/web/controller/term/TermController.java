@@ -1,16 +1,15 @@
 package cn.malgo.annotation.web.controller.term;
 
-import cn.malgo.annotation.common.dal.model.CrmAccount;
-import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.web.controller.common.BaseController;
-import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cn.malgo.annotation.common.dal.model.CrmAccount;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.core.service.term.TermService;
+import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;
 
 /**
@@ -19,7 +18,7 @@ import cn.malgo.annotation.web.result.ResultVO;
  */
 @RestController
 @RequestMapping(value = "/term")
-public class TermController extends BaseController{
+public class TermController extends BaseController {
 
     @Autowired
     private AtomicTermService atomicTermService;
@@ -45,7 +44,7 @@ public class TermController extends BaseController{
      * @return
      */
     @RequestMapping(value = "/batchAutoAnnotation.do")
-    public ResultVO batchAutoAnnotation(){
+    public ResultVO batchAutoAnnotation() {
         termService.batchAutoAnnotation();
         return ResultVO.success();
     }
@@ -61,6 +60,23 @@ public class TermController extends BaseController{
 
         return ResultVO.success();
 
+    }
+
+    /**
+     * 批量检查标注是否存在二义性
+     * @return
+     */
+    @RequestMapping(value = "/batchCheckAmbiguity.do")
+    public ResultVO batchCheckAmbiguity() {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                annotationService.batchCheckAmbiguity();
+            }
+        }).start();
+
+        return ResultVO.success();
     }
 
 }

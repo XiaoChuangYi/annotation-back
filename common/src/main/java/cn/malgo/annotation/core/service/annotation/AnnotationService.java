@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
+import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ import cn.malgo.annotation.common.service.integration.apiserver.result.Annotatio
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.log.LogUtil;
+import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
+import cn.malgo.annotation.core.model.check.AnnotationChecker;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
@@ -73,8 +77,8 @@ public class AnnotationService {
         return pageInfo;
     }
 
-    public Page<AnTermAnnotation> queryOnePageDirectly(String annotationState, String userId, int pageNum,
-                                                       int pageSize){
+    public Page<AnTermAnnotation> queryOnePageDirectly(String annotationState, String userId,
+                                                       int pageNum, int pageSize) {
         Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
         decryptAES(pageInfo.getResult());
@@ -168,7 +172,7 @@ public class AnnotationService {
         String newTermsStr = anTermAnnotationOld.getNewTerms();
         List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(newTermsStr);
         for (TermTypeVO termTypeVO : termTypeVOList) {
-            atomicTermService.saveAtomicTerm(anId,termTypeVO);
+            atomicTermService.saveAtomicTerm(anId, termTypeVO);
         }
 
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
@@ -231,7 +235,7 @@ public class AnnotationService {
             } catch (Exception e) {
                 LogUtil.info(logger, "加密失败anId" + anTermAnnotation_temp.getId());
             }
-            LogUtil.info(logger, "结束处理第" + batchCount + "批次,剩余:"+(page.getTotal()-10));
+            LogUtil.info(logger, "结束处理第" + batchCount + "批次,剩余:" + (page.getTotal() - 10));
             batchCount++;
         } while (page.getTotal() > 10);
 
@@ -274,6 +278,60 @@ public class AnnotationService {
     }
 
     /**
+     * 根据标注ID查询标注信息
+     * @param id
+     * @return
+     */
+    public AnTermAnnotation queryByAnId(String id) {
+        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(id);
+        decryptAES(anTermAnnotation);
+        return anTermAnnotation;
+    }
+
+    /**
+     * 批量,全量检查标注的二义性
+     */
+    public void batchCheckAmbiguity() {
+
+        LogUtil.info(logger, "开全量检查标注的二义性");
+        int pageNum = 1;
+        int pageSize = 10;
+        Page<AnTermAnnotation> pageInfo = null;
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.FINISH.name());
+        do {
+
+            pageInfo = PageHelper.startPage(pageNum, pageSize);
+            anTermAnnotationMapper.selectByStateList(stateList);
+            LogUtil.info(logger,"开始处理第"+pageNum+"批次,剩余"+(pageInfo.getPages()-pageNum)+"批次");
+
+
+            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+                try {
+                    String text = SecurityUtil.decryptAESBase64(anTermAnnotation.getFinalAnnotation());
+                    List<TermAnnotationModel> result = hasAmbiguity(text);
+                    if (result != null && result.size() > 0) {
+                        //此时存在歧义,保存歧义数据到memo,并且设置状态为UN_RECOGNIZE
+                        String memo = JSONArray.toJSONString(result);
+                        LogUtil.info(logger, "发现二义性标注,ID:" + anTermAnnotation.getId() + ",标注内容:" + memo);
+                        AnTermAnnotation anTermAnnotationForUpdate = new AnTermAnnotation();
+                        anTermAnnotationForUpdate.setId(anTermAnnotation.getId());
+                        anTermAnnotationForUpdate.setMemo(memo);
+                        anTermAnnotationForUpdate.setState(AnnotationStateEnum.UN_RECOGNIZE.name());
+                        anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotationForUpdate);
+                    }
+                }catch (Exception e){
+                    LogUtil.info(logger, "检查标注二义性异常,标注ID:"+anTermAnnotation.getId());
+                }
+            }
+            LogUtil.info(logger,"结束处理第"+pageNum+"批次,剩余"+(pageInfo.getPages()-pageNum)+"批次");
+            pageNum++;
+
+        } while (pageInfo.getPages() >= pageNum);
+
+    }
+
+    /**
      * 更新自动标注
      * @param anId
      * @param autoAnnotation
@@ -308,7 +366,6 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新最终标注失败");
     }
 
-
     /**
      * 更新手工标注
      * @param anId
@@ -333,12 +390,6 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新手工标注失败");
     }
 
-    public AnTermAnnotation queryByAnId(String id) {
-        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(id);
-        decryptAES(anTermAnnotation);
-        return anTermAnnotation;
-    }
-
     private void decryptAES(List<AnTermAnnotation> anTermAnnotationList) {
         for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
             decryptAES(anTermAnnotation);
@@ -352,6 +403,28 @@ public class AnnotationService {
             SecurityUtil.decryptAESBase64(anTermAnnotation.getManualAnnotation()));
         anTermAnnotation.setFinalAnnotation(
             SecurityUtil.decryptAESBase64(anTermAnnotation.getFinalAnnotation()));
+    }
+
+    /**
+     * 判断经过解密的标注文本中是否有二义性的标注存在
+     * @param text
+     * @return
+     */
+    private List<TermAnnotationModel> hasAmbiguity(String text) {
+
+        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+            .convertAnnotationModelList(text);
+        List<TermAnnotationModel> resultList = new ArrayList<>();
+        for (int first = 0; first < termAnnotationModelList.size(); first++) {
+            for (int second = first + 1; second < termAnnotationModelList.size(); second++) {
+                boolean result = AnnotationChecker.hasAmbiguity(termAnnotationModelList.get(first),
+                    termAnnotationModelList.get(second));
+                if (result) {
+                    resultList.add(termAnnotationModelList.get(first));
+                }
+            }
+        }
+        return resultList;
     }
 
 }

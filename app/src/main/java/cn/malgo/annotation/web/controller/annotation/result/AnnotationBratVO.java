@@ -20,6 +20,8 @@ public class AnnotationBratVO {
 
     private Date       gmtModified;
 
+    private String     memo;
+
     private JSONArray  newTerms;
 
     private JSONObject bratData;
@@ -70,5 +72,13 @@ public class AnnotationBratVO {
 
     public void setNewTerms(JSONArray newTerms) {
         this.newTerms = newTerms;
+    }
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 }

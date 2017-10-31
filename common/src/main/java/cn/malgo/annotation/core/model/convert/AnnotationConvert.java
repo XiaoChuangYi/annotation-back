@@ -1,8 +1,9 @@
 package cn.malgo.annotation.core.model.convert;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -10,6 +11,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
+import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.core.definition.Document;
 import cn.malgo.core.definition.utils.DocumentManipulator;
 
@@ -113,7 +116,7 @@ public class AnnotationConvert {
         JSONArray termArray;
         if (StringUtils.isBlank(oldTerms)) {
             termArray = new JSONArray();
-        }else{
+        } else {
             termArray = JSONArray.parseArray(oldTerms);
         }
 
@@ -180,6 +183,36 @@ public class AnnotationConvert {
             }
         }
         return null;
+    }
+
+    /**
+     * 参数格式如下(样例)
+     * T1	Body-structure-unconfirmed 2 5	支气管
+     * T2	Body-structure-unconfirmed 5 7	动脉
+     * T3	Treatment-unconfirmed 9 11	化疗
+     * T4	Treatment-unconfirmed 7 9	灌注
+     * T5	Space-unconfirmed 0 1	左
+     * T6	Procedure-unconfirmed 11 12	术
+     * T7	Body-structure-unconfirmed 1 2	肺
+     * @param text
+     */
+    public static List<TermAnnotationModel> convertAnnotationModelList(String text) {
+
+        AssertUtil.notBlank(text, "标注文本为空");
+        List<TermAnnotationModel> termAnnotationModelList = new ArrayList<>();
+        String[] lines = text.split("\n");
+        for (String line : lines) {
+            String[] elements = line.split("\t");
+            TermAnnotationModel termAnnotationModel = new TermAnnotationModel();
+            termAnnotationModel.setTag(elements[0]);
+            termAnnotationModel.setTerm(elements[2]);
+            String[] structElement = elements[1].split(" ");
+            termAnnotationModel.setType(structElement[0]);
+            termAnnotationModel.setStartPosition(Integer.valueOf(structElement[1]));
+            termAnnotationModel.setEndPosition(Integer.valueOf(structElement[2]));
+            termAnnotationModelList.add(termAnnotationModel);
+        }
+        return termAnnotationModelList;
     }
 
 }
