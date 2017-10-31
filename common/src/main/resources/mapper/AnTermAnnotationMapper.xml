@@ -34,6 +34,14 @@
     NEW_TERMS
   </sql>
 
+    <update id="batchUpdateFinalAnnotation">
+        <foreach close="" collection="anTermAnnotationList" index="index" item="item" open="" separator=" ">
+            UPDATE AN_TERM_ANNOTATION SET FINAL_ANNOTATION=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},
+            CHAR(10), ''), CHAR(13), '')
+            WHERE ID=#{item.id,jdbcType=VARCHAR};
+        </foreach>
+    </update>
+
     <select id="selectByStateModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>

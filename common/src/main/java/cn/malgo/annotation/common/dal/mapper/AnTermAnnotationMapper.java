@@ -34,4 +34,12 @@ public interface AnTermAnnotationMapper extends CommonMapper<AnTermAnnotation> {
      */
     AnTermAnnotation selectByTermId(@Param("termId") String termId);
 
+
+    /**
+     * 批量更新最终标注
+     * @param anTermAnnotationList
+     * @return
+     */
+    int batchUpdateFinalAnnotation(@Param("anTermAnnotationList") List<AnTermAnnotation> anTermAnnotationList);
+
 }

@@ -308,6 +308,7 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新最终标注失败");
     }
 
+
     /**
      * 更新手工标注
      * @param anId
