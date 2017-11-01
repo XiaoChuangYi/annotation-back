@@ -2,13 +2,13 @@ package cn.malgo.annotation.core.service.annotation;
 
 import java.util.*;
 
-import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -83,6 +83,24 @@ public class AnnotationService {
         anTermAnnotationMapper.selectByStateModifier(annotationState, userId);
         decryptAES(pageInfo.getResult());
         return pageInfo;
+    }
+
+    /**
+     * 根据状态分页查询标注
+     * @param
+     * @return
+     */
+    public AnTermAnnotation queryByAnIdThroughApiServer(String anId) {
+
+        AnTermAnnotation anTermAnnotation = anTermAnnotationMapper.selectByPrimaryKey(anId);
+        decryptAES(anTermAnnotation);
+        List<AnTermAnnotation> anTermAnnotationList = new ArrayList<>();
+        anTermAnnotationList.add(anTermAnnotation);
+
+        List<AnTermAnnotation> anTermAnnotationListNew = apiServerService
+            .batchPhraseUpdatePosWithNewTerm(anTermAnnotationList);
+
+        return anTermAnnotationListNew.get(0);
     }
 
     /**
@@ -303,28 +321,32 @@ public class AnnotationService {
 
             pageInfo = PageHelper.startPage(pageNum, pageSize);
             anTermAnnotationMapper.selectByStateList(stateList);
-            LogUtil.info(logger,"开始处理第"+pageNum+"批次,剩余"+(pageInfo.getPages()-pageNum)+"批次");
-
+            LogUtil.info(logger,
+                "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
             for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
                 try {
-                    String text = SecurityUtil.decryptAESBase64(anTermAnnotation.getFinalAnnotation());
+                    String text = SecurityUtil
+                        .decryptAESBase64(anTermAnnotation.getFinalAnnotation());
                     List<TermAnnotationModel> result = hasAmbiguity(text);
                     if (result != null && result.size() > 0) {
                         //此时存在歧义,保存歧义数据到memo,并且设置状态为UN_RECOGNIZE
                         String memo = JSONArray.toJSONString(result);
-                        LogUtil.info(logger, "发现二义性标注,ID:" + anTermAnnotation.getId() + ",标注内容:" + memo);
+                        LogUtil.info(logger,
+                            "发现二义性标注,ID:" + anTermAnnotation.getId() + ",标注内容:" + memo);
                         AnTermAnnotation anTermAnnotationForUpdate = new AnTermAnnotation();
                         anTermAnnotationForUpdate.setId(anTermAnnotation.getId());
                         anTermAnnotationForUpdate.setMemo(memo);
                         anTermAnnotationForUpdate.setState(AnnotationStateEnum.UN_RECOGNIZE.name());
-                        anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotationForUpdate);
+                        anTermAnnotationMapper
+                            .updateByPrimaryKeySelective(anTermAnnotationForUpdate);
                     }
-                }catch (Exception e){
-                    LogUtil.info(logger, "检查标注二义性异常,标注ID:"+anTermAnnotation.getId());
+                } catch (Exception e) {
+                    LogUtil.info(logger, "检查标注二义性异常,标注ID:" + anTermAnnotation.getId());
                 }
             }
-            LogUtil.info(logger,"结束处理第"+pageNum+"批次,剩余"+(pageInfo.getPages()-pageNum)+"批次");
+            LogUtil.info(logger,
+                "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
             pageNum++;
 
         } while (pageInfo.getPages() >= pageNum);

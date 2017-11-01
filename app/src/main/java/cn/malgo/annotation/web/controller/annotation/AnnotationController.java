@@ -252,6 +252,24 @@ public class AnnotationController extends BaseController {
         return ResultVO.success();
     }
 
+
+    /**
+     * 根据标注id,获取经过apiServer处理的最新标注数据
+     * @param anId
+     * @param crmAccount
+     * @return
+     */
+    @RequestMapping(value = "/getAnnotationText.do")
+    public ResultVO<String> getAnnotationText(String anId,@ModelAttribute("currentAccount") CrmAccount crmAccount){
+        AssertUtil.notBlank(anId, "术语ID为空");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(anId);
+        AssertUtil.state(crmAccount.getId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+
+        AnTermAnnotation anTermAnnotationResult =  annotationService.queryByAnIdThroughApiServer(anId);
+
+        return ResultVO.success(anTermAnnotationResult);
+    }
+
     /**
      * 模型转换,标注模型转换成brat模型
      * @param anTermAnnotationList
