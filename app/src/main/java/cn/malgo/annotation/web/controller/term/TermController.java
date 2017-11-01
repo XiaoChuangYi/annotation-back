@@ -17,7 +17,7 @@ import cn.malgo.annotation.web.result.ResultVO;
  * @date 2017/10/24
  */
 @RestController
-@RequestMapping(value = "/term")
+@RequestMapping(value = "/task")
 public class TermController extends BaseController {
 
     @Autowired
@@ -35,7 +35,12 @@ public class TermController extends BaseController {
      */
     @RequestMapping(value = "/batchCrypt.do")
     public ResultVO batchCrypt() {
-        atomicTermService.batchCrypt();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                atomicTermService.batchCrypt();
+            }
+        }).start();
         return ResultVO.success();
     }
 
@@ -45,7 +50,12 @@ public class TermController extends BaseController {
      */
     @RequestMapping(value = "/batchAutoAnnotation.do")
     public ResultVO batchAutoAnnotation() {
-        termService.batchAutoAnnotation();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                termService.batchAutoAnnotation();
+            }
+        }).start();
         return ResultVO.success();
     }
 
@@ -56,7 +66,12 @@ public class TermController extends BaseController {
     @RequestMapping(value = "/encrypt.do")
     public ResultVO encryptAnnotation(@ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
-        annotationService.updateUNEncryptedAnnotation(crmAccount.getId());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                annotationService.updateUNEncryptedAnnotation(crmAccount.getId());
+            }
+        }).start();
 
         return ResultVO.success();
 
@@ -73,6 +88,23 @@ public class TermController extends BaseController {
             @Override
             public void run() {
                 annotationService.batchCheckAmbiguity();
+            }
+        }).start();
+
+        return ResultVO.success();
+    }
+
+
+    /**
+     * 批量检查标注和原子术语的关联关系
+     * @return
+     */
+    @RequestMapping(value = "/batchCheckRelation.do")
+    public ResultVO batchCheckRelation(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                atomicTermService.batchCheckRelation();
             }
         }).start();
 

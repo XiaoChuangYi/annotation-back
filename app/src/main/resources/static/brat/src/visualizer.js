@@ -751,6 +751,7 @@ var Visualizer = (function($, window, undefined) {
 
           // otherwise, create the chunk found so far
           space = data.text.substring(lastTo, firstFrom);
+          // space="";
           var text = data.text.substring(firstFrom, to);
           if (chunk) chunk.nextSpace = space;
           //               (index,     text, from,      to, space) {
