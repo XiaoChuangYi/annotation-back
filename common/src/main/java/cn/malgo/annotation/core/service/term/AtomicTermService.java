@@ -92,6 +92,22 @@ public class AtomicTermService {
     }
 
     /**
+     * 分页查询原子术语
+     * @param term 传入明文
+     * @param type
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize) {
+        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.selectByTermAndType(termAfterDecrypt, type);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
+
+    /**
      * 批量加密
      */
     public void batchCrypt() {
@@ -152,7 +168,7 @@ public class AtomicTermService {
                     for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
                         String key = termAnnotationModel.getTerm() + ":"
                                      + termAnnotationModel.getType();
-                        key = key.replace("-unconfirmed","");
+                        key = key.replace("-unconfirmed", "");
 
                         AnAtomicTerm anAtomicTerm = anAtomicTermMap.get(key);
 
@@ -163,18 +179,20 @@ public class AtomicTermService {
                                 AnAtomicTerm anAtomicTermForUpdate = new AnAtomicTerm();
                                 anAtomicTermForUpdate.setId(anAtomicTerm.getId());
                                 anAtomicTermForUpdate.setFromAnId(anTermAnnotation.getId());
-                                anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermForUpdate);
+                                anAtomicTermMapper
+                                    .updateByPrimaryKeySelective(anAtomicTermForUpdate);
                             }
 
-                        }else{
+                        } else {
                             isValidate = false;
                         }
                     }
-                    if(!isValidate){
+                    if (!isValidate) {
                         AnTermAnnotation anTermAnnotationForUpdate = new AnTermAnnotation();
                         anTermAnnotationForUpdate.setId(anTermAnnotation.getId());
                         anTermAnnotationForUpdate.setState(AnnotationStateEnum.UN_RECOGNIZE.name());
-                        anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotationForUpdate);
+                        anTermAnnotationMapper
+                            .updateByPrimaryKeySelective(anTermAnnotationForUpdate);
                     }
                 } catch (Exception e) {
                     LogUtil.info(logger, "排查原子词库中的词条是否存在于标注中异常,标注ID:" + anTermAnnotation.getId());
@@ -186,6 +204,27 @@ public class AtomicTermService {
 
         } while (pageInfo.getPages() >= pageNum);
 
+    }
 
+    /**
+     * 解密原子术语的分页查询结果
+     * @param page
+     * @return
+     */
+    private Page<AnAtomicTerm> decrypt(Page<AnAtomicTerm> page) {
+        for (AnAtomicTerm anAtomicTerm : page.getResult()) {
+            decrypt(anAtomicTerm);
+        }
+        return page;
+    }
+
+    /**
+     * 解密原子术语
+     * @param anAtomicTerm
+     * @return
+     */
+    private AnAtomicTerm decrypt(AnAtomicTerm anAtomicTerm) {
+        anAtomicTerm.setTerm(SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm()));
+        return anAtomicTerm;
     }
 }

@@ -32,4 +32,17 @@
         SELECT <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM WHERE STATE = #{state}
     </select>
+
+    <select id="selectByTermAndType" resultMap="BaseResultMap">
+        SELECT <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM
+        WHERE 1=1
+        <if test="term!=null and term!=''">
+            AND TERM = #{term}
+        </if>
+        <if test="type!=null and type!=''">
+            AND TYPE = #{type}
+        </if>
+        ORDER BY ID
+    </select>
 </mapper>
