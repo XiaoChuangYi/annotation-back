@@ -3,6 +3,7 @@ package cn.malgo.annotation.web.controller.annotation;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.malgo.annotation.core.model.check.AnnotationChecker;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -232,6 +233,7 @@ public class AnnotationController extends BaseController {
         AssertUtil.notBlank(anId, "标注ID为空");
         AnTermAnnotation anTermAnnotation = annotationService.queryByAnId(anId);
         AssertUtil.state(crmAccount.getId().equals(anTermAnnotation.getModifier()), "您无权操作当前术语");
+
         annotationService.finishAnnotation(anId);
         return ResultVO.success();
     }

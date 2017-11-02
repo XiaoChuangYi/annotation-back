@@ -1,13 +1,12 @@
 package cn.malgo.annotation.core.service.term;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -63,10 +62,15 @@ public class AtomicTermService {
      * @param term
      * @param termType
      */
-    @Transactional(propagation = Propagation.REQUIRED)
     public void saveAtomicTerm(String fromAnId, String term, String termType) {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
+
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm,termType);
+        if (anAtomicTermOld != null) {
+            LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1}", term, termType));
+            return;
+        }
 
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
@@ -86,7 +90,6 @@ public class AtomicTermService {
      * @param atomicTermId
      * @param termType
      */
-    @Transactional(propagation = Propagation.REQUIRED)
     public void updateAtomicTerm(String atomicTermId, String termType) {
 
         AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);

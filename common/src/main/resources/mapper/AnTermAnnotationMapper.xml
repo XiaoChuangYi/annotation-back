@@ -50,7 +50,7 @@
             AND STATE = #{state}
         </if>
         AND MODIFIER = #{modifier}
-        ORDER BY STATE DESC
+        ORDER BY ID DESC
     </select>
 
     <select id="selectByStateListModifier" resultMap="BaseResultMap">

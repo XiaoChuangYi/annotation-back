@@ -24,17 +24,20 @@
   </sql>
 
     <select id="selectByTerm" resultMap="BaseResultMap">
-      SELECT <include refid="ALL_COLUMN"/>
-      FROM AN_ATOMIC_TERM WHERE TERM = #{term}
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE TERM = #{term}
     </select>
 
     <select id="selectByState" resultMap="BaseResultMap">
-        SELECT <include refid="ALL_COLUMN"/>
+        SELECT
+        <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM WHERE STATE = #{state}
     </select>
 
     <select id="selectByTermAndType" resultMap="BaseResultMap">
-        SELECT <include refid="ALL_COLUMN"/>
+        SELECT
+        <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM
         WHERE 1=1
         <if test="term!=null and term!=''">
@@ -43,6 +46,15 @@
         <if test="type!=null and type!=''">
             AND TYPE = #{type}
         </if>
+        ORDER BY ID
+    </select>
+    <select id="selectByTermAndTypeNotNull" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM
+        WHERE 1=1
+        AND TERM = #{term}
+        AND TYPE = #{type}
         ORDER BY ID
     </select>
 </mapper>

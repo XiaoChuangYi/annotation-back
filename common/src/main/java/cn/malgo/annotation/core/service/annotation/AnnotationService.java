@@ -186,6 +186,10 @@ public class AnnotationService {
     public void finishAnnotation(String anId) {
         AnTermAnnotation anTermAnnotationOld = queryByAnId(anId);
 
+        //检查是否有歧义未处理
+        boolean hasAmbiguity = AnnotationChecker.hasAmbiguity(anTermAnnotationOld.getFinalAnnotation());
+        AssertUtil.state(!hasAmbiguity,"存在歧义");
+
         //如果存在新词,保存新词到词库
         String newTermsStr = anTermAnnotationOld.getNewTerms();
         List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(newTermsStr);
@@ -193,9 +197,13 @@ public class AnnotationService {
             atomicTermService.saveAtomicTerm(anId, termTypeVO);
         }
 
+        String finalAnnotation = anTermAnnotationOld.getFinalAnnotation().replace("-unconfirmed","");
+        String finalAnnotationAfterCrypt = SecurityUtil.cryptAESBase64(finalAnnotation);
+
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
         anTermAnnotation.setId(anId);
         anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());
+        anTermAnnotation.setFinalAnnotation(finalAnnotationAfterCrypt);
         anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
     }
 
