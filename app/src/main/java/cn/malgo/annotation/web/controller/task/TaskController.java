@@ -1,4 +1,4 @@
-package cn.malgo.annotation.web.controller.term;
+package cn.malgo.annotation.web.controller.task;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.malgo.annotation.common.dal.model.CrmAccount;
-import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.core.service.term.AtomicTermService;
+import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
+import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;
@@ -18,16 +18,16 @@ import cn.malgo.annotation.web.result.ResultVO;
  */
 @RestController
 @RequestMapping(value = "/task")
-public class TermController extends BaseController {
+public class TaskController extends BaseController {
 
     @Autowired
-    private AtomicTermService atomicTermService;
+    private AtomicTermBatchService atomicTermBatchService;
 
     @Autowired
-    private AnnotationService annotationService;
+    private AnnotationBatchService annotationBatchService;
 
     @Autowired
-    private TermService       termService;
+    private TermService            termService;
 
     /**
      * 批量加密原子术语库
@@ -38,7 +38,7 @@ public class TermController extends BaseController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                atomicTermService.batchCrypt();
+                atomicTermBatchService.batchCrypt();
             }
         }).start();
         return ResultVO.success();
@@ -69,7 +69,7 @@ public class TermController extends BaseController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                annotationService.updateUNEncryptedAnnotation(crmAccount.getId());
+                annotationBatchService.updateUNEncryptedAnnotation(crmAccount.getId());
             }
         }).start();
 
@@ -87,24 +87,23 @@ public class TermController extends BaseController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                annotationService.batchCheckAmbiguity();
+                annotationBatchService.batchCheckAmbiguity();
             }
         }).start();
 
         return ResultVO.success();
     }
 
-
     /**
      * 批量检查标注和原子术语的关联关系
      * @return
      */
     @RequestMapping(value = "/batchCheckRelation.do")
-    public ResultVO batchCheckRelation(){
+    public ResultVO batchCheckRelation() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                atomicTermService.batchCheckRelation();
+                atomicTermBatchService.batchCheckRelation();
             }
         }).start();
 

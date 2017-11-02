@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
+import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.ChangeAtomicTermRequest;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
@@ -24,7 +25,10 @@ import cn.malgo.annotation.web.result.ResultVO;
 public class AtomicTermController extends BaseController {
 
     @Autowired
-    private AtomicTermService atomicTermService;
+    private AtomicTermService      atomicTermService;
+
+    @Autowired
+    private AtomicTermBatchService atomicTermBatchService;
 
     /**
      * 分页查询原子术语
@@ -69,7 +73,7 @@ public class AtomicTermController extends BaseController {
             @Override
             public void run() {
                 //批处理
-                atomicTermService.batchReplaceAtomicTerm(anAtomicTermOld,anAtomicTermNew);
+                atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermOld, anAtomicTermNew);
             }
         }).start();
 

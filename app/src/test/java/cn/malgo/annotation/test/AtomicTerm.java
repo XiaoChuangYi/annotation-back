@@ -1,9 +1,7 @@
 package cn.malgo.annotation.test;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omg.CORBA.PUBLIC_MEMBER;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +11,7 @@ import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
+import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 
 /**
@@ -23,20 +22,23 @@ import cn.malgo.annotation.core.service.term.AtomicTermService;
 public class AtomicTerm {
 
     @Autowired
-    private AnAtomicTermMapper anAtomicTermMapper;
+    private AnAtomicTermMapper     anAtomicTermMapper;
 
     @Autowired
-    private SequenceGenerator  sequenceGenerator;
+    private SequenceGenerator      sequenceGenerator;
 
     @Autowired
-    private AtomicTermService  atomicTermService;
+    private AtomicTermBatchService atomicTermBatchService;
+
+    @Autowired
+    private AtomicTermService      atomicTermService;
 
     @Test
     public void test() {
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         AnAtomicTerm anAtomicTerm = new AnAtomicTerm();
         anAtomicTerm.setId(id);
-        anAtomicTerm.setTerm("term value");
+        anAtomicTerm.setTerm("task value");
         anAtomicTerm.setType("type");
 
         int result = anAtomicTermMapper.insert(anAtomicTerm);
@@ -46,26 +48,26 @@ public class AtomicTerm {
 
     @Test
     public void testBatchCheck() {
-        atomicTermService.batchCheckRelation();
+        atomicTermBatchService.batchCheckRelation();
     }
 
     @Test
     public void testSaveAtomicTerm() {
-        atomicTermService.saveAtomicTerm("fromAnId","term","termType");
+        atomicTermService.saveAtomicTerm("fromAnId", "task", "termType");
     }
 
     @Test
-    public void testUpdateAtomicTerm(){
-        atomicTermService.updateAtomicTerm("7312953423647539200","termType2");
+    public void testUpdateAtomicTerm() {
+        atomicTermService.updateAtomicTerm("7312953423647539200", "termType2");
     }
 
     @Test
-    public void testBatchReplace(){
+    public void testBatchReplace() {
         AnAtomicTerm anAtomicTermOld = atomicTermService.queryByAtomicTermId("10211");
         AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
-        BeanUtils.copyProperties(anAtomicTermOld,anAtomicTermNew);
+        BeanUtils.copyProperties(anAtomicTermOld, anAtomicTermNew);
         anAtomicTermNew.setType("type");
 
-        atomicTermService.batchReplaceAtomicTerm(anAtomicTermNew,anAtomicTermOld);
+        atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermNew, anAtomicTermOld);
     }
 }

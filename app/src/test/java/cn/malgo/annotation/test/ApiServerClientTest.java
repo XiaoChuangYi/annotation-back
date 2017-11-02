@@ -3,7 +3,6 @@ package cn.malgo.annotation.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +10,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 import cn.malgo.annotation.common.service.integration.apiserver.ApiServerClient;
 import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
+import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 
 /**
  * Created by 张钟 on 2017/10/18.
@@ -67,7 +66,7 @@ public class ApiServerClientTest {
         List<UpdateAnnotationRequest> annotationRequestList = new ArrayList<>();
         UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
 
-        String newTermsStr = "[{\"term\":\"展神经\",\"type\":\"Body-structure\"},{\"term\":\"面\",\"type\":\"Zone\"},{\"term\":\"胰头\",\"type\":\"Body-structure\"}]";
+        String newTermsStr = "[{\"task\":\"展神经\",\"type\":\"Body-structure\"},{\"task\":\"面\",\"type\":\"Zone\"},{\"task\":\"胰头\",\"type\":\"Body-structure\"}]";
         JSONArray jsonArray = JSONArray.parseArray(newTermsStr);
         List<TermTypeVO> termTypeVOList = jsonArray.toJavaList(TermTypeVO.class);
 

@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.Future;
 
-import cn.malgo.annotation.common.util.AssertUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import com.github.pagehelper.PageHelper;
 
 import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
 import cn.malgo.annotation.common.dal.model.AnTerm;
+import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.log.LogUtil;
 import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.annotation.AsyncAnnotationService;
@@ -36,7 +36,7 @@ public class TermService {
     private AsyncAnnotationService asyncAnnotationService;
 
     /**
-     * 根据状态分页查询术语(term)
+     * 根据状态分页查询术语(task)
      * @param termStateEnum
      * @param pageNum
      * @param pageSize
@@ -69,7 +69,7 @@ public class TermService {
         anTerm.setState(termStateEnum.name());
         anTerm.setGmtModified(new Date());
         int updateResult = anTermMapper.updateByPrimaryKeySelective(anTerm);
-        AssertUtil.state(updateResult>0,"更新术语状态失败");
+        AssertUtil.state(updateResult > 0, "更新术语状态失败");
     }
 
     /**

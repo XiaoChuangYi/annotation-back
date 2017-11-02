@@ -18,6 +18,7 @@ import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
+import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 
 /**
@@ -32,6 +33,9 @@ public class AnTermAnnotationTest {
 
     @Autowired
     private AnnotationService      annotationService;
+
+    @Autowired
+    private AnnotationBatchService annotationBatchService;
 
     @Autowired
     private SequenceGenerator      sequenceGenerator;
@@ -132,8 +136,8 @@ public class AnTermAnnotationTest {
     }
 
     @Test
-    public void testBatchCheckAmbiguity(){
-        annotationService.batchCheckAmbiguity();
+    public void testBatchCheckAmbiguity() {
+        annotationBatchService.batchCheckAmbiguity();
     }
 
 }

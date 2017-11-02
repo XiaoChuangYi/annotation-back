@@ -19,6 +19,10 @@ public class AnnotationChecker {
     public static boolean hasAmbiguity(String annotation) {
         List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
             .convertAnnotationModelList(annotation);
+        //标注中只有一个原子术语,必定无歧义
+        if (termAnnotationModelList == null || termAnnotationModelList.size() <= 1) {
+            return false;
+        }
         for (int first = 0; first < termAnnotationModelList.size(); first++) {
             for (int second = 0; second < termAnnotationModelList.size(); second++) {
                 if (first == second) {
