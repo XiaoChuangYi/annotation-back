@@ -1,7 +1,10 @@
 package cn.malgo.annotation.test;
 
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.omg.CORBA.PUBLIC_MEMBER;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -42,7 +45,27 @@ public class AtomicTerm {
     }
 
     @Test
-    public  void testBatchCheck(){
+    public void testBatchCheck() {
         atomicTermService.batchCheckRelation();
+    }
+
+    @Test
+    public void testSaveAtomicTerm() {
+        atomicTermService.saveAtomicTerm("fromAnId","term","termType");
+    }
+
+    @Test
+    public void testUpdateAtomicTerm(){
+        atomicTermService.updateAtomicTerm("7312953423647539200","termType2");
+    }
+
+    @Test
+    public void testBatchReplace(){
+        AnAtomicTerm anAtomicTermOld = atomicTermService.queryByAtomicTermId("10211");
+        AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
+        BeanUtils.copyProperties(anAtomicTermOld,anAtomicTermNew);
+        anAtomicTermNew.setType("type");
+
+        atomicTermService.batchReplaceAtomicTerm(anAtomicTermNew,anAtomicTermOld);
     }
 }

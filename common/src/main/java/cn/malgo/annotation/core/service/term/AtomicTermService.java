@@ -6,12 +6,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
-import cn.malgo.annotation.common.dal.mapper.AnTermAnnotationMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
@@ -22,6 +23,7 @@ import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.common.LogUtil;
 import cn.malgo.common.security.SecurityUtil;
 
@@ -33,16 +35,16 @@ import cn.malgo.common.security.SecurityUtil;
 @Service
 public class AtomicTermService {
 
-    private Logger                 logger = Logger.getLogger(AtomicTermService.class);
+    private Logger             logger = Logger.getLogger(AtomicTermService.class);
 
     @Autowired
-    private SequenceGenerator      sequenceGenerator;
+    private SequenceGenerator  sequenceGenerator;
 
     @Autowired
-    private AnAtomicTermMapper     anAtomicTermMapper;
+    private AnAtomicTermMapper anAtomicTermMapper;
 
     @Autowired
-    private AnTermAnnotationMapper anTermAnnotationMapper;
+    private AnnotationService  annotationService;
 
     /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
@@ -61,34 +63,38 @@ public class AtomicTermService {
      * @param term
      * @param termType
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void saveAtomicTerm(String fromAnId, String term, String termType) {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
 
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTerm(securityTerm);
+        String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+        AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
+        anAtomicTermNew.setId(id);
+        anAtomicTermNew.setFromAnId(fromAnId);
+        anAtomicTermNew.setTerm(securityTerm);
+        anAtomicTermNew.setType(termType);
+        anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
 
-        if (anAtomicTermOld == null) {
-            String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
-            AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
-            anAtomicTermNew.setId(id);
-            anAtomicTermNew.setFromAnId(fromAnId);
-            anAtomicTermNew.setTerm(securityTerm);
-            anAtomicTermNew.setType(termType);
-            anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
+        int insertResult = anAtomicTermMapper.insert(anAtomicTermNew);
+        AssertUtil.state(insertResult > 0, "保存原子术语失败");
 
-            int insertResult = anAtomicTermMapper.insert(anAtomicTermNew);
-            AssertUtil.state(insertResult > 0, "保存原子术语失败");
-        } else {
+    }
 
-            anAtomicTermOld.setType(termType);
-            anAtomicTermOld.setTerm(securityTerm);
-            anAtomicTermOld.setFromAnId(fromAnId);
-            anAtomicTermOld.setGmtModified(new Date());
+    /**
+     * 更新已经存在的原子术语
+     * @param atomicTermId
+     * @param termType
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updateAtomicTerm(String atomicTermId, String termType) {
 
-            int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);
-            AssertUtil.state(updateResult > 0, "更新原子术语失败");
-        }
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        anAtomicTermOld.setType(termType);
+        anAtomicTermOld.setGmtModified(new Date());
 
+        int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);
+        AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
 
     /**
@@ -105,6 +111,17 @@ public class AtomicTermService {
         anAtomicTermMapper.selectByTermAndType(termAfterDecrypt, type);
         decrypt(pageInfo);
         return pageInfo;
+    }
+
+    /**
+     * 根据原子术语ID查询原子术语
+     * @param atomicTermId
+     * @return
+     */
+    public AnAtomicTerm queryByAtomicTermId(String atomicTermId) {
+        AnAtomicTerm anAtomicTerm = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        decrypt(anAtomicTerm);
+        return anAtomicTerm;
     }
 
     /**
@@ -151,17 +168,15 @@ public class AtomicTermService {
         stateList.add(AnnotationStateEnum.FINISH.name());
         do {
 
-            pageInfo = PageHelper.startPage(pageNum, pageSize);
-            anTermAnnotationMapper.selectByStateList(stateList);
+            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
             LogUtil.info(logger,
                 "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
             for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
                 try {
-                    String text = SecurityUtil
-                        .decryptAESBase64(anTermAnnotation.getFinalAnnotation());
+
                     List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
-                        .convertAnnotationModelList(text);
+                        .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
 
                     //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
                     boolean isValidate = true;
@@ -188,11 +203,8 @@ public class AtomicTermService {
                         }
                     }
                     if (!isValidate) {
-                        AnTermAnnotation anTermAnnotationForUpdate = new AnTermAnnotation();
-                        anTermAnnotationForUpdate.setId(anTermAnnotation.getId());
-                        anTermAnnotationForUpdate.setState(AnnotationStateEnum.UN_RECOGNIZE.name());
-                        anTermAnnotationMapper
-                            .updateByPrimaryKeySelective(anTermAnnotationForUpdate);
+                        annotationService.updateAnnotationState(anTermAnnotation.getId(),
+                            AnnotationStateEnum.UN_RECOGNIZE);
                     }
                 } catch (Exception e) {
                     LogUtil.info(logger, "排查原子词库中的词条是否存在于标注中异常,标注ID:" + anTermAnnotation.getId());
@@ -204,6 +216,64 @@ public class AtomicTermService {
 
         } while (pageInfo.getPages() >= pageNum);
 
+    }
+
+    /**
+     * 批量替换标注中的
+     * @param anAtomicTermOld
+     * @param anAtomicTermNew
+     */
+    public void batchReplaceAtomicTerm(AnAtomicTerm anAtomicTermOld, AnAtomicTerm anAtomicTermNew) {
+
+        LogUtil.info(logger, "开始批量替换标准中的原子术语");
+        int pageNum = 1;
+        int pageSize = 100;
+        Page<AnTermAnnotation> pageInfo = null;
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.FINISH.name());
+        do {
+
+            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
+
+            LogUtil.info(logger,
+                "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+
+            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+                try {
+
+                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                        .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+
+                    //是否发生替换的标志
+                    boolean isChange = false;
+                    //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
+                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+
+                        //如果标注中纯在待替换的原子术语,进行替换
+                        if (termAnnotationModel.getTerm().equals(anAtomicTermOld.getTerm())
+                            && termAnnotationModel.getType().equals(anAtomicTermOld.getType())) {
+                            termAnnotationModel.setTerm(anAtomicTermNew.getTerm());
+                            termAnnotationModel.setType(anAtomicTermNew.getType());
+                            isChange = true;
+                        }
+                    }
+
+                    if (isChange) {
+
+                        LogUtil.info(logger, "存在带替换的原子术语:" + anTermAnnotation.getId());
+                        String newText = AnnotationConvert.convertToText(termAnnotationModelList);
+                        annotationService.updateFinalAnnotation(anTermAnnotation.getId(), newText);
+                    }
+
+                } catch (Exception e) {
+                    LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + anTermAnnotation.getId());
+                }
+            }
+            LogUtil.info(logger,
+                "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            pageNum++;
+
+        } while (pageInfo.getPages() >= pageNum);
     }
 
     /**
@@ -227,4 +297,5 @@ public class AtomicTermService {
         anAtomicTerm.setTerm(SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm()));
         return anAtomicTerm;
     }
+
 }

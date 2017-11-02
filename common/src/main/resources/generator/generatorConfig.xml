@@ -15,8 +15,8 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://116.62.160.143:3306/annotation?useUnicode=true"
-                        userId="annotation"
+                        connectionURL="jdbc:mysql://116.62.160.143:3306/annotation_test?useUnicode=true"
+                        userId="annotation_test"
                         password="annotation">
         </jdbcConnection>
 
@@ -29,7 +29,7 @@
         <javaClientGenerator targetPackage="cn.malgo.annotation.common.dal.mapper" targetProject="src/main/java"
                              type="XMLMAPPER"/>
 
-        <table tableName="RL_ENTITY_RULE">
+        <table tableName="AN_ATOMIC_TERM_LOG">
             <!--mysql 配置-->
         </table>
     </context>

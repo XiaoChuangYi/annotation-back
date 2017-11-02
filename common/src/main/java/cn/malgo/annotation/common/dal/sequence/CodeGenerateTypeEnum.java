@@ -20,6 +20,9 @@ public enum CodeGenerateTypeEnum {
     /** 默认使用7,luck number **/
     DEFAULT("7"),
 
+    /** 日志前缀 **/
+    LOG("9"),
+
     ;
 
     private String value;

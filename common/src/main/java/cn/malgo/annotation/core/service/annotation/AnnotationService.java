@@ -307,6 +307,20 @@ public class AnnotationService {
     }
 
     /**
+     * 根据状态分页查询标注信息
+     * @param stateList
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnTermAnnotation> queryByStateList(List<String> stateList,int pageNum,int pageSize){
+        Page<AnTermAnnotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anTermAnnotationMapper.selectByStateList(stateList);
+        decryptAES(pageInfo.getResult());
+        return pageInfo;
+    }
+
+    /**
      * 批量,全量检查标注的二义性
      */
     public void batchCheckAmbiguity() {
@@ -376,7 +390,7 @@ public class AnnotationService {
      * @param anId
      * @param finalAnnotation
      */
-    private void updateFinalAnnotation(String anId, String finalAnnotation) {
+    public void updateFinalAnnotation(String anId, String finalAnnotation) {
         String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
 
         AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
@@ -410,6 +424,21 @@ public class AnnotationService {
 
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
         AssertUtil.state(updateResult > 0, "更新手工标注失败");
+    }
+
+    /**
+     * 更新标注状态
+     * @param anId
+     * @param annotationStateEnum
+     */
+    public void updateAnnotationState(String anId,AnnotationStateEnum annotationStateEnum){
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setGmtModified(new Date());
+        anTermAnnotation.setState(annotationStateEnum.name());
+
+        int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+        AssertUtil.state(updateResult > 0, "更新标注状态失败");
     }
 
     private void decryptAES(List<AnTermAnnotation> anTermAnnotationList) {

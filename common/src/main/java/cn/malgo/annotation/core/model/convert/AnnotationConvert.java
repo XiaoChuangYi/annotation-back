@@ -215,4 +215,29 @@ public class AnnotationConvert {
         return termAnnotationModelList;
     }
 
+    /**
+     * 标注模型转换成文本
+     * @param termAnnotationModelList
+     * @return
+     */
+    public static String convertToText(List<TermAnnotationModel> termAnnotationModelList) {
+        StringBuilder sb = new StringBuilder();
+        for(TermAnnotationModel termAnnotationModel : termAnnotationModelList){
+            sb.append(convertToText(termAnnotationModel));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 标注模型转换成文本
+     * @param termAnnotationModel
+     * @return
+     */
+    public static String convertToText(TermAnnotationModel termAnnotationModel) {
+        String result = MessageFormat.format(AN_LINE_FORMAT, termAnnotationModel.getTag(),
+            termAnnotationModel.getType(), termAnnotationModel.getStartPosition(),
+            termAnnotationModel.getEndPosition(), termAnnotationModel.getTerm());
+        return result;
+    }
+
 }
