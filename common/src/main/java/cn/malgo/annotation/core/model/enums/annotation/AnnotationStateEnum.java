@@ -13,6 +13,8 @@ public enum AnnotationStateEnum {
 
                                  FINISH("标注完成"),
 
+                                 INCONSISTENT("不一致"),
+
                                  UN_ENCRYPTED("未加密");
 
     private String message;

@@ -147,14 +147,14 @@ public class AnTermAnnotationTest {
 
     @Test
     public void testCheck() {
-        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("10000000000715");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("14");
         Map<String, AnAtomicTerm> anAtomicTermMap =  annotationBatchService.buildAtomicTermMap();
         annotationBatchService.checkAmbiguityAndAtomicTermExist(anTermAnnotation,anAtomicTermMap);
     }
 
     @Test
     public void queryById(){
-        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("10000000000727");
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("100000000005081");
         System.out.println(anTermAnnotation);
     }
 

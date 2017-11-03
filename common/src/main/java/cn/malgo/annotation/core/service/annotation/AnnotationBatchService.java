@@ -112,7 +112,7 @@ public class AnnotationBatchService extends AnnotationService {
             boolean isUnRecognize = false;
             for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
 
-                //只针对既存在于原子术语表中,同时也无二义性的标注节点做确认,同时将替换最终标注中的unconfirm
+                //只针对既存在于原子术语表中,同时也无二义性的标注节点做确认,同时将替换最终标注中的unconfirmed
                 //检查标注的词条是否存在于原子术语表中
                 String key = termAnnotationModel.getTerm() + ":" + termAnnotationModel.getType()
                     .replace(AnnotationChecker.UN_CONFIRMED, "");
@@ -143,7 +143,7 @@ public class AnnotationBatchService extends AnnotationService {
 
             //存在二义性,或者存在未出现在原子术语表中的标注
             if (isUnRecognize) {
-                anTermAnnotationNew.setState(AnnotationStateEnum.INIT.name());
+                anTermAnnotationNew.setState(AnnotationStateEnum.INCONSISTENT.name());
             }
 
             LogUtil.info(logger, "手工标注内容:" + anTermAnnotationNew.getManualAnnotation());

@@ -109,7 +109,6 @@ public class AnnotationChecker {
         if (count <= 1) {
             return false;
         } else {
-            LogUtil.info(logger,"存在二义性,文本:"+ JSONObject.toJSONString(termAnnotationModelList));
             LogUtil.info(logger,"检查  "+target.getTerm()+":"+target.getType()+"的二义性");
             return true;
         }
