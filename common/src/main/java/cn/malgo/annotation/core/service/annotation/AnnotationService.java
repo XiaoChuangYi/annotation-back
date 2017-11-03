@@ -333,17 +333,14 @@ public class AnnotationService {
     /**
      * 加密标注信息,并且更新
      * @param anTermAnnotation 传入的标注需是明文
-     * @param annotationStateEnum
      */
-    public void cryptAnnotationAndUpdate(AnTermAnnotation anTermAnnotation,
-                                         AnnotationStateEnum annotationStateEnum) {
+    public void cryptAnnotationAndUpdate(AnTermAnnotation anTermAnnotation) {
         anTermAnnotation
             .setAutoAnnotation(SecurityUtil.cryptAESBase64(anTermAnnotation.getAutoAnnotation()));
         anTermAnnotation
             .setFinalAnnotation(SecurityUtil.cryptAESBase64(anTermAnnotation.getFinalAnnotation()));
         anTermAnnotation.setManualAnnotation(
             SecurityUtil.cryptAESBase64(anTermAnnotation.getManualAnnotation()));
-        anTermAnnotation.setState(annotationStateEnum.name());
         anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
     }
 

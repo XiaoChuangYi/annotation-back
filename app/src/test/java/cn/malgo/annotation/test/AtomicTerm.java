@@ -14,6 +14,8 @@ import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.term.AtomicTermService;
 
+import java.util.List;
+
 /**
  * Created by 张钟 on 2017/10/17.
  */
@@ -69,5 +71,11 @@ public class AtomicTerm {
         anAtomicTermNew.setType("type");
 
         atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermNew, anAtomicTermOld);
+    }
+
+    @Test
+    public void testQueryByTerm(){
+        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.queryByAtomicTerm("+");
+        System.out.println(anAtomicTermList);
     }
 }

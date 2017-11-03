@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.service.term;
 
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,18 @@ public class AtomicTermService {
     }
 
     /**
+     * 根据原子术语文本查询
+     * @param term
+     * @return
+     */
+    public List<AnAtomicTerm> queryByAtomicTerm(String term) {
+        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
+        List<AnAtomicTerm> anAtomicTermList = anAtomicTermMapper.selectByTerm(termAfterDecrypt);
+        decrypt(anAtomicTermList);
+        return anAtomicTermList;
+    }
+
+    /**
      * 解密原子术语的分页查询结果
      * @param page
      * @return
@@ -129,6 +142,18 @@ public class AtomicTermService {
             decrypt(anAtomicTerm);
         }
         return page;
+    }
+
+    /**
+     * 批量解密
+     * @param anAtomicTermList
+     * @return
+     */
+    public List<AnAtomicTerm> decrypt(List<AnAtomicTerm> anAtomicTermList){
+        for (AnAtomicTerm anAtomicTerm :anAtomicTermList) {
+            decrypt(anAtomicTerm);
+        }
+        return anAtomicTermList;
     }
 
     /**

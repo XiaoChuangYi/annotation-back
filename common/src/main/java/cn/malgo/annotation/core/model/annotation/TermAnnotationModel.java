@@ -23,6 +23,13 @@ public class TermAnnotationModel {
     /** 结束位置 **/
     private int    endPosition;
 
+    public static boolean isConfirmed(TermAnnotationModel termAnnotationModel){
+        if(termAnnotationModel.getType().contains("-unconfirmed")){
+            return false;
+        }
+        return true;
+    }
+
 
     public String getTag() {
         return tag;

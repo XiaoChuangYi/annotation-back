@@ -2,7 +2,9 @@ package cn.malgo.annotation.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
+import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 
@@ -137,7 +140,22 @@ public class AnTermAnnotationTest {
 
     @Test
     public void testBatchCheckAmbiguity() {
-        annotationBatchService.batchCheckAmbiguity();
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.INIT.name());
+        annotationBatchService.batchCheckAmbiguityAndAtomicTerm(stateList);
+    }
+
+    @Test
+    public void testCheck() {
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("10000000000715");
+        Map<String, AnAtomicTerm> anAtomicTermMap =  annotationBatchService.buildAtomicTermMap();
+        annotationBatchService.checkAmbiguityAndAtomicTermExist(anTermAnnotation,anAtomicTermMap);
+    }
+
+    @Test
+    public void queryById(){
+        AnTermAnnotation anTermAnnotation = annotationService.queryByAnId("10000000000727");
+        System.out.println(anTermAnnotation);
     }
 
 }

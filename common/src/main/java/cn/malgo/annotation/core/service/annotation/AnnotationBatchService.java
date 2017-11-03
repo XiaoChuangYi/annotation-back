@@ -1,17 +1,25 @@
 package cn.malgo.annotation.core.service.annotation;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.Page;
 
+import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
+import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.util.log.LogUtil;
+import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.check.AnnotationChecker;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  * @author 张钟
@@ -20,19 +28,23 @@ import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 @Service
 public class AnnotationBatchService extends AnnotationService {
 
-    private Logger logger = Logger.getLogger(AnnotationBatchService.class);
+    private Logger             logger = Logger.getLogger(AnnotationBatchService.class);
+
+    @Autowired
+    private AnAtomicTermMapper anAtomicTermMapper;
 
     /**
      * 批量,全量检查标注的二义性
      */
-    public void batchCheckAmbiguity() {
+    public void batchCheckAmbiguityAndAtomicTerm(List<String> stateList) {
 
-        LogUtil.info(logger, "开全量检查标注的二义性");
+        LogUtil.info(logger, "开全量检查标注的二义性,以及标注中的原子术语是否存在于原子术语表");
+
+        Map<String, AnAtomicTerm> anAtomicTermMap = buildAtomicTermMap();
+
         int pageNum = 1;
         int pageSize = 10;
         Page<AnTermAnnotation> pageInfo = null;
-        List<String> stateList = new ArrayList<>();
-        stateList.add(AnnotationStateEnum.FINISH.name());
         do {
 
             pageInfo = queryByStateList(stateList, pageNum, pageSize);
@@ -40,22 +52,11 @@ public class AnnotationBatchService extends AnnotationService {
                 "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
             for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
-                try {
-
-                    boolean hasAmbiguity = AnnotationChecker
-                        .hasAmbiguity(anTermAnnotation.getFinalAnnotation());
-
-                    if (hasAmbiguity) {
-                        //此时存在歧义,并且设置状态为UN_RECOGNIZE
-                        LogUtil.info(logger, "发现二义性标注,ID:" + anTermAnnotation.getId());
-                        updateAnnotationState(anTermAnnotation.getId(),
-                            AnnotationStateEnum.UN_RECOGNIZE);
-                    }
-
-                } catch (Exception e) {
-                    LogUtil.info(logger, "检查标注二义性异常,标注ID:" + anTermAnnotation.getId());
-                }
+                LogUtil.info(logger, "开始处理的标注ID:" + anTermAnnotation.getId() + ";标注内容:"
+                                     + anTermAnnotation.getTerm());
+                checkAmbiguityAndAtomicTermExist(anTermAnnotation, anAtomicTermMap);
             }
+
             LogUtil.info(logger,
                 "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
             pageNum++;
@@ -78,7 +79,8 @@ public class AnnotationBatchService extends AnnotationService {
             try {
                 for (AnTermAnnotation anTermAnnotation : page.getResult()) {
                     anTermAnnotation_temp = anTermAnnotation;
-                    cryptAnnotationAndUpdate(anTermAnnotation, AnnotationStateEnum.FINISH);
+                    anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());
+                    cryptAnnotationAndUpdate(anTermAnnotation);
                 }
             } catch (Exception e) {
                 LogUtil.info(logger, "加密失败anId" + anTermAnnotation_temp.getId());
@@ -88,4 +90,92 @@ public class AnnotationBatchService extends AnnotationService {
         } while (page.getTotal() > 10);
 
     }
+
+    /**
+     * 检查标注是否存在歧义,以及是否存在对应的原子术语
+     * @param anTermAnnotation
+     * @param anAtomicTermMap
+     */
+    public void checkAmbiguityAndAtomicTermExist(AnTermAnnotation anTermAnnotation,
+                                                 Map<String, AnAtomicTerm> anAtomicTermMap) {
+        try {
+
+            AnTermAnnotation anTermAnnotationNew = new AnTermAnnotation();
+            BeanUtils.copyProperties(anTermAnnotation, anTermAnnotationNew);
+
+            //检查标注中的原子术语是否存在于原子术语表中
+            List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+
+            //词库中存在对应的词条,检查词条是否存在来源,如果不存在,将当前标注作为该原子词条的来源
+            //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
+            boolean isUnRecognize = false;
+            for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+
+                //只针对既存在于原子术语表中,同时也无二义性的标注节点做确认,同时将替换最终标注中的unconfirm
+                //检查标注的词条是否存在于原子术语表中
+                String key = termAnnotationModel.getTerm() + ":" + termAnnotationModel.getType()
+                    .replace(AnnotationChecker.UN_CONFIRMED, "");
+                boolean existAtomicTerm = anAtomicTermMap.get(key) != null;
+
+                //检查是否存在二义性
+                boolean hasAmbiguity = AnnotationChecker.hasAmbiguity(termAnnotationModel,
+                    termAnnotationModelList);
+
+                //存在原子术语表的对应,同时不存在歧义,进行确认,否则,不进行确认,同时整条标注标记为无法识别
+                if (existAtomicTerm && !hasAmbiguity) {
+                    termAnnotationModel.setType(
+                        termAnnotationModel.getType().replace(AnnotationChecker.UN_CONFIRMED, ""));
+
+                    //添加经过确认的标注到手工标注中
+                    String manualAnnotation = AnnotationConvert.addNewTag(
+                        anTermAnnotationNew.getManualAnnotation(), termAnnotationModel.getType(),
+                        String.valueOf(termAnnotationModel.getStartPosition()),
+                        String.valueOf(termAnnotationModel.getEndPosition()),
+                        termAnnotationModel.getTerm());
+                    anTermAnnotationNew.setManualAnnotation(manualAnnotation);
+
+                } else {
+                    isUnRecognize = true;
+                }
+
+            }
+
+            //存在二义性,或者存在未出现在原子术语表中的标注
+            if (isUnRecognize) {
+                anTermAnnotationNew.setState(AnnotationStateEnum.INIT.name());
+            }
+
+            LogUtil.info(logger, "手工标注内容:" + anTermAnnotationNew.getManualAnnotation());
+
+            //设置经过确认的最终标注
+            anTermAnnotationNew
+                .setFinalAnnotation(AnnotationConvert.convertToText(termAnnotationModelList));
+
+            //更新标注
+            cryptAnnotationAndUpdate(anTermAnnotationNew);
+
+        } catch (Exception e) {
+            LogUtil.info(logger, "检查标注二义性和原子术语对应关系异常,标注ID:" + anTermAnnotation.getId());
+        }
+    }
+
+    /**
+     * 构建原子术语的map
+     * @return
+     */
+    public Map<String, AnAtomicTerm> buildAtomicTermMap() {
+        List<AnAtomicTerm> anAtomicTermList = anAtomicTermMapper.selectAll();
+        LogUtil.info(logger, "待检查原子词条总数:" + anAtomicTermList.size());
+
+        //构造成map,提高处理性能
+        Map<String, AnAtomicTerm> anAtomicTermMap = new HashMap<>(anAtomicTermList.size());
+        for (AnAtomicTerm anAtomicTerm : anAtomicTermList) {
+            String key = SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm()) + ":"
+                         + anAtomicTerm.getType();
+            anAtomicTermMap.put(key, anAtomicTerm);
+        }
+        return anAtomicTermMap;
+    }
+
 }

@@ -1,5 +1,6 @@
 package cn.malgo.annotation.web.controller.task;
 
+import cn.malgo.annotation.common.util.AssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,9 @@ import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 张钟
@@ -82,12 +86,15 @@ public class TaskController extends BaseController {
      * @return
      */
     @RequestMapping(value = "/batchCheckAmbiguity.do")
-    public ResultVO batchCheckAmbiguity() {
+    public ResultVO batchCheckAmbiguity(String state) {
+        AssertUtil.notBlank(state,"状态为空");
+        List<String> stateList = new ArrayList<>();
+        stateList.add(state);
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                annotationBatchService.batchCheckAmbiguity();
+                annotationBatchService.batchCheckAmbiguityAndAtomicTerm(stateList);
             }
         }).start();
 

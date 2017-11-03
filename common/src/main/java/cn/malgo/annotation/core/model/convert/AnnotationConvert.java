@@ -4,6 +4,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.malgo.annotation.common.util.log.LogUtil;
+import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -13,13 +15,18 @@ import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
+import cn.malgo.annotation.core.model.check.AnnotationChecker;
 import cn.malgo.core.definition.Document;
 import cn.malgo.core.definition.utils.DocumentManipulator;
+import org.apache.log4j.Logger;
 
 /**
  * Created by 张钟 on 2017/10/20.
  */
 public class AnnotationConvert {
+
+    public static Logger logger = Logger.getLogger(AnnotationConvert.class);
+
 
     /**
      * 标注格式,样例如下
@@ -68,10 +75,17 @@ public class AnnotationConvert {
                                    String newEnd, String newText) {
         String newTag = getNewTag(oldManualAnnotation);
 
-        //检查待添加的手工标注是否已经存在
-        String[] lines = oldManualAnnotation.split("\n");
-        for (String line : lines) {
-            if (line.contains(newText) && line.contains(newType)) {
+        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+            .convertAnnotationModelList(oldManualAnnotation);
+
+        //检查相同的手工标注是否已经存在
+        for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+            boolean isSameType = termAnnotationModel.getType().equals(newType);
+            boolean isSameTerm = termAnnotationModel.getTerm().equals(newText);
+            boolean isSameStart = termAnnotationModel.getStartPosition() == Integer
+                .valueOf(newStart);
+            boolean isSameEnd = termAnnotationModel.getEndPosition() == Integer.valueOf(newEnd);
+            if (isSameType && isSameTerm && isSameStart && isSameEnd) {
                 return oldManualAnnotation;
             }
         }
@@ -198,20 +212,32 @@ public class AnnotationConvert {
      */
     public static List<TermAnnotationModel> convertAnnotationModelList(String text) {
 
-        AssertUtil.notBlank(text, "标注文本为空");
+        LogUtil.debug(logger,"待转换文本:"+text);
+
         List<TermAnnotationModel> termAnnotationModelList = new ArrayList<>();
+        if (StringUtils.isBlank(text)) {
+            return termAnnotationModelList;
+        }
+
         String[] lines = text.split("\n");
         for (String line : lines) {
-            String[] elements = line.split("\t");
             TermAnnotationModel termAnnotationModel = new TermAnnotationModel();
+
+            String[] elements = line.split("\t");
             termAnnotationModel.setTag(elements[0]);
             termAnnotationModel.setTerm(elements[2]);
+
             String[] structElement = elements[1].split(" ");
             termAnnotationModel.setType(structElement[0]);
             termAnnotationModel.setStartPosition(Integer.valueOf(structElement[1]));
             termAnnotationModel.setEndPosition(Integer.valueOf(structElement[2]));
+
             termAnnotationModelList.add(termAnnotationModel);
         }
+
+        LogUtil.debug(logger,"转换结果:"+JSONObject.toJSONString(termAnnotationModelList));
+
+
         return termAnnotationModelList;
     }
 
@@ -222,7 +248,7 @@ public class AnnotationConvert {
      */
     public static String convertToText(List<TermAnnotationModel> termAnnotationModelList) {
         StringBuilder sb = new StringBuilder();
-        for(TermAnnotationModel termAnnotationModel : termAnnotationModelList){
+        for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
             sb.append(convertToText(termAnnotationModel));
         }
         return sb.toString();

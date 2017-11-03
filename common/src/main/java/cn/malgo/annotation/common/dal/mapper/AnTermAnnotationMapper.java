@@ -26,15 +26,12 @@ public interface AnTermAnnotationMapper extends CommonMapper<AnTermAnnotation> {
      */
     List<AnTermAnnotation> selectByStateListModifier(@Param("stateList") List<String> stateList,
                                                  @Param("modifier") String modifier);
-
     /**
      * 根据术语状态查询术语
      * @param stateList
      * @return
      */
     List<AnTermAnnotation> selectByStateList(@Param("stateList") List<String> stateList);
-
-
 
 
     /**
