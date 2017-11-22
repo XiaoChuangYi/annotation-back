@@ -10,7 +10,7 @@
     <result column="concept_code" jdbcType="VARCHAR" property="conceptCode" />
     <result column="concept_type" jdbcType="VARCHAR" property="conceptType" />
     <result column="concept_name" jdbcType="VARCHAR" property="conceptName" />
-    <result column="has_children" jdbcType="TINYINT" property="hasChildren" />
+    <result column="has_children" jdbcType="INT" property="hasChildren" />
   </resultMap>
   <sql id="ALL_COLUMN">
     concept_id,
