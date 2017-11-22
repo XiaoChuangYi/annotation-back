@@ -92,6 +92,21 @@ public class AtomicTermService {
         int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);
         AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
+    /**
+     * 分页模糊查询原子术语
+     * @param term 传入明文
+     * @param type
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnAtomicTerm> fuzzyQueryOnePage(String term, String type, int pageNum, int pageSize){
+        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.fuzzyQueryByTermAndType(termAfterDecrypt, type);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
 
     /**
      * 分页查询原子术语

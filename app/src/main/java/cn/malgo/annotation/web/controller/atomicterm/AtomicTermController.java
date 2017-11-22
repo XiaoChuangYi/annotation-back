@@ -63,7 +63,7 @@ public class AtomicTermController extends BaseController {
             return ResultVO.success();
         }
 
-        //更新原子术语
+        //更新原子术语,先更新原子术语表中的单个数据
         atomicTermService.updateAtomicTerm(request.getAtomicTermId(), request.getType());
 
         AnAtomicTerm anAtomicTermNew = atomicTermService

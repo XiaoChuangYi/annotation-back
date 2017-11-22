@@ -20,12 +20,14 @@ public class AccountTest {
 
     @Test
     public void testSave(){
-        accountService.saveAccount("111@111.com","123456");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>打印-----------------------------------------------");
+        accountService.saveAccount("Janine","123456","100");
     }
 
-    @Test
-    public void testCheckPwd(){
-        CrmAccount crmAccount = accountService.checkPwd("111@111.com","123456");
-        System.out.println(crmAccount);
-    }
+//    @Test
+//    public void testCheckPwd(){
+//        CrmAccount crmAccount = accountService.checkPwd("111@111.com","123456");
+//        System.out.println("打印-----------------------------------------------");
+//        System.out.println(crmAccount);
+//    }
 }

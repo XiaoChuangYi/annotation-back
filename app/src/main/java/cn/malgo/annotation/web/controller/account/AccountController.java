@@ -6,13 +6,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import cn.malgo.annotation.common.dal.model.CrmAccount;
+import cn.malgo.annotation.common.dal.model.CrmRole;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.service.account.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.malgo.annotation.core.service.account.AccountService;
 import cn.malgo.annotation.web.result.ResultVO;
+
+import java.util.List;
 
 /**
  *
@@ -25,6 +29,9 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private RoleService roleService;
 
     /**
      * 用户登录
@@ -49,6 +56,12 @@ public class AccountController {
         response.addCookie(cookie);//将cookie添加到response的cookie数组中返回给客户端
 
         return ResultVO.success();
+    }
+
+    @RequestMapping(value = "/getRoles.do")
+    public ResultVO<List<CrmRole>> getAllRole(){
+        List<CrmRole> roleVOList=roleService.selectAllRole();
+        return ResultVO.success(roleVOList);
     }
 
 }

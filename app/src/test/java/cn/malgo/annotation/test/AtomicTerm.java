@@ -1,5 +1,6 @@
 package cn.malgo.annotation.test;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
@@ -35,47 +36,49 @@ public class AtomicTerm {
     @Autowired
     private AtomicTermService      atomicTermService;
 
-    @Test
-    public void test() {
-        String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
-        AnAtomicTerm anAtomicTerm = new AnAtomicTerm();
-        anAtomicTerm.setId(id);
-        anAtomicTerm.setTerm("task value");
-        anAtomicTerm.setType("type");
-
-        int result = anAtomicTermMapper.insert(anAtomicTerm);
-        System.out.println(result);
-
-    }
-
-    @Test
-    public void testBatchCheck() {
-        atomicTermBatchService.batchCheckRelation();
-    }
-
-    @Test
-    public void testSaveAtomicTerm() {
-        atomicTermService.saveAtomicTerm("fromAnId", "task", "termType");
-    }
-
-    @Test
-    public void testUpdateAtomicTerm() {
-        atomicTermService.updateAtomicTerm("7312953423647539200", "termType2");
-    }
-
-    @Test
-    public void testBatchReplace() {
-        AnAtomicTerm anAtomicTermOld = atomicTermService.queryByAtomicTermId("10211");
-        AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
-        BeanUtils.copyProperties(anAtomicTermOld, anAtomicTermNew);
-        anAtomicTermNew.setType("type");
-
-        atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermNew, anAtomicTermOld);
-    }
-
+//    @Test
+//    public void test() {
+//        String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+//        AnAtomicTerm anAtomicTerm = new AnAtomicTerm();
+//        anAtomicTerm.setId(id);
+//        anAtomicTerm.setTerm("task value");
+//        anAtomicTerm.setType("type");
+//
+//        int result = anAtomicTermMapper.insert(anAtomicTerm);
+//        System.out.println(result);
+//
+//    }
+//
+//    @Test
+//    public void testBatchCheck() {
+//        atomicTermBatchService.batchCheckRelation();
+//    }
+//
+//    @Test
+//    public void testSaveAtomicTerm() {
+//        atomicTermService.saveAtomicTerm("fromAnId", "task", "termType");
+//    }
+//
+//    @Test
+//    public void testUpdateAtomicTerm() {
+//        atomicTermService.updateAtomicTerm("7312953423647539200", "termType2");
+//    }
+//
+//    @Test
+//    public void testBatchReplace() {
+//        AnAtomicTerm anAtomicTermOld = atomicTermService.queryByAtomicTermId("10211");
+//        AnAtomicTerm anAtomicTermNew = new AnAtomicTerm();
+//        BeanUtils.copyProperties(anAtomicTermOld, anAtomicTermNew);
+//        anAtomicTermNew.setType("type");
+//
+//        atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermNew, anAtomicTermOld);
+//    }
+//
     @Test
     public void testQueryByTerm(){
-        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.queryByAtomicTerm("+");
-        System.out.println(anAtomicTermList);
+//        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.queryByAtomicTerm("+");
+        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.fuzzyQueryOnePage("风","Disease",1,250);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println(JSON.parseArray(JSON.toJSONString(anAtomicTermList)));
     }
 }

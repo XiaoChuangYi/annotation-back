@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.malgo.annotation.common.dal.mapper.ConceptMapper">
+  <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.Concept">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
+    <result column="pconcept_id" jdbcType="VARCHAR" property="pconceptId" />
+    <result column="concept_code" jdbcType="VARCHAR" property="conceptCode" />
+    <result column="concept_type" jdbcType="VARCHAR" property="conceptType" />
+    <result column="concept_name" jdbcType="VARCHAR" property="conceptName" />
+  </resultMap>
+  <sql id="ALL_COLUMN">
+    concept_id,
+    pconcept_id,
+    concept_code,
+    concept_type,
+    concept_name
+  </sql>
+  <select id="selectConceptByConceptId" resultMap="BaseResultMap">
+    select <include refid="ALL_COLUMN"/>
+    FROM CONCEPT WHERE pconcept_id=#{conceptId}
+  </select>
+</mapper>

@@ -39,4 +39,12 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      */
     List<AnAtomicTerm> selectByState(@Param("state") String state);
 
+    /**
+     * 模糊查询全部原子术语
+     * @param term
+     * @param type
+     * @return
+     * */
+    List<AnAtomicTerm> fuzzyQueryByTermAndType(@Param("term") String term,@Param("type") String type);
+
 }

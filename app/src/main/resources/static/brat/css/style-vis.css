@@ -48,7 +48,7 @@ text {
 svg {
   width: 100%;
   height: 1px;
-  border: 1px solid #7fa2ff;
+  /*border: 1px solid #7fa2ff;*/
   font-size: 15px;
   /* font-size: 14px; */
 }
@@ -58,7 +58,7 @@ svg.reselect {
 
 /* "basic" font */
 text {
-  font-size: 16px;
+  font-size: 25px;
   font-family: 'Liberation Sans', Verdana, Arial, Helvetica, sans-serif;
 }
 
@@ -75,7 +75,7 @@ path {
 /* "basic" font */
 .span text {
   /*  font-size: 10.5px; */
-  font-size: 10px;
+  font-size: 20px;
   text-anchor: middle;
   font-family: 'PT Sans Caption', sans-serif;
   pointer-events: none;
@@ -284,7 +284,8 @@ rect.shadow_EditHighlight {
 
 .background0 {
   stroke: none;
-  fill: #ffffff;
+  /*fill: #ffffff;*/
+  fill: rgba(255, 255, 255, 0);
 }
 
 .background1 {
@@ -300,11 +301,13 @@ rect.shadow_EditHighlight {
 .sentnum text {
   fill: #999999;
   text-anchor: end;
+  visibility:hidden;
 }
 
 .sentnum path {
   stroke: #999999;
   stroke-width: 1px;
+  visibility:hidden;
 }
 
 .span_cue {

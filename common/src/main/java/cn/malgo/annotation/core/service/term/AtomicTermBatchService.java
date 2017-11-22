@@ -147,7 +147,7 @@ public class AtomicTermBatchService {
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());
         do {
-
+            //根据finish状态到术语标注表中查询
             pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
 
             LogUtil.info(logger,

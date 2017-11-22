@@ -34,7 +34,8 @@ public class LoginInterceptor implements HandlerInterceptor {
         HttpSession httpSession = request.getSession();
         CrmAccount crmAccount = (CrmAccount) httpSession.getAttribute("currentAccount");
         if (crmAccount==null) {
-            ResultVO failResult = new ResultVO(true, false, true, "请重新登录!");
+            //2017/11/20 ,session失效，isSucc设置为false
+            ResultVO failResult = new ResultVO(false, false, true, "请重新登录!");
             response.getWriter().write(JSON.toJSONString(failResult));
             return false;
         }

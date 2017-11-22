@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.malgo.annotation.common.dal.mapper.AnTypeMapper">
+  <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.AnType">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" jdbcType="VARCHAR" property="id" />
+    <result column="PARENT_ID" jdbcType="VARCHAR" property="parentId"></result>
+    <result column="TYPE_NAME" jdbcType="VARCHAR" property="typeName" />
+    <result column="TYPE_CODE" jdbcType="VARCHAR" property="typeCode" />
+    <result column="STATE" jdbcType="VARCHAR" property="state"/>
+    <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated" />
+    <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified" />
+  </resultMap>
+  <sql id="ALL_COLUMN">
+    ID,
+    TYPE_NAME,
+    TYPE_CODE,
+    PARENT_ID,
+    STATE,
+    GMT_CREATED,
+    GMT_MODIFIED
+  </sql>
+  <select id="selectTypeByTypeCodeEnable" resultMap="BaseResultMap">
+    select <include refid="ALL_COLUMN"/>
+    FROM AN_TYPE WHERE TYPE_CODE=#{typeCode} AND STATE ='ENABLE'
+  </select>
+  <select id="selectTypeByTypeCodeDisable" resultMap="BaseResultMap">
+    select <include refid="ALL_COLUMN"/>
+    FROM AN_TYPE WHERE TYPE_CODE=#{typeCode} AND STATE ='DISABLE'
+  </select>
+  <select id="selectTypeCount"  resultType="java.lang.Integer">
+    SELECT COUNT(ID) FROM AN_TYPE
+  </select>
+  <select id="selectEnableTypes" resultMap="BaseResultMap">
+    SELECT <include refid="ALL_COLUMN"/>
+    FROM AN_TYPE WHERE state='ENABLE'
+  </select>
+  <update id="updateByTypeCodeSelective" parameterType="cn.malgo.annotation.common.dal.model.AnType">
+      UPDATE  AN_TYPE
+      <trim prefix="set" suffixOverrides=",">
+        <if test="parentId!=null and parentId!=''">PARENT_ID=#{parentId},</if>
+        <if test="typeName!=null and typeName!=''">TYPE_NAME=#{typeName},</if>
+        <if test="state!=null and state!=''">STATE=#{state},</if>
+        <if test="gmtCreated!=null and gmtCreated!=''">GMT_CREATED=#{gmtCreated},</if>
+        <if test="gmtModified!=null and gmtModified!=''">GMT_MODIFIED=#{gmtModified},</if>
+      </trim>
+    where TYPE_CODE=#{typeCode}
+  </update>
+</mapper>
