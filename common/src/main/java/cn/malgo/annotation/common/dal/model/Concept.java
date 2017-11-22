@@ -1,8 +1,10 @@
 package cn.malgo.annotation.common.dal.model;
 
 import javax.persistence.*;
+
 @Table(name = "CONCEPT")
 public class Concept {
+    @Id
     @Column(name = "concept_id")
     private String conceptId;
 
@@ -17,6 +19,9 @@ public class Concept {
 
     @Column(name = "concept_name")
     private String conceptName;
+
+    @Column(name = "has_children")
+    private Byte hasChildren;
 
     /**
      * @return concept_id
@@ -86,5 +91,19 @@ public class Concept {
      */
     public void setConceptName(String conceptName) {
         this.conceptName = conceptName;
+    }
+
+    /**
+     * @return has_children
+     */
+    public Byte getHasChildren() {
+        return hasChildren;
+    }
+
+    /**
+     * @param hasChildren
+     */
+    public void setHasChildren(Byte hasChildren) {
+        this.hasChildren = hasChildren;
     }
 }
