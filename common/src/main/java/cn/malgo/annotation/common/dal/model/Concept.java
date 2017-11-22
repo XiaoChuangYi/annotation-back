@@ -103,7 +103,7 @@ public class Concept {
     /**
      * @param hasChildren
      */
-    public void setHasChildren(Byte hasChildren) {
+    public void setHasChildren(int hasChildren) {
         this.hasChildren = hasChildren;
     }
 }
