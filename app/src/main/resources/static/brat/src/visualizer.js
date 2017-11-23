@@ -577,7 +577,7 @@ var Visualizer = (function($, window, undefined) {
           argsDesc = argsDesc && argsDesc.args;
           var t1, t2;
           if (argsDesc) {
-            // sort the arguments according to the config
+            // sort the arguments according to the config-old
             var args = {}
             args[rel[2][0][0]] = rel[2][0][1];
             args[rel[2][1][0]] = rel[2][1][1];

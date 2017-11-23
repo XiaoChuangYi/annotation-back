@@ -6,36 +6,38 @@ import cn.malgo.annotation.common.util.AssertUtil;
  * Created by cjl on 2017/11/20.
  */
 public class UpdateTypeRequest {
-    private String  typeId;
-    private String typeName;
-    private String parentId;
+    private String id;
+    private String  typeOld;
+    private String typeNew;
 
-    public String getParentId() {
-        return parentId;
+    public String getId() {
+        return id;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getTypeId() {
-        return typeId;
+    public String getTypeOld() {
+        return typeOld;
     }
 
-    public void setTypeId(String typeId) {
-        this.typeId = typeId;
+    public void setTypeOld(String typeOld) {
+        this.typeOld = typeOld;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public String getTypeNew() {
+        return typeNew;
     }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
+    public void setTypeNew(String typeNew) {
+        this.typeNew = typeNew;
     }
+
     public static void check(UpdateTypeRequest request){
         AssertUtil.notNull(request,"更新类型请求为空");
-        AssertUtil.notBlank(request.getTypeId(),"类型TypeId为空");
-        AssertUtil.notBlank(request.getTypeName(),"类型TypeName为空");
+        AssertUtil.notBlank(request.getId(),"类型id为空");
+        AssertUtil.notBlank(request.getTypeNew(),"类型typeNew为空");
+        AssertUtil.notBlank(request.getTypeOld(),"类型typeOld为空");
     }
 }

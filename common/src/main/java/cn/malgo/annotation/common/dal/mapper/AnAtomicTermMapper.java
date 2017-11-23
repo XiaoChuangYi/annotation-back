@@ -44,7 +44,19 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param term
      * @param type
      * @return
-     * */
+     */
     List<AnAtomicTerm> fuzzyQueryByTermAndType(@Param("term") String term,@Param("type") String type);
 
+    /**
+     * 根据type类型查询对应原子术语的ID集合
+     * @param type
+     */
+    List<AnAtomicTerm> selectAtomicIDsByOldType(@Param("type") String type);
+
+    /**
+     * 批量更新原子术语表中的type
+     * @param idsList
+     * @param type
+     */
+    int batchUpdateAtomicType(@Param("idsList") List<String> idsList,@Param("type") String type);
 }

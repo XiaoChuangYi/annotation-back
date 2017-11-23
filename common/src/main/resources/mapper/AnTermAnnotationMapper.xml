@@ -85,5 +85,10 @@
         <include refid="ALL_COLUMN"/>
         FROM AN_TERM_ANNOTATION WHERE TERM_ID = #{termId}
     </select>
-
+    <select id="selectTermAnnotationCount"  resultType="java.lang.Integer">
+        SELECT COUNT(ID) FROM AN_TERM_ANNOTATION WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND  state=#{state}
+        </if>
+    </select>
 </mapper>

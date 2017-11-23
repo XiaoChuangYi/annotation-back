@@ -48,4 +48,7 @@
       </trim>
     where TYPE_CODE=#{typeCode}
   </update>
+  <update id="updateTypeCodeById">
+    UPDATE  AN_TYPE SET TYPE_CODE =#{typeCode} WHERE ID=#{id}
+  </update>
 </mapper>

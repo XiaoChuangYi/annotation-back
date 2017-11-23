@@ -329,6 +329,22 @@ public class AnnotationService {
         int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
         AssertUtil.state(updateResult > 0, "更新最终标注失败");
     }
+    /**
+     * 重载更新手动标注
+     * @param anId
+     * @param manualAnnotation
+     * */
+    public  void updateMunalAnnotation(String anId,String manualAnnotation){
+        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+
+        AnTermAnnotation anTermAnnotation = new AnTermAnnotation();
+        anTermAnnotation.setId(anId);
+        anTermAnnotation.setManualAnnotation(securityManualAnnotation);
+        anTermAnnotation.setGmtModified(new Date());
+
+        int updateResult = anTermAnnotationMapper.updateByPrimaryKeySelective(anTermAnnotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
 
     /**
      * 加密标注信息,并且更新
@@ -396,6 +412,12 @@ public class AnnotationService {
             SecurityUtil.decryptAESBase64(anTermAnnotation.getManualAnnotation()));
         anTermAnnotation.setFinalAnnotation(
             SecurityUtil.decryptAESBase64(anTermAnnotation.getFinalAnnotation()));
+    }
+    /**
+     * 查询标注表的总条数
+     * */
+    public  int  annotationTermSize(String state){
+        return  anTermAnnotationMapper.selectTermAnnotationCount(state);
     }
 
 }

@@ -70,4 +70,15 @@
         AND TYPE = #{type}
         ORDER BY ID
     </select>
+    <select id="selectAtomicIDsByOldType" resultMap="BaseResultMap">
+        SELECT <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE TYPE=#{type}
+    </select>
+    <update id="batchUpdateAtomicType" parameterType="java.util.List">
+        UPDATE AN_ATOMIC_TERM SET TYPE =#{type}
+        WHERE ID IN 
+        <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </update>
 </mapper>

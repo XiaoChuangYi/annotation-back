@@ -1,6 +1,10 @@
 package cn.malgo.annotation.core.service.type;
 
+import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
+import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
+import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
+import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.annotation.TypeStateEnum;
@@ -8,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -18,12 +23,57 @@ public class TypeService {
     @Autowired
     private AnTypeMapper anTypeMapper;
 
+    @Autowired
+    private AnAtomicTermMapper anAtomicTermMapper;
+
+    @Autowired
+    private AnTermMapper anTermMapper;
+
+
     /**
      * 查询所有类型
      */
     public List<AnType> selectAllTypes(){
         List<AnType> anTypeList=anTypeMapper.selectEnableTypes();
         return anTypeList;
+    }
+    /**
+     * 根据id更新type表中的typeCode
+     * @param id
+     * @param typeCode
+     */
+    public void updateTypeCodeById(String id,String typeCode){
+        anTypeMapper.updateTypeCodeById(typeCode,id);
+    }
+    /**
+     * 批量更新原子术语表和标注表中的类型type
+     *@param typeOld
+     *@param typeNew
+     */
+    public void updateBatchTypeOnAtomicTerm(String typeOld,String typeNew){
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAtomicIDsByOldType(typeOld);
+        if(anAtomicTermList.size()>0){
+            List<String> idsList=new LinkedList<>();
+            for(int k=0;k<anAtomicTermList.size();k++){
+                idsList.add(anAtomicTermList.get(k).getId());
+            }
+            anAtomicTermMapper.batchUpdateAtomicType(idsList,typeNew);
+        }
+    }
+    /**
+     * 批量更新原子术语表和标注表中的类型type
+     *@param typeOld
+     *@param typeNew
+     */
+    public  void  updateBatchTypeOnTerm(String typeOld,String typeNew){
+        List<AnTerm> anTermList=anTermMapper.selectAnTermIDsByOldType(typeOld);
+        if(anTermList.size()>0){
+            List<String> idsList=new LinkedList<>();
+            for(int k=0;k<anTermList.size();k++){
+                idsList.add(anTermList.get(k).getId());
+            }
+            anTermMapper.batchUpdateAnTermType(idsList,typeNew);
+        }
     }
     /**
      * 更新type的名称

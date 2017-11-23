@@ -1332,7 +1332,7 @@ var AnnotatorUI = (function($, window, undefined) {
 
         if (noArcs) {
           if (arcId) {
-            // let the user delete or whatever, even on bad config
+            // let the user delete or whatever, even on bad config-old
             // (note that what's shown to the user is w/o possible num suffix)
             var $checkbox = $('<input id="arc_' + arcType + '" type="hidden" name="arc_type" value="' + noNumArcType + '"/>');
             $scroller.append($checkbox);

@@ -21,7 +21,7 @@ public class Concept {
     private String conceptName;
 
     @Column(name = "has_children")
-    private Byte hasChildren;
+    private int hasChildren;
 
     /**
      * @return concept_id
@@ -96,14 +96,14 @@ public class Concept {
     /**
      * @return has_children
      */
-    public Byte getHasChildren() {
+    public int getHasChildren() {
         return hasChildren;
     }
 
     /**
      * @param hasChildren
      */
-    public void setHasChildren(Byte hasChildren) {
+    public void setHasChildren(int hasChildren) {
         this.hasChildren = hasChildren;
     }
 }
