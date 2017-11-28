@@ -3,17 +3,15 @@ package cn.malgo.annotation.test;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
-import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.term.AtomicTermService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 
 import java.util.List;
 

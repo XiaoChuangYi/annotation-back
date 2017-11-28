@@ -1,9 +1,8 @@
 package cn.malgo.annotation.web.controller.type;
 
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
 import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
@@ -11,7 +10,6 @@ import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
 import cn.malgo.annotation.web.result.ResultVO;
-import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,9 +83,9 @@ public class TypeController extends BaseController {
      * @param typeCode
      */
     @RequestMapping(value="/selectAnnotationByType.do")
-     public  ResultVO<List<AnTermAnnotation>> selectAnnotationByType(String typeCode,String term){
-        List<AnTermAnnotation> anTermAnnotationList=typeService.queryAnnotationByType(typeCode,term);
-        return  ResultVO.success(anTermAnnotationList);
+     public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
+        List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
+        return  ResultVO.success(annotationList);
     }
 
 }

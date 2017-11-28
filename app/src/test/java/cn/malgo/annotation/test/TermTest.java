@@ -1,5 +1,6 @@
 package cn.malgo.annotation.test;
 
+import cn.malgo.annotation.common.dal.model.Corpus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
-import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
+import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.AnTerm;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
@@ -23,7 +23,7 @@ import cn.malgo.common.security.SecurityUtil;
 public class TermTest {
 
     @Autowired
-    private AnTermMapper       anTermMapper;
+    private CorpusMapper corpusMapper;
 
     @Autowired
     private AnAtomicTermMapper anAtomicTermMapper;
@@ -34,14 +34,14 @@ public class TermTest {
     @Test
     public void test() {
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
-        AnTerm term = new AnTerm();
+        Corpus term = new Corpus();
         term.setId(id);
         term.setState(CommonStatusEnum.ENABLE.name());
         term.setType("type");
         term.setMemo("memo");
         term.setTerm("术语" + id);
 
-        int result = anTermMapper.insert(term);
+        int result = corpusMapper.insert(term);
         System.out.println(result);
     }
 

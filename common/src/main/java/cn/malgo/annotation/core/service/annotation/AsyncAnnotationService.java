@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import cn.malgo.annotation.common.dal.model.AnTerm;
+import cn.malgo.annotation.common.dal.model.Corpus;
 
 /**
  *
@@ -24,14 +24,14 @@ public class AsyncAnnotationService {
 
     /**
      * 异步自动标注
-     * @param anTermList
+     * @param corpusList
      * @return
      */
     @Async("taskAsyncPool")
-    public Future<Boolean> asyncAutoAnnotation(List<AnTerm> anTermList) {
+    public Future<Boolean> asyncAutoAnnotation(List<Corpus> corpusList) {
         boolean result = true;
         try {
-            annotationService.autoAnnotationByTermList(anTermList);
+            annotationService.autoAnnotationByTermList(corpusList);
         } catch (Exception e) {
             result = false;
         }

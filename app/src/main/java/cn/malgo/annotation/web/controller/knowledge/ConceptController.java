@@ -1,7 +1,7 @@
 package cn.malgo.annotation.web.controller.knowledge;
 
-import cn.malgo.annotation.common.dal.model.Concept;
-import cn.malgo.annotation.core.service.type.ConceptService;
+import cn.malgo.annotation.common.dal.model.ConceptShow;
+import cn.malgo.annotation.core.service.type.ConceptShowService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,11 @@ import java.util.List;
 public class ConceptController extends BaseController {
 
     @Autowired
-    private ConceptService conceptService;
+    private ConceptShowService conceptShowService;
 
     @RequestMapping(value = "/getChildrenConcept.do")
-    public ResultVO<List<Concept>> getAllConceptById(String conceptId){
-        List<Concept> roleVOList=conceptService.selectAllByConcepId(conceptId);
+    public ResultVO<List<ConceptShow>> getAllConceptById(String conceptId){
+        List<ConceptShow> roleVOList= conceptShowService.selectAllByConcepId(conceptId);
         return ResultVO.success(roleVOList);
     }
 }

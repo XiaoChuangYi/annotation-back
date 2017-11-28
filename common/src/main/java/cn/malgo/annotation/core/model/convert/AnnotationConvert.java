@@ -5,17 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.util.log.LogUtil;
-import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
-import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
-import cn.malgo.annotation.core.model.check.AnnotationChecker;
 import cn.malgo.core.definition.Document;
 import cn.malgo.core.definition.utils.DocumentManipulator;
 import org.apache.log4j.Logger;
@@ -34,9 +31,9 @@ public class AnnotationConvert {
      */
     public static String AN_LINE_FORMAT = "{0}\t{1} {2} {3}\t{4}\n";
 
-    public static JSONObject convertToBratFormat(AnTermAnnotation anTermAnnotation) {
-        Document document = new Document(anTermAnnotation.getTerm(), null);
-        DocumentManipulator.parseBratAnnotations(anTermAnnotation.getFinalAnnotation(), document);
+    public static JSONObject convertToBratFormat(Annotation annotation) {
+        Document document = new Document(annotation.getTerm(), null);
+        DocumentManipulator.parseBratAnnotations(annotation.getFinalAnnotation(), document);
         JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
         return result;
     }

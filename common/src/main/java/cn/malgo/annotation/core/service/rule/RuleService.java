@@ -2,7 +2,6 @@ package cn.malgo.annotation.core.service.rule;
 
 import java.util.Date;
 
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;

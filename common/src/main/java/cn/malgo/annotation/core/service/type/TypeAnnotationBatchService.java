@@ -1,9 +1,8 @@
 package cn.malgo.annotation.core.service.type;
 
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.common.LogUtil;
 import cn.malgo.common.security.SecurityUtil;
@@ -12,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,8 +30,8 @@ public class TypeAnnotationBatchService {
         LogUtil.info(logger, "开始批量替换术语标注表中的type类型");
         int pageNum = 1;
         int pageSize = 1000;
-        Page<AnTermAnnotation> pageInfo = null;
-        List<AnTermAnnotation> finalAnno=new LinkedList<>();
+        Page<Annotation> pageInfo = null;
+        List<Annotation> finalAnno=new LinkedList<>();
         int total=annotationService.annotationTermSize(null);
         int endPageIndex=total/pageSize;
         if(total%pageSize>0){
@@ -43,14 +41,14 @@ public class TypeAnnotationBatchService {
             pageInfo=annotationService.queryByStateList(null,pageNum,pageSize);
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，该批次共"+(pageInfo.getEndRow()-pageInfo.getStartRow())+"条记录");
-            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()){
+            for (Annotation annotation : pageInfo.getResult()){
                 try {
                     //手动标注
                     List<TermAnnotationModel> manualModelList = AnnotationConvert
-                            .convertAnnotationModelList(anTermAnnotation.getManualAnnotation());
+                            .convertAnnotationModelList(annotation.getManualAnnotation());
                     //最终标注
                     List<TermAnnotationModel> finalModelList = AnnotationConvert
-                            .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+                            .convertAnnotationModelList(annotation.getFinalAnnotation());
                     for (TermAnnotationModel currentModel : finalModelList) {
                         //如果标注中存在待替换的type类型,进行替换
                         if (currentModel.getType().equals(typeOld)) {
@@ -63,10 +61,10 @@ public class TypeAnnotationBatchService {
                             currentModel.setType(typeNew);
                         }
                     }
-                    anTermAnnotation.setGmtModified(new Date());
-                    anTermAnnotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
-                    anTermAnnotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
-                    finalAnno.add(anTermAnnotation);
+                    annotation.setGmtModified(new Date());
+                    annotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
+                    annotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
+                    finalAnno.add(annotation);
                 }catch (Exception ex){
                     LogUtil.info(logger,
                             "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
@@ -85,7 +83,7 @@ public class TypeAnnotationBatchService {
 //            LogUtil.info(logger, "开始批量替换术语标注表中的type类型");
 //            int pageNum = 1;
 //            int pageSize = 1000;
-//            Page<AnTermAnnotation> pageInfo = null;
+//            Page<Annotation> pageInfo = null;
 ////            List<String> stateList = new ArrayList<>();
 ////            stateList.add(AnnotationStateEnum.PROCESSING.name());
 //            int total=annotationService.annotationTermSize(null);
@@ -100,7 +98,7 @@ public class TypeAnnotationBatchService {
 //                pageInfo=annotationService.queryByStateList(null,pageNum,pageSize);
 //                LogUtil.info(logger,
 //                        "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，该批次共"+(pageInfo.getEndRow()-pageInfo.getStartRow())+"条记录");
-//                for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+//                for (Annotation anTermAnnotation : pageInfo.getResult()) {
 //                    try {
 //                        //手动标注
 //                        List<TermAnnotationModel> manualModelList = AnnotationConvert

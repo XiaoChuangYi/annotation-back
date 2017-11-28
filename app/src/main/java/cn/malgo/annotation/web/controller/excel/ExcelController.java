@@ -1,9 +1,8 @@
 package cn.malgo.annotation.web.controller.excel;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.common.util.ExcelUtil;
-import cn.malgo.annotation.core.service.term.AtomicTermService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.github.pagehelper.Page;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;

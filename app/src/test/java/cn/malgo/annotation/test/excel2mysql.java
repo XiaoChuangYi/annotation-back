@@ -1,23 +1,10 @@
 package cn.malgo.annotation.test;
 
-import cn.malgo.annotation.common.dal.model.Concept;
-import cn.malgo.annotation.core.service.type.ConceptService;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Test;
+import cn.malgo.annotation.core.service.type.ConceptShowService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by cjl on 2017/11/22.
@@ -26,11 +13,11 @@ import java.util.List;
 @SpringBootTest
 public class excel2mysql {
     @Autowired
-    private ConceptService conceptService;
+    private ConceptShowService conceptShowService;
 
 //    @Test
 //    public void select(){
-//        Concept concept=conceptService.selecAll();
+//        ConceptShow concept=conceptService.selecAll();
 //        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<");
 //        System.out.println(JSON.parseObject(JSON.toJSONString(concept)));
 //    }
@@ -43,10 +30,10 @@ public class excel2mysql {
 //            if(file.getName().endsWith("xlsx")){
 //                workbook = new XSSFWorkbook(file);
 //            }
-//            List<Concept> list=new ArrayList<>();
+//            List<ConceptShow> list=new ArrayList<>();
 //            if(workbook!=null){
 //                Sheet sheet=workbook.getSheetAt(0);
-//                Concept concept=null;
+//                ConceptShow concept=null;
 //                int start=62453;
 ////                int total=sheet.getLastRowNum();
 //                int total=64158;
@@ -54,7 +41,7 @@ public class excel2mysql {
 //                    Row row=sheet.getRow(rowNum);
 //                    if(row==null)
 //                        continue;
-//                    concept=new Concept();
+//                    concept=new ConceptShow();
 //                    for(int cellNum=0;cellNum<row.getPhysicalNumberOfCells();cellNum++){
 //                        Cell cell=row.getCell(cellNum);
 //                        if(cellNum==0)

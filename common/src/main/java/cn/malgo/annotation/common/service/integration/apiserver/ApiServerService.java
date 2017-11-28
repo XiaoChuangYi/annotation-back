@@ -5,16 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.malgo.annotation.common.dal.model.AnTerm;
+import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.common.dal.model.Corpus;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermVO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.service.integration.apiserver.request.UpdateAnnotationRequest;
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
@@ -51,24 +48,24 @@ public class ApiServerService {
 
     /**
      * 批量标注,使用手工标注和新词
-     * @param anTermAnnotationList
+     * @param annotationList
      * @return
      */
-    public List<AnTermAnnotation> batchPhraseUpdatePosWithNewTerm(List<AnTermAnnotation> anTermAnnotationList) {
-        if(anTermAnnotationList.isEmpty()){
-            return anTermAnnotationList;
+    public List<Annotation> batchPhraseUpdatePosWithNewTerm(List<Annotation> annotationList) {
+        if(annotationList.isEmpty()){
+            return annotationList;
         }
         Map<String, String> finalAnnotationMap = new HashMap<>();
         List<UpdateAnnotationRequest> updateAnnotationRequestList = new ArrayList<>();
 
-        for (AnTermAnnotation anTermAnnotation : anTermAnnotationList) {
+        for (Annotation annotation : annotationList) {
             UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
-            updateAnnotationRequest.setText(anTermAnnotation.getTerm());
-            updateAnnotationRequest.setId(anTermAnnotation.getId());
-            updateAnnotationRequest.setAutoAnnotation(anTermAnnotation.getAutoAnnotation());
-            List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(anTermAnnotation.getNewTerms());
+            updateAnnotationRequest.setText(annotation.getTerm());
+            updateAnnotationRequest.setId(annotation.getId());
+            updateAnnotationRequest.setAutoAnnotation(annotation.getAutoAnnotation());
+            List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(annotation.getNewTerms());
             updateAnnotationRequest.setNewTerms(termTypeVOList);
-            updateAnnotationRequest.setManualAnnotation(anTermAnnotation.getManualAnnotation());
+            updateAnnotationRequest.setManualAnnotation(annotation.getManualAnnotation());
             updateAnnotationRequestList.add(updateAnnotationRequest);
         }
 
@@ -84,16 +81,16 @@ public class ApiServerService {
                 }
             }
 
-            for(AnTermAnnotation anTermAnnotation:anTermAnnotationList){
+            for(Annotation annotation : annotationList){
                 //使用手工标注和新词重新标注后的结果存在
-                String finalAnnotation = finalAnnotationMap.get(anTermAnnotation.getId());
+                String finalAnnotation = finalAnnotationMap.get(annotation.getId());
                 if(StringUtils.isNotBlank(finalAnnotation)){
-                    anTermAnnotation.setFinalAnnotation(finalAnnotation);
+                    annotation.setFinalAnnotation(finalAnnotation);
                 }
             }
         }
 
-        return anTermAnnotationList;
+        return annotationList;
     }
 
     /**
@@ -101,7 +98,7 @@ public class ApiServerService {
      * @param termList
      * @return
      */
-    public List<AnnotationResult> batchPhraseTokenize(List<AnTerm> termList){
+    public List<AnnotationResult> batchPhraseTokenize(List<Corpus> termList){
 
         List<TermVO> termVOList = convertToTermVOList(termList);
 
@@ -114,16 +111,16 @@ public class ApiServerService {
 
     /**
      * 术语模型转换
-     * @param anTermList
+     * @param corpusList
      * @return
      */
-    private List<TermVO> convertToTermVOList(List<AnTerm> anTermList){
+    private List<TermVO> convertToTermVOList(List<Corpus> corpusList){
 
         List<TermVO> termVOList = new ArrayList<>();
-        for(AnTerm anTerm : anTermList){
+        for(Corpus corpus : corpusList){
             TermVO termVO = new TermVO();
-            termVO.setText(anTerm.getTerm());
-            termVO.setId(anTerm.getId());
+            termVO.setText(corpus.getTerm());
+            termVO.setId(corpus.getId());
             termVOList.add(termVO);
         }
         return termVOList;

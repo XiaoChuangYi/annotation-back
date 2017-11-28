@@ -2,7 +2,7 @@ package cn.malgo.annotation.test;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.util.ExcelUtil;
-import cn.malgo.annotation.core.service.term.AtomicTermService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import com.github.pagehelper.Page;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.List;
 

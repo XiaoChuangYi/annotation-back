@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.malgo.annotation.common.dal.mapper.TermMapper">
+  <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.Term">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
+    <result column="pconcept_id" jdbcType="VARCHAR" property="pconceptId" />
+    <result column="concept_code" jdbcType="VARCHAR" property="conceptCode" />
+    <result column="concept_type" jdbcType="VARCHAR" property="conceptType" />
+    <result column="concept_name" jdbcType="VARCHAR" property="conceptName" />
+    <result column="origin_name" jdbcType="VARCHAR" property="originName" />
+    <result column="has_children" jdbcType="INTEGER" property="hasChildren" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="state" jdbcType="VARCHAR" property="state" />
+  </resultMap>
+  <sql id="ALL_COLUMN">
+    id,
+    concept_id,
+    pconcept_id,
+    concept_code,
+    concept_type,
+    concept_name,
+    origin_name,
+    has_children,
+    category,
+    state
+  </sql>
+  <select id="selectEnableTerm" resultMap="BaseResultMap">
+    select <include refid="ALL_COLUMN" />
+    FROM TERM WHERE state='ENABLE' OR state IS NULL
+  </select>
+</mapper>

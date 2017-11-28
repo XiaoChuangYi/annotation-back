@@ -1,11 +1,11 @@
 package cn.malgo.annotation.core.service.type;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
-import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
+import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.AnTerm;
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
+import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.common.dal.model.Corpus;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
@@ -20,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +39,7 @@ public class TypeService {
     private AnAtomicTermMapper anAtomicTermMapper;
 
     @Autowired
-    private AnTermMapper anTermMapper;
+    private CorpusMapper corpusMapper;
 
     @Autowired
     private AnnotationService annotationService;
@@ -92,13 +91,13 @@ public class TypeService {
      *@param typeNew
      */
     public  void  updateBatchTypeOnTerm(String typeOld,String typeNew){
-        List<AnTerm> anTermList=anTermMapper.selectAnTermIDsByOldType(typeOld);
-        if(anTermList.size()>0){
+        List<Corpus> corpusList = corpusMapper.selectAnTermIDsByOldType(typeOld);
+        if(corpusList.size()>0){
             List<String> idsList=new LinkedList<>();
-            for(int k=0;k<anTermList.size();k++){
-                idsList.add(anTermList.get(k).getId());
+            for(int k = 0; k< corpusList.size(); k++){
+                idsList.add(corpusList.get(k).getId());
             }
-            anTermMapper.batchUpdateAnTermType(idsList,typeNew);
+            corpusMapper.batchUpdateAnTermType(idsList,typeNew);
         }
     }
     /**
@@ -154,18 +153,18 @@ public class TypeService {
      * 根据type类型查询标术语注表中的标注
      *@param type
      */
-    public List<AnTermAnnotation> queryAnnotationByType(String type,String term){
+    public List<Annotation> queryAnnotationByType(String type, String term){
         int pageSize=annotationService.annotationTermSize(null);
-        Page<AnTermAnnotation> pageInfo=annotationService.queryByStateList(null,1,pageSize);
-        List<AnTermAnnotation> finalAnTermAnnotation=new LinkedList<>();
-        for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+        Page<Annotation> pageInfo=annotationService.queryByStateList(null,1,pageSize);
+        List<Annotation> finalAnnotation =new LinkedList<>();
+        for (Annotation annotation : pageInfo.getResult()) {
             try {
                 //手动标注
                 List<TermAnnotationModel> manualModelList = AnnotationConvert
-                        .convertAnnotationModelList(anTermAnnotation.getManualAnnotation());
+                        .convertAnnotationModelList(annotation.getManualAnnotation());
                 //最终标注
                 List<TermAnnotationModel> finalModelList = AnnotationConvert
-                        .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+                        .convertAnnotationModelList(annotation.getFinalAnnotation());
                 boolean isHave = false;
                 for (TermAnnotationModel currentModel : finalModelList) {
                     //如果标注中存在待替换的type类型,进行替换
@@ -182,14 +181,14 @@ public class TypeService {
                     }
                 }
                 if (isHave) {
-                    finalAnTermAnnotation.add(anTermAnnotation);
-                    LogUtil.info(logger, "存在带替换的标注术语为:" + anTermAnnotation.getId());
+                    finalAnnotation.add(annotation);
+                    LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
                 }
             }catch (Exception ex){
                 LogUtil.info(logger,
                         "结束处理第" + ex.getMessage());
             }
         }
-        return finalAnTermAnnotation;
+        return finalAnnotation;
     }
 }

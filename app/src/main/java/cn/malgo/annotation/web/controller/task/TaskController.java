@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
-import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.term.TermService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
+import cn.malgo.annotation.core.service.corpus.CorpusService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;
 
@@ -31,7 +31,7 @@ public class TaskController extends BaseController {
     private AnnotationBatchService annotationBatchService;
 
     @Autowired
-    private TermService            termService;
+    private CorpusService corpusService;
 
     /**
      * 批量加密原子术语库
@@ -57,7 +57,7 @@ public class TaskController extends BaseController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                termService.batchAutoAnnotation();
+                corpusService.batchAutoAnnotation();
             }
         }).start();
         return ResultVO.success();

@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.core.service.term.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.term.AtomicTermService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.ChangeAtomicTermRequest;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
 import cn.malgo.annotation.web.controller.common.BaseController;

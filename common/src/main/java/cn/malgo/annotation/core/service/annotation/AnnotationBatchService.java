@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.malgo.annotation.common.dal.model.Annotation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import com.github.pagehelper.Page;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.util.log.LogUtil;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.check.AnnotationChecker;
@@ -44,17 +44,17 @@ public class AnnotationBatchService extends AnnotationService {
 
         int pageNum = 1;
         int pageSize = 10;
-        Page<AnTermAnnotation> pageInfo = null;
+        Page<Annotation> pageInfo = null;
         do {
 
             pageInfo = queryByStateList(stateList, pageNum, pageSize);
             LogUtil.info(logger,
                 "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
-            for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
-                LogUtil.info(logger, "开始处理的标注ID:" + anTermAnnotation.getId() + ";标注内容:"
-                                     + anTermAnnotation.getTerm());
-                checkAmbiguityAndAtomicTermExist(anTermAnnotation, anAtomicTermMap);
+            for (Annotation annotation : pageInfo.getResult()) {
+                LogUtil.info(logger, "开始处理的标注ID:" + annotation.getId() + ";标注内容:"
+                                     + annotation.getTerm());
+                checkAmbiguityAndAtomicTermExist(annotation, anAtomicTermMap);
             }
 
             LogUtil.info(logger,
@@ -71,19 +71,19 @@ public class AnnotationBatchService extends AnnotationService {
     public void updateUNEncryptedAnnotation(String userId) {
 
         int batchCount = 1;
-        Page<AnTermAnnotation> page = null;
+        Page<Annotation> page = null;
         do {
             LogUtil.info(logger, "开始处理第" + batchCount + "批次");
             page = queryOnePageUNEncrypted(AnnotationStateEnum.UN_ENCRYPTED.name(), userId, 1, 10);
-            AnTermAnnotation anTermAnnotation_temp = null;
+            Annotation annotation_temp = null;
             try {
-                for (AnTermAnnotation anTermAnnotation : page.getResult()) {
-                    anTermAnnotation_temp = anTermAnnotation;
-                    anTermAnnotation.setState(AnnotationStateEnum.FINISH.name());
-                    cryptAnnotationAndUpdate(anTermAnnotation);
+                for (Annotation annotation : page.getResult()) {
+                    annotation_temp = annotation;
+                    annotation.setState(AnnotationStateEnum.FINISH.name());
+                    cryptAnnotationAndUpdate(annotation);
                 }
             } catch (Exception e) {
-                LogUtil.info(logger, "加密失败anId" + anTermAnnotation_temp.getId());
+                LogUtil.info(logger, "加密失败anId" + annotation_temp.getId());
             }
             LogUtil.info(logger, "结束处理第" + batchCount + "批次,剩余:" + (page.getTotal() - 10));
             batchCount++;
@@ -93,19 +93,19 @@ public class AnnotationBatchService extends AnnotationService {
 
     /**
      * 检查标注是否存在歧义,以及是否存在对应的原子术语
-     * @param anTermAnnotation
+     * @param annotation
      * @param anAtomicTermMap
      */
-    public void checkAmbiguityAndAtomicTermExist(AnTermAnnotation anTermAnnotation,
+    public void checkAmbiguityAndAtomicTermExist(Annotation annotation,
                                                  Map<String, AnAtomicTerm> anAtomicTermMap) {
         try {
 
-            AnTermAnnotation anTermAnnotationNew = new AnTermAnnotation();
-            BeanUtils.copyProperties(anTermAnnotation, anTermAnnotationNew);
+            Annotation annotationNew = new Annotation();
+            BeanUtils.copyProperties(annotation, annotationNew);
 
             //检查标注中的原子术语是否存在于原子术语表中
             List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
-                .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+                .convertAnnotationModelList(annotation.getFinalAnnotation());
 
             //词库中存在对应的词条,检查词条是否存在来源,如果不存在,将当前标注作为该原子词条的来源
             //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
@@ -129,11 +129,11 @@ public class AnnotationBatchService extends AnnotationService {
 
                     //添加经过确认的标注到手工标注中
                     String manualAnnotation = AnnotationConvert.addNewTag(
-                        anTermAnnotationNew.getManualAnnotation(), termAnnotationModel.getType(),
+                        annotationNew.getManualAnnotation(), termAnnotationModel.getType(),
                         String.valueOf(termAnnotationModel.getStartPosition()),
                         String.valueOf(termAnnotationModel.getEndPosition()),
                         termAnnotationModel.getTerm());
-                    anTermAnnotationNew.setManualAnnotation(manualAnnotation);
+                    annotationNew.setManualAnnotation(manualAnnotation);
 
                 } else {
                     isUnRecognize = true;
@@ -143,20 +143,20 @@ public class AnnotationBatchService extends AnnotationService {
 
             //存在二义性,或者存在未出现在原子术语表中的标注
             if (isUnRecognize) {
-                anTermAnnotationNew.setState(AnnotationStateEnum.INCONSISTENT.name());
+                annotationNew.setState(AnnotationStateEnum.INCONSISTENT.name());
             }
 
-            LogUtil.info(logger, "手工标注内容:" + anTermAnnotationNew.getManualAnnotation());
+            LogUtil.info(logger, "手工标注内容:" + annotationNew.getManualAnnotation());
 
             //设置经过确认的最终标注
-            anTermAnnotationNew
+            annotationNew
                 .setFinalAnnotation(AnnotationConvert.convertToText(termAnnotationModelList));
 
             //更新标注
-            cryptAnnotationAndUpdate(anTermAnnotationNew);
+            cryptAnnotationAndUpdate(annotationNew);
 
         } catch (Exception e) {
-            LogUtil.info(logger, "检查标注二义性和原子术语对应关系异常,标注ID:" + anTermAnnotation.getId());
+            LogUtil.info(logger, "检查标注二义性和原子术语对应关系异常,标注ID:" + annotation.getId());
         }
     }
 
