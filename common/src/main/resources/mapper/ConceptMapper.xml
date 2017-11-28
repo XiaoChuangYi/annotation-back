@@ -22,6 +22,6 @@
   </sql>
   <select id="selectConceptByConceptId" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN" />
-    FROM CONCEPT WHERE pconcept_id=#{conceptId}
+    FROM CONCEPT_SHOW WHERE pconcept_id=#{conceptId}
   </select>
 </mapper>

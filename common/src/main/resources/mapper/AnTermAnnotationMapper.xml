@@ -34,7 +34,7 @@
     NEW_TERMS
   </sql>
     <update id="batchUpdateFinalAndManualAnnotation">
-        UPDATE AN_TERM_ANNOTATION SET FINAL_ANNOTATION=
+        UPDATE ANNOTATION SET FINAL_ANNOTATION=
         <foreach close="end" collection="anTermAnnotationList" index="index" item="item" open="case ID" separator=" ">
             when #{item.id} THEN
             #{item.finalAnnotation}
@@ -60,7 +60,7 @@
     <select id="selectByStateModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_TERM_ANNOTATION WHERE 1=1
+        FROM ANNOTATION WHERE 1=1
         <if test="state!=null and state!=''">
             AND STATE = #{state}
         </if>
@@ -71,7 +71,7 @@
     <select id="selectByStateListModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_TERM_ANNOTATION WHERE 1=1
+        FROM ANNOTATION WHERE 1=1
         <if test="stateList!=null">
             AND STATE IN
             <foreach collection="stateList" index="index" item="item" open="(" separator="," close=")">
@@ -98,10 +98,10 @@
     <select id="selectByTermId" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_TERM_ANNOTATION WHERE TERM_ID = #{termId}
+        FROM ANNOTATION WHERE TERM_ID = #{termId}
     </select>
     <select id="selectTermAnnotationCount"  resultType="java.lang.Integer">
-        SELECT COUNT(ID) FROM AN_TERM_ANNOTATION WHERE 1=1
+        SELECT COUNT(ID) FROM ANNOTATION WHERE 1=1
         <if test="state!=null and state!=''">
             AND  state=#{state}
         </if>

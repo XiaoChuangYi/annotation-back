@@ -3,7 +3,7 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "AN_TERM_ANNOTATION")
+@Table(name = "ANNOTATION")
 public class AnTermAnnotation {
     @Id
     @Column(name = "ID")

@@ -29,7 +29,7 @@
         <javaClientGenerator targetPackage="cn.malgo.annotation.common.dal.mapper" targetProject="src/main/java"
                              type="XMLMAPPER"/>
 
-        <table tableName="CONCEPT">
+        <table tableName="TERM">
             <!--mysql 配置-->
         </table>
     </context>
