@@ -52,6 +52,7 @@ public class AnnotationService {
     @Autowired
     private AtomicTermService      atomicTermService;
 
+
     /**
      * 根据状态分页查询标注
      * @param
@@ -294,7 +295,15 @@ public class AnnotationService {
         decryptAES(pageInfo.getResult());
         return pageInfo;
     }
+    /**
+     *批量更新术语标注表的type
+     * @param
+     */
+    public void updateBatchAnnotation(List<AnTermAnnotation> anTermAnnotationList){
+        int updateResult=anTermAnnotationMapper.batchUpdateFinalAndManualAnnotation(anTermAnnotationList);
+        AssertUtil.state(updateResult > 0, "更新标注失败");
 
+    }
     /**
      * 更新自动标注
      * @param anId

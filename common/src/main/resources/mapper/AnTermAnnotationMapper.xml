@@ -33,7 +33,22 @@
     FINAL_ANNOTATION,
     NEW_TERMS
   </sql>
-
+    <update id="batchUpdateFinalAndManualAnnotation">
+        UPDATE AN_TERM_ANNOTATION SET FINAL_ANNOTATION=
+        <foreach close="end" collection="anTermAnnotationList" index="index" item="item" open="case ID" separator=" ">
+            when #{item.id} THEN
+            #{item.finalAnnotation}
+        </foreach>
+        ,MANUAL_ANNOTATION=
+        <foreach collection="anTermAnnotationList" index="index" item="item" open="case ID" close="end" separator=" ">
+            when #{item.id} THEN
+            #{item.manualAnnotation}
+        </foreach>
+          WHERE ID in
+        <foreach collection="anTermAnnotationList" index="index" item="item" open="(" close=")" separator=",">
+            #{item.id,jdbcType=VARCHAR}
+        </foreach>
+    </update>
     <update id="batchUpdateFinalAnnotation">
         <foreach close="" collection="anTermAnnotationList" index="index" item="item" open="" separator=" ">
             UPDATE AN_TERM_ANNOTATION SET FINAL_ANNOTATION=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},

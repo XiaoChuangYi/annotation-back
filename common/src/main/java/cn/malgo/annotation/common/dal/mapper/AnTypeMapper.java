@@ -13,4 +13,5 @@ public interface AnTypeMapper extends CommonMapper<AnType> {
     List<AnType> selectEnableTypes();
     int updateByTypeCodeSelective(AnType TypeEntity);
     int updateTypeCodeById(@Param("typeCode") String typeCode,@Param("id") String id);
+    List<AnType> selectTypeByTypeId(@Param("Id") String Id);
 }

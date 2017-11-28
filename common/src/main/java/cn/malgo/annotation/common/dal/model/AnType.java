@@ -21,6 +21,9 @@ public class AnType {
     @Column(name="STATE")
     private String state;
 
+    @Column(name="HAS_CHILDREN")
+    private int hasChildren;
+
     @Column(name = "GMT_CREATED")
     private Date gmtCreated;
 
@@ -39,6 +42,14 @@ public class AnType {
      */
     public void setId(String id) {
         this.id = id;
+    }
+
+    public int getHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(int hasChildren) {
+        this.hasChildren = hasChildren;
     }
 
     public String getParentId() {

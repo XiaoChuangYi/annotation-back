@@ -5,12 +5,22 @@ import cn.malgo.annotation.common.dal.mapper.AnTermMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.AnTerm;
+import cn.malgo.annotation.common.dal.model.AnTermAnnotation;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.TypeStateEnum;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
+import cn.malgo.common.LogUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.github.pagehelper.Page;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +30,9 @@ import java.util.List;
  */
 @Service
 public class TypeService {
+
+    private Logger logger = Logger.getLogger(TypeService.class);
+
     @Autowired
     private AnTypeMapper anTypeMapper;
 
@@ -29,7 +42,20 @@ public class TypeService {
     @Autowired
     private AnTermMapper anTermMapper;
 
+    @Autowired
+    private AnnotationService annotationService;
 
+
+    /**
+     * 根据ID查询其子数据
+     * @param Id
+     */
+    public  List<AnType> selectAllTypesById(String Id){
+        List<AnType> anTypeList=anTypeMapper.selectTypeByTypeId(Id);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<");
+        System.out.println(JSONArray.parse(JSON.toJSONString(anTypeList)));
+        return  anTypeList;
+    }
     /**
      * 查询所有类型
      */
@@ -123,5 +149,47 @@ public class TypeService {
         anTypedel.setState(TypeStateEnum.DISABLE.name());
         int delResult=anTypeMapper.updateByPrimaryKeySelective(anTypedel);
         AssertUtil.state(delResult > 0, "删除类型失败");
+    }
+    /**
+     * 根据type类型查询标术语注表中的标注
+     *@param type
+     */
+    public List<AnTermAnnotation> queryAnnotationByType(String type,String term){
+        int pageSize=annotationService.annotationTermSize(null);
+        Page<AnTermAnnotation> pageInfo=annotationService.queryByStateList(null,1,pageSize);
+        List<AnTermAnnotation> finalAnTermAnnotation=new LinkedList<>();
+        for (AnTermAnnotation anTermAnnotation : pageInfo.getResult()) {
+            try {
+                //手动标注
+                List<TermAnnotationModel> manualModelList = AnnotationConvert
+                        .convertAnnotationModelList(anTermAnnotation.getManualAnnotation());
+                //最终标注
+                List<TermAnnotationModel> finalModelList = AnnotationConvert
+                        .convertAnnotationModelList(anTermAnnotation.getFinalAnnotation());
+                boolean isHave = false;
+                for (TermAnnotationModel currentModel : finalModelList) {
+                    //如果标注中存在待替换的type类型,进行替换
+                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)) {
+                        isHave=true;
+                        break;
+                    }
+                }
+                for (TermAnnotationModel currentModel : manualModelList) {
+                    //如果标注中存在待替换的type类型,进行替换
+                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)){
+                        isHave=true;
+                        break;
+                    }
+                }
+                if (isHave) {
+                    finalAnTermAnnotation.add(anTermAnnotation);
+                    LogUtil.info(logger, "存在带替换的标注术语为:" + anTermAnnotation.getId());
+                }
+            }catch (Exception ex){
+                LogUtil.info(logger,
+                        "结束处理第" + ex.getMessage());
+            }
+        }
+        return finalAnTermAnnotation;
     }
 }

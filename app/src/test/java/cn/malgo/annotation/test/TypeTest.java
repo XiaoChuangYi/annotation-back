@@ -52,8 +52,8 @@ public class TypeTest {
 ////                List<AnType> anTypeList=typeService.selectAllTypes();
 //                System.out.println(JSON.parseArray(JSON.toJSONString(page)));
 //        }
-        @Test
-        public void updateType(){
+//        @Test
+//        public void updateType(){
 //                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 //                Future<Boolean> future = asyncTypeBatchService
 //                        .asyncAutoBatchType("Body-struct","Body-structure");
@@ -67,11 +67,11 @@ public class TypeTest {
 //                } catch (ExecutionException e) {
 //                        e.printStackTrace();
 //                }
-                typeService.updateTypeCodeById("1","Body-structure");
+//                typeService.updateTypeCodeById("1","Body-structure");
 //                typeService.updateBatchTypeOnAtomicTerm("Error","Janine");
 //                typeService.updateBatchTypeOnTerm("physical force","Janine");
 //                typeAnnotationBatchService.batchReplaceAnnotationTerm("Body-structure","Body-struct");
-        }
+//        }
 
 
 
@@ -79,5 +79,10 @@ public class TypeTest {
 //        public  void deleteType(){
 //                typeService.deleteType("1");
 //        }
+        @Test
+        public  void selectType(){
+//                List<AnTermAnnotation> list=typeService.queryAnnotationByType("Body-structure",);
+//                System.out.println(JSON.parseArray(JSON.toJSONString(list)));
+        }
 
 }

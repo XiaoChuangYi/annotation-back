@@ -84,7 +84,6 @@ public class AtomicTermService {
      * @param termType
      */
     public void updateAtomicTerm(String atomicTermId, String termType) {
-
         AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
         anAtomicTermOld.setType(termType);
         anAtomicTermOld.setGmtModified(new Date());
@@ -92,6 +91,19 @@ public class AtomicTermService {
         int updateResult = anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTermOld);
         AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
+
+    /**
+     *分页查询全部原子术语
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<AnAtomicTerm> QueryAll(int pageNum,int pageSize){
+        Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum,pageSize);
+        anAtomicTermMapper.selectAll();
+        decrypt(pageInfo);
+        return  pageInfo;
+    }
+
     /**
      * 分页模糊查询原子术语
      * @param term 传入明文

@@ -10,6 +10,7 @@
     <result column="TYPE_NAME" jdbcType="VARCHAR" property="typeName" />
     <result column="TYPE_CODE" jdbcType="VARCHAR" property="typeCode" />
     <result column="STATE" jdbcType="VARCHAR" property="state"/>
+    <result column="HAS_CHILDREN" jdbcType="INTEGER" property="hasChildren" />
     <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated" />
     <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified" />
   </resultMap>
@@ -19,6 +20,7 @@
     TYPE_CODE,
     PARENT_ID,
     STATE,
+    HAS_CHILDREN,
     GMT_CREATED,
     GMT_MODIFIED
   </sql>
@@ -35,7 +37,7 @@
   </select>
   <select id="selectEnableTypes" resultMap="BaseResultMap">
     SELECT <include refid="ALL_COLUMN"/>
-    FROM AN_TYPE WHERE state='ENABLE'
+    FROM AN_TYPE WHERE state='ENABLE' ORDER BY ID
   </select>
   <update id="updateByTypeCodeSelective" parameterType="cn.malgo.annotation.common.dal.model.AnType">
       UPDATE  AN_TYPE
@@ -51,4 +53,8 @@
   <update id="updateTypeCodeById">
     UPDATE  AN_TYPE SET TYPE_CODE =#{typeCode} WHERE ID=#{id}
   </update>
+  <select id="selectTypeByTypeId" resultMap="BaseResultMap">
+    SELECT <include refid="ALL_COLUMN" />
+    FROM AN_TYPE WHERE PARENT_ID=#{Id}
+  </select>
 </mapper>

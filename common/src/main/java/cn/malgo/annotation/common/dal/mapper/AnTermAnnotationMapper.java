@@ -50,6 +50,11 @@ public interface AnTermAnnotationMapper extends CommonMapper<AnTermAnnotation> {
     int batchUpdateFinalAnnotation(@Param("anTermAnnotationList") List<AnTermAnnotation> anTermAnnotationList);
 
     /**
+     * 批量更新最终标注和手动标注
+     * @param anTermAnnotationList
+     */
+    int batchUpdateFinalAndManualAnnotation(@Param("anTermAnnotationList") List<AnTermAnnotation> anTermAnnotationList);
+    /**
      * 查询数据库中的总条数
      * */
     int selectTermAnnotationCount(@Param("state") String state);
