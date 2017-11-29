@@ -3,17 +3,23 @@ package cn.malgo.annotation.web.controller.type;
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
 import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
+import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
 import cn.malgo.annotation.web.result.ResultVO;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -85,7 +91,33 @@ public class TypeController extends BaseController {
     @RequestMapping(value="/selectAnnotationByType.do")
      public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
         List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
-        return  ResultVO.success(annotationList);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
+        return  ResultVO.success(annotationBratVOList);
+    }
+    /**
+     * 模型转换,标注模型转换成brat模型
+     * @param annotationList
+     * @return
+     */
+    private List<AnnotationBratVO> convertAnnotationBratVOList(List<Annotation> annotationList) {
+        List<AnnotationBratVO> annotationBratVOList = new ArrayList<>();
+        for (Annotation annotation : annotationList) {
+            AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotation);
+            annotationBratVOList.add(annotationBratVO);
+        }
+        return annotationBratVOList;
     }
 
+    /**
+     * 模型转换,标注模型转换成brat模型
+     * @param annotation
+     * @return
+     */
+    private AnnotationBratVO convertFromAnTermAnnotation(Annotation annotation) {
+        JSONObject bratJson = AnnotationConvert.convertToBratFormat(annotation);
+        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+        BeanUtils.copyProperties(annotation, annotationBratVO);
+        annotationBratVO.setBratData(bratJson);
+        return annotationBratVO;
+    }
 }

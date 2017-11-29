@@ -30,42 +30,54 @@ public class TermService {
         termMapper.selectEnableTerm();
         return  pageInfo;
     }
-
+    /**
+     * 更新术语的conceptId
+     * @param id
+     * @param conceptId
+     */
+    public  void  updateTerm(int id,String conceptId){
+         Term pTerm=new Term();
+         pTerm.setId(id);
+         pTerm.setConceptId(conceptId);
+         int Result=termMapper.updateByPrimaryKeySelective(pTerm);
+         AssertUtil.state(Result > 0, "更新术语conceptId失败");
+    }
     /**
      *更新术语
      * @param id
-     * @param pConceptId
-     * @param conceptName
+     * @param pTermId
+     * @param termName
      */
-    public  void updateTerm(int id,String pConceptId,String conceptName){
+    public  void updateTerm(int id,String pTermId,String termName){
         Term term=new Term();
         term.setId(id);
-        term.setPconceptId(pConceptId);
-        term.setConceptName(conceptName);
+        term.setPtermId(pTermId);
+        term.setTermName(termName);
         int updateResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(updateResult > 0, "更新术语失败");
     }
+
     /**
      *新增术语
-     * @param conceptId
-     * @param pConceptId
-     * @param conceptName
-     * @param conceptCode
-     * @param conceptType
+     * @param termId
+     * @param pTermId
+     * @param termName
+     * @param termCode
+     * @param termType
      * @param category
      * @param state
      */
-    public void insertTerm(String conceptId,String pConceptId,String conceptName,
-                           String conceptCode,String conceptType,String originName,String category,String state){
+    public void insertTerm(String termId,String pTermId,String termName,
+                           String termCode,String termType,String originName,String category,String state){
         Term term=new Term();
-        term.setConceptId(conceptId);
-        term.setPconceptId(pConceptId);
-        term.setConceptName(conceptName);
+        term.setTermId(termId);
+        term.setPtermId(pTermId);
+        term.setTermName(termName);
         term.setOriginName(originName);
         term.setCategory(category);
-        term.setConceptCode(conceptCode);
+        term.setTermCode(termCode);
         term.setState(state);
-        term.setConceptType(conceptType);
+        term.setTermType(termType);
         int insertResult=termMapper.insertUseGeneratedKeys(term);
         AssertUtil.state(insertResult > 0, "新增术语失败");
     }

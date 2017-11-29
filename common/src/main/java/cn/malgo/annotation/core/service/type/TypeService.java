@@ -159,9 +159,9 @@ public class TypeService {
         List<Annotation> finalAnnotation =new LinkedList<>();
         for (Annotation annotation : pageInfo.getResult()) {
             try {
-                //手动标注
-                List<TermAnnotationModel> manualModelList = AnnotationConvert
-                        .convertAnnotationModelList(annotation.getManualAnnotation());
+//                //手动标注
+//                List<TermAnnotationModel> manualModelList = AnnotationConvert
+//                        .convertAnnotationModelList(annotation.getManualAnnotation());
                 //最终标注
                 List<TermAnnotationModel> finalModelList = AnnotationConvert
                         .convertAnnotationModelList(annotation.getFinalAnnotation());
@@ -173,13 +173,13 @@ public class TypeService {
                         break;
                     }
                 }
-                for (TermAnnotationModel currentModel : manualModelList) {
-                    //如果标注中存在待替换的type类型,进行替换
-                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)){
-                        isHave=true;
-                        break;
-                    }
-                }
+//                for (TermAnnotationModel currentModel : manualModelList) {
+//                    //如果标注中存在待替换的type类型,进行替换
+//                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)){
+//                        isHave=true;
+//                        break;
+//                    }
+//                }
                 if (isHave) {
                     finalAnnotation.add(annotation);
                     LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());

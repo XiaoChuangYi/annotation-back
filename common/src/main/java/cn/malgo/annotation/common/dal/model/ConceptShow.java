@@ -21,7 +21,13 @@ public class ConceptShow {
     private String conceptName;
 
     @Column(name = "has_children")
-    private int hasChildren;
+    private Integer hasChildren;
+
+    @Column(name = "atomic_id")
+    private String atomicId;
+
+    @Column(name="state")
+    private String state;
 
     /**
      * @return concept_id
@@ -96,14 +102,42 @@ public class ConceptShow {
     /**
      * @return has_children
      */
-    public int getHasChildren() {
+    public Integer getHasChildren() {
         return hasChildren;
     }
 
     /**
      * @param hasChildren
      */
-    public void setHasChildren(int hasChildren) {
+    public void setHasChildren(Integer hasChildren) {
         this.hasChildren = hasChildren;
+    }
+
+    /**
+     * @return atomic_id
+     */
+    public String getAtomicId() {
+        return atomicId;
+    }
+
+    /**
+     * @param atomicId
+     */
+    public void setAtomicId(String atomicId) {
+        this.atomicId = atomicId;
+    }
+
+    /**
+     * @return state
+     */
+    public String getState() {
+        return state;
+    }
+
+    /**
+     * @param state
+     */
+    public void setState(String state) {
+        this.state = state;
     }
 }

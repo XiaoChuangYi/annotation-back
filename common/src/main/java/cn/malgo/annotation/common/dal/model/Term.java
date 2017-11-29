@@ -7,20 +7,20 @@ public class Term {
     @Id
     private Integer id;
 
-    @Column(name = "concept_id")
-    private String conceptId;
+    @Column(name = "term_id")
+    private String termId;
 
-    @Column(name = "pconcept_id")
-    private String pconceptId;
+    @Column(name = "pterm_id")
+    private String ptermId;
 
-    @Column(name = "concept_code")
-    private String conceptCode;
+    @Column(name = "term_code")
+    private String termCode;
 
-    @Column(name = "concept_type")
-    private String conceptType;
+    @Column(name = "term_type")
+    private String termType;
 
-    @Column(name = "concept_name")
-    private String conceptName;
+    @Column(name = "term_name")
+    private String termName;
 
     @Column(name = "origin_name")
     private String originName;
@@ -34,6 +34,8 @@ public class Term {
     @Column(name = "state")
     private String state;
 
+    @Column(name="concept_id")
+    private String conceptId;
     /**
      * @return id
      */
@@ -48,74 +50,44 @@ public class Term {
         this.id = id;
     }
 
-    /**
-     * @return concept_id
-     */
-    public String getConceptId() {
-        return conceptId;
+    public String getTermId() {
+        return termId;
     }
 
-    /**
-     * @param conceptId
-     */
-    public void setConceptId(String conceptId) {
-        this.conceptId = conceptId;
+    public void setTermId(String termId) {
+        this.termId = termId;
     }
 
-    /**
-     * @return pconcept_id
-     */
-    public String getPconceptId() {
-        return pconceptId;
+    public String getPtermId() {
+        return ptermId;
     }
 
-    /**
-     * @param pconceptId
-     */
-    public void setPconceptId(String pconceptId) {
-        this.pconceptId = pconceptId;
+    public void setPtermId(String ptermId) {
+        this.ptermId = ptermId;
     }
 
-    /**
-     * @return concept_code
-     */
-    public String getConceptCode() {
-        return conceptCode;
+    public String getTermCode() {
+        return termCode;
     }
 
-    /**
-     * @param conceptCode
-     */
-    public void setConceptCode(String conceptCode) {
-        this.conceptCode = conceptCode;
+    public void setTermCode(String termCode) {
+        this.termCode = termCode;
     }
 
-    /**
-     * @return concept_type
-     */
-    public String getConceptType() {
-        return conceptType;
+    public String getTermType() {
+        return termType;
     }
 
-    /**
-     * @param conceptType
-     */
-    public void setConceptType(String conceptType) {
-        this.conceptType = conceptType;
+    public void setTermType(String termType) {
+        this.termType = termType;
     }
 
-    /**
-     * @return concept_name
-     */
-    public String getConceptName() {
-        return conceptName;
+    public String getTermName() {
+        return termName;
     }
 
-    /**
-     * @param conceptName
-     */
-    public void setConceptName(String conceptName) {
-        this.conceptName = conceptName;
+    public void setTermName(String termName) {
+        this.termName = termName;
     }
 
     /**
@@ -160,5 +132,13 @@ public class Term {
 
     public void setOriginName(String originName) {
         this.originName = originName;
+    }
+
+    public String getConceptId() {
+        return conceptId;
+    }
+
+    public void setConceptId(String conceptId) {
+        this.conceptId = conceptId;
     }
 }

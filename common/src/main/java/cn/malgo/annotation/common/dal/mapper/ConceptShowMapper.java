@@ -7,6 +7,5 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface ConceptShowMapper extends CommonMapper<ConceptShow> {
-    List<ConceptShow> selectConceptByConceptId(@Param("conceptId") String conceptId);
-
+   List<ConceptShow> selectConceptByConceptId(@Param("conceptId") String conceptId);
 }

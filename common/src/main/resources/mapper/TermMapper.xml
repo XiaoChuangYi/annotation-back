@@ -6,27 +6,29 @@
       WARNING - @mbg.generated
     -->
     <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
-    <result column="pconcept_id" jdbcType="VARCHAR" property="pconceptId" />
-    <result column="concept_code" jdbcType="VARCHAR" property="conceptCode" />
-    <result column="concept_type" jdbcType="VARCHAR" property="conceptType" />
-    <result column="concept_name" jdbcType="VARCHAR" property="conceptName" />
+    <result column="term_id" jdbcType="VARCHAR" property="termId" />
+    <result column="pterm_id" jdbcType="VARCHAR" property="ptermId" />
+    <result column="term_code" jdbcType="VARCHAR" property="termCode" />
+    <result column="term_type" jdbcType="VARCHAR" property="termType" />
+    <result column="term_name" jdbcType="VARCHAR" property="termName" />
     <result column="origin_name" jdbcType="VARCHAR" property="originName" />
     <result column="has_children" jdbcType="INTEGER" property="hasChildren" />
     <result column="category" jdbcType="VARCHAR" property="category" />
     <result column="state" jdbcType="VARCHAR" property="state" />
+    <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
   </resultMap>
   <sql id="ALL_COLUMN">
     id,
-    concept_id,
-    pconcept_id,
-    concept_code,
-    concept_type,
-    concept_name,
+    term_id,
+    pterm_id,
+    term_code,
+    term_type,
+    term_name,
     origin_name,
     has_children,
     category,
-    state
+    state,
+    concept_id
   </sql>
   <select id="selectEnableTerm" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN" />
