@@ -22,9 +22,6 @@ public class ConceptController {
     @Autowired
     private MixtureService mixtureService;
 
-    @Autowired
-    private TermService termService;
-
 
     /**
      * 新增concept信息
@@ -67,5 +64,10 @@ public class ConceptController {
     public ResultVO<List<Concept>> selectAllConcept(){
         List<Concept> conceptList=mixtureService.selectAllConcept();
         return ResultVO.success(conceptList);
+    }
+    @RequestMapping(value = {"/getSingleConcept.do"})
+    public ResultVO<Concept> selectAllConcept(String conceptId){
+        Concept concept=mixtureService.selectOneConcept(conceptId);
+        return ResultVO.success(concept);
     }
 }

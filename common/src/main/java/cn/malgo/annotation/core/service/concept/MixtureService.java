@@ -98,4 +98,12 @@ public class MixtureService {
         List<Concept> conceptList=conceptMapper.selectAll();
         return conceptList;
     }
+
+    /**
+     *根据conceptId查询单条concept
+     */
+    public  Concept selectOneConcept(String conceptId){
+        Concept concept=conceptMapper.selectConceptByConceptId(conceptId);
+        return  concept;
+    }
 }
