@@ -21,6 +21,20 @@ public class TermService {
     private TermMapper termMapper;
 
     /**
+     *按条件分页查询术语
+     * @param pageNum
+     * @param pageSize
+     * @param termName
+     * @param termType
+     * @param label
+     */
+    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label){
+        Page<Term> pageInfo= PageHelper.startPage(pageNum,pageSize);
+        termMapper.selectTermByCondition(termName,termType,label);
+        return  pageInfo;
+    }
+
+    /**
      *分页查询术语
      * @param pageNum
      * @param pageSize

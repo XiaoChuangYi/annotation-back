@@ -7,6 +7,7 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddTermRequest;
+import cn.malgo.annotation.web.controller.term.request.ConditionTermRequest;
 import cn.malgo.annotation.web.controller.term.request.UpdateTermRequest;
 import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
@@ -39,6 +40,22 @@ public class TermController extends BaseController {
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
+
+    /**
+     * 分页按条件查询术语信息
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = { "/queryByCondition.do" })
+    public ResultVO<PageVO<Term>> queryAllByCondition(ConditionTermRequest request) {
+        //分页查询
+        Page<Term> page = termService.QueryAllByCondition(request.getPageNum(), request.getPageSize(),
+                request.getTermName(),request.getTermType(),request.getLabel());
+        PageVO<Term> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
+
     /**
      * 更新术语信息
      * @param request

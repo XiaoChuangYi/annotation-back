@@ -34,4 +34,17 @@
     select <include refid="ALL_COLUMN" />
     FROM TERM WHERE state='ENABLE' OR state IS NULL
   </select>
+  <select id="selectTermByCondition" resultMap="BaseResultMap">
+    select <include refid="ALL_COLUMN" />
+    FROM TERM WHERE state='ENABLE' OR state IS NULL
+    <if test="termName!=null and termName!=''">
+      AND term_name LIKE CONCAT('%',#{termName},'%')
+    </if>
+    <if test="termType!=null and termType!=''">
+      AND term_type LIKE CONCAT('%',#{termType},'%')
+    </if>
+    <if test="label!=null and label!=''">
+      AND label LIKE CONCAT('%',#{label},'%')
+    </if>
+  </select>
 </mapper>
