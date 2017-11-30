@@ -5,6 +5,7 @@ package cn.malgo.annotation.web.controller.term;
 import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.term.TermService;
+import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddTermRequest;
 import cn.malgo.annotation.web.controller.term.request.UpdateTermRequest;
 import cn.malgo.annotation.web.request.PageRequest;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = { "/term" })
-public class TermController {
+public class TermController extends BaseController {
 
     @Autowired
     private TermService termService;
@@ -49,6 +50,19 @@ public class TermController {
         termService.updateTerm(request.getId(),request.getConceptId(),request.getConceptName());
         return  ResultVO.success();
     }
+
+    /**
+     * 更新术语标签字段
+     * @param id
+     * @param label
+     * @return
+     */
+    @RequestMapping(value = { "/updateLabelOfTerm.do" })
+    public ResultVO  updateTermById(Integer id,String label){
+            termService.updateTermLabel(id,label);
+        return  ResultVO.success();
+    }
+
     /**
      * 新增术语信息
      * @param request

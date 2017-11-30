@@ -1,9 +1,8 @@
 package cn.malgo.annotation.web.controller.term;
 
 import cn.malgo.annotation.common.dal.model.Concept;
-import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.core.service.concept.MixtureService;
-import cn.malgo.annotation.core.service.term.TermService;
+import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddConceptRequest;
 import cn.malgo.annotation.web.result.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = { "/concept" })
-public class ConceptController {
+public class ConceptController extends BaseController {
 
     @Autowired
     private MixtureService mixtureService;

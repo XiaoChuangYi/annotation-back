@@ -13,7 +13,7 @@
     <result column="term_name" jdbcType="VARCHAR" property="termName" />
     <result column="origin_name" jdbcType="VARCHAR" property="originName" />
     <result column="has_children" jdbcType="INTEGER" property="hasChildren" />
-    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="label" jdbcType="VARCHAR" property="label" />
     <result column="state" jdbcType="VARCHAR" property="state" />
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
   </resultMap>
@@ -26,7 +26,7 @@
     term_name,
     origin_name,
     has_children,
-    category,
+    label,
     state,
     concept_id
   </sql>

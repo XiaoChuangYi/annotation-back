@@ -28,8 +28,8 @@ public class Term {
     @Column(name = "has_children")
     private Integer hasChildren;
 
-    @Column(name = "category")
-    private String category;
+    @Column(name = "label")
+    private String label;
 
     @Column(name = "state")
     private String state;
@@ -105,17 +105,17 @@ public class Term {
     }
 
     /**
-     * @return category
+     * @return label
      */
-    public String getCategory() {
-        return category;
+    public String getLabel() {
+        return label;
     }
 
     /**
-     * @param category
+     * @param label
      */
-    public void setCategory(String category) {
-        this.category = category;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getState() {

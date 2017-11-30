@@ -58,23 +58,37 @@ public class TermService {
     }
 
     /**
+     * 更新指定行的label字段
+     * @param  id
+     * @param  label
+     */
+    public  void updateTermLabel(int id,String label){
+        Term term=new Term();
+        term.setId(id);
+        term.setLabel(label);
+        int updateResult=termMapper.updateByPrimaryKeySelective(term);
+        AssertUtil.state(updateResult > 0, "更新术语标签失败");
+    }
+
+
+    /**
      *新增术语
      * @param termId
      * @param pTermId
      * @param termName
      * @param termCode
      * @param termType
-     * @param category
+     * @param label
      * @param state
      */
     public void insertTerm(String termId,String pTermId,String termName,
-                           String termCode,String termType,String originName,String category,String state){
+                           String termCode,String termType,String originName,String label,String state){
         Term term=new Term();
         term.setTermId(termId);
         term.setPtermId(pTermId);
         term.setTermName(termName);
         term.setOriginName(originName);
-        term.setCategory(category);
+        term.setLabel(label);
         term.setTermCode(termCode);
         term.setState(state);
         term.setTermType(termType);
