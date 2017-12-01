@@ -150,8 +150,9 @@ public class TypeService {
         AssertUtil.state(delResult > 0, "删除类型失败");
     }
     /**
-     * 根据type类型查询标术语注表中的标注
+     * 根据type/term查询标术语注表中的标注
      *@param type
+     *@param term
      */
     public List<Annotation> queryAnnotationByType(String type, String term){
         int pageSize=annotationService.annotationTermSize(null);
@@ -159,9 +160,6 @@ public class TypeService {
         List<Annotation> finalAnnotation =new LinkedList<>();
         for (Annotation annotation : pageInfo.getResult()) {
             try {
-//                //手动标注
-//                List<TermAnnotationModel> manualModelList = AnnotationConvert
-//                        .convertAnnotationModelList(annotation.getManualAnnotation());
                 //最终标注
                 List<TermAnnotationModel> finalModelList = AnnotationConvert
                         .convertAnnotationModelList(annotation.getFinalAnnotation());
@@ -173,13 +171,6 @@ public class TypeService {
                         break;
                     }
                 }
-//                for (TermAnnotationModel currentModel : manualModelList) {
-//                    //如果标注中存在待替换的type类型,进行替换
-//                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)){
-//                        isHave=true;
-//                        break;
-//                    }
-//                }
                 if (isHave) {
                     finalAnnotation.add(annotation);
                     LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
@@ -189,6 +180,7 @@ public class TypeService {
                         "结束处理第" + ex.getMessage());
             }
         }
+
         return finalAnnotation;
     }
 }

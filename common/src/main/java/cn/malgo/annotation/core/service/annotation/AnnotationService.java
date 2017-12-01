@@ -415,6 +415,8 @@ public class AnnotationService {
     }
 
     private void decryptAES(Annotation annotation) {
+//        System.out.println(annotation.getId());
+//        System.out.println(SecurityUtil.decryptAESBase64(annotation.getFinalAnnotation()));
         annotation
             .setAutoAnnotation(SecurityUtil.decryptAESBase64(annotation.getAutoAnnotation()));
         annotation.setManualAnnotation(
