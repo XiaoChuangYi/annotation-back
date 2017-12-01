@@ -126,6 +126,22 @@ public class AtomicTermService {
      * @param type
      * @param pageNum
      * @param pageSize
+     * @param checked
+     * @return
+     */
+    public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize,String checked) {
+        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt, type,checked);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
+    /**
+     * 分页查询原子术语
+     * @param term 传入明文
+     * @param type
+     * @param pageNum
+     * @param pageSize
      * @return
      */
     public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize) {

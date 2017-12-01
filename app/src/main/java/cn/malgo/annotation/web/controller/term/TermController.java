@@ -50,7 +50,7 @@ public class TermController extends BaseController {
     public ResultVO<PageVO<Term>> queryAllByCondition(ConditionTermRequest request) {
         //分页查询
         Page<Term> page = termService.QueryAllByCondition(request.getPageNum(), request.getPageSize(),
-                request.getTermName(),request.getTermType(),request.getLabel());
+                request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }

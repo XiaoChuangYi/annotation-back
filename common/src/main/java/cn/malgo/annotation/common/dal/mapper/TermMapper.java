@@ -10,5 +10,6 @@ public interface TermMapper extends CommonMapper<Term> {
      List<Term> selectEnableTerm();
      List<Term> selectTermByCondition(@Param("termName") String termName,
                                       @Param("termType") String termType,
-                                      @Param("label") String label);
+                                      @Param("label") String label,
+                                      @Param("checked") String checked);
 }

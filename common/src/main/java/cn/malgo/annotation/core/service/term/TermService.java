@@ -28,9 +28,9 @@ public class TermService {
      * @param termType
      * @param label
      */
-    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label){
+    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label,String checked){
         Page<Term> pageInfo= PageHelper.startPage(pageNum,pageSize);
-        termMapper.selectTermByCondition(termName,termType,label);
+        termMapper.selectTermByCondition(termName,termType,label,checked);
         return  pageInfo;
     }
 

@@ -19,4 +19,8 @@
     SELECT  <include refid="ALL_COLUMN" />
     FROM CONCEPT WHERE concept_id=#{conceptId}
   </select>
+  <select id="selectConceptByStandardName" resultMap="BaseResultMap">
+    SELECT  <include refid="ALL_COLUMN" />
+    FROM CONCEPT WHERE standard_name=#{standardName}
+  </select>
 </mapper>

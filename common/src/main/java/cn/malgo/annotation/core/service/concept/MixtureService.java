@@ -33,6 +33,8 @@ public class MixtureService {
      */
     @Transactional
     public void addNewConcept(int id, String originName){
+        List<Concept> conceptList=conceptMapper.selectConceptByStandardName(originName);
+        AssertUtil.state(conceptList.size()==0,"术语表中已有该条记录");
         String conceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         Term termNew=new Term();
         termNew.setId(id);

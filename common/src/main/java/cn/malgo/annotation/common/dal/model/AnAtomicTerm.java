@@ -45,6 +45,9 @@ public class AnAtomicTerm {
     @Column(name = "GMT_MODIFIED")
     private Date gmtModified;
 
+    @Column(name = "CONCEPT_ID")
+    private String conceptId;
+
     /**
      * @return ID
      */
@@ -145,5 +148,13 @@ public class AnAtomicTerm {
 
     public void setFromAnId(String fromAnId) {
         this.fromAnId = fromAnId;
+    }
+
+    public String getConceptId() {
+        return conceptId;
+    }
+
+    public void setConceptId(String conceptId) {
+        this.conceptId = conceptId;
     }
 }

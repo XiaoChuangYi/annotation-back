@@ -22,6 +22,14 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param type
      * @return
      */
+    List<AnAtomicTerm> selectByTermAndTypeIsSynonyms(@Param("term") String term, @Param("type") String type,@Param("checked") String checked);
+
+    /**
+     * 查询全部原子术语
+     * @param term
+     * @param type
+     * @return
+     */
     List<AnAtomicTerm> selectByTermAndType(@Param("term") String term, @Param("type") String type);
 
     /**
@@ -59,4 +67,9 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param type
      */
     int batchUpdateAtomicType(@Param("idsList") List<String> idsList,@Param("type") String type);
+
+    /**
+     *更新原子术语表里的conceptId
+     */
+    int updateConceptIdByPrimaryKey(@Param("conceptId") String conceptId,@Param("id") String id);
 }

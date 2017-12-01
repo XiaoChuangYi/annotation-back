@@ -14,6 +14,17 @@ public class QueryAtomicRequest extends PageRequest {
     /** 原子术语类型 **/
     private String type;
 
+    /** 是否含有同义词**/
+    private String checked;
+
+    public String getChecked() {
+        return checked;
+    }
+
+    public void setChecked(String checked) {
+        this.checked = checked;
+    }
+
     public String getTerm() {
         return term;
     }

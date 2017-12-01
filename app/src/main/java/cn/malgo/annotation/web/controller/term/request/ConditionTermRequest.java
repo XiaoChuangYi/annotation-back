@@ -9,6 +9,15 @@ public class ConditionTermRequest extends PageRequest {
     private String termName;
     private String termType;
     private String label;
+    private String checked;
+
+    public String getChecked() {
+        return checked;
+    }
+
+    public void setChecked(String checked) {
+        this.checked = checked;
+    }
 
     public String getTermName() {
         return termName;
