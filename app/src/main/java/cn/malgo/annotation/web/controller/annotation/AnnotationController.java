@@ -70,7 +70,7 @@ public class AnnotationController extends BaseController {
                                                          @ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
         //分页查询
-        Page<Annotation> page = annotationService.queryOnePageDirectly(request.getState(),
+        Page<Annotation> page = annotationService.queryOnePageDirectly(request.getTerm(),request.getState(),
             crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());

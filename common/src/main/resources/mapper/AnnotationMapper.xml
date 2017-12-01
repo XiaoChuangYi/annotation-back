@@ -106,4 +106,17 @@
             AND  state=#{state}
         </if>
     </select>
+    <select id="selectByStateAndTermFuzzy" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM ANNOTATION WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND STATE = #{state}
+        </if>
+        <if test="term!=null and term!=''">
+            AND TERM LIKE CONCAT('%',#{term},'%')
+        </if>
+        AND MODIFIER = #{modifier}
+        ORDER BY ID DESC
+    </select>
 </mapper>

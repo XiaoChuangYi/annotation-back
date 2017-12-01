@@ -20,4 +20,17 @@ public class QueryDirectlyRequest extends PageRequest {
     public void setState(String state) {
         this.state = state;
     }
+
+    /**
+     *标注文本即Annotation表中的term
+     */
+    private  String term;
+
+    public String getTerm() {
+        return term;
+    }
+
+    public void setTerm(String term) {
+        this.term = term;
+    }
 }

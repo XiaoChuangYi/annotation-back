@@ -9,6 +9,18 @@ import cn.malgo.annotation.common.dal.util.CommonMapper;
 
 public interface AnnotationMapper extends CommonMapper<Annotation> {
 
+
+    /**
+     * 根据术语状态查询术语
+     * @param state
+     * @param modifier
+     * @param term
+     * @return
+     */
+    List<Annotation> selectByStateAndTermFuzzy(@Param("state") String state,
+                                           @Param("modifier") String modifier,@Param("term") String term);
+
+
     /**
      * 根据术语状态查询术语
      * @param state

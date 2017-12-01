@@ -74,10 +74,10 @@ public class AnnotationService {
         return pageInfo;
     }
 
-    public Page<Annotation> queryOnePageDirectly(String annotationState, String userId,
+    public Page<Annotation> queryOnePageDirectly(String annotationTerm,String annotationState, String userId,
                                                  int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        annotationMapper.selectByStateModifier(annotationState, userId);
+        annotationMapper.selectByStateAndTermFuzzy(annotationState, userId,annotationTerm);
         decryptAES(pageInfo.getResult());
         return pageInfo;
     }
@@ -415,8 +415,6 @@ public class AnnotationService {
     }
 
     private void decryptAES(Annotation annotation) {
-//        System.out.println(annotation.getId());
-//        System.out.println(SecurityUtil.decryptAESBase64(annotation.getFinalAnnotation()));
         annotation
             .setAutoAnnotation(SecurityUtil.decryptAESBase64(annotation.getAutoAnnotation()));
         annotation.setManualAnnotation(
