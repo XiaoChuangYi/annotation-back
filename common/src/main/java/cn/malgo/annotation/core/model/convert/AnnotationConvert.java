@@ -39,7 +39,7 @@ public class AnnotationConvert {
     }
 
     /**
-     * 根据标注内容,生成信的标注标签
+     * 根据标注内容,生成新的标注标签
      * @param annotation
      * @return
      */

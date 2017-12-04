@@ -1,6 +1,7 @@
 package cn.malgo.annotation.common.dal.model;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Table(name = "TERM")
 public class Term {
@@ -36,6 +37,7 @@ public class Term {
 
     @Column(name="concept_id")
     private String conceptId;
+
     /**
      * @return id
      */

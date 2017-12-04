@@ -4,6 +4,8 @@ import java.util.*;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.Corpus;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -141,6 +143,17 @@ public class AnnotationService {
             }
         }
 
+    }
+
+    /**
+     * 通过annotationId
+     */
+    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnno,List<TermTypeVO> newTerms){
+        String newTermsStr = TermTypeVO.convertToString(newTerms);
+        updateFinalAnnotation(anId,finalAnno,newTermsStr);
+        Annotation result = annotationMapper.selectByPrimaryKey(anId);
+        decryptAES(result);
+        return result;
     }
 
     /**
@@ -282,6 +295,28 @@ public class AnnotationService {
     }
 
     /**
+     *后台分页查询标注信息
+     * @param state
+     * @param pageNum
+     * @param pageSize
+     */
+    public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
+        Map<String,Object> map = new HashMap<>();
+        map.put("state",state);
+//        if(pageNum==0) {
+//            map.put("start", 0);
+//        }else {
+//            map.put("start",(pageNum-1)*pageSize);
+//        }
+        map.put("pageIndex",pageNum);
+        map.put("pageSize",pageSize);
+        List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
+        decryptAES(annotationList);
+        System.out.println(JSONArray.parse(JSON.toJSONString(annotationList)));
+        return  annotationList;
+    }
+
+    /**
      * 根据状态分页查询标注信息
      * @param stateList
      * @param pageNum
@@ -321,7 +356,23 @@ public class AnnotationService {
         int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
         AssertUtil.state(updateResult > 0, "更新自动标注失败");
     }
+    /**
+     * 更新最终标注并更新新词列表
+     * @param anId
+     * @param finalAnnotation
+     */
+    public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
 
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setNewTerms(newTerms);
+        annotation.setGmtModified(new Date());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
     /**
      * 更新最终标注
      * @param anId

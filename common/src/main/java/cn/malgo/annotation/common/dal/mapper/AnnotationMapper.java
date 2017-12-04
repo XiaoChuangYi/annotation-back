@@ -1,6 +1,7 @@
 package cn.malgo.annotation.common.dal.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -45,6 +46,13 @@ public interface AnnotationMapper extends CommonMapper<Annotation> {
      */
     List<Annotation> selectByStateList(@Param("stateList") List<String> stateList);
 
+    /**
+     *根据状态后台实现分页查询
+//     * @param state
+//     * @param pageIndex
+//     * @param pageSize
+     */
+    List<Annotation> selectFinalAnnotationByPagination(@Param("state") String state,@Param("start") int start,@Param("pageSize") int pageSize);
 
     /**
      * 通过TermId 查询标注信息

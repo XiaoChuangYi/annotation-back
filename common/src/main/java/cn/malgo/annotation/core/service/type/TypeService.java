@@ -159,9 +159,9 @@ public class TypeService {
     public List<Annotation> queryAnnotationByType(String type, String term){
         List<String> stateList=new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());
-        int pageSize=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
-        Page<Annotation> pageInfo=annotationService.queryByStateList(stateList,1,pageSize);
-        List<Annotation> finalAnnotation =new LinkedList<>();
+        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
+        List<Annotation> finalAnnotation = new LinkedList<>();
+        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, 1, total);
         for (Annotation annotation : pageInfo.getResult()) {
             try {
                 //最终标注
@@ -170,8 +170,8 @@ public class TypeService {
                 boolean isHave = false;
                 for (TermAnnotationModel currentModel : finalModelList) {
                     //如果标注中存在待替换的type类型,进行替换
-                    if (currentModel.getType().equals(type)&&currentModel.getTerm().equals(term)) {
-                        isHave=true;
+                    if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
+                        isHave = true;
                         break;
                     }
                 }
@@ -179,12 +179,45 @@ public class TypeService {
                     finalAnnotation.add(annotation);
                     LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
                 }
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 LogUtil.info(logger,
                         "结束处理第" + ex.getMessage());
             }
         }
-
         return finalAnnotation;
     }
+//    /**
+//     * 根据type/term查询标术语注表中的标注
+//     *@param type
+//     *@param term
+//     */
+//    public List<Annotation> queryAnnotationByType(String type, String term,int pageIndex,int pageSize){
+//        List<String> stateList=new ArrayList<>();
+//        stateList.add(AnnotationStateEnum.FINISH.name());
+//        List<Annotation> finalAnnotation = new LinkedList<>();
+//        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, pageIndex, pageSize);
+//        for (Annotation annotation : pageInfo.getResult()) {
+//            try {
+//                //最终标注
+//                List<TermAnnotationModel> finalModelList = AnnotationConvert
+//                        .convertAnnotationModelList(annotation.getFinalAnnotation());
+//                boolean isHave = false;
+//                for (TermAnnotationModel currentModel : finalModelList) {
+//                    //如果标注中存在待替换的type类型,进行替换
+//                    if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
+//                        isHave = true;
+//                        break;
+//                    }
+//                }
+//                if (isHave) {
+//                    finalAnnotation.add(annotation);
+//                    LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
+//                }
+//            } catch (Exception ex) {
+//                LogUtil.info(logger,
+//                        "结束处理第" + ex.getMessage());
+//            }
+//        }
+//        return finalAnnotation;
+//    }
 }

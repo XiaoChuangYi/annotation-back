@@ -49,12 +49,13 @@ public class CorpusAnnotationTest {
 //        System.out.println(saveResult);
 //    }
 //
-//    @Test
-//    public void testSelectById() {
-//        Annotation anTermAnnotation = annotationMapper
-//            .selectByPrimaryKey("7307448151378575360");
-//        System.out.println(anTermAnnotation);
-//    }
+    @Test
+    public void testSelectById() {
+        Annotation anTermAnnotation = annotationService
+            .queryByAnId("7318084236868866048");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println(JSON.parseObject(JSON.toJSONString(anTermAnnotation)));
+    }
 //
 //    @Test
 //    public void testQueryOnePage() {
@@ -141,11 +142,11 @@ public class CorpusAnnotationTest {
 //        annotationBatchService.checkAmbiguityAndAtomicTermExist(anTermAnnotation,anAtomicTermMap);
 //    }
 
-    @Test
-    public void queryById(){
-        Annotation annotation = annotationService.queryByAnId("100000000001402");
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<");
-        System.out.println(JSON.parseObject(JSON.toJSONString(annotation)));
-    }
+//    @Test
+//    public void queryById(){
+//        Annotation annotation = annotationService.queryByAnId("100000000001402");
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<");
+//        System.out.println(JSON.parseObject(JSON.toJSONString(annotation)));
+//    }
 
 }

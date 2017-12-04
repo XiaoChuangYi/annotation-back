@@ -82,6 +82,19 @@
         ORDER BY STATE DESC , ID ASC
     </select>
 
+    <select id="selectFinalAnnotationByPagination"  resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM ANNOTATION WHERE 1=1
+        <if test="state!=null and state!='' ">
+            AND STATE = #{state}
+        </if>
+        ORDER BY ID
+        <if test="start!=null and pageSize!=null">
+        LIMIT #{start,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+        </if>
+    </select>
+
     <select id="selectByStateList" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>

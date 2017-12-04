@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -39,6 +40,11 @@ public class AnnotationController extends BaseController {
 
     @Autowired
     private AnnotationService annotationService;
+
+    @Autowired
+    private AtomicTermService atomicTermService;
+
+
 
     /**
      * 分页查询标注信息,不使用新词获取一页标注数据
@@ -102,6 +108,39 @@ public class AnnotationController extends BaseController {
 
         return ResultVO.success(annotationBratVO);
     }
+
+    /**
+     *不经过apiServer直接修改FinalAnnotation,即新增标注或者新词
+     * @param request
+     * @return
+     */
+     @RequestMapping(value = {"/addFinalAnnotation"})
+     public ResultVO<AnnotationBratVO> addFinalAnnotation(AddAnnotationRequest request,
+                                                          @ModelAttribute("currentAccount") CrmAccount crmAccount){
+         //检查当前的标注是否属于当前的用户toDo
+         Annotation annotation = annotationService.queryByAnId(request.getAnId());
+         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
+         //构建新的最终的标注
+         String finalAnnotationNew = AnnotationConvert.addNewTag(
+                 annotation.getFinalAnnotation(), request.getAnnotationType(),
+                 request.getStartPosition(), request.getEndPosition(), request.getText());
+         String newTermsText = annotation.getNewTerms();
+         if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
+             newTermsText = AnnotationConvert.addNewTerm(newTermsText, request.getText(),
+                     request.getAnnotationType());
+             //同时在插入到原子术语列表中
+             atomicTermService.saveAtomicTerm(request.getAnId(),request.getText(),request.getAnnotationType());
+         }
+         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
+
+         //更新单条标注信息，直接保存到数据库中
+         Annotation annotationNew = annotationService
+                 .autoFinalAnnotationByAnId(request.getAnId(), finalAnnotationNew,newTerms);
+
+         AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
+
+         return ResultVO.success(annotationBratVO);
+     }
 
     /**
      * 新增标注或者新词

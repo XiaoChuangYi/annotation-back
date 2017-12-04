@@ -4,6 +4,8 @@ import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
+import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
 import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
@@ -11,9 +13,10 @@ import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
+import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +40,7 @@ public class TypeController extends BaseController {
     private TypeAnnotationBatchService typeAnnotationBatchService;
 
     @Autowired
-    private AsyncTypeBatchService asyncTypeBatchService;
+    private AnnotationService annotationService;
 
     @RequestMapping(value = "/getTypes.do")
     public ResultVO<List<AnType>> getAllType(){
@@ -94,6 +97,27 @@ public class TypeController extends BaseController {
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
         return  ResultVO.success(annotationBratVOList);
     }
+    private static List<Annotation> globalAnnotationList=null;
+    /**
+     *后台分页查询标注术语
+     */
+    @RequestMapping(value = "clearGlobalAnnotationList.do")
+    public ResultVO clearGlobalAnnotationList(){
+        globalAnnotationList=null;
+        return ResultVO.success();
+    }
+    @RequestMapping(value = "selectAnnotationServerPagination.do")
+    public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
+        if(globalAnnotationList==null)
+            globalAnnotationList =typeService.queryAnnotationByType(type,term);
+        List<Annotation> toClientList=globalAnnotationList.subList((pageIndex-1)*pageSize,pageIndex*pageSize>=globalAnnotationList.size()?globalAnnotationList.size():pageIndex*pageSize);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(toClientList);
+        PageResult<AnnotationBratVO> pageResult=new PageResult<>();
+        pageResult.setDataList(annotationBratVOList);
+        pageResult.setTotal(globalAnnotationList.size());
+        return  ResultVO.success(pageResult);
+    }
+
     /**
      * 模型转换,标注模型转换成brat模型
      * @param annotationList
