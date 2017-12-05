@@ -18,6 +18,10 @@
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
     <result column="standard_name" jdbcType="VARCHAR" property="standardName" />
   </resultMap>
+  <resultMap id="MixtureMap" type="cn.malgo.annotation.common.dal.model.MixtureTerm">
+    <result column="term_id" jdbcType="VARCHAR" property="termId" />
+    <result column="term_name" jdbcType="VARCHAR" property="termName" />
+  </resultMap>
   <sql id="ALL_COLUMN">
     id,
     term_id,
@@ -31,6 +35,17 @@
     state,
     concept_id
   </sql>
+  <select id="selectAllByTermName" resultMap="MixtureMap">
+    select id,term_id,term_name
+    FROM TERM WHERE state='ENABLE'
+    <if test="termName !=null and termName !='' ">
+      AND term_name LIKE concat('%',#{termName},'%')
+    </if>
+    OR state IS NULL
+    <if test="termName !=null and termName !='' ">
+      AND term_name LIKE concat('%',#{termName},'%')
+    </if>
+  </select>
   <select id="selectEnableTerm" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN" />
     FROM TERM WHERE state='ENABLE' OR state IS NULL
@@ -38,7 +53,7 @@
   <select id="selectTermByCondition" resultMap="BaseResultMap">
     select
     TM.id,
-    term_id,
+    TM.term_id,
     pterm_id,
     term_code,
     term_type,
@@ -87,5 +102,8 @@
         AND  TM.CONCEPT_ID is NULL
       </otherwise>
     </choose>
+  </select>
+  <select id="selectTermType" resultType="java.lang.String">
+    SELECT DISTINCT(term_type) from TERM
   </select>
 </mapper>

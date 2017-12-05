@@ -16,17 +16,15 @@
         <result column="STATE" property="state" jdbcType="VARCHAR"/>
         <result column="standard_name" property="standardName" jdbcType="VARCHAR"/>
     </resultMap>
-
     <sql id="ALL_COLUMN">
-      ID,
-      TERM,
-      TYPE,
-      STATE,
-      CONCEPT_ID,
-      GMT_CREATED,
-      GMT_MODIFIED
-  </sql>
-
+          ID,
+          TERM,
+          TYPE,
+          STATE,
+          CONCEPT_ID,
+          GMT_CREATED,
+          GMT_MODIFIED
+    </sql>
     <select id="selectByTerm" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -153,5 +151,11 @@
                 AND  AAT.CONCEPT_ID =''
             </otherwise>
         </choose>
+    </select>
+    <select id="selectAllAtomicTerm" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
+        ORDER BY ID
     </select>
 </mapper>

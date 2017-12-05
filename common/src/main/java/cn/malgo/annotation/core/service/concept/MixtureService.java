@@ -7,6 +7,8 @@ import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.util.AssertUtil;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,6 +102,16 @@ public class MixtureService {
         List<Concept> conceptList=conceptMapper.selectAll();
         return conceptList;
     }
+    /**
+     *分页查询concept
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<Concept> selectConceptPagination(int pageNum,int pageSize,String standardName){
+        Page<Concept> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        conceptMapper.selectAllConceptByCondition(standardName);
+        return pageInfo;
+    }
 
     /**
      *根据conceptId查询单条concept
@@ -107,5 +119,15 @@ public class MixtureService {
     public  Concept selectOneConcept(String conceptId){
         Concept concept=conceptMapper.selectConceptByConceptId(conceptId);
         return  concept;
+    }
+    /**
+     *绑定concept表的termId
+     */
+    public void bindTermIdOfConcept(int id,String termId){
+        Concept concept=new Concept();
+        concept.setId(id);
+        concept.setTermId(termId);
+        int updateResult=conceptMapper.updateByPrimaryKeySelective(concept);
+        AssertUtil.state(updateResult > 0, "绑定概念术语失败");
     }
 }

@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 /**
  * Created by cjl on 2017/11/28.
@@ -105,4 +107,12 @@ public class TermController extends BaseController {
         return  ResultVO.success();
     }
 
+    /**
+     *获取所有的type
+     */
+    @RequestMapping(value = { "/getTypesOfTerm.do" })
+    public ResultVO<List<String>> getTypesOfTerm(){
+        List<String> typeList=termService.selectTermType();
+        return  ResultVO.success(typeList);
+    }
 }

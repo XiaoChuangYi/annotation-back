@@ -9,4 +9,5 @@ import java.util.List;
 public interface ConceptMapper extends CommonMapper<Concept> {
     Concept selectConceptByConceptId(@Param("conceptId") String conceptId);
     List<Concept> selectConceptByStandardName(@Param("standardName") String standardName);
+    List<Concept> selectAllConceptByCondition(@Param("standardName") String standardName);
 }

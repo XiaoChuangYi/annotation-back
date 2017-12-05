@@ -8,12 +8,14 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="standard_name" jdbcType="VARCHAR" property="standardName" />
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
+    <result column="term_id" jdbcType="VARCHAR" property="termId" />
   </resultMap>
 
   <sql id="ALL_COLUMN">
     id,
     concept_id,
-    standard_name
+    standard_name,
+    term_id
   </sql>
   <select id="selectConceptByConceptId" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />
@@ -22,5 +24,12 @@
   <select id="selectConceptByStandardName" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />
     FROM CONCEPT WHERE standard_name=#{standardName}
+  </select>
+  <select id="selectAllConceptByCondition" resultMap="BaseResultMap">
+    SELECT  <include refid="ALL_COLUMN" />
+    FROM CONCEPT WHERE 1=1
+    <if test="standardName !=null and standardName !='' ">
+      AND  standard_name LIKE  concat('%',#{standardName},'%')
+    </if>
   </select>
 </mapper>

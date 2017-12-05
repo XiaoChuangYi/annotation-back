@@ -80,4 +80,8 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      *带条件查询
      */
     List<AnAtomicTerm> selectAllByCondition(@Param("checked") String checked);
+    /**
+     *查询全部
+     */
+    List<AnAtomicTerm> selectAllAtomicTerm();
 }

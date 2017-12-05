@@ -3,6 +3,7 @@ package cn.malgo.annotation.core.service.corpus;
 import java.text.MessageFormat;
 import java.util.*;
 
+import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,7 +137,25 @@ public class AtomicTermService {
         return pageInfo;
     }
     /**
-     *根据term模糊查询原子术语
+     * 根据termText模糊查询原子术语
+     * @param mixtureTermList
+     * @param term
+     */
+    public List<MixtureTerm> queryMixtureFuzzyByTerm(List<MixtureTerm> mixtureTermList,String term){
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllAtomicTerm();
+        for(AnAtomicTerm anAtomicTerm:anAtomicTermList){
+            String currentTerm=SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm());
+            if(currentTerm.contains(term)){
+                MixtureTerm current=new MixtureTerm();
+                current.setTermName(currentTerm);
+                current.setTermId(anAtomicTerm.getId());
+                mixtureTermList.add(current);
+            }
+        }
+        return  mixtureTermList;
+    }
+    /**
+     * 分页根据term模糊查询原子术语
      * @param term
      * @param checked
      */

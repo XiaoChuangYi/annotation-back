@@ -2,6 +2,7 @@ package cn.malgo.annotation.core.service.term;
 
 import cn.malgo.annotation.common.dal.mapper.TermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
+import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.github.pagehelper.Page;
@@ -121,5 +122,15 @@ public class TermService {
         int deleteResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(deleteResult > 0, "删除术语失败");
     }
-
+    /**
+     *@param  termName
+     */
+    public List<MixtureTerm> selectByTermName(String termName){
+        List<MixtureTerm> termList=termMapper.selectAllByTermName(termName);
+        return termList;
+    }
+    public List<String> selectTermType(){
+        List<String> typeList=termMapper.selectTermType();
+        return typeList;
+    }
 }

@@ -1,5 +1,6 @@
 package cn.malgo.annotation.common.dal.mapper;
 
+import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.common.dal.util.CommonMapper;
 import org.apache.ibatis.annotations.Param;
@@ -12,4 +13,6 @@ public interface TermMapper extends CommonMapper<Term> {
                                       @Param("termType") String termType,
                                       @Param("label") String label,
                                       @Param("checked") String checked);
+     List<MixtureTerm> selectAllByTermName(@Param("termName") String termName);
+     List<String> selectTermType();
 }
