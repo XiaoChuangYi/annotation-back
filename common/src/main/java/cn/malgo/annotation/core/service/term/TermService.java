@@ -106,7 +106,7 @@ public class TermService {
         term.setTermCode(termCode);
         term.setState(state);
         term.setTermType(termType);
-        int insertResult=termMapper.insertUseGeneratedKeys(term);
+        int insertResult=termMapper.insertSelective(term);
         AssertUtil.state(insertResult > 0, "新增术语失败");
     }
     /**

@@ -14,6 +14,7 @@
         <result column="GMT_CREATED" property="gmtCreated" jdbcType="TIMESTAMP"/>
         <result column="GMT_MODIFIED" property="gmtModified" jdbcType="TIMESTAMP"/>
         <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="standard_name" property="standardName" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="ALL_COLUMN">
@@ -90,8 +91,16 @@
     </update>
     <select id="selectByTermAndTypeIsSynonyms" resultMap="BaseResultMap">
         SELECT
-        <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
         WHERE state='ENABLE'
         <if test="term!=null and term!=''">
             AND TERM = #{term}
@@ -101,16 +110,13 @@
         </if>
         <choose>
             <when test="checked!=null and checked =='true'">
-                AND  CONCEPT_ID !=''
+                AND  AAT.CONCEPT_ID !=''
             </when>
             <otherwise>
-                AND  CONCEPT_ID =''
+                AND  AAT.CONCEPT_ID =''
             </otherwise>
         </choose>
-        <!--<if test="checked!=null and checked =='true'">-->
-            <!--AND  CONCEPT_ID !=''-->
-        <!--</if>-->
-        ORDER BY ID
+        ORDER BY AAT.ID
     </select>
     <select id="selectTotalByChecked" resultType="java.lang.Integer">
         SELECT
@@ -128,15 +134,23 @@
     </select>
     <select id="selectAllByCondition" resultMap="BaseResultMap">
         SELECT
-        <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
         WHERE 1=1
         <choose>
             <when test="checked!=null and checked =='true'">
-                AND  CONCEPT_ID !=''
+                AND  AAT.CONCEPT_ID !=''
             </when>
             <otherwise>
-                AND  CONCEPT_ID =''
+                AND  AAT.CONCEPT_ID =''
             </otherwise>
         </choose>
     </select>

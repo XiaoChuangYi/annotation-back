@@ -38,6 +38,16 @@ public class Term {
     @Column(name="concept_id")
     private String conceptId;
 
+    private String standardName;
+
+    public String getStandardName() {
+        return standardName;
+    }
+
+    public void setStandardName(String standardName) {
+        this.standardName = standardName;
+    }
+
     /**
      * @return id
      */

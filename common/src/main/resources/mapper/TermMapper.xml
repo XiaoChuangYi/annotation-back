@@ -16,6 +16,7 @@
     <result column="label" jdbcType="VARCHAR" property="label" />
     <result column="state" jdbcType="VARCHAR" property="state" />
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
+    <result column="standard_name" jdbcType="VARCHAR" property="standardName" />
   </resultMap>
   <sql id="ALL_COLUMN">
     id,
@@ -35,8 +36,22 @@
     FROM TERM WHERE state='ENABLE' OR state IS NULL
   </select>
   <select id="selectTermByCondition" resultMap="BaseResultMap">
-    select <include refid="ALL_COLUMN" />
-    FROM TERM WHERE state='ENABLE'
+    select
+    TM.id,
+    term_id,
+    pterm_id,
+    term_code,
+    term_type,
+    term_name,
+    origin_name,
+    has_children,
+    label,
+    state,
+    TM.concept_id,
+    CT.standard_name
+    FROM TERM TM LEFT JOIN CONCEPT CT
+    ON TM.CONCEPT_ID=CT.concept_id
+    WHERE state='ENABLE'
     <if test="termName!=null and termName!=''">
       AND term_name LIKE CONCAT('%',#{termName},'%')
     </if>
@@ -48,10 +63,10 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  CONCEPT_ID is not NULL
+        AND  TM.CONCEPT_ID is not NULL
       </when>
       <otherwise>
-        AND  CONCEPT_ID is NULL
+        AND  TM.CONCEPT_ID is NULL
       </otherwise>
     </choose>
     OR state IS NULL
@@ -66,10 +81,10 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  CONCEPT_ID is NOT NULL
+        AND  TM.CONCEPT_ID is NOT NULL
       </when>
       <otherwise>
-        AND  CONCEPT_ID is NULL
+        AND  TM.CONCEPT_ID is NULL
       </otherwise>
     </choose>
   </select>

@@ -48,7 +48,6 @@ public class AtomicConceptService {
         int insertResult=conceptMapper.insertUseGeneratedKeys(concept);
         AssertUtil.state(insertResult > 0, "新增概念失败");
         int updateResult=anAtomicTermMapper.updateConceptIdByPrimaryKey(conceptId,id);
-//        int updateResult=anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
         AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
 
