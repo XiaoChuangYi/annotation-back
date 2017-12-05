@@ -7,6 +7,7 @@ import cn.malgo.annotation.core.service.concept.AtomicConceptService;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
 import cn.malgo.annotation.web.controller.term.request.AddConceptRequest;
+import cn.malgo.annotation.web.controller.type.PageResult;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.github.pagehelper.Page;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by cjl on 2017/11/30.
@@ -35,12 +38,23 @@ public class AtomicConceptController {
      */
     @RequestMapping(value = "/list.do")
     public ResultVO<PageVO<AnAtomicTerm>> getOnePage(QueryAtomicRequest request) {
-
         Page<AnAtomicTerm> page = atomicTermService.queryOnePage(request.getTerm(),
                 request.getType(), request.getPageNum(), request.getPageSize(),request.getChecked());
         PageVO<AnAtomicTerm> pageVO = new PageVO(page);
-
         return ResultVO.success(pageVO);
+    }
+    /**
+     *分页根据term模糊查询原子术语
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/fuzzyList.do")
+    public ResultVO<PageVO<AnAtomicTerm>> fuzzyQueryPage(QueryAtomicRequest request){
+        Map<String,Object> atomicTermMap=atomicTermService.queryFuzzyByTerm(request.getTerm(),request.getPageNum(),request.getPageSize(),request.getChecked());
+        PageResult<AnAtomicTerm> pageResult=new PageResult<>();
+        pageResult.setTotal(Integer.parseInt(atomicTermMap.get("total").toString()));
+        pageResult.setDataList((List<AnAtomicTerm>)atomicTermMap.get("atomicTermList"));
+        return  ResultVO.success(pageResult);
     }
 
     /**

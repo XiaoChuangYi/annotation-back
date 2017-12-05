@@ -1,8 +1,7 @@
 package cn.malgo.annotation.core.service.corpus;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,11 +129,43 @@ public class AtomicTermService {
      * @return
      */
     public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize,String checked) {
+        Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum, pageSize);
         String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
-        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt, type,checked);
+        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt,type,checked);
         decrypt(pageInfo);
         return pageInfo;
+    }
+    /**
+     *根据term模糊查询原子术语
+     * @param term
+     * @param checked
+     */
+    public Map<String,Object> queryFuzzyByTerm(String term, int pageIndex, int pageSize, String checked){
+        //从数据库中查出所有的数据然后遍历每条记录，匹配是否有指定的记录，有则加入新的集合，直到结束，返回最终的集合
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllByCondition(checked);
+        List<AnAtomicTerm> finalAtomicTermList=decryptTerm(anAtomicTermList,term);
+        Map<String,Object> termMap=new HashMap<>();
+        if(finalAtomicTermList.size()==0){
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList);
+        }else {
+            termMap.put("total", finalAtomicTermList.size());
+            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize,
+                    pageIndex * pageSize >= finalAtomicTermList.size() ? finalAtomicTermList.size() : pageIndex * pageSize));
+        }
+        return termMap;
+    }
+
+    private List<AnAtomicTerm> decryptTerm(List<AnAtomicTerm> list,String term){
+        List<AnAtomicTerm> anAtomicTermList=new LinkedList<>();
+        for (AnAtomicTerm anAtomicTerm : list) {
+            String currentTerm=SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm());
+            if(currentTerm.contains(term)){
+                anAtomicTerm.setTerm(currentTerm);
+                anAtomicTermList.add(anAtomicTerm);
+            }
+        }
+        return anAtomicTermList;
     }
     /**
      * 分页查询原子术语

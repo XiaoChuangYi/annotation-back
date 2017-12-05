@@ -112,4 +112,32 @@
         <!--</if>-->
         ORDER BY ID
     </select>
+    <select id="selectTotalByChecked" resultType="java.lang.Integer">
+        SELECT
+        COUNT(ID)
+        FROM AN_ATOMIC_TERM
+        WHERE 1=1
+        <choose>
+            <when test="checked!=null and checked =='true'">
+                AND  CONCEPT_ID !=''
+            </when>
+            <otherwise>
+                AND  CONCEPT_ID =''
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectAllByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM
+        WHERE 1=1
+        <choose>
+            <when test="checked!=null and checked =='true'">
+                AND  CONCEPT_ID !=''
+            </when>
+            <otherwise>
+                AND  CONCEPT_ID =''
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

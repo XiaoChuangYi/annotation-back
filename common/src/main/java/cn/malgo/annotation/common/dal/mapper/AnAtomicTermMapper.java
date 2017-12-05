@@ -72,4 +72,12 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      *更新原子术语表里的conceptId
      */
     int updateConceptIdByPrimaryKey(@Param("conceptId") String conceptId,@Param("id") String id);
+    /**
+     *查询总数
+     */
+    int selectTotalByChecked(@Param("checked") String checked);
+    /**
+     *带条件查询
+     */
+    List<AnAtomicTerm> selectAllByCondition(@Param("checked") String checked);
 }

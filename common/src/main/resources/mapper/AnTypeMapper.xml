@@ -37,7 +37,7 @@
   </select>
   <select id="selectEnableTypes" resultMap="BaseResultMap">
     SELECT <include refid="ALL_COLUMN"/>
-    FROM AN_TYPE WHERE state='ENABLE' ORDER BY ID
+    FROM AN_TYPE WHERE state='ENABLE' ORDER BY TYPE_CODE
   </select>
   <update id="updateByTypeCodeSelective" parameterType="cn.malgo.annotation.common.dal.model.AnType">
       UPDATE  AN_TYPE
