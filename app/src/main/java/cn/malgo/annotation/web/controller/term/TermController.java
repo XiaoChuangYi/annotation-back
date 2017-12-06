@@ -83,6 +83,15 @@ public class TermController extends BaseController {
     }
 
     /**
+     * 批量更新术语标签字段
+     */
+    @RequestMapping(value = {"/updateBatchLabelOfTerm.do"})
+    public ResultVO updateBatchLabelOfTerm(TermArr termArr,String label){
+        termService.updateBatchTermLabel(termArr.getTermList(),label);
+        return  ResultVO.success();
+    }
+
+    /**
      * 新增术语信息
      * @param request
      * @return

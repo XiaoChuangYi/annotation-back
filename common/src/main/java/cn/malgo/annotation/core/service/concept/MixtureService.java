@@ -126,8 +126,8 @@ public class MixtureService {
     public void bindTermIdOfConcept(int id,String termId){
         Concept concept=new Concept();
         concept.setId(id);
-        concept.setTermId(termId);
-        int updateResult=conceptMapper.updateByPrimaryKeySelective(concept);
-        AssertUtil.state(updateResult > 0, "绑定概念术语失败");
+//        concept.setTermId(termId);
+//        int updateResult=conceptMapper.updateByPrimaryKeySelective(concept);
+//        AssertUtil.state(updateResult > 0, "绑定概念术语失败");
     }
 }

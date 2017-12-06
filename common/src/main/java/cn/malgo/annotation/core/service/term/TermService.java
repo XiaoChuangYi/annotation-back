@@ -4,13 +4,14 @@ import cn.malgo.annotation.common.dal.mapper.TermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
+import cn.malgo.annotation.common.dal.model.TermLabel;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by cjl on 2017/11/28.
@@ -84,7 +85,44 @@ public class TermService {
         int updateResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(updateResult > 0, "更新术语标签失败");
     }
+    /**
+     *批量更新指定行的label字段
+     */
+    public void updateBatchTermLabel(List<Integer> idList,String pLabel){
+        if(idList.size()>0){
+            List<TermLabel> termLabelList=new ArrayList<>();
+            for(int k=0;k<idList.size();k++){
+                Term currentTerm=termMapper.selectByPrimaryKeyID(idList.get(k));
+                TermLabel termLabel=new TermLabel();
+                termLabel.setId(idList.get(k));
+                if(currentTerm.getLabel()!=null&&!"".equals(currentTerm.getLabel())){
+                    String [] labelArr=currentTerm.getLabel().substring(currentTerm.getLabel().indexOf("[")+1,currentTerm.getLabel().indexOf("]")).split(",");
+                    List<String> labelList= new ArrayList<>();
+                    for(String temp:labelArr){
+                        labelList.add(temp);
+                    }
+                    String [] pLabelArr=pLabel.substring(pLabel.indexOf("[")+1,pLabel.indexOf("]")).split(",");
+                    for(String str :pLabelArr){
+                        if(!labelList.contains(str)){
+                            labelList.add(str);
+                        }
+                    }
+                    String temp="\'[";
+                    for(String str:labelList){
+                        temp+=str+",";
+                    }
+                    System.out.println(temp.substring(0,temp.length()-1)+"]\'");
+                    termLabel.setLabel(temp.substring(0,temp.length()-1)+"]");
+                }else {
+                    termLabel.setLabel(pLabel);
+                }
+                termLabelList.add(termLabel);
+            }
+            int updateResult=termMapper.updateBatchLabelOfTerm(termLabelList);
+            AssertUtil.state(updateResult > 0, "批量更新术语标签失败");
+        }
 
+    }
 
     /**
      *新增术语

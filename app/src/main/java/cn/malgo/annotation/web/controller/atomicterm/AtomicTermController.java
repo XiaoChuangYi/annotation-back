@@ -69,13 +69,14 @@ public class AtomicTermController extends BaseController {
         AnAtomicTerm anAtomicTermNew = atomicTermService
             .queryByAtomicTermId(request.getAtomicTermId());
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //批处理
-                atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermOld, anAtomicTermNew);
-            }
-        }).start();
+        atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermOld, anAtomicTermNew);
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                //批处理
+//                atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermOld, anAtomicTermNew);
+//            }
+//        }).start();
 
         return ResultVO.success();
 

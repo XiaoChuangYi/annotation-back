@@ -2,10 +2,12 @@ package cn.malgo.annotation.common.dal.mapper;
 
 import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
+import cn.malgo.annotation.common.dal.model.TermLabel;
 import cn.malgo.annotation.common.dal.util.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TermMapper extends CommonMapper<Term> {
      List<Term> selectEnableTerm();
@@ -15,4 +17,6 @@ public interface TermMapper extends CommonMapper<Term> {
                                       @Param("checked") String checked);
      List<MixtureTerm> selectAllByTermName(@Param("termName") String termName);
      List<String> selectTermType();
+     int updateBatchLabelOfTerm(@Param("labelList") List<TermLabel> labelList);
+     Term selectByPrimaryKeyID(@Param("id") int id);
 }

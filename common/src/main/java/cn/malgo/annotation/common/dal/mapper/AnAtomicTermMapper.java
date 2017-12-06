@@ -84,4 +84,8 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      *查询全部
      */
     List<AnAtomicTerm> selectAllAtomicTerm();
+    /**
+     *根据主键ID查询单条记录
+     */
+    AnAtomicTerm selectByPrimaryKeyID(@Param("id") String id);
 }

@@ -84,7 +84,7 @@ public class AtomicTermService {
      * @param termType
      */
     public void updateAtomicTerm(String atomicTermId, String termType) {
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKeyID(atomicTermId);
         anAtomicTermOld.setType(termType);
         anAtomicTermOld.setGmtModified(new Date());
 
@@ -208,7 +208,7 @@ public class AtomicTermService {
      * @return
      */
     public AnAtomicTerm queryByAtomicTermId(String atomicTermId) {
-        AnAtomicTerm anAtomicTerm = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        AnAtomicTerm anAtomicTerm = anAtomicTermMapper.selectByPrimaryKeyID(atomicTermId);
         decrypt(anAtomicTerm);
         return anAtomicTerm;
     }

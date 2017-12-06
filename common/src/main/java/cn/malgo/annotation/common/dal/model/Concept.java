@@ -13,18 +13,6 @@ public class Concept {
     @Column(name = "concept_id")
     private String conceptId;
 
-    @Column(name = "term_id")
-    private String termId;
-
-
-    public String getTermId() {
-        return termId;
-    }
-
-    public void setTermId(String termId) {
-        this.termId = termId;
-    }
-
     /**
      * @return id
      */

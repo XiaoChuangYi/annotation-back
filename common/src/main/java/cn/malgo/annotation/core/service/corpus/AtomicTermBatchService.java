@@ -142,7 +142,7 @@ public class AtomicTermBatchService {
 
         LogUtil.info(logger, "开始批量替换标准中的原子术语");
         int pageNum = 1;
-        int pageSize = 100;
+        int pageSize = 2000;
         Page<Annotation> pageInfo = null;
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());

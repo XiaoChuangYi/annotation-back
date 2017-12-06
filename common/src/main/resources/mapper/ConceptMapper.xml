@@ -8,14 +8,12 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="standard_name" jdbcType="VARCHAR" property="standardName" />
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
-    <result column="term_id" jdbcType="VARCHAR" property="termId" />
   </resultMap>
 
   <sql id="ALL_COLUMN">
     id,
     concept_id,
-    standard_name,
-    term_id
+    standard_name
   </sql>
   <select id="selectConceptByConceptId" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />

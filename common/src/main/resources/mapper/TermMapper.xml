@@ -106,4 +106,23 @@
   <select id="selectTermType" resultType="java.lang.String">
     SELECT DISTINCT(term_type) from TERM
   </select>
+  <update id="updateBatchLabelOfTerm" parameterType="java.util.List">
+    UPDATE TERM SET label=
+    <foreach collection="labelList" item="item" index="index" open="CASE ID" separator=" " close="END">
+      when #{item.id} THEN
+      #{item.label}
+    </foreach>
+    WHERE ID in
+    <foreach collection="labelList" item="item" index="index"  open="(" close=")" separator=",">
+      ${item.id}
+    </foreach>
+  </update>
+  <select id="selectByPrimaryKeyID" resultMap="BaseResultMap">
+    SELECT
+    <include refid="ALL_COLUMN"/>
+    FROM TERM WHERE  1=1
+    <if test="id!=null and id!='' ">
+      AND id=#{id}
+    </if>
+  </select>
 </mapper>
