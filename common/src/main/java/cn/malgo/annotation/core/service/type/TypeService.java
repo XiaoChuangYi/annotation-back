@@ -3,10 +3,7 @@ package cn.malgo.annotation.core.service.type;
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
-import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.Annotation;
-import cn.malgo.annotation.common.dal.model.Corpus;
-import cn.malgo.annotation.common.dal.model.AnType;
+import cn.malgo.annotation.common.dal.model.*;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
@@ -151,51 +148,17 @@ public class TypeService {
         int delResult=anTypeMapper.updateByPrimaryKeySelective(anTypedel);
         AssertUtil.state(delResult > 0, "删除类型失败");
     }
-    /**
-     * 根据type/term查询标术语注表中的标注
-     *@param type
-     *@param term
-     */
-    public List<Annotation> queryAnnotationByType(String type, String term){
-        List<String> stateList=new ArrayList<>();
-        stateList.add(AnnotationStateEnum.FINISH.name());
-        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
-        List<Annotation> finalAnnotation = new LinkedList<>();
-        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, 1, total);
-        for (Annotation annotation : pageInfo.getResult()) {
-            try {
-                //最终标注
-                List<TermAnnotationModel> finalModelList = AnnotationConvert
-                        .convertAnnotationModelList(annotation.getFinalAnnotation());
-                boolean isHave = false;
-                for (TermAnnotationModel currentModel : finalModelList) {
-                    //如果标注中存在待替换的type类型,进行替换
-                    if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
-                        isHave = true;
-                        break;
-                    }
-                }
-                if (isHave) {
-                    finalAnnotation.add(annotation);
-                    LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
-                }
-            } catch (Exception ex) {
-                LogUtil.info(logger,
-                        "结束处理第" + ex.getMessage());
-            }
-        }
-        return finalAnnotation;
-    }
 //    /**
 //     * 根据type/term查询标术语注表中的标注
 //     *@param type
 //     *@param term
 //     */
-//    public List<Annotation> queryAnnotationByType(String type, String term,int pageIndex,int pageSize){
+//    public List<Annotation> queryAnnotationByType(String type, String term){
 //        List<String> stateList=new ArrayList<>();
 //        stateList.add(AnnotationStateEnum.FINISH.name());
+//        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
 //        List<Annotation> finalAnnotation = new LinkedList<>();
-//        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, pageIndex, pageSize);
+//        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, 1, total);
 //        for (Annotation annotation : pageInfo.getResult()) {
 //            try {
 //                //最终标注
@@ -220,4 +183,52 @@ public class TypeService {
 //        }
 //        return finalAnnotation;
 //    }
+    /**
+     * 根据type/term查询标术语注表中的标注
+     *@param type
+     *@param term
+     */
+    public AnnotationPagination queryAnnotationByType(String type, String term,int cPageNum,int cPageSize){
+        LogUtil.info(logger, "开始批量查询原子术语列表"+cPageNum);
+        int pageNum = 1;
+        int pageSize = 2000;
+        int currentIndex=cPageNum;
+        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
+        List<Annotation> finalAnnotationList = new LinkedList<>();
+        outer:do {
+            List<Annotation> anAtomicTermList = annotationService.queryFinalAnnotationPagination(AnnotationStateEnum.FINISH.name(), cPageNum, pageSize);
+            for (Annotation annotation : anAtomicTermList) {
+                try {
+                    //最终标注
+                    List<TermAnnotationModel> finalModelList = AnnotationConvert
+                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+                    boolean isHave = false;
+                    for (TermAnnotationModel currentModel : finalModelList) {
+                        if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
+                            isHave = true;
+                            break;
+                        }
+                    }
+                    if (isHave) {
+                        if(finalAnnotationList.size()==cPageSize)
+                        {
+                            currentIndex=currentIndex+cPageNum;
+                            break outer;
+                        }
+                        finalAnnotationList.add(annotation);
+                        LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
+                    }
+                } catch (Exception ex) {
+                    LogUtil.info(logger,
+                            "结束处理第" + ex.getMessage());
+                }
+                cPageNum++;
+            }
+            pageNum++;
+        }while((pageNum*pageSize+currentIndex)<total);
+        AnnotationPagination annotationPagination=new AnnotationPagination<Annotation>();
+        annotationPagination.setLastIndex(currentIndex);
+        annotationPagination.setList(finalAnnotationList);
+        return annotationPagination;
+    }
 }

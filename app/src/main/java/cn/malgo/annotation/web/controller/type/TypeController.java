@@ -2,6 +2,7 @@ package cn.malgo.annotation.web.controller.type;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
+import cn.malgo.annotation.common.dal.model.AnnotationPagination;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
@@ -91,12 +92,12 @@ public class TypeController extends BaseController {
      * 根据type查询术语标注表中的的对应记录
      * @param typeCode
      */
-    @RequestMapping(value="/selectAnnotationByType.do")
-     public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
-        List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
-        return  ResultVO.success(annotationBratVOList);
-    }
+//    @RequestMapping(value="/selectAnnotationByType.do")
+//     public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
+//        List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
+//        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
+//        return  ResultVO.success(annotationBratVOList);
+//    }
     private static List<Annotation> globalAnnotationList=null;
     /**
      *后台分页查询标注术语
@@ -108,13 +109,12 @@ public class TypeController extends BaseController {
     }
     @RequestMapping(value = "selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
-        if(globalAnnotationList==null)
-            globalAnnotationList =typeService.queryAnnotationByType(type,term);
-        List<Annotation> toClientList=globalAnnotationList.subList((pageIndex-1)*pageSize,pageIndex*pageSize>=globalAnnotationList.size()?globalAnnotationList.size():pageIndex*pageSize);
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(toClientList);
+        System.out.println("开始");
+        AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
         PageResult<AnnotationBratVO> pageResult=new PageResult<>();
         pageResult.setDataList(annotationBratVOList);
-        pageResult.setTotal(globalAnnotationList.size());
+        pageResult.setTotal(annotationPagination.getLastIndex());
         return  ResultVO.success(pageResult);
     }
 

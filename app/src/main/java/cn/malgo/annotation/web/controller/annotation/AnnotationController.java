@@ -128,7 +128,7 @@ public class AnnotationController extends BaseController {
          if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
              newTermsText = AnnotationConvert.addNewTerm(newTermsText, request.getText(),
                      request.getAnnotationType());
-             //同时在插入到原子术语列表中
+             //同时再插入到原子术语列表中
              atomicTermService.saveAtomicTerm(request.getAnId(),request.getText(),request.getAnnotationType());
          }
          List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);

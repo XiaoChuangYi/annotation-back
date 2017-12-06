@@ -301,18 +301,9 @@ public class AnnotationService {
      * @param pageSize
      */
     public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
-        Map<String,Object> map = new HashMap<>();
-        map.put("state",state);
-//        if(pageNum==0) {
-//            map.put("start", 0);
-//        }else {
-//            map.put("start",(pageNum-1)*pageSize);
-//        }
-        map.put("pageIndex",pageNum);
-        map.put("pageSize",pageSize);
         List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
         decryptAES(annotationList);
-        System.out.println(JSONArray.parse(JSON.toJSONString(annotationList)));
+        System.out.println(pageNum+">>>>><<<<<"+pageSize);
         return  annotationList;
     }
 
@@ -363,7 +354,6 @@ public class AnnotationService {
      */
     public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
         String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
-
         Annotation annotation = new Annotation();
         annotation.setId(anId);
         annotation.setFinalAnnotation(securityFinalAnnotation);

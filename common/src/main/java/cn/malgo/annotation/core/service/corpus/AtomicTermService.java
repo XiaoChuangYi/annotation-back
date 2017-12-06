@@ -73,7 +73,7 @@ public class AtomicTermService {
         anAtomicTermNew.setType(termType);
         anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
 
-        int insertResult = anAtomicTermMapper.insert(anAtomicTermNew);
+        int insertResult = anAtomicTermMapper.insertSelective(anAtomicTermNew);
         AssertUtil.state(insertResult > 0, "保存原子术语失败");
 
     }
