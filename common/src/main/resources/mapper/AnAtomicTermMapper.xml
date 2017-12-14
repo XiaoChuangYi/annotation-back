@@ -108,6 +108,9 @@
         <if test="type!=null and type!=''">
             AND TYPE = #{type}
         </if>
+        <if test="id!=null and id!=''">
+            AND AAT.ID =#{id}
+        </if>
         <choose>
             <when test="checked!=null and checked =='true'">
                 AND  AAT.CONCEPT_ID !=''

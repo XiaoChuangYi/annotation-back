@@ -37,6 +37,16 @@ public class AtomicTermService {
     @Autowired
     private AnAtomicTermMapper anAtomicTermMapper;
 
+
+    /**
+     * 置空当前原子术语表记录的concept_id
+     * @param id
+     */
+    public void clearConceptIdOfAtomicTerm(String id){
+        int updateResult=anAtomicTermMapper.updateConceptIdByPrimaryKey("",id);
+        AssertUtil.state(updateResult > 0, "更新原子术语失败");
+    }
+
     /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
      * @param termTypeVO
@@ -129,10 +139,10 @@ public class AtomicTermService {
      * @param checked
      * @return
      */
-    public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize,String checked) {
+    public Page<AnAtomicTerm> queryOnePage(String term, String type,String id ,int pageNum, int pageSize,String checked) {
         Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum, pageSize);
         String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
-        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt,type,checked);
+        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt,type,id,checked);
         decrypt(pageInfo);
         return pageInfo;
     }

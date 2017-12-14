@@ -34,6 +34,7 @@ public class ConceptController extends BaseController {
     private AtomicTermService atomicTermService;
 
 
+
     /**
      * 新增concept信息
      * @param request

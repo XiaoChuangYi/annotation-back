@@ -78,10 +78,10 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  TM.CONCEPT_ID is not NULL
+        AND  TM.CONCEPT_ID !=''
       </when>
       <otherwise>
-        AND  TM.CONCEPT_ID is NULL
+        AND  TM.CONCEPT_ID =''
       </otherwise>
     </choose>
     OR state IS NULL
@@ -96,10 +96,10 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  TM.CONCEPT_ID is NOT NULL
+        AND  TM.CONCEPT_ID !=''
       </when>
       <otherwise>
-        AND  TM.CONCEPT_ID is NULL
+        AND  TM.CONCEPT_ID =''
       </otherwise>
     </choose>
   </select>

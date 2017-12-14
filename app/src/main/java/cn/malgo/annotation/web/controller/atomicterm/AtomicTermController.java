@@ -44,6 +44,15 @@ public class AtomicTermController extends BaseController {
 
         return ResultVO.success(pageVO);
     }
+    /**
+     * 置空原子术语表的concept_id
+     * @param id
+     */
+    @RequestMapping(value = "clearConceptIdOfAtomicTerm.do")
+    public  ResultVO clearConceptIdOfAtomicTerm(String id){
+        atomicTermService.clearConceptIdOfAtomicTerm(id);
+        return  ResultVO.success();
+    }
 
     /**
      * 修改原子术语

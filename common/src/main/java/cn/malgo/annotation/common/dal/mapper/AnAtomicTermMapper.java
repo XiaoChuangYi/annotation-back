@@ -22,7 +22,7 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param type
      * @return
      */
-    List<AnAtomicTerm> selectByTermAndTypeIsSynonyms(@Param("term") String term, @Param("type") String type,@Param("checked") String checked);
+    List<AnAtomicTerm> selectByTermAndTypeIsSynonyms(@Param("term") String term, @Param("type") String type,@Param("id") String id,@Param("checked") String checked);
 
     /**
      * 查询全部原子术语

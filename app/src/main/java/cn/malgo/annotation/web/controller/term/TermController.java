@@ -31,6 +31,15 @@ public class TermController extends BaseController {
     private TermService termService;
 
     /**
+     *置空术语表的concept_id
+     * @param id
+     */
+    @RequestMapping(value = {"/clearConceptIdOfTerm.do"})
+    public ResultVO clearConceptIdOfTerm(int id){
+        termService.clearConceptIdOfTerm(id);
+        return ResultVO.success();
+    }
+    /**
      * 分页查询术语信息
      * @param request
      * @return
@@ -56,7 +65,6 @@ public class TermController extends BaseController {
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
-
 
     /**
      * 更新术语信息

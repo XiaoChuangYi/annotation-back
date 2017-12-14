@@ -80,6 +80,7 @@
         </if>
         AND MODIFIER = #{modifier}
         ORDER BY STATE DESC , ID ASC
+        ,GMT_MODIFIED DESC
     </select>
 
     <select id="selectFinalAnnotationByPagination"  resultMap="BaseResultMap">
@@ -130,6 +131,7 @@
             AND TERM LIKE CONCAT('%',#{term},'%')
         </if>
         AND MODIFIER = #{modifier}
-        ORDER BY ID DESC
+        ORDER BY ID DESC,
+        GMT_MODIFIED DESC
     </select>
 </mapper>

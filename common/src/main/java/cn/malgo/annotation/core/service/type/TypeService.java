@@ -226,6 +226,7 @@ public class TypeService {
             }
             pageNum++;
         }while((pageNum*pageSize+currentIndex)<total);
+        System.out.println((pageNum*pageSize+currentIndex)+"<<<<<<<<<<<<<<<<>>>>>>>>>>"+total);
         AnnotationPagination annotationPagination=new AnnotationPagination<Annotation>();
         annotationPagination.setLastIndex(currentIndex);
         annotationPagination.setList(finalAnnotationList);

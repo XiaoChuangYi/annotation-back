@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.malgo.annotation.common.dal.mapper.DrawMapper">
+  <resultMap id="BaseResultMap" type="cn.malgo.annotation.common.dal.model.Draw">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="draw_name" jdbcType="VARCHAR" property="drawName" />
+    <result column="type_code" jdbcType="VARCHAR" property="typeCode" />
+  </resultMap>
+  <select id="selectDrawLeftJoinType" resultMap="BaseResultMap">
+    SELECT draw.id,type_code,draw_name
+    from DRAW  draw LEFT JOIN AN_TYPE type  ON type.id=draw.id
+  </select>
+</mapper>

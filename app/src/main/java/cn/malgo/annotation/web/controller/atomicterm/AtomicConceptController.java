@@ -6,6 +6,7 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.concept.AtomicConceptService;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
+import cn.malgo.annotation.web.controller.atomicterm.request.addAtomicConceptRequest;
 import cn.malgo.annotation.web.controller.term.request.AddConceptRequest;
 import cn.malgo.annotation.web.controller.type.PageResult;
 import cn.malgo.annotation.web.result.PageVO;
@@ -39,7 +40,7 @@ public class AtomicConceptController {
     @RequestMapping(value = "/list.do")
     public ResultVO<PageVO<AnAtomicTerm>> getOnePage(QueryAtomicRequest request) {
         Page<AnAtomicTerm> page = atomicTermService.queryOnePage(request.getTerm(),
-                request.getType(), request.getPageNum(), request.getPageSize(),request.getChecked());
+                request.getType(), request.getId(),request.getPageNum(), request.getPageSize(),request.getChecked());
         PageVO<AnAtomicTerm> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -63,9 +64,9 @@ public class AtomicConceptController {
      * @return
      */
     @RequestMapping(value = { "/addConcept.do" })
-    public ResultVO addNewConcept(AddConceptRequest request){
-        AddConceptRequest.check(request);
-        atomicConceptService.addNewConceptAndUpdateAntomic(request.getId().toString(),request.getOriginName());
+    public ResultVO addNewConcept(addAtomicConceptRequest request){
+        addAtomicConceptRequest.check(request);
+        atomicConceptService.addNewConceptAndUpdateAntomic(request.getId(),request.getOriginName());
         return  ResultVO.success();
     }
     /**
@@ -76,8 +77,8 @@ public class AtomicConceptController {
      * @return
      */
     @RequestMapping(value = { "/updateConcept.do" })
-    public ResultVO updateTermOrAddConcept(int id,String conceptId,String conceptName){
-        atomicConceptService.updateAtomicTermOrAddConcept(id+"",conceptId,conceptName);
+    public ResultVO updateTermOrAddConcept(String id,String conceptId,String conceptName){
+        atomicConceptService.updateAtomicTermOrAddConcept(id,conceptId,conceptName);
         return  ResultVO.success();
     }
     /**

@@ -40,8 +40,6 @@ public class TypeController extends BaseController {
     @Autowired
     private TypeAnnotationBatchService typeAnnotationBatchService;
 
-    @Autowired
-    private AnnotationService annotationService;
 
     @RequestMapping(value = "/getTypes.do")
     public ResultVO<List<AnType>> getAllType(){
@@ -88,25 +86,8 @@ public class TypeController extends BaseController {
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());
         return  ResultVO.success();
     }
-    /**
-     * 根据type查询术语标注表中的的对应记录
-     * @param typeCode
-     */
-//    @RequestMapping(value="/selectAnnotationByType.do")
-//     public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
-//        List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
-//        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
-//        return  ResultVO.success(annotationBratVOList);
-//    }
-    private static List<Annotation> globalAnnotationList=null;
-    /**
-     *后台分页查询标注术语
-     */
-    @RequestMapping(value = "clearGlobalAnnotationList.do")
-    public ResultVO clearGlobalAnnotationList(){
-        globalAnnotationList=null;
-        return ResultVO.success();
-    }
+
+
     @RequestMapping(value = "selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
         System.out.println("开始");

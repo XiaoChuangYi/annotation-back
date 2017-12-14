@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,11 +36,12 @@ public class AtomicConceptService {
     @Transactional
     public void addNewConceptAndUpdateAntomic(String id, String originName){
         List<Concept> conceptList=conceptMapper.selectConceptByStandardName(originName);
-        AssertUtil.state(conceptList.size()==0,"术语表中已有该条记录");
+        AssertUtil.state(conceptList.size()==0,"同义词表中已有"+originName+"记录");
         String conceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
         anAtomicTerm.setId(id);
         anAtomicTerm.setConceptId(conceptId);
+        anAtomicTerm.setGmtModified(new Date());
 
         Concept concept=new Concept();
         concept.setStandardName(originName);
@@ -60,6 +62,7 @@ public class AtomicConceptService {
     public void updateAtomicTermOrAddConcept(String id,String conceptId,String conceptName){
         AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
         anAtomicTerm.setId(id);
+        anAtomicTerm.setGmtModified(new Date());
         if(conceptId!=null&&!"".equals(conceptId)) {
             //当前concept表中已有该条记录，直接更新term表中的conceptID
             anAtomicTerm.setConceptId(conceptId);

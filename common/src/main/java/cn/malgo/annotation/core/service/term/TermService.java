@@ -23,6 +23,18 @@ public class TermService {
     private TermMapper termMapper;
 
     /**
+     *置空术语表的conceptId
+     * @param  id
+     */
+    public void clearConceptIdOfTerm(int id){
+        Term pTerm=new Term();
+        pTerm.setId(id);
+        pTerm.setConceptId("");
+        int updateResult=termMapper.updateByPrimaryKeySelective(pTerm);
+        AssertUtil.state(updateResult > 0, "更新术语conceptId失败");
+    }
+
+    /**
      *按条件分页查询术语
      * @param pageNum
      * @param pageSize
@@ -107,11 +119,10 @@ public class TermService {
                             labelList.add(str);
                         }
                     }
-                    String temp="\'[";
+                    String temp="[";
                     for(String str:labelList){
                         temp+=str+",";
                     }
-                    System.out.println(temp.substring(0,temp.length()-1)+"]\'");
                     termLabel.setLabel(temp.substring(0,temp.length()-1)+"]");
                 }else {
                     termLabel.setLabel(pLabel);
