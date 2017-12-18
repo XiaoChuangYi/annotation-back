@@ -14,11 +14,12 @@ import cn.malgo.common.LogUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.AntPathMatcher;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,14 @@ public class TypeService {
         System.out.println(">>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<");
         System.out.println(JSONArray.parse(JSON.toJSONString(anTypeList)));
         return  anTypeList;
+    }
+    /**
+     * 查询所有类型
+     */
+    public Page<AnType> selectPaginationTypes(int pageNum,int pageSize){
+        Page<AnType> pageInfo= PageHelper.startPage(pageNum, pageSize);
+        anTypeMapper.selectEnableTypes();
+        return pageInfo;
     }
     /**
      * 查询所有类型

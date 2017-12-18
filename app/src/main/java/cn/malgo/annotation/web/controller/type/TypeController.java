@@ -5,15 +5,13 @@ import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.dal.model.AnnotationPagination;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
-import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
 import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
+import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.alibaba.fastjson.JSONObject;
@@ -40,10 +38,17 @@ public class TypeController extends BaseController {
     @Autowired
     private TypeAnnotationBatchService typeAnnotationBatchService;
 
+    @RequestMapping(value = "/getPaginationType.do")
+    public ResultVO<PageVO<AnType>> getAllType(PageRequest request){
+        Page<AnType> page =typeService.selectPaginationTypes(request.getPageNum(),request.getPageSize());
+        PageVO<AnType> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
 
     @RequestMapping(value = "/getTypes.do")
     public ResultVO<List<AnType>> getAllType(){
-        List<AnType> anTypeList=typeService.selectAllTypes();
+        List<AnType> anTypeList =typeService.selectAllTypes();
         return ResultVO.success(anTypeList);
     }
 
