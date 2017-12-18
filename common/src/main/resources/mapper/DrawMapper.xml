@@ -16,4 +16,15 @@
   <select id="selectDrawNameByTypeCode" resultMap="BaseResultMap">
       SELECT IFNULL(draw_name,'') as draw_name,type_code from DRAW draw RIGHT JOIN AN_TYPE type on draw.id=type.id  where type_code=#{typeCode}
   </select>
+  <select id="selectDrawByCondition" resultMap="BaseResultMap">
+    SELECT draw.id,type_code,draw_name
+    from DRAW  draw LEFT JOIN AN_TYPE type  ON type.id=draw.id
+    WHERE 1=1
+    <if test="typeCode !=null and typeCode != ''">
+      AND type_code=#{typeCode}
+    </if>
+    <if test="color !=null and color !='' ">
+      AND  draw_name LIKE  concat('%',#{color},'%')
+    </if>
+  </select>
 </mapper>

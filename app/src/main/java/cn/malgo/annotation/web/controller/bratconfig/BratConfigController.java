@@ -1,11 +1,15 @@
 package cn.malgo.annotation.web.controller.bratconfig;
 
+import cn.malgo.annotation.common.dal.model.Draw;
 import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
 import cn.malgo.annotation.core.service.config.VisualService;
+import cn.malgo.annotation.web.controller.bratconfig.request.QueryDrawRequest;
 import cn.malgo.annotation.web.controller.bratconfig.result.BratConfigVO;
+import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +26,9 @@ public class BratConfigController {
     @Autowired
     private VisualService visualService;
 
+    /**
+     * 从数据库中获取渲染配置
+     */
     @RequestMapping(value = "/getBratConfig.do")
     public ResultVO<BratConfigVO> getBratConfig(){
         BratConfigVO bratConfigVO=new BratConfigVO();
@@ -36,5 +43,22 @@ public class BratConfigController {
         JSONArray array=visualService.fillTypeConfiguration(typeHierarchyNodeList);
         bratConfigVO.setEntity_types(array);
         return  ResultVO.success(bratConfigVO);
+    }
+    /**
+     *分页查询DRAW表
+     */
+    @RequestMapping(value = "/queryPaginationDraw.do")
+    public ResultVO<PageVO<Draw>> queryPaginationDraw(QueryDrawRequest request){
+        Page<Draw> page=visualService.queryOnePageDraw(request.getType(),request.getColor(),request.getPageNum(),request.getPageSize());
+        PageVO<Draw> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+    /**
+     * 更据id更新draw表的渲染参数
+     */
+    @RequestMapping(value = "/updateDrawArgumentsById.do")
+    public ResultVO updateDrawArgumentsById(int id,String drawName){
+        visualService.updateDrawNameById(id,drawName);
+        return  ResultVO.success();
     }
 }

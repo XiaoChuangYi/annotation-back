@@ -9,6 +9,8 @@ import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -239,5 +241,29 @@ public class VisualService {
         typeHierarchyNode.setArg_max_count(mapArgMaxCount);
         typeHierarchyNode.setSpecial_arguments(stringListMap);
         return  typeHierarchyNode;
+    }
+    /**
+     * 分页查询draw表，并关联获取an_type的type_code
+     * @param typeCode
+     * @param color
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<Draw> queryOnePageDraw(String typeCode,String color,int pageNum, int pageSize){
+        Page<Draw> pageInfo= PageHelper.startPage(pageNum, pageSize);
+        drawMapper.selectDrawByCondition(typeCode,color);
+        return  pageInfo;
+    }
+    /**
+     * 更新draw表
+     * @param id
+     * @param drawName
+     */
+    public  void  updateDrawNameById(int id,String drawName){
+        Draw pDraw=new Draw();
+        pDraw.setDrawName(drawName);
+        pDraw.setId(id);
+        int updateResult=drawMapper.updateByPrimaryKeySelective(pDraw);
+        AssertUtil.state(updateResult>0,"更新draw表失败");
     }
 }
