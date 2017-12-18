@@ -10,7 +10,10 @@
     <result column="type_code" jdbcType="VARCHAR" property="typeCode" />
   </resultMap>
   <select id="selectDrawLeftJoinType" resultMap="BaseResultMap">
-    SELECT draw.id,type_code,draw_name
-    from DRAW  draw LEFT JOIN AN_TYPE type  ON type.id=draw.id
+    SELECT draw.id,type_code,IFNULL(draw_name,'') as draw_name
+    from DRAW  draw RIGHT JOIN AN_TYPE type  ON type.id=draw.id
+  </select>
+  <select id="selectDrawNameByTypeCode" resultMap="BaseResultMap">
+      SELECT IFNULL(draw_name,'') as draw_name,type_code from DRAW draw RIGHT JOIN AN_TYPE type on draw.id=type.id  where type_code=#{typeCode}
   </select>
 </mapper>

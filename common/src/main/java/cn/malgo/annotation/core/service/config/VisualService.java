@@ -4,6 +4,7 @@ import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
 import cn.malgo.annotation.common.dal.mapper.DrawMapper;
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.dal.model.Draw;
+import cn.malgo.annotation.common.dal.model.result.Arcs;
 import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -29,7 +30,11 @@ public class VisualService {
 
     private  static   String [] reservedConfigName   = {"ANY", "ENTITY", "RELATION", "EVENT", "NONE", "EMPTY","REL-TYPE","URL", "URLBASE", "GLYPH-POS", "DEFAULT", "NORM", "OVERLAP", "OVL-TYPE"};
 
-    public List<Object> fillTypeConfiguration(List<TypeHierarchyNode> typeHierarchyNodeList){
+    /**
+     * 构造bratConfig的entity_types的数据结构
+     * @param typeHierarchyNodeList
+     */
+    public JSONArray fillTypeConfiguration(List<TypeHierarchyNode> typeHierarchyNodeList){
         JSONArray itemArr=new JSONArray();
         for(TypeHierarchyNode typeHierarchyNode:typeHierarchyNodeList){
             if(typeHierarchyNode.equals("SEPARATOR")){
@@ -37,13 +42,87 @@ public class VisualService {
             }else {
                 String type=typeHierarchyNode.getTerms().get(0);
                 JSONObject item=new JSONObject();
-                item.put("name",anTypeMapper.selectTypeByTypeCodeEnable(type).getTypeName());
+                item.put("name",anTypeMapper.selectTypeByTypeCode(type).getTypeName());
                 item.put("type",type);
                 item.put("unused",typeHierarchyNode.isUnused());
-//                item.put("labels",)
+                item.put("labels",getTypeAliaArr(type));//通过type类型到AN_TYPE表里取到对应的别名，添加进去
+                item.put("attributes",new JSONArray());//目前放一个空的json数组
+                item.put("normalizations",new JSONArray());
+                //添加绘图参数
+                Map<String,String> map=getDrawArgument(type);
+                for(String key:map.keySet()){
+                    item.put(key,map.get(key));
+                }
+                //添加arcs数组
+                List<Arcs> arcsList=new ArrayList<>();
+                Arcs arcs1=new Arcs();
+                    arcs1.setType("Adjective");
+                    List<String> labelList1=new ArrayList<>();
+                    labelList1.add("Adjective");
+                    arcs1.setLabels(labelList1);
+                    arcs1.setTargets(getAllTypes());
+                arcsList.add(arcs1);
+                    Arcs arcs2=new Arcs();
+                    arcs2.setType("Rel");
+                    List<String> labelList2=new ArrayList<>();
+                    labelList2.add("Rel");
+                    arcs2.setLabels(labelList2);
+                    arcs2.setTargets(getAllTypes());
+                arcsList.add(arcs2);
+                item.put("arcs",arcsList);
+                item.put("children",new JSONArray());
+                itemArr.add(item);
             }
         }
         return  itemArr;
+    }
+    /**
+     * 获取所有的type
+     * @return
+     */
+    private List<String> getAllTypes(){
+        List<AnType> anTypeList=anTypeMapper.selectAll();
+        List<String> typeCodeList=new ArrayList<>();
+        for(AnType anType:anTypeList){
+            typeCodeList.add(anType.getTypeCode());
+        }
+        return  typeCodeList;
+    }
+    /**
+     *根据对应的type，获取对应的DRAW表里的draw_name字段的数据
+     * @param typeCode
+     */
+    private Map<String,String> getDrawArgument(String typeCode){
+        Draw draw=drawMapper.selectDrawNameByTypeCode(typeCode);
+        Map<String,String> map=new HashMap<>();
+        if(!"".equals(draw.getDrawName())){
+            String [] arguments=draw.getDrawName().split(",");
+            if(arguments.length>0){
+                for(String currentArg:arguments) {
+                    map.put(currentArg.substring(0,currentArg.indexOf(":")),currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()));
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     *获取对应type的别名
+     * @param typeCode
+     * @return aliaList
+     */
+    private List<String> getTypeAliaArr(String typeCode){
+        AnType anType=anTypeMapper.selectTypeLabelByTypeCode(typeCode);
+        List<String> aliaList=new ArrayList<>();
+        if(anType!=null){
+            if(!"".equals(anType.getTypeLabel())){
+                String [] typeArr=anType.getTypeLabel().split("\\|");
+                for(String temp:typeArr){
+                    aliaList.add(temp);
+                }
+            }
+        }
+        return  aliaList;
     }
     /**
      *获取type类型的配置
@@ -67,7 +146,7 @@ public class VisualService {
         List<Draw> drawList=drawMapper.selectDrawLeftJoinType();
         List<TypeHierarchyNode> typeHierarchyNodeList=new ArrayList<>();
         for(Draw draw:drawList){
-            String [] drawNameArr=draw.getDrawName().split(",");
+            String [] drawNameArr=draw.getDrawName().isEmpty()?(new String[]{}):draw.getDrawName().split(",");
             List<String> termList=new ArrayList<>();
             termList.add(draw.getTypeCode());
             typeHierarchyNodeList.add(initTypeHierarchyNode(termList,Arrays.asList(drawNameArr)));
@@ -113,7 +192,7 @@ public class VisualService {
                         }
                         continue;
                     }
-                    pattern = Pattern.compile("^(\\S+?)(\\{\\S+\\}|\\?|\\*|\\+|)$");
+                    pattern = Pattern.compile("^(\\S+?)(\\{\\S+}|\\?|\\*|\\+|)$");
                     matcher = pattern.matcher(key);
                     String rep = "";
                     if (matcher.find()) {

@@ -79,8 +79,8 @@
             </foreach>
         </if>
         AND MODIFIER = #{modifier}
-        ORDER BY STATE DESC , ID ASC
-        ,GMT_MODIFIED DESC
+        ORDER BY STATE DESC
+        ,GMT_CREATED ASC
     </select>
 
     <select id="selectFinalAnnotationByPagination"  resultMap="BaseResultMap">
@@ -131,7 +131,7 @@
             AND TERM LIKE CONCAT('%',#{term},'%')
         </if>
         AND MODIFIER = #{modifier}
-        ORDER BY ID DESC,
-        GMT_MODIFIED DESC
+        ORDER BY
+        GMT_CREATED ASC
     </select>
 </mapper>
