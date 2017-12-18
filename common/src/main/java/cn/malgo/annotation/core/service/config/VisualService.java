@@ -266,4 +266,16 @@ public class VisualService {
         int updateResult=drawMapper.updateByPrimaryKeySelective(pDraw);
         AssertUtil.state(updateResult>0,"更新draw表失败");
     }
+    /**
+     * 新增draw表
+     * @param id
+     * @param drawName
+     */
+    public  void  addDraw(int id,String drawName){
+        Draw pDraw=new Draw();
+        pDraw.setDrawName(drawName);
+        pDraw.setId(id);
+        int insertResult=drawMapper.insertSelective(pDraw);
+        AssertUtil.state(insertResult>0,"新增draw表失败");
+    }
 }

@@ -61,4 +61,12 @@ public class BratConfigController {
         visualService.updateDrawNameById(id,drawName);
         return  ResultVO.success();
     }
+    /**
+     * 新增draw
+     */
+    @RequestMapping(value="/addDrawArguments.do")
+    public ResultVO addDrawArguments(int id,String drawName){
+        visualService.addDraw(id,drawName);
+        return  ResultVO.success();
+    }
 }
