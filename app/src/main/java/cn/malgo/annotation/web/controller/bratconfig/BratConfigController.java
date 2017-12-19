@@ -54,19 +54,27 @@ public class BratConfigController {
         return ResultVO.success(pageVO);
     }
     /**
-     * 更据id更新draw表的渲染参数
+     * 更据id更新draw表的渲染参数drawName
      */
     @RequestMapping(value = "/updateDrawArgumentsById.do")
     public ResultVO updateDrawArgumentsById(int id,String drawName){
-        visualService.updateDrawNameById(id,drawName);
+        visualService.updateDrawById(id,drawName,"");
         return  ResultVO.success();
     }
     /**
      * 新增draw
      */
     @RequestMapping(value="/addDrawArguments.do")
-    public ResultVO addDrawArguments(int id,String drawName){
-        visualService.addDraw(id,drawName);
+    public ResultVO addDrawArguments(int id,String drawName,String typeLabel){
+        visualService.addDraw(id,drawName,typeLabel);
+        return  ResultVO.success();
+    }
+    /**
+     * 更据id更新draw表的渲染参数typeLabel
+     */
+    @RequestMapping(value = "/updateTypeLabelById.do")
+    public ResultVO updateTypeLabelById(int id,String typeLabel){
+        visualService.updateDrawById(id,"",typeLabel);
         return  ResultVO.success();
     }
 }

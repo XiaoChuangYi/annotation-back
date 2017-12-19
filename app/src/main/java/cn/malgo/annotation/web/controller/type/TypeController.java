@@ -95,7 +95,6 @@ public class TypeController extends BaseController {
 
     @RequestMapping(value = "selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
-        System.out.println("开始");
         AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
         PageResult<AnnotationBratVO> pageResult=new PageResult<>();

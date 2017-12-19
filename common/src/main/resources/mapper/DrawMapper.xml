@@ -8,6 +8,7 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="draw_name" jdbcType="VARCHAR" property="drawName" />
     <result column="type_code" jdbcType="VARCHAR" property="typeCode" />
+    <result column="type_label" jdbcType="VARCHAR" property="typeLabel" />
   </resultMap>
   <select id="selectDrawLeftJoinType" resultMap="BaseResultMap">
     SELECT draw.id,type_code,IFNULL(draw_name,'') as draw_name
@@ -17,7 +18,7 @@
       SELECT IFNULL(draw_name,'') as draw_name,type_code from DRAW draw RIGHT JOIN AN_TYPE type on draw.id=type.id  where type_code=#{typeCode}
   </select>
   <select id="selectDrawByCondition" resultMap="BaseResultMap">
-    SELECT draw.id,type_code,draw_name
+    SELECT draw.id,type_code,draw_name,draw.type_label
     from DRAW  draw LEFT JOIN AN_TYPE type  ON type.id=draw.id
     WHERE 1=1
     <if test="typeCode !=null and typeCode != ''">
@@ -25,6 +26,14 @@
     </if>
     <if test="color !=null and color !='' ">
       AND  draw_name LIKE  concat('%',#{color},'%')
+    </if>
+  </select>
+  <select id="selectDrawByTypeCode" resultMap="BaseResultMap">
+    SELECT draw.id,type_code,draw_name,draw.type_label
+    from DRAW  draw LEFT JOIN AN_TYPE type  ON type.id=draw.id
+    WHERE 1=1
+    <if test="typeCode !=null and typeCode !=''">
+      AND type.type_code=#{typeCode}
     </if>
   </select>
 </mapper>

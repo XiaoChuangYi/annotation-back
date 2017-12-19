@@ -13,7 +13,6 @@
     <result column="HAS_CHILDREN" jdbcType="INTEGER" property="hasChildren" />
     <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated" />
     <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified" />
-    <result column="TYPE_LABEL" jdbcType="VARCHAR" property="typeLabel" />
   </resultMap>
   <sql id="ALL_COLUMN">
     ID,
@@ -23,8 +22,7 @@
     STATE,
     HAS_CHILDREN,
     GMT_CREATED,
-    GMT_MODIFIED,
-    TYPE_LABEL
+    GMT_MODIFIED
   </sql>
   <select id="selectTypeByTypeCode" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN"/>

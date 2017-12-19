@@ -10,6 +10,10 @@ public class Draw {
     @Column(name = "draw_name")
     private String drawName;
 
+
+    @Column(name="type_label")
+    private String typeLabel;
+
     private String typeCode;
 
 
@@ -47,5 +51,13 @@ public class Draw {
      */
     public void setDrawName(String drawName) {
         this.drawName = drawName;
+    }
+
+    public String getTypeLabel() {
+        return typeLabel;
+    }
+
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
     }
 }

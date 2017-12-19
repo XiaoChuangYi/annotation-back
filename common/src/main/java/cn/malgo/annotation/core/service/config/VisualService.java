@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.mysql.jdbc.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -101,7 +102,12 @@ public class VisualService {
             String [] arguments=draw.getDrawName().split(",");
             if(arguments.length>0){
                 for(String currentArg:arguments) {
-                    map.put(currentArg.substring(0,currentArg.indexOf(":")),currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()));
+                    if(currentArg.startsWith("dashArray")){
+                        String value=currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()).replace("-",",");
+                        map.put(currentArg.substring(0,currentArg.indexOf(":")),value);
+                    }else{
+                        map.put(currentArg.substring(0,currentArg.indexOf(":")),currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()));
+                    }
                 }
             }
         }
@@ -114,11 +120,11 @@ public class VisualService {
      * @return aliaList
      */
     private List<String> getTypeAliaArr(String typeCode){
-        AnType anType=anTypeMapper.selectTypeLabelByTypeCode(typeCode);
+        Draw draw=drawMapper.selectDrawByTypeCode(typeCode);
         List<String> aliaList=new ArrayList<>();
-        if(anType!=null){
-            if(!"".equals(anType.getTypeLabel())){
-                String [] typeArr=anType.getTypeLabel().split("\\|");
+        if(draw!=null){
+            if(!"".equals(draw.getTypeLabel())){
+                String [] typeArr=draw.getTypeLabel().split("\\|");
                 for(String temp:typeArr){
                     aliaList.add(temp);
                 }
@@ -259,9 +265,14 @@ public class VisualService {
      * @param id
      * @param drawName
      */
-    public  void  updateDrawNameById(int id,String drawName){
+    public  void  updateDrawById(int id,String drawName,String typeLabel){
         Draw pDraw=new Draw();
-        pDraw.setDrawName(drawName);
+        if(!StringUtils.isNullOrEmpty(drawName)){
+            pDraw.setDrawName(drawName);
+        }
+        if(!StringUtils.isNullOrEmpty(typeLabel)){
+            pDraw.setTypeLabel(typeLabel);
+        }
         pDraw.setId(id);
         int updateResult=drawMapper.updateByPrimaryKeySelective(pDraw);
         AssertUtil.state(updateResult>0,"更新draw表失败");
@@ -271,10 +282,11 @@ public class VisualService {
      * @param id
      * @param drawName
      */
-    public  void  addDraw(int id,String drawName){
+    public  void  addDraw(int id,String drawName,String typeLabel){
         Draw pDraw=new Draw();
         pDraw.setDrawName(drawName);
         pDraw.setId(id);
+        pDraw.setTypeLabel(typeLabel);
         int insertResult=drawMapper.insertSelective(pDraw);
         AssertUtil.state(insertResult>0,"新增draw表失败");
     }

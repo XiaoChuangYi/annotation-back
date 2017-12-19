@@ -30,18 +30,6 @@ public class AnType {
     @Column(name = "GMT_MODIFIED")
     private Date gmtModified;
 
-    @Column(name="TYPE_LABEL")
-    private String typeLabel;
-
-
-    public String getTypeLabel() {
-        return typeLabel;
-    }
-
-    public void setTypeLabel(String typeLabel) {
-        this.typeLabel = typeLabel;
-    }
-
     /**
      * @return ID
      */
