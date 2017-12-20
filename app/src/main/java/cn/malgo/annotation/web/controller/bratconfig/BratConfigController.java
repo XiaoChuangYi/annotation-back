@@ -4,7 +4,9 @@ import cn.malgo.annotation.common.dal.model.Draw;
 import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
 import cn.malgo.annotation.core.service.config.VisualService;
 import cn.malgo.annotation.web.controller.bratconfig.request.QueryDrawRequest;
+import cn.malgo.annotation.web.controller.bratconfig.request.addDrawRequest;
 import cn.malgo.annotation.web.controller.bratconfig.result.BratConfigVO;
+import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.alibaba.fastjson.JSONArray;
@@ -21,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/config")
-public class BratConfigController {
+public class BratConfigController extends BaseController {
 
     @Autowired
     private VisualService visualService;
@@ -65,8 +67,9 @@ public class BratConfigController {
      * 新增draw
      */
     @RequestMapping(value="/addDrawArguments.do")
-    public ResultVO addDrawArguments(int id,String drawName,String typeLabel){
-        visualService.addDraw(id,drawName,typeLabel);
+    public ResultVO addDrawArguments(addDrawRequest request){
+        addDrawRequest.check(request);
+        visualService.addDraw(request.getId(),request.getDrawName(),request.getTypeLabel());
         return  ResultVO.success();
     }
     /**
