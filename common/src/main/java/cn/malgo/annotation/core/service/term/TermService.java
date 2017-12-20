@@ -33,6 +33,17 @@ public class TermService {
         int updateResult=termMapper.updateByPrimaryKeySelective(pTerm);
         AssertUtil.state(updateResult > 0, "更新术语conceptId失败");
     }
+    /**
+     * 根据conceptId分页查询
+     * @param conceptId
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<Term> queryByConceptId(String conceptId,int pageNum,int pageSize){
+        Page<Term> pageInfo=PageHelper.startPage(pageNum,pageSize);
+        termMapper.selectByConceptId(conceptId);
+        return  pageInfo;
+    }
 
     /**
      *按条件分页查询术语
@@ -83,6 +94,14 @@ public class TermService {
         term.setTermName(termName);
         int updateResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(updateResult > 0, "更新术语失败");
+    }
+
+    /**
+     * 批量更新选取行的conceptId
+     */
+    public void updateBatchTermConceptId(List<Integer> idList,String conceptId){
+        int updateResult=termMapper.updateBatchConceptIdOfTerm(idList,conceptId);
+        AssertUtil.state(updateResult>0,"更新术语conceptId失败");
     }
 
     /**

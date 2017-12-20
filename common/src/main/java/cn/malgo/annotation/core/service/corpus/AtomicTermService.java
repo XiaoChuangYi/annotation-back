@@ -37,7 +37,15 @@ public class AtomicTermService {
     @Autowired
     private AnAtomicTermMapper anAtomicTermMapper;
 
-
+    /**
+     * 批量更新原子术语表记录的concept_id
+     * @param idList
+     * @param conceptId
+     */
+    public void updateBatchConceptIdOfAtomicTerm(List<String> idList,String conceptId){
+        int updateResult=anAtomicTermMapper.batchUpdateAtomicConceptId(idList,conceptId);
+        AssertUtil.state(updateResult > 0, "更新原子术语concept_id字段失败");
+    }
     /**
      * 置空当前原子术语表记录的concept_id
      * @param id
@@ -212,6 +220,19 @@ public class AtomicTermService {
         return pageInfo;
     }
 
+    /**
+     * 根据conceptId分页查询原子术语
+     * @param conceptId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnAtomicTerm> queryOnePageByConceptId(String conceptId, int pageNum, int pageSize) {
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.selectAllByConceptId(conceptId);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
     /**
      * 根据原子术语ID查询原子术语
      * @param atomicTermId

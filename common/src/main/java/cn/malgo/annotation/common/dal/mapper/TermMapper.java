@@ -18,5 +18,7 @@ public interface TermMapper extends CommonMapper<Term> {
      List<MixtureTerm> selectAllByTermName(@Param("termName") String termName);
      List<String> selectTermType();
      int updateBatchLabelOfTerm(@Param("labelList") List<TermLabel> labelList);
+     int updateBatchConceptIdOfTerm(@Param("idList") List<Integer> idList,@Param("conceptId") String conceptId);
      Term selectByPrimaryKeyID(@Param("id") int id);
+     List<Term> selectByConceptId(@Param("conceptId") String conceptId);
 }

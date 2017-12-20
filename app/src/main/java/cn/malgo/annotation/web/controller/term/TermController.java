@@ -31,6 +31,17 @@ public class TermController extends BaseController {
     private TermService termService;
 
     /**
+     * 根据conceptId分页查询标准术语
+     * @param request
+     */
+    @RequestMapping(value = {"/queryPaginationByConceptId.do"})
+    public  ResultVO<PageVO<Term>> queryPaginationByConceptId(ConditionTermRequest request){
+        Page<Term> page=termService.queryByConceptId(request.getConceptId(),request.getPageNum(),request.getPageSize());
+        PageVO<Term> pageVO=new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
+    /**
      *置空术语表的concept_id
      * @param id
      */
@@ -89,7 +100,14 @@ public class TermController extends BaseController {
             termService.updateTermLabel(id,label);
         return  ResultVO.success();
     }
-
+    /**
+     * 批量更新术语表conceptId字段
+     */
+    @RequestMapping(value = {"/updateBatchConceptIdOfTerm.do"})
+    public ResultVO updateBatchConceptIdOfTerm(TermArr termArr,String conceptId){
+        termService.updateBatchTermConceptId(termArr.getTermList(),conceptId);
+        return ResultVO.success();
+    }
     /**
      * 批量更新术语标签字段
      */

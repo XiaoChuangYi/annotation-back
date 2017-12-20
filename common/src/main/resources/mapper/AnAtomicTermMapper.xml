@@ -85,6 +85,13 @@
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
+    <update id="batchUpdateAtomicConceptId" parameterType="java.util.List">
+        UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
+        WHERE ID IN
+        <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </update>
     <update id="updateConceptIdByPrimaryKey">
         UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
         WHERE ID =#{id,jdbcType=VARCHAR}
@@ -168,7 +175,24 @@
         <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
         <if test="id!=null and id!='' ">
-            AND ID=#{id}
+        AND ID=#{id}
+        </if>
+    </select>
+    <select id="selectAllByConceptId" resultMap="BaseResultMap">
+        SELECT
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
+        WHERE 1=1
+        <if test="conceptId!=null and conceptId!='' ">
+        AND AAT.concept_id=#{conceptId}
         </if>
     </select>
 </mapper>

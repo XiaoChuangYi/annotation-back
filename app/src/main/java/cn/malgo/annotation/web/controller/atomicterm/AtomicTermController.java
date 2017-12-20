@@ -45,6 +45,28 @@ public class AtomicTermController extends BaseController {
         return ResultVO.success(pageVO);
     }
     /**
+     * 批量更新术语表conceptId字段
+     * @param atomicTermArr
+     * @param conceptId
+     */
+    @RequestMapping(value = {"/updateBatchConceptIdOfAtomicTerm.do"})
+    public ResultVO updateBatchConceptIdOfAtomicTerm(AtomicTermArr atomicTermArr,String conceptId){
+        atomicTermService.updateBatchConceptIdOfAtomicTerm(atomicTermArr.getAtomicTermList(),conceptId);
+        return ResultVO.success();
+    }
+    /**
+     * 根据conceptId分页查询原子术语
+     * @param request
+     */
+    @RequestMapping(value = "/queryPaginationByConceptId.do")
+    public ResultVO<PageVO<AnAtomicTerm>> queryPaginationByConceptId(QueryAtomicRequest request) {
+
+        Page<AnAtomicTerm> page = atomicTermService.queryOnePageByConceptId(request.getConceptId(), request.getPageNum(), request.getPageSize());
+        PageVO<AnAtomicTerm> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
+    /**
      * 置空原子术语表的concept_id
      * @param id
      */

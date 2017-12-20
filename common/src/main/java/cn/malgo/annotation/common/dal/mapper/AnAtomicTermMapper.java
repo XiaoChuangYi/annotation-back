@@ -69,6 +69,13 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
     int batchUpdateAtomicType(@Param("idsList") List<String> idsList,@Param("type") String type);
 
     /**
+     * 批量更新原子术语表中的type
+     * @param idsList
+     * @param conceptId
+     */
+    int batchUpdateAtomicConceptId(@Param("idsList") List<String> idsList,@Param("conceptId") String conceptId);
+
+    /**
      *更新原子术语表里的conceptId
      */
     int updateConceptIdByPrimaryKey(@Param("conceptId") String conceptId,@Param("id") String id);
@@ -88,4 +95,6 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      *根据主键ID查询单条记录
      */
     AnAtomicTerm selectByPrimaryKeyID(@Param("id") String id);
+
+    List<AnAtomicTerm> selectAllByConceptId(@Param("conceptId") String conceptId);
 }
