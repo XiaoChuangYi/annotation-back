@@ -10,6 +10,7 @@ import cn.malgo.annotation.core.service.type.TypeService;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
+import cn.malgo.annotation.web.controller.type.request.QueryTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
 import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
@@ -39,8 +40,8 @@ public class TypeController extends BaseController {
     private TypeAnnotationBatchService typeAnnotationBatchService;
 
     @RequestMapping(value = "/getPaginationType.do")
-    public ResultVO<PageVO<AnType>> getAllType(PageRequest request){
-        Page<AnType> page =typeService.selectPaginationTypes(request.getPageNum(),request.getPageSize());
+    public ResultVO<PageVO<AnType>> getAllType(QueryTypeRequest request){
+        Page<AnType> page =typeService.selectPaginationTypesAndShowParent(request.getPageNum(),request.getPageSize(),request.getTypeCode(),request.getTypeName());
         PageVO<AnType> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -66,9 +67,9 @@ public class TypeController extends BaseController {
     }
 
     @RequestMapping(value = "/updateType.do")
-    public ResultVO updateType(String parentId,String typeId,String typeName){
+    public ResultVO updateType(String parentId,String typeId,String typeName,String originParentId){
 
-        typeService.updateTypeName(parentId,typeId,typeName);
+        typeService.updateType(parentId,typeId,typeName,originParentId);
         return  ResultVO.success();
     }
 

@@ -30,6 +30,17 @@ public class AnType {
     @Column(name = "GMT_MODIFIED")
     private Date gmtModified;
 
+    private String parentType;
+
+
+    public String getParentType() {
+        return parentType;
+    }
+
+    public void setParentType(String parentType) {
+        this.parentType = parentType;
+    }
+
     /**
      * @return ID
      */

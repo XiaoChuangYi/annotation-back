@@ -15,10 +15,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.mysql.jdbc.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.AntPathMatcher;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -61,6 +63,14 @@ public class TypeService {
     public Page<AnType> selectPaginationTypes(int pageNum,int pageSize){
         Page<AnType> pageInfo= PageHelper.startPage(pageNum, pageSize);
         anTypeMapper.selectEnableTypes();
+        return pageInfo;
+    }
+    /**
+     * 查询所有类型
+     */
+    public Page<AnType> selectPaginationTypesAndShowParent(int pageNum,int pageSize,String typeCode,String typeName){
+        Page<AnType> pageInfo= PageHelper.startPage(pageNum, pageSize);
+        anTypeMapper.selectEnableTypeAndShowParent(typeCode,typeName);
         return pageInfo;
     }
     /**
@@ -109,15 +119,42 @@ public class TypeService {
         }
     }
     /**
-     * 更新type的名称
-     * @param typeId
+     * 更新type多字段
+     * @param id
+     * @param parentId
+     * @param typeName
      * */
-    public void updateTypeName(String parentId,String typeId,String typeName){
+    @Transactional
+    public void updateType(String parentId,String id,String typeName,String originParentId){
         AnType anTypeParam=new AnType();
-        anTypeParam.setId(typeId);
-        anTypeParam.setParentId(parentId);
+        anTypeParam.setId(id);
         anTypeParam.setTypeName(typeName);
         anTypeParam.setGmtModified(new Date());
+        //如果当前的parentId不为空，则说明用户要改变当前的记录的父类型
+        //根据当前的parentId作为id,将对应的记录的has_children字段+1
+        //根据当前的originParentId,查询出当前记录原先所归属的type记录。
+        // 1.如果没有，则说明当前行为顶级父类型，不用管
+        // 2.如果有记录，则说明当前行曾经归属于该type类型下，对该hasChildren字段-1
+        if(!StringUtils.isNullOrEmpty(parentId)){
+            anTypeParam.setParentId(parentId);
+            AnType anTypeForUpdateNum=anTypeMapper.selectTypeByParentId(parentId);
+            if(anTypeForUpdateNum!=null){
+                anTypeForUpdateNum.setHasChildren(anTypeForUpdateNum.getHasChildren()+1);
+                int updateHasChildren=anTypeMapper.updateByPrimaryKeySelective(anTypeForUpdateNum);
+                AssertUtil.state(updateHasChildren > 0, "更新hasChildren字段失败");
+            }
+        }
+        if(!StringUtils.isNullOrEmpty(originParentId)) {
+            AnType anTypeForUpdateSubtractNum = anTypeMapper.selectTypeByParentId(originParentId);
+            if(anTypeForUpdateSubtractNum!=null){
+                if(anTypeForUpdateSubtractNum.getHasChildren()>0)
+                {
+                    anTypeForUpdateSubtractNum.setHasChildren(anTypeForUpdateSubtractNum.getHasChildren()-1);
+                    int updateHasChildren=anTypeMapper.updateByPrimaryKeySelective(anTypeForUpdateSubtractNum);
+                    AssertUtil.state(updateHasChildren > 0, "更新hasChildren字段失败");
+                }
+            }
+        }
         int updateResult=anTypeMapper.updateByPrimaryKeySelective(anTypeParam);
         AssertUtil.state(updateResult > 0, "更新类型名称失败");
     }
@@ -125,6 +162,7 @@ public class TypeService {
      * 新增type
      * @param typeName
      * */
+    @Transactional
     public void insertType(String parentId,String typeName,String typeCode){
         AnType anTypeOld=anTypeMapper.selectTypeByTypeCodeEnable(typeCode);
         AssertUtil.state(anTypeOld==null,"该type类型已经存在");
@@ -143,7 +181,15 @@ public class TypeService {
             int lastId=anTypeMapper.selectTypeCount();
             lastId++;
             anTypeNew.setId(lastId+"");
-            result = anTypeMapper.insert(anTypeNew);
+            result = anTypeMapper.insertSelective(anTypeNew);
+        }
+        //如果当前的parentId不为空，则说明用户要改变当前的记录的父类型
+        //根据当前的parentId作为id,将对应的记录的has_children字段+1
+        AnType anTypeForUpdateNum=anTypeMapper.selectTypeByParentId(parentId);
+        if(anTypeForUpdateNum!=null){
+            anTypeForUpdateNum.setHasChildren(anTypeForUpdateNum.getHasChildren()+1);
+            int updateHasChildren=anTypeMapper.updateByPrimaryKeySelective(anTypeForUpdateNum);
+            AssertUtil.state(updateHasChildren > 0, "更新hasChildren字段失败");
         }
         AssertUtil.state(result > 0, "插入类型失败");
     }
