@@ -44,8 +44,44 @@ public class AnnotationController extends BaseController {
     @Autowired
     private AtomicTermService atomicTermService;
 
+    /**
+     *批量更新所选标注记录的modifier字段，从而只派给特定的用户处理
+     * @param annotationArr
+     * @param userId
+     */
+    @RequestMapping(value = {"/updateBatchModifierOfAnnotation.do"})
+    public ResultVO updateBatchModifierOfAnnotation(AnnotationArr annotationArr,String userId){
+        annotationService.updateBatchAnnotationUserId(annotationArr.getAnnotationList(),userId);
+        return  ResultVO.success();
+    }
+    /**
+     *批量更新所选标注记录的modifier字段，从而只派给特定的用户处理
+     * 两步：一.根据参数precedingTotal，按照界面查询的排序逻辑，查询前precedingTotal条，然后获取对应的id,组织成对应的集合
+     * 二.复用批量更新接口，将组织好的list集合传入
+     * @param precedingTotal
+     * @param userId
+     */
+    @RequestMapping(value = {"/updateBatchModifierOfAnnotationByNum.do"})
+    public ResultVO updateBatchModifierOfAnnotationNum(int precedingTotal,String userId){
 
+        return  ResultVO.success();
+    }
 
+    /**
+     *分配标注页面查询，分页，条件查询
+     * @param
+     */
+    @RequestMapping(value = {"/queryForDistributionAnnotation.do"})
+    public ResultVO<PageVO<AnnotationBratVO>> queryForDistributionAnnotation(QueryDistributionRequest request){
+        //分页查询
+        Page<Annotation> page = annotationService.queryOnePageForDistribution(request.getState(),
+                request.getUserId(), request.getPageNum(), request.getPageSize());
+
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
+        PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
+        pageVO.setDataList(annotationBratVOList);
+        return ResultVO.success(pageVO);
+    }
     /**
      * 分页查询标注信息,不使用新词获取一页标注数据
      * @param request

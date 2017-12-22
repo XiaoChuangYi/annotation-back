@@ -75,7 +75,41 @@ public class AnnotationService {
         }
         return pageInfo;
     }
+    /**
+     *根据分配查询的逻辑获取指定数量数据的id集合
+     * @param state
+     * @param userId
+     * @param total
+     */
+    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
+        Page<String> pageInfo = PageHelper.startPage(1, total);
+//        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(state, userId);
+        annotationMapper.selectIDsByNum(state,userId);
+        return pageInfo;
+    }
+    /**
+     * 批量更新标准表的modifier字段
+     */
+    public  void updateBatchAnnotationUserId(List<String> annotationList,String userId){
+        int updateBatch=annotationMapper.batchUpdateAnnotationUserId(annotationList,userId);
+        AssertUtil.state(updateBatch > 0, "批量更新失败");
+    }
 
+    /**
+     * 分页多条件查询数据库中的标注
+     */
+    public Page<Annotation> queryOnePageForDistribution(String annotationState, String userId,
+                                                 int pageNum, int pageSize) {
+        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(annotationState, userId);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println(JSON.parseArray(JSON.toJSONString(annotationList)));
+        decryptAES(pageInfo.getResult());
+        return pageInfo;
+    }
+    /**
+     * 分页条件查询数据库中的标注
+     */
     public Page<Annotation> queryOnePageDirectly(String annotationTerm,String annotationState, String userId,
                                                  int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);

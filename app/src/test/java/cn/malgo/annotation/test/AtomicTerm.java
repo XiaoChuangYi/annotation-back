@@ -1,5 +1,7 @@
 package cn.malgo.annotation.test;
 
+import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,9 @@ public class AtomicTerm {
 
     @Autowired
     private AtomicTermService      atomicTermService;
+
+    @Autowired
+    private AnnotationService annotationService;
 
 //    @Test
 //    public void test() {
@@ -72,11 +77,17 @@ public class AtomicTerm {
 //        atomicTermBatchService.batchReplaceAtomicTerm(anAtomicTermNew, anAtomicTermOld);
 //    }
 //
+//    @Test
+//    public void testQueryByTerm(){
+////        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.queryByAtomicTerm("+");
+//        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.fuzzyQueryOnePage("风","Disease",1,250);
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//        System.out.println(JSON.parseArray(JSON.toJSONString(anAtomicTermList)));
+//    }
     @Test
-    public void testQueryByTerm(){
-//        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.queryByAtomicTerm("+");
-        List<AnAtomicTerm> anAtomicTermList =  atomicTermService.fuzzyQueryOnePage("风","Disease",1,250);
+    public void test(){
+        List<String> idsList=annotationService.getAnnotationIDsByCondition("FINISH","",10);
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        System.out.println(JSON.parseArray(JSON.toJSONString(anAtomicTermList)));
+        System.out.println(JSON.parseArray(JSON.toJSONString(idsList)));
     }
 }

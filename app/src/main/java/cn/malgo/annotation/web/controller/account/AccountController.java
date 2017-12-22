@@ -63,5 +63,10 @@ public class AccountController {
         List<CrmRole> roleVOList=roleService.selectAllRole();
         return ResultVO.success(roleVOList);
     }
+    @RequestMapping(value = "/getAccount.do")
+    public  ResultVO<List<CrmAccount>> getAllAccount(){
+        List<CrmAccount> crmAccountList=accountService.queryAccount();
+        return  ResultVO.success(crmAccountList);
+    }
 
 }

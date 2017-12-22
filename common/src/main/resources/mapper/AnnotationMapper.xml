@@ -134,4 +134,40 @@
         ORDER BY
         GMT_CREATED ASC
     </select>
+    <select id="selectByStateAndUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM ANNOTATION WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND STATE = #{state}
+        </if>
+        <if test="userId!=null and userId!=''">
+            AND MODIFIER = #{userId}
+        </if>
+        ORDER BY
+        GMT_CREATED DESC
+    </select>
+    <update id="batchUpdateAnnotationUserId" parameterType="java.util.List">
+        UPDATE ANNOTATION SET MODIFIER =#{modifier}
+        WHERE ID IN
+        <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <select id="selectIDsByNum" resultType="java.lang.String">
+        SELECT
+        ID
+        FROM ANNOTATION WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND STATE = #{state}
+        </if>
+        <if test="userId!=null and userId!=''">
+            AND MODIFIER = #{userId}
+        </if>
+        ORDER BY
+        GMT_CREATED DESC
+        <!--<if test="total !=null">-->
+         <!--LIMIT 0,#{total,jdbcType=INTEGER}-->
+        <!--</if>-->
+    </select>
 </mapper>

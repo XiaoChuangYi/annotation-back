@@ -14,6 +14,8 @@ import cn.malgo.annotation.common.dal.mapper.CrmAccountMapper;
 import cn.malgo.annotation.common.dal.model.CrmAccount;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  *
  * @author 张钟
@@ -31,7 +33,13 @@ public class AccountService {
     @Autowired
     private AccountRoleRelationMapper accountRoleRelationMapper;
 
-
+    /**
+     * 获取用户信息
+     */
+     public List<CrmAccount> queryAccount(){
+         List<CrmAccount> crmAccountList=crmAccountMapper.selectAll();
+         return  crmAccountList;
+     }
     /**
      * 重载保存账户方法，每新增一个用户，并且分配一个角色给该用户
      * 因为同时对两张表进行了操作，所以添加事务

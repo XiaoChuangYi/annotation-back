@@ -102,11 +102,13 @@ public class VisualService {
             String [] arguments=draw.getDrawName().split(",");
             if(arguments.length>0){
                 for(String currentArg:arguments) {
-                    if(currentArg.startsWith("dashArray")){
-                        String value=currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()).replace("-",",");
-                        map.put(currentArg.substring(0,currentArg.indexOf(":")),value);
-                    }else{
-                        map.put(currentArg.substring(0,currentArg.indexOf(":")),currentArg.substring(currentArg.indexOf(":")+1,currentArg.length()));
+                    if(!StringUtils.isNullOrEmpty(currentArg)) {
+                        if (currentArg.startsWith("dashArray")) {
+                            String value = currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()).replace("-", ",");
+                            map.put(currentArg.substring(0, currentArg.indexOf(":")), value);
+                        } else {
+                            map.put(currentArg.substring(0, currentArg.indexOf(":")), currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()));
+                        }
                     }
                 }
             }

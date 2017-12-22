@@ -11,6 +11,7 @@ import cn.malgo.annotation.common.dal.util.CommonMapper;
 public interface AnnotationMapper extends CommonMapper<Annotation> {
 
 
+    List<Annotation> selectByStateAndUserId(@Param("state") String state,@Param("userId") String userId);
     /**
      * 根据术语状态查询术语
      * @param state
@@ -78,4 +79,11 @@ public interface AnnotationMapper extends CommonMapper<Annotation> {
      * 查询数据库中的总条数
      * */
     int selectTermAnnotationCount(@Param("state") String state);
+
+    /**
+     * 批量更新标准表的用户ID'
+     */
+    int batchUpdateAnnotationUserId(@Param("idsList") List<String> idsList,@Param("modifier") String modifier);
+
+    List<String> selectIDsByNum(@Param("state") String state,@Param("userId") String userId);
 }
