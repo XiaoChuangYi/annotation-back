@@ -53,8 +53,6 @@ public class TypeService {
      */
     public  List<AnType> selectAllTypesById(String Id){
         List<AnType> anTypeList=anTypeMapper.selectTypeByTypeId(Id);
-        System.out.println(">>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<");
-        System.out.println(JSONArray.parse(JSON.toJSONString(anTypeList)));
         return  anTypeList;
     }
     /**

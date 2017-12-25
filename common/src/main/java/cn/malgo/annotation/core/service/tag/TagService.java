@@ -39,4 +39,7 @@ public class TagService {
         int insertResult=tagMapper.insertBatch(tags);
         AssertUtil.state(insertResult>0,"批量插入标签失败！");
     }
+    /**
+     *
+     */
 }

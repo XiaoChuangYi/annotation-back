@@ -72,7 +72,7 @@ public class TermController extends BaseController {
     public ResultVO<PageVO<Term>> queryAllByCondition(ConditionTermRequest request) {
         //分页查询
         Page<Term> page = termService.QueryAllByCondition(request.getPageNum(), request.getPageSize(),
-                request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked());
+                request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked(),request.getOriginName());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -116,6 +116,14 @@ public class TermController extends BaseController {
         termService.updateBatchTermLabel(termArr.getTermList(),label);
         return  ResultVO.success();
     }
+    /**
+     *批量覆盖更新所选记录的标签
+     */
+    @RequestMapping(value = "/coverBatchTags.do")
+    public ResultVO coverBatchTags(TermArr termArr,String label){
+        termService.coverBatchTermLable(termArr.getTermList(),label);
+        return ResultVO.success();
+    }
 
     /**
      * 新增术语信息
@@ -130,18 +138,27 @@ public class TermController extends BaseController {
         return  ResultVO.success();
     }
     /**
-     * 删除术语信息
+     * 弃用术语
      * @param id
      * @return
      */
-    @RequestMapping(value = { "/deleteTerm.do" })
-    public ResultVO  deleteTerm(Integer id){
+    @RequestMapping(value = { "/abandonTerm.do" })
+    public ResultVO  abandonTerm(Integer id){
         if(id==null)
             AssertUtil.notNull(id,"主键ID为空");
-        termService.deleteTerm(id,"DISABLE");
+        termService.abandonTerm(id,"DISABLE");
         return  ResultVO.success();
     }
-
+    /**
+     *删除术语
+     * @param id
+     */
+    @RequestMapping(value = {"/deleteTerm.do"})
+    public ResultVO deleteTerm(Integer id){
+        AssertUtil.notNull(id,"主键ID为空");
+        termService.deleteTerm(id);
+        return  ResultVO.success();
+    }
     /**
      *获取所有的type
      */

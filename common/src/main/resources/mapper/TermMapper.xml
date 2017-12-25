@@ -76,6 +76,9 @@
     <if test="label!=null and label!=''">
       AND label LIKE CONCAT('%',#{label},'%')
     </if>
+    <if test="originName!=null and originName!=''">
+      AND  origin_name LIKE CONCAT('%',#{originName},'%')
+    </if>
     <choose>
       <when test="checked!=null and checked =='true'">
         AND  TM.CONCEPT_ID !=''
@@ -93,6 +96,9 @@
     </if>
     <if test="label!=null and label!=''">
       AND label LIKE CONCAT('%',#{label},'%')
+    </if>
+    <if test="originName!=null and originName!=''">
+      AND  origin_name LIKE CONCAT('%',#{originName},'%')
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
@@ -125,6 +131,17 @@
     </foreach>
     WHERE ID in
     <foreach collection="idList" item="item" index="index"  open="(" close=")" separator=",">
+      ${item}
+    </foreach>
+  </update>
+  <update id="coverBatchLabelOfTerm" parameterType="java.util.List">
+    UPDATE TERM SET label=
+    <foreach collection="idsList" item="item" index="index" open="CASE ID" separator=" " close="END">
+      when #{item} THEN
+      #{label}
+    </foreach>
+    WHERE ID in
+    <foreach collection="idsList" item="item" index="index"  open="(" close=")" separator=",">
       ${item}
     </foreach>
   </update>

@@ -11,6 +11,15 @@ public class ConditionTermRequest extends PageRequest {
     private String label;
     private String checked;
     private String conceptId;
+    private String originName;
+
+    public String getOriginName() {
+        return originName;
+    }
+
+    public void setOriginName(String originName) {
+        this.originName = originName;
+    }
 
     public String getConceptId() {
         return conceptId;

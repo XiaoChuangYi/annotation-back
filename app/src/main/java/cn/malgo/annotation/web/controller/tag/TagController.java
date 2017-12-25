@@ -33,10 +33,14 @@ public class TagController  extends BaseController {
         tagService.insertTag(tagName);
         return  ResultVO.success();
     }
+    /**
+     *批量新增标签
+     */
     @RequestMapping(value = "/addTags.do")
     public ResultVO addTags(TagArr tagArr){
         AssertUtil.notEmpty(tagArr.getTagList(),"标签列表为空！");
         tagService.insertTags(tagArr.getTagList());
         return  ResultVO.success();
     }
+
 }

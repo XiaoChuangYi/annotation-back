@@ -14,11 +14,13 @@ public interface TermMapper extends CommonMapper<Term> {
      List<Term> selectTermByCondition(@Param("termName") String termName,
                                       @Param("termType") String termType,
                                       @Param("label") String label,
-                                      @Param("checked") String checked);
+                                      @Param("checked") String checked,
+                                      @Param("originName") String originName);
      List<MixtureTerm> selectAllByTermName(@Param("termName") String termName);
      List<String> selectTermType();
      int updateBatchLabelOfTerm(@Param("labelList") List<TermLabel> labelList);
      int updateBatchConceptIdOfTerm(@Param("idList") List<Integer> idList,@Param("conceptId") String conceptId);
+     int coverBatchLabelOfTerm(@Param("idsList") List<Integer> idsList,@Param("label") String label);
      Term selectByPrimaryKeyID(@Param("id") int id);
      List<Term> selectByConceptId(@Param("conceptId") String conceptId);
 }

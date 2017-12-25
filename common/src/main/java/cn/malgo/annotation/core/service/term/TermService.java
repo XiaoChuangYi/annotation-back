@@ -53,9 +53,9 @@ public class TermService {
      * @param termType
      * @param label
      */
-    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label,String checked){
+    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label,String checked,String OriginName){
         Page<Term> pageInfo= PageHelper.startPage(pageNum,pageSize);
-        termMapper.selectTermByCondition(termName,termType,label,checked);
+        termMapper.selectTermByCondition(termName,termType,label,checked,OriginName);
         return  pageInfo;
     }
 
@@ -115,6 +115,15 @@ public class TermService {
         term.setLabel(label);
         int updateResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(updateResult > 0, "更新术语标签失败");
+    }
+    /**
+     *批量覆盖所选行的label字段
+     */
+    public void coverBatchTermLable(List<Integer> idsList,String pLabel){
+     if(idsList.size()>0){
+         int updateBatch=termMapper.coverBatchLabelOfTerm(idsList,pLabel);
+         AssertUtil.state(updateBatch>0,"批量更新术语标签失败");
+     }
     }
     /**
      *批量更新指定行的label字段
@@ -179,16 +188,24 @@ public class TermService {
         AssertUtil.state(insertResult > 0, "新增术语失败");
     }
     /**
-     *删除术语
+     *弃用术语
      * @param id
      * @param state
      */
-    public  void  deleteTerm(int id,String state){
+    public  void  abandonTerm(int id,String state){
         Term term=new Term();
         term.setState(state);
         term.setId(id);
         int deleteResult=termMapper.updateByPrimaryKeySelective(term);
-        AssertUtil.state(deleteResult > 0, "删除术语失败");
+        AssertUtil.state(deleteResult > 0, "弃用术语失败");
+    }
+    /**
+     * 删除术语
+     * @param id
+     */
+    public void deleteTerm(int id){
+        int deleteResult=termMapper.deleteByPrimaryKey(id);
+        AssertUtil.state(deleteResult>0,"删除术语失败");
     }
     /**
      *@param  termName
