@@ -27,6 +27,7 @@
     <if test="color !=null and color !='' ">
       AND  draw_name LIKE  concat('%',#{color},'%')
     </if>
+    ORDER  BY type_code
   </select>
   <select id="selectDrawByTypeCode" resultMap="BaseResultMap">
     SELECT draw.id,type_code,draw_name,draw.type_label
