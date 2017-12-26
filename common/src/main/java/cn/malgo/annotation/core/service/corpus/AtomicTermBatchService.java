@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +133,104 @@ public class AtomicTermBatchService {
         } while (pageInfo.getPages() >= pageNum);
 
     }
+    public void batchSubdivideAtomicTerm(List<AtomicTermAnnotation> atomicTermAnnotationList) {
+        LogUtil.info(logger, "开始批量替换标准中的原子术语");
+        int pageNum = 1;
+        int pageSize = 2000;
+        Page<Annotation> pageInfo = null;
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.FINISH.name());
+        do {
+            //根据finish状态到术语标注表中查询
+            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
+            LogUtil.info(logger,
+                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            for (Annotation annotation : pageInfo.getResult()) {
+                try {
+
+                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+                    //是否发生替换的标志
+                    boolean isChange = true;
+                    //新拆分的原子术语集合跟标注中的原子术语做匹配，如果符合，说明原先标注中已经有该原子术语，说明拆分不合理
+                    //只要有一个满足，则不进行拆分，不更新标注
+                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+                        for(AtomicTermAnnotation atomicTermAnnotationModel: atomicTermAnnotationList){
+                            //如果标注中存在待替换的原子术语,设置为false,不用进行替换
+                            if (termAnnotationModel.getTerm().equals(atomicTermAnnotationModel.getText())) {
+                                isChange = false;
+                            }
+                        }
+                    }
+                    if (isChange&&annotation.getTerm().contains(atomicTermAnnotationList.get(0).getText())) {
+                        String finalAnnotationNew=annotation.getFinalAnnotation();
+                        for(AtomicTermAnnotation atomicTermAnnotationModel: atomicTermAnnotationList){
+                             finalAnnotationNew = AnnotationConvert.addNewTagForAtomicTerm(
+                                    finalAnnotationNew,atomicTermAnnotationModel.getAnnotationType(),
+                                    atomicTermAnnotationModel.getStartPosition(),atomicTermAnnotationModel.getEndPosition(),atomicTermAnnotationModel.getText());
+                        }
+                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+                        LogUtil.info(logger, "当前标注记录为:" + finalAnnotationNew);
+                        annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
+                    }
+                } catch (Exception e) {
+                    LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());
+                }
+            }
+            LogUtil.info(logger,
+                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            pageNum++;
+
+        } while (pageInfo.getPages() >= pageNum);
+    }
+    /**
+     *批量替换标注中符合条件的最终标注
+     * @param type
+     * @param startPosition
+     * @param endPosition
+     * @param termText
+     */
+//    public void batchSubdivideAtomicTerm(String type,String startPosition,String endPosition,String termText) {
+//        LogUtil.info(logger, "开始批量替换标准中的原子术语");
+//        int pageNum = 1;
+//        int pageSize = 2000;
+//        Page<Annotation> pageInfo = null;
+//        List<String> stateList = new ArrayList<>();
+//        stateList.add(AnnotationStateEnum.FINISH.name());
+//        do {
+//            //根据finish状态到术语标注表中查询
+//            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
+//            LogUtil.info(logger,
+//                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+//            for (Annotation annotation : pageInfo.getResult()) {
+//                try {
+//
+//                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+//                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+//                    //是否发生替换的标志
+//                    boolean isChange = true;
+//                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+//                        //如果标注中存在待替换的原子术语,设置为false,不用进行替换
+//                            if (termAnnotationModel.getTerm().equals(termText)) {
+//                                isChange = false;
+//                            }
+//                    }
+//                    if (isChange&&annotation.getTerm().contains(termText)) {
+//                        String finalAnnotationNew = AnnotationConvert.addNewTagForAtomicTerm(
+//                                annotation.getFinalAnnotation(),type,startPosition,endPosition,termText);
+//                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+//                        annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
+//                    }
+//                } catch (Exception e) {
+//                    LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());
+//                }
+//            }
+//            LogUtil.info(logger,
+//                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+//            pageNum++;
+//
+//        } while (pageInfo.getPages() >= pageNum);
+//    }
 
     /**
      * 批量替换标注中的

@@ -37,7 +37,12 @@ public class AnnotationConvert {
         JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
         return result;
     }
-
+    public static JSONObject convertToBratFormat(String term,String finalAnnotation) {
+        Document document = new Document(term, null);
+        DocumentManipulator.parseBratAnnotations(finalAnnotation, document);
+        JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
+        return result;
+    }
     /**
      * 根据标注内容,生成新的标注标签
      * @param annotation
@@ -58,7 +63,43 @@ public class AnnotationConvert {
         }
         return "T" + (tagIndexMax + 1);
     }
+    /**
+     *构建新的标准
+     * @param oldAnnotation
+     * @param newType
+     * @param newStart
+     * @param newEnd
+     * @param newText
+     * @return
+     */
+    public static  String addNewTagForAtomicTerm(String oldAnnotation, String newType, String newStart,
+                                                 String newEnd, String newText){
+        String newTag = getNewTag(oldAnnotation);
 
+        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                .convertAnnotationModelList(oldAnnotation);
+        //检查相同的手工标注是否已经存在
+        Integer pNewStart=0,pNewEnd=0;
+        for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+            boolean isSameType = termAnnotationModel.getType().equals(newType);
+            boolean isSameTerm = termAnnotationModel.getTerm().equals(newText);
+            boolean isSameStart = termAnnotationModel.getStartPosition() == Integer
+                    .valueOf(newStart);
+            if(termAnnotationModel.getTerm().contains(newText)){
+                pNewStart=termAnnotationModel.getStartPosition()+Integer.valueOf(newStart);
+            }
+            boolean isSameEnd = termAnnotationModel.getEndPosition() == Integer.valueOf(newEnd);
+            if(termAnnotationModel.getTerm().contains(newText)){
+                pNewEnd=termAnnotationModel.getStartPosition()+Integer.valueOf(newEnd);
+            }
+            if (isSameType && isSameTerm && isSameStart && isSameEnd) {
+                return oldAnnotation;
+            }
+        }
+        String newLine = MessageFormat.format(AN_LINE_FORMAT, newTag, newType, pNewStart.toString(), pNewEnd.toString(),
+                newText);
+        return oldAnnotation + newLine;
+    }
     /**
      * 构建新的标注
      * @param oldManualAnnotation

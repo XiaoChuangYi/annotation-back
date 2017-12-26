@@ -71,7 +71,6 @@
         FROM AN_ATOMIC_TERM
         WHERE 1=1
         AND TERM = #{term}
-        AND TYPE = #{type}
         ORDER BY ID
     </select>
     <select id="selectAtomicIDsByOldType" resultMap="BaseResultMap">

@@ -3,7 +3,7 @@ package cn.malgo.annotation.web.controller.annotation.request;
 import java.util.List;
 
 /**
- * Created by cjl on 2017/12/21.
+ * Created by cjl on 2017/12/26.
  */
 public class AnnotationArr {
     private List<String> annotationList;

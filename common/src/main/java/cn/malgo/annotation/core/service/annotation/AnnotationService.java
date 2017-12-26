@@ -356,7 +356,7 @@ public class AnnotationService {
         return pageInfo;
     }
     /**
-     *批量更新术语标注表的type
+     *批量更新标注表的最终和手动标注
      * @param
      */
     public void updateBatchAnnotation(List<Annotation> annotationList){

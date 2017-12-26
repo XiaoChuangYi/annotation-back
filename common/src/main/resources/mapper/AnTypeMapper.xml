@@ -80,4 +80,5 @@
     </if>
     ORDER BY a.type_code
   </select>
+
 </mapper>

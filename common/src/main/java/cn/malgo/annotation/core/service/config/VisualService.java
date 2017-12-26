@@ -84,7 +84,7 @@ public class VisualService {
      * @return
      */
     private List<String> getAllTypes(){
-        List<AnType> anTypeList=anTypeMapper.selectAll();
+        List<AnType> anTypeList=anTypeMapper.selectEnableTypes();
         List<String> typeCodeList=new ArrayList<>();
         for(AnType anType:anTypeList){
             typeCodeList.add(anType.getTypeCode());

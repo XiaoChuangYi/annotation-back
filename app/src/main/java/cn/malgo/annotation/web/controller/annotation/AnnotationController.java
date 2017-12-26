@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
+import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,9 @@ public class AnnotationController extends BaseController {
     @Autowired
     private AtomicTermService atomicTermService;
 
+    @Autowired
+    private AtomicTermBatchService atomicTermBatchService;
+
     /**
      *批量更新所选标注记录的modifier字段，从而只派给特定的用户处理
      * @param annotationArr
@@ -52,18 +57,6 @@ public class AnnotationController extends BaseController {
     @RequestMapping(value = {"/updateBatchModifierOfAnnotation.do"})
     public ResultVO updateBatchModifierOfAnnotation(AnnotationArr annotationArr,String userId){
         annotationService.updateBatchAnnotationUserId(annotationArr.getAnnotationList(),userId);
-        return  ResultVO.success();
-    }
-    /**
-     *批量更新所选标注记录的modifier字段，从而只派给特定的用户处理
-     * 两步：一.根据参数precedingTotal，按照界面查询的排序逻辑，查询前precedingTotal条，然后获取对应的id,组织成对应的集合
-     * 二.复用批量更新接口，将组织好的list集合传入
-     * @param precedingTotal
-     * @param userId
-     */
-    @RequestMapping(value = {"/updateBatchModifierOfAnnotationByNum.do"})
-    public ResultVO updateBatchModifierOfAnnotationNum(int precedingTotal,String userId){
-
         return  ResultVO.success();
     }
 
@@ -144,16 +137,41 @@ public class AnnotationController extends BaseController {
 
         return ResultVO.success(annotationBratVO);
     }
+    /**
+     * 原子术语界面，细分原子术语。构建对应文本新的标注，并同步更新原先标注表中含有该文本的标准字段，同时添加新的原子术语到原子术语表
+     */
+    @RequestMapping(value = {"/addSubdivideAtomicTermToAnnotation.do"})
+    public ResultVO addSubdivideAtomicTermAndUpdateAnnotation(SplitAtomicTermArr splitAtomicTermArr){
+        for(AtomicTermAnnotation current :splitAtomicTermArr.getSplitAtomicTermList()){
+            atomicTermService.saveAtomicTerm(current.getAnId(),current.getText(),current.getAnnotationType());
+        }
+        atomicTermBatchService.batchSubdivideAtomicTerm(splitAtomicTermArr.getSplitAtomicTermList());
+        return ResultVO.success();
+    }
 
+//    @RequestMapping(value = {"/addSubdivideAtomicTermToAnnotation.do"})
+//    public ResultVO<AnnotationBratVO> addSubdivideAtomicTermToAnnotation(AddAnnotationRequest request,
+//                                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount){
+//        //新增新的原子术语到原子术语表，如果原先原子术语表中已经有了该条，则更新
+//        atomicTermService.saveAtomicTerm(request.getAnId(),request.getText(),request.getAnnotationType());
+//        //同步批量构建文本中符合该文本的标注，新的最终的标注
+////        atomicTermBatchService.batchSubdivideAtomicTerm(request.getAnnotationType(),request.getStartPosition(),request.getEndPosition(),request.getText());
+//        String newTermsText = AnnotationConvert.addNewTerm("", request.getText(),
+//                request.getAnnotationType());
+//        JSONObject bratJson = AnnotationConvert.convertToBratFormat(request.getText(),newTermsText);
+//        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+//        annotationBratVO.setBratData(bratJson);
+//        return ResultVO.success(annotationBratVO);
+//    }
     /**
      *不经过apiServer直接修改FinalAnnotation,即新增标注或者新词
      * @param request
      * @return
      */
-     @RequestMapping(value = {"/addFinalAnnotation"})
+     @RequestMapping(value = {"/addFinalAnnotation.do"})
      public ResultVO<AnnotationBratVO> addFinalAnnotation(AddAnnotationRequest request,
                                                           @ModelAttribute("currentAccount") CrmAccount crmAccount){
-         //检查当前的标注是否属于当前的用户toDo
+         //检查当前的标注是否属于当前的用户
          Annotation annotation = annotationService.queryByAnId(request.getAnId());
          AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
          //构建新的最终的标注

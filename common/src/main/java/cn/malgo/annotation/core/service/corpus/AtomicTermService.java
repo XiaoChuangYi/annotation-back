@@ -76,8 +76,7 @@ public class AtomicTermService {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
 
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm,
-            termType);
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm);
         if (anAtomicTermOld != null) {
             LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1}", term, termType));
             return;
@@ -182,12 +181,13 @@ public class AtomicTermService {
         List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllByCondition(checked);
         List<AnAtomicTerm> finalAtomicTermList=decryptTerm(anAtomicTermList,term);
         Map<String,Object> termMap=new HashMap<>();
-        if(finalAtomicTermList.size()==0){
+        if(finalAtomicTermList.size()<pageSize) {
             termMap.put("total",finalAtomicTermList.size());
             termMap.put("atomicTermList",finalAtomicTermList);
-        }else {
-            termMap.put("total", finalAtomicTermList.size());
-            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize,
+        }
+        if(finalAtomicTermList.size()>pageSize){
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize>=finalAtomicTermList.size()?finalAtomicTermList.size()-1:(pageIndex-1)*pageSize,
                     pageIndex * pageSize >= finalAtomicTermList.size() ? finalAtomicTermList.size() : pageIndex * pageSize));
         }
         return termMap;
