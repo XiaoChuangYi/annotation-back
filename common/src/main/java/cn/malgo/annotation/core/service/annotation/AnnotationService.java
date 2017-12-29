@@ -180,11 +180,11 @@ public class AnnotationService {
     }
 
     /**
-     * 通过annotationId
+     * 通过annotationId,来标注annottion表的最终标准字段
      */
-    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnno,List<TermTypeVO> newTerms){
+    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnnotaion,List<TermTypeVO> newTerms){
         String newTermsStr = TermTypeVO.convertToString(newTerms);
-        updateFinalAnnotation(anId,finalAnno,newTermsStr);
+        updateFinalAnnotation(anId,finalAnnotaion,newTermsStr);
         Annotation result = annotationMapper.selectByPrimaryKey(anId);
         decryptAES(result);
         return result;

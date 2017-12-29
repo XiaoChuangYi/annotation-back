@@ -234,6 +234,46 @@ public class AnnotationController extends BaseController {
         return ResultVO.success(annotationBratVO);
 
     }
+    /**
+     *删除标注或者同时删除新词，仅操作最终标注字段
+     * @param request
+     *
+     */
+    @RequestMapping(value = "/deleteFinalAnnotation.do")
+    public ResultVO<AnnotationBratVO> deleteFinalAnnotation(DeleteAnnotationRequest request,
+                                                       @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+        //基础参数校验
+        DeleteAnnotationRequest.check(request);
+
+        //权限检查,当前的标注是否属于当前用户
+        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
+
+        //构建新的手工标注
+        String finalAnnotationNew = AnnotationConvert
+                .deleteTag(annotation.getFinalAnnotation(), request.getTag());
+
+        //获取原有的新词列表
+        String newTermsText = annotation.getNewTerms();
+        //如果是新词,从新词列表中删除新词
+        if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
+            //从原有手工标注中,查找tag对应的标注,构造成新词
+            TermTypeVO termTypeVO = AnnotationConvert
+                    .getTermTypeVOByTag(annotation.getFinalAnnotation(), request.getTag());
+            if (termTypeVO != null) {
+                newTermsText = AnnotationConvert.deleteNewTerm(newTermsText, termTypeVO.getTerm(),
+                        termTypeVO.getType());
+            }
+        }
+        List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
+        //更新单条标注信息,先调用apiServer获取,后保存到数据库
+        Annotation annotationNew = annotationService
+                .autoFinalAnnotationByAnId(request.getAnId(), finalAnnotationNew, newTerms);
+
+        AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
+
+        return ResultVO.success(annotationBratVO);
+    }
 
     /**
      * 删除标注或者同时删除新词

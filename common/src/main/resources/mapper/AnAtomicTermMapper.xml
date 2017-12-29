@@ -153,7 +153,7 @@
         CT.standard_name
         FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
         ON AAT.CONCEPT_ID=CT.concept_id
-        WHERE 1=1
+        WHERE AAT.STATE='ENABLE'
         <choose>
             <when test="checked!=null and checked =='true'">
                 AND  AAT.CONCEPT_ID !=''

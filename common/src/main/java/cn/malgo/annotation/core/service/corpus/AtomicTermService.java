@@ -180,15 +180,30 @@ public class AtomicTermService {
         //从数据库中查出所有的数据然后遍历每条记录，匹配是否有指定的记录，有则加入新的集合，直到结束，返回最终的集合
         List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllByCondition(checked);
         List<AnAtomicTerm> finalAtomicTermList=decryptTerm(anAtomicTermList,term);
+        //根据term/checked查询出的数据的总条数，除以前台的pageSize,获取到当前后台可以分几页，
+        int pages=finalAtomicTermList.size()/pageSize;
+        int rest=finalAtomicTermList.size()%pageSize;
+        System.out.println("整除后的页数"+pages);
+        System.out.println("取余后的条数"+rest);
         Map<String,Object> termMap=new HashMap<>();
-        if(finalAtomicTermList.size()<pageSize) {
+        if(pages==0&&rest>=0) {
             termMap.put("total",finalAtomicTermList.size());
             termMap.put("atomicTermList",finalAtomicTermList);
+            return termMap;
         }
-        if(finalAtomicTermList.size()>pageSize){
+        if(pageIndex<=pages){
             termMap.put("total",finalAtomicTermList.size());
-            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize>=finalAtomicTermList.size()?finalAtomicTermList.size()-1:(pageIndex-1)*pageSize,
+            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize,
                     pageIndex * pageSize >= finalAtomicTermList.size() ? finalAtomicTermList.size() : pageIndex * pageSize));
+        }
+        if(pageIndex==(pages+1)&&rest>0){
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList.subList((pageIndex-1)*pageSize,finalAtomicTermList.size()));
+        }
+        if(pageIndex>(pages+1)){
+            //说明当前的分页的索引超过了，默认返回第一页数据过去
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList.subList(0,pageSize));
         }
         return termMap;
     }
