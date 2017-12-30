@@ -183,8 +183,6 @@ public class AtomicTermService {
         //根据term/checked查询出的数据的总条数，除以前台的pageSize,获取到当前后台可以分几页，
         int pages=finalAtomicTermList.size()/pageSize;
         int rest=finalAtomicTermList.size()%pageSize;
-        System.out.println("整除后的页数"+pages);
-        System.out.println("取余后的条数"+rest);
         Map<String,Object> termMap=new HashMap<>();
         if(pages==0&&rest>=0) {
             termMap.put("total",finalAtomicTermList.size());
