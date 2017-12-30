@@ -22,7 +22,7 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param type
      * @return
      */
-    List<AnAtomicTerm> selectByTermAndTypeIsSynonyms(@Param("term") String term, @Param("type") String type,@Param("checked") String checked);
+    List<AnAtomicTerm> selectByTermAndTypeIsSynonyms(@Param("term") String term, @Param("type") String type,@Param("id") String id,@Param("checked") String checked);
 
     /**
      * 查询全部原子术语
@@ -35,10 +35,9 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
     /**
      * 查询全部原子术语
      * @param term
-     * @param type
      * @return
      */
-    AnAtomicTerm selectByTermAndTypeNotNull(@Param("term") String term, @Param("type") String type);
+    AnAtomicTerm selectByTermAndTypeNotNull(@Param("term") String term);
 
     /**
      * 查询全部原子术语
@@ -69,7 +68,32 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
     int batchUpdateAtomicType(@Param("idsList") List<String> idsList,@Param("type") String type);
 
     /**
+     * 批量更新原子术语表中的type
+     * @param idsList
+     * @param conceptId
+     */
+    int batchUpdateAtomicConceptId(@Param("idsList") List<String> idsList,@Param("conceptId") String conceptId);
+
+    /**
      *更新原子术语表里的conceptId
      */
     int updateConceptIdByPrimaryKey(@Param("conceptId") String conceptId,@Param("id") String id);
+    /**
+     *查询总数
+     */
+    int selectTotalByChecked(@Param("checked") String checked);
+    /**
+     *带条件查询
+     */
+    List<AnAtomicTerm> selectAllByCondition(@Param("checked") String checked);
+    /**
+     *查询全部
+     */
+    List<AnAtomicTerm> selectAllAtomicTerm();
+    /**
+     *根据主键ID查询单条记录
+     */
+    AnAtomicTerm selectByPrimaryKeyID(@Param("id") String id);
+
+    List<AnAtomicTerm> selectAllByConceptId(@Param("conceptId") String conceptId);
 }

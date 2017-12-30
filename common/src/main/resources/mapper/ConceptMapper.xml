@@ -23,4 +23,11 @@
     SELECT  <include refid="ALL_COLUMN" />
     FROM CONCEPT WHERE standard_name=#{standardName}
   </select>
+  <select id="selectAllConceptByCondition" resultMap="BaseResultMap">
+    SELECT  <include refid="ALL_COLUMN" />
+    FROM CONCEPT WHERE 1=1
+    <if test="standardName !=null and standardName !='' ">
+      AND  standard_name LIKE  concat('%',#{standardName},'%')
+    </if>
+  </select>
 </mapper>

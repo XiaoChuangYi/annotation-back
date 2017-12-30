@@ -4,6 +4,8 @@ import java.util.*;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.Corpus;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -73,11 +75,45 @@ public class AnnotationService {
         }
         return pageInfo;
     }
+    /**
+     *根据分配查询的逻辑获取指定数量数据的id集合
+     * @param state
+     * @param userId
+     * @param total
+     */
+    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
+        Page<String> pageInfo = PageHelper.startPage(1, total);
+//        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(state, userId);
+        annotationMapper.selectIDsByNum(state,userId);
+        return pageInfo;
+    }
+    /**
+     * 批量更新标准表的modifier字段
+     */
+    public  void updateBatchAnnotationUserId(List<String> annotationList,String userId){
+        int updateBatch=annotationMapper.batchUpdateAnnotationUserId(annotationList,userId);
+        AssertUtil.state(updateBatch > 0, "批量更新失败");
+    }
 
-    public Page<Annotation> queryOnePageDirectly(String annotationState, String userId,
+    /**
+     * 分页多条件查询数据库中的标注
+     */
+    public Page<Annotation> queryOnePageForDistribution(String annotationState, String userId,
                                                  int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        annotationMapper.selectByStateModifier(annotationState, userId);
+        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(annotationState, userId);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println(JSON.parseArray(JSON.toJSONString(annotationList)));
+        decryptAES(pageInfo.getResult());
+        return pageInfo;
+    }
+    /**
+     * 分页条件查询数据库中的标注
+     */
+    public Page<Annotation> queryOnePageDirectly(String annotationTerm,String annotationState, String userId,
+                                                 int pageNum, int pageSize) {
+        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        annotationMapper.selectByStateAndTermFuzzy(annotationState, userId,annotationTerm);
         decryptAES(pageInfo.getResult());
         return pageInfo;
     }
@@ -141,6 +177,17 @@ public class AnnotationService {
             }
         }
 
+    }
+
+    /**
+     * 通过annotationId,来标注annottion表的最终标准字段
+     */
+    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnnotaion,List<TermTypeVO> newTerms){
+        String newTermsStr = TermTypeVO.convertToString(newTerms);
+        updateFinalAnnotation(anId,finalAnnotaion,newTermsStr);
+        Annotation result = annotationMapper.selectByPrimaryKey(anId);
+        decryptAES(result);
+        return result;
     }
 
     /**
@@ -282,6 +329,19 @@ public class AnnotationService {
     }
 
     /**
+     *后台分页查询标注信息
+     * @param state
+     * @param pageNum
+     * @param pageSize
+     */
+    public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
+        List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
+        decryptAES(annotationList);
+        System.out.println(pageNum+">>>>><<<<<"+pageSize);
+        return  annotationList;
+    }
+
+    /**
      * 根据状态分页查询标注信息
      * @param stateList
      * @param pageNum
@@ -296,7 +356,7 @@ public class AnnotationService {
         return pageInfo;
     }
     /**
-     *批量更新术语标注表的type
+     *批量更新标注表的最终和手动标注
      * @param
      */
     public void updateBatchAnnotation(List<Annotation> annotationList){
@@ -321,7 +381,22 @@ public class AnnotationService {
         int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
         AssertUtil.state(updateResult > 0, "更新自动标注失败");
     }
+    /**
+     * 更新最终标注并更新新词列表
+     * @param anId
+     * @param finalAnnotation
+     */
+    public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setNewTerms(newTerms);
+        annotation.setGmtModified(new Date());
 
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
     /**
      * 更新最终标注
      * @param anId
@@ -415,8 +490,6 @@ public class AnnotationService {
     }
 
     private void decryptAES(Annotation annotation) {
-//        System.out.println(annotation.getId());
-//        System.out.println(SecurityUtil.decryptAESBase64(annotation.getFinalAnnotation()));
         annotation
             .setAutoAnnotation(SecurityUtil.decryptAESBase64(annotation.getAutoAnnotation()));
         annotation.setManualAnnotation(

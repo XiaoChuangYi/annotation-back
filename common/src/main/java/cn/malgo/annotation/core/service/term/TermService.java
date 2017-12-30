@@ -2,14 +2,16 @@ package cn.malgo.annotation.core.service.term;
 
 import cn.malgo.annotation.common.dal.mapper.TermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
+import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
+import cn.malgo.annotation.common.dal.model.TermLabel;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by cjl on 2017/11/28.
@@ -21,6 +23,29 @@ public class TermService {
     private TermMapper termMapper;
 
     /**
+     *置空术语表的conceptId
+     * @param  id
+     */
+    public void clearConceptIdOfTerm(int id){
+        Term pTerm=new Term();
+        pTerm.setId(id);
+        pTerm.setConceptId("");
+        int updateResult=termMapper.updateByPrimaryKeySelective(pTerm);
+        AssertUtil.state(updateResult > 0, "更新术语conceptId失败");
+    }
+    /**
+     * 根据conceptId分页查询
+     * @param conceptId
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<Term> queryByConceptId(String conceptId,int pageNum,int pageSize){
+        Page<Term> pageInfo=PageHelper.startPage(pageNum,pageSize);
+        termMapper.selectByConceptId(conceptId);
+        return  pageInfo;
+    }
+
+    /**
      *按条件分页查询术语
      * @param pageNum
      * @param pageSize
@@ -28,9 +53,9 @@ public class TermService {
      * @param termType
      * @param label
      */
-    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label,String checked){
+    public Page<Term> QueryAllByCondition(int pageNum, int pageSize,String termName,String termType,String label,String checked,String OriginName){
         Page<Term> pageInfo= PageHelper.startPage(pageNum,pageSize);
-        termMapper.selectTermByCondition(termName,termType,label,checked);
+        termMapper.selectTermByCondition(termName,termType,label,checked,OriginName);
         return  pageInfo;
     }
 
@@ -72,6 +97,14 @@ public class TermService {
     }
 
     /**
+     * 批量更新选取行的conceptId
+     */
+    public void updateBatchTermConceptId(List<Integer> idList,String conceptId){
+        int updateResult=termMapper.updateBatchConceptIdOfTerm(idList,conceptId);
+        AssertUtil.state(updateResult>0,"更新术语conceptId失败");
+    }
+
+    /**
      * 更新指定行的label字段
      * @param  id
      * @param  label
@@ -83,7 +116,52 @@ public class TermService {
         int updateResult=termMapper.updateByPrimaryKeySelective(term);
         AssertUtil.state(updateResult > 0, "更新术语标签失败");
     }
+    /**
+     *批量覆盖所选行的label字段
+     */
+    public void coverBatchTermLable(List<Integer> idsList,String pLabel){
+     if(idsList.size()>0){
+         int updateBatch=termMapper.coverBatchLabelOfTerm(idsList,pLabel);
+         AssertUtil.state(updateBatch>0,"批量更新术语标签失败");
+     }
+    }
+    /**
+     *批量更新指定行的label字段
+     */
+    public void updateBatchTermLabel(List<Integer> idList,String pLabel){
+        if(idList.size()>0){
+            List<TermLabel> termLabelList=new ArrayList<>();
+            for(int k=0;k<idList.size();k++){
+                Term currentTerm=termMapper.selectByPrimaryKeyID(idList.get(k));
+                TermLabel termLabel=new TermLabel();
+                termLabel.setId(idList.get(k));
+                if(currentTerm.getLabel()!=null&&!"".equals(currentTerm.getLabel())){
+                    String [] labelArr=currentTerm.getLabel().substring(currentTerm.getLabel().indexOf("[")+1,currentTerm.getLabel().indexOf("]")).split(",");
+                    List<String> labelList= new ArrayList<>();
+                    for(String temp:labelArr){
+                        labelList.add(temp);
+                    }
+                    String [] pLabelArr=pLabel.substring(pLabel.indexOf("[")+1,pLabel.indexOf("]")).split(",");
+                    for(String str :pLabelArr){
+                        if(!labelList.contains(str)){
+                            labelList.add(str);
+                        }
+                    }
+                    String temp="[";
+                    for(String str:labelList){
+                        temp+=str+",";
+                    }
+                    termLabel.setLabel(temp.substring(0,temp.length()-1)+"]");
+                }else {
+                    termLabel.setLabel(pLabel);
+                }
+                termLabelList.add(termLabel);
+            }
+            int updateResult=termMapper.updateBatchLabelOfTerm(termLabelList);
+            AssertUtil.state(updateResult > 0, "批量更新术语标签失败");
+        }
 
+    }
 
     /**
      *新增术语
@@ -106,20 +184,38 @@ public class TermService {
         term.setTermCode(termCode);
         term.setState(state);
         term.setTermType(termType);
-        int insertResult=termMapper.insertUseGeneratedKeys(term);
+        int insertResult=termMapper.insertSelective(term);
         AssertUtil.state(insertResult > 0, "新增术语失败");
     }
     /**
-     *删除术语
+     *弃用术语
      * @param id
      * @param state
      */
-    public  void  deleteTerm(int id,String state){
+    public  void  abandonTerm(int id,String state){
         Term term=new Term();
         term.setState(state);
         term.setId(id);
         int deleteResult=termMapper.updateByPrimaryKeySelective(term);
-        AssertUtil.state(deleteResult > 0, "删除术语失败");
+        AssertUtil.state(deleteResult > 0, "弃用术语失败");
     }
-
+    /**
+     * 删除术语
+     * @param id
+     */
+    public void deleteTerm(int id){
+        int deleteResult=termMapper.deleteByPrimaryKey(id);
+        AssertUtil.state(deleteResult>0,"删除术语失败");
+    }
+    /**
+     *@param  termName
+     */
+    public List<MixtureTerm> selectByTermName(String termName){
+        List<MixtureTerm> termList=termMapper.selectAllByTermName(termName);
+        return termList;
+    }
+    public List<String> selectTermType(){
+        List<String> typeList=termMapper.selectTermType();
+        return typeList;
+    }
 }

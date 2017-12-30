@@ -3,6 +3,7 @@ package cn.malgo.annotation.test;
 import cn.malgo.core.util.security.SecurityUtil;
 import org.junit.Test;
 
+
 /**
  * @author 张钟
  * @date 2017/11/2
@@ -24,6 +25,5 @@ public class SecurityUtilTest {
         String result = SecurityUtil.decryptAESBase64(text);
         System.out.println(result);
     }
-
 
 }

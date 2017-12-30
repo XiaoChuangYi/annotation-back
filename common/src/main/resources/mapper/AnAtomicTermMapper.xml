@@ -14,18 +14,19 @@
         <result column="GMT_CREATED" property="gmtCreated" jdbcType="TIMESTAMP"/>
         <result column="GMT_MODIFIED" property="gmtModified" jdbcType="TIMESTAMP"/>
         <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <result column="standard_name" property="standardName" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <sql id="ALL_COLUMN">
-      ID,
-      TERM,
-      TYPE,
-      STATE,
-      CONCEPT_ID,
-      GMT_CREATED,
-      GMT_MODIFIED
-  </sql>
 
+    <sql id="ALL_COLUMN">
+          ID,
+          TERM,
+          TYPE,
+          STATE,
+          CONCEPT_ID,
+          GMT_CREATED,
+          GMT_MODIFIED
+    </sql>
     <select id="selectByTerm" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -70,7 +71,6 @@
         FROM AN_ATOMIC_TERM
         WHERE 1=1
         AND TERM = #{term}
-        AND TYPE = #{type}
         ORDER BY ID
     </select>
     <select id="selectAtomicIDsByOldType" resultMap="BaseResultMap">
@@ -84,14 +84,29 @@
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
+    <update id="batchUpdateAtomicConceptId" parameterType="java.util.List">
+        UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
+        WHERE ID IN
+        <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
+            #{item,jdbcType=VARCHAR}
+        </foreach>
+    </update>
     <update id="updateConceptIdByPrimaryKey">
         UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
         WHERE ID =#{id,jdbcType=VARCHAR}
     </update>
     <select id="selectByTermAndTypeIsSynonyms" resultMap="BaseResultMap">
         SELECT
-        <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
         WHERE state='ENABLE'
         <if test="term!=null and term!=''">
             AND TERM = #{term}
@@ -99,6 +114,24 @@
         <if test="type!=null and type!=''">
             AND TYPE = #{type}
         </if>
+        <if test="id!=null and id!=''">
+            AND AAT.ID =#{id}
+        </if>
+        <choose>
+            <when test="checked!=null and checked =='true'">
+                AND  AAT.CONCEPT_ID !=''
+            </when>
+            <otherwise>
+                AND  AAT.CONCEPT_ID =''
+            </otherwise>
+        </choose>
+        ORDER BY AAT.ID
+    </select>
+    <select id="selectTotalByChecked" resultType="java.lang.Integer">
+        SELECT
+        COUNT(ID)
+        FROM AN_ATOMIC_TERM
+        WHERE 1=1
         <choose>
             <when test="checked!=null and checked =='true'">
                 AND  CONCEPT_ID !=''
@@ -107,9 +140,58 @@
                 AND  CONCEPT_ID =''
             </otherwise>
         </choose>
-        <!--<if test="checked!=null and checked =='true'">-->
-            <!--AND  CONCEPT_ID !=''-->
-        <!--</if>-->
+    </select>
+    <select id="selectAllByCondition" resultMap="BaseResultMap">
+        SELECT
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
+        WHERE AAT.STATE='ENABLE'
+        <choose>
+            <when test="checked!=null and checked =='true'">
+                AND  AAT.CONCEPT_ID !=''
+            </when>
+            <otherwise>
+                AND  AAT.CONCEPT_ID =''
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectAllAtomicTerm" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
         ORDER BY ID
+    </select>
+    <select id="selectByPrimaryKeyID" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
+        <if test="id!=null and id!='' ">
+        AND ID=#{id}
+        </if>
+    </select>
+    <select id="selectAllByConceptId" resultMap="BaseResultMap">
+        SELECT
+        AAT.ID,
+        TERM,
+        TYPE,
+        STATE,
+        AAT.CONCEPT_ID,
+        GMT_CREATED,
+        GMT_MODIFIED,
+        CT.standard_name
+        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
+        ON AAT.CONCEPT_ID=CT.concept_id
+        WHERE 1=1
+        <if test="conceptId!=null and conceptId!='' ">
+        AND AAT.concept_id=#{conceptId}
+        </if>
     </select>
 </mapper>

@@ -8,6 +8,9 @@ import cn.malgo.annotation.web.request.PageRequest;
  */
 public class QueryAtomicRequest extends PageRequest {
 
+    /** 原子术语ID **/
+    private String id;
+
     /** 原子术语文本 **/
     private String term;
 
@@ -16,6 +19,24 @@ public class QueryAtomicRequest extends PageRequest {
 
     /** 是否含有同义词**/
     private String checked;
+
+    private String conceptId;
+
+    public String getConceptId() {
+        return conceptId;
+    }
+
+    public void setConceptId(String conceptId) {
+        this.conceptId = conceptId;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getChecked() {
         return checked;

@@ -1,9 +1,9 @@
 package cn.malgo.annotation.core.service.corpus;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +38,24 @@ public class AtomicTermService {
     private AnAtomicTermMapper anAtomicTermMapper;
 
     /**
+     * 批量更新原子术语表记录的concept_id
+     * @param idList
+     * @param conceptId
+     */
+    public void updateBatchConceptIdOfAtomicTerm(List<String> idList,String conceptId){
+        int updateResult=anAtomicTermMapper.batchUpdateAtomicConceptId(idList,conceptId);
+        AssertUtil.state(updateResult > 0, "更新原子术语concept_id字段失败");
+    }
+    /**
+     * 置空当前原子术语表记录的concept_id
+     * @param id
+     */
+    public void clearConceptIdOfAtomicTerm(String id){
+        int updateResult=anAtomicTermMapper.updateConceptIdByPrimaryKey("",id);
+        AssertUtil.state(updateResult > 0, "更新原子术语失败");
+    }
+
+    /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
      * @param termTypeVO
      * @param fromAnId 新词来源的标注ID
@@ -58,8 +76,7 @@ public class AtomicTermService {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
 
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm,
-            termType);
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm);
         if (anAtomicTermOld != null) {
             LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1}", term, termType));
             return;
@@ -73,7 +90,7 @@ public class AtomicTermService {
         anAtomicTermNew.setType(termType);
         anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
 
-        int insertResult = anAtomicTermMapper.insert(anAtomicTermNew);
+        int insertResult = anAtomicTermMapper.insertSelective(anAtomicTermNew);
         AssertUtil.state(insertResult > 0, "保存原子术语失败");
 
     }
@@ -84,7 +101,7 @@ public class AtomicTermService {
      * @param termType
      */
     public void updateAtomicTerm(String atomicTermId, String termType) {
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByPrimaryKeyID(atomicTermId);
         anAtomicTermOld.setType(termType);
         anAtomicTermOld.setGmtModified(new Date());
 
@@ -129,12 +146,78 @@ public class AtomicTermService {
      * @param checked
      * @return
      */
-    public Page<AnAtomicTerm> queryOnePage(String term, String type, int pageNum, int pageSize,String checked) {
+    public Page<AnAtomicTerm> queryOnePage(String term, String type,String id ,int pageNum, int pageSize,String checked) {
+        Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum, pageSize);
         String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
-        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt, type,checked);
+        anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt,type,id,checked);
         decrypt(pageInfo);
         return pageInfo;
+    }
+    /**
+     * 根据termText模糊查询原子术语
+     * @param mixtureTermList
+     * @param term
+     */
+    public List<MixtureTerm> queryMixtureFuzzyByTerm(List<MixtureTerm> mixtureTermList,String term){
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllAtomicTerm();
+        for(AnAtomicTerm anAtomicTerm:anAtomicTermList){
+            String currentTerm=SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm());
+            if(currentTerm.contains(term)){
+                MixtureTerm current=new MixtureTerm();
+                current.setTermName(currentTerm);
+                current.setTermId(anAtomicTerm.getId());
+                mixtureTermList.add(current);
+            }
+        }
+        return  mixtureTermList;
+    }
+    /**
+     * 分页根据term模糊查询原子术语
+     * @param term
+     * @param checked
+     */
+    public Map<String,Object> queryFuzzyByTerm(String term, int pageIndex, int pageSize, String checked){
+        //从数据库中查出所有的数据然后遍历每条记录，匹配是否有指定的记录，有则加入新的集合，直到结束，返回最终的集合
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.selectAllByCondition(checked);
+        List<AnAtomicTerm> finalAtomicTermList=decryptTerm(anAtomicTermList,term);
+        //根据term/checked查询出的数据的总条数，除以前台的pageSize,获取到当前后台可以分几页，
+        int pages=finalAtomicTermList.size()/pageSize;
+        int rest=finalAtomicTermList.size()%pageSize;
+        System.out.println("整除后的页数"+pages);
+        System.out.println("取余后的条数"+rest);
+        Map<String,Object> termMap=new HashMap<>();
+        if(pages==0&&rest>=0) {
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList);
+            return termMap;
+        }
+        if(pageIndex<=pages){
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList", finalAtomicTermList.subList((pageIndex - 1) * pageSize,
+                    pageIndex * pageSize >= finalAtomicTermList.size() ? finalAtomicTermList.size() : pageIndex * pageSize));
+        }
+        if(pageIndex==(pages+1)&&rest>0){
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList.subList((pageIndex-1)*pageSize,finalAtomicTermList.size()));
+        }
+        if(pageIndex>(pages+1)){
+            //说明当前的分页的索引超过了，默认返回第一页数据过去
+            termMap.put("total",finalAtomicTermList.size());
+            termMap.put("atomicTermList",finalAtomicTermList.subList(0,pageSize));
+        }
+        return termMap;
+    }
+
+    private List<AnAtomicTerm> decryptTerm(List<AnAtomicTerm> list,String term){
+        List<AnAtomicTerm> anAtomicTermList=new LinkedList<>();
+        for (AnAtomicTerm anAtomicTerm : list) {
+            String currentTerm=SecurityUtil.decryptAESBase64(anAtomicTerm.getTerm());
+            if(currentTerm.contains(term)){
+                anAtomicTerm.setTerm(currentTerm);
+                anAtomicTermList.add(anAtomicTerm);
+            }
+        }
+        return anAtomicTermList;
     }
     /**
      * 分页查询原子术语
@@ -153,12 +236,25 @@ public class AtomicTermService {
     }
 
     /**
+     * 根据conceptId分页查询原子术语
+     * @param conceptId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnAtomicTerm> queryOnePageByConceptId(String conceptId, int pageNum, int pageSize) {
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.selectAllByConceptId(conceptId);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
+    /**
      * 根据原子术语ID查询原子术语
      * @param atomicTermId
      * @return
      */
     public AnAtomicTerm queryByAtomicTermId(String atomicTermId) {
-        AnAtomicTerm anAtomicTerm = anAtomicTermMapper.selectByPrimaryKey(atomicTermId);
+        AnAtomicTerm anAtomicTerm = anAtomicTermMapper.selectByPrimaryKeyID(atomicTermId);
         decrypt(anAtomicTerm);
         return anAtomicTerm;
     }

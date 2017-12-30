@@ -20,11 +20,21 @@ public class AnnotationBratVO {
 
     private Date       gmtModified;
 
+    private String      modifier;
+
     private JSONArray     memo;
 
     private JSONArray  newTerms;
 
     private JSONObject bratData;
+
+    public String getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(String modifier) {
+        this.modifier = modifier;
+    }
 
     public String getId() {
         return id;

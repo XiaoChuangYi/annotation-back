@@ -23,7 +23,7 @@ text {
     padding-bottom:1px; 
   }
   .el-select-dropdown__wrap{
-    max-height: 600px;
+    max-height: 400px;
   }
   /*
    container.vue css

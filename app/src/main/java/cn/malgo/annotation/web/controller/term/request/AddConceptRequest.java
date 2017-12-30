@@ -7,15 +7,15 @@ import cn.malgo.annotation.common.util.AssertUtil;
  */
 public class AddConceptRequest {
 
-    private  Integer id;
+    private  int id;
     private  String originName;
 
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 

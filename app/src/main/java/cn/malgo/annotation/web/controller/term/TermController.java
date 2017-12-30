@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 /**
  * Created by cjl on 2017/11/28.
@@ -28,6 +30,26 @@ public class TermController extends BaseController {
     @Autowired
     private TermService termService;
 
+    /**
+     * 根据conceptId分页查询标准术语
+     * @param request
+     */
+    @RequestMapping(value = {"/queryPaginationByConceptId.do"})
+    public  ResultVO<PageVO<Term>> queryPaginationByConceptId(ConditionTermRequest request){
+        Page<Term> page=termService.queryByConceptId(request.getConceptId(),request.getPageNum(),request.getPageSize());
+        PageVO<Term> pageVO=new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
+    /**
+     *置空术语表的concept_id
+     * @param id
+     */
+    @RequestMapping(value = {"/clearConceptIdOfTerm.do"})
+    public ResultVO clearConceptIdOfTerm(int id){
+        termService.clearConceptIdOfTerm(id);
+        return ResultVO.success();
+    }
     /**
      * 分页查询术语信息
      * @param request
@@ -50,11 +72,10 @@ public class TermController extends BaseController {
     public ResultVO<PageVO<Term>> queryAllByCondition(ConditionTermRequest request) {
         //分页查询
         Page<Term> page = termService.QueryAllByCondition(request.getPageNum(), request.getPageSize(),
-                request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked());
+                request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked(),request.getOriginName());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
-
 
     /**
      * 更新术语信息
@@ -79,6 +100,30 @@ public class TermController extends BaseController {
             termService.updateTermLabel(id,label);
         return  ResultVO.success();
     }
+    /**
+     * 批量更新术语表conceptId字段
+     */
+    @RequestMapping(value = {"/updateBatchConceptIdOfTerm.do"})
+    public ResultVO updateBatchConceptIdOfTerm(TermArr termArr,String conceptId){
+        termService.updateBatchTermConceptId(termArr.getTermList(),conceptId);
+        return ResultVO.success();
+    }
+    /**
+     * 批量更新术语标签字段
+     */
+    @RequestMapping(value = {"/updateBatchLabelOfTerm.do"})
+    public ResultVO updateBatchLabelOfTerm(TermArr termArr,String label){
+        termService.updateBatchTermLabel(termArr.getTermList(),label);
+        return  ResultVO.success();
+    }
+    /**
+     *批量覆盖更新所选记录的标签
+     */
+    @RequestMapping(value = "/coverBatchTags.do")
+    public ResultVO coverBatchTags(TermArr termArr,String label){
+        termService.coverBatchTermLable(termArr.getTermList(),label);
+        return ResultVO.success();
+    }
 
     /**
      * 新增术语信息
@@ -93,16 +138,33 @@ public class TermController extends BaseController {
         return  ResultVO.success();
     }
     /**
-     * 删除术语信息
+     * 弃用术语
      * @param id
      * @return
      */
-    @RequestMapping(value = { "/deleteTerm.do" })
-    public ResultVO  deleteTerm(Integer id){
+    @RequestMapping(value = { "/abandonTerm.do" })
+    public ResultVO  abandonTerm(Integer id){
         if(id==null)
             AssertUtil.notNull(id,"主键ID为空");
-        termService.deleteTerm(id,"DISABLE");
+        termService.abandonTerm(id,"DISABLE");
         return  ResultVO.success();
     }
-
+    /**
+     *删除术语
+     * @param id
+     */
+    @RequestMapping(value = {"/deleteTerm.do"})
+    public ResultVO deleteTerm(Integer id){
+        AssertUtil.notNull(id,"主键ID为空");
+        termService.deleteTerm(id);
+        return  ResultVO.success();
+    }
+    /**
+     *获取所有的type
+     */
+    @RequestMapping(value = { "/getTypesOfTerm.do" })
+    public ResultVO<List<String>> getTypesOfTerm(){
+        List<String> typeList=termService.selectTermType();
+        return  ResultVO.success(typeList);
+    }
 }

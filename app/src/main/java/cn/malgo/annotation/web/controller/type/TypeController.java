@@ -2,18 +2,21 @@ package cn.malgo.annotation.web.controller.type;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
+import cn.malgo.annotation.common.dal.model.AnnotationPagination;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
 import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
+import cn.malgo.annotation.web.controller.type.request.QueryTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
+import cn.malgo.annotation.web.request.PageRequest;
+import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,12 +39,17 @@ public class TypeController extends BaseController {
     @Autowired
     private TypeAnnotationBatchService typeAnnotationBatchService;
 
-    @Autowired
-    private AsyncTypeBatchService asyncTypeBatchService;
+    @RequestMapping(value = "/getPaginationType.do")
+    public ResultVO<PageVO<AnType>> getAllType(QueryTypeRequest request){
+        Page<AnType> page =typeService.selectPaginationTypesAndShowParent(request.getPageNum(),request.getPageSize(),request.getTypeCode(),request.getTypeName());
+        PageVO<AnType> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+
 
     @RequestMapping(value = "/getTypes.do")
     public ResultVO<List<AnType>> getAllType(){
-        List<AnType> anTypeList=typeService.selectAllTypes();
+        List<AnType> anTypeList =typeService.selectAllTypes();
         return ResultVO.success(anTypeList);
     }
 
@@ -59,9 +67,9 @@ public class TypeController extends BaseController {
     }
 
     @RequestMapping(value = "/updateType.do")
-    public ResultVO updateType(String parentId,String typeId,String typeName){
+    public ResultVO updateType(String parentId,String typeId,String typeName,String originParentId){
 
-        typeService.updateTypeName(parentId,typeId,typeName);
+        typeService.updateType(parentId,typeId,typeName,originParentId);
         return  ResultVO.success();
     }
 
@@ -84,16 +92,18 @@ public class TypeController extends BaseController {
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());
         return  ResultVO.success();
     }
-    /**
-     * 根据type查询术语标注表中的的对应记录
-     * @param typeCode
-     */
-    @RequestMapping(value="/selectAnnotationByType.do")
-     public  ResultVO<List<Annotation>> selectAnnotationByType(String typeCode, String term){
-        List<Annotation> annotationList =typeService.queryAnnotationByType(typeCode,term);
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationList);
-        return  ResultVO.success(annotationBratVOList);
+
+
+    @RequestMapping(value = "selectAnnotationServerPagination.do")
+    public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
+        AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
+        PageResult<AnnotationBratVO> pageResult=new PageResult<>();
+        pageResult.setDataList(annotationBratVOList);
+        pageResult.setTotal(annotationPagination.getLastIndex());
+        return  ResultVO.success(pageResult);
     }
+
     /**
      * 模型转换,标注模型转换成brat模型
      * @param annotationList
