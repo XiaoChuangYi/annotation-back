@@ -20,8 +20,8 @@ import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.common.LogUtil;
-import cn.malgo.common.security.SecurityUtil;
+import cn.malgo.core.util.LogUtil;
+import cn.malgo.core.util.security.SecurityUtil;
 
 /**
  * @author 张钟

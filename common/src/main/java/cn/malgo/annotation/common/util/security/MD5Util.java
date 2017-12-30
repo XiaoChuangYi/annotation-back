@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 
 import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
 import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
-import cn.malgo.common.LogUtil;
+import cn.malgo.core.util.LogUtil;
 import org.apache.log4j.Logger;
 
 

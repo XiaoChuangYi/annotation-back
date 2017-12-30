@@ -12,7 +12,7 @@ import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.TypeStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.common.LogUtil;
+import cn.malgo.core.util.LogUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
