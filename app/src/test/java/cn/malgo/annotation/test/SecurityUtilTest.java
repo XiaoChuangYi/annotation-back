@@ -1,6 +1,6 @@
 package cn.malgo.annotation.test;
 
-import cn.malgo.core.util.security.SecurityUtil;
+import cn.malgo.common.security.SecurityUtil;
 import org.junit.Test;
 
 

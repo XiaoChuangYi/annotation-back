@@ -19,7 +19,7 @@ import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
 import cn.malgo.annotation.core.model.check.AnnotationChecker;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
-import cn.malgo.core.util.security.SecurityUtil;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  * @author 张钟

@@ -18,8 +18,8 @@ import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
-import cn.malgo.core.util.LogUtil;
-import cn.malgo.core.util.security.SecurityUtil;
+import cn.malgo.common.LogUtil;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  *

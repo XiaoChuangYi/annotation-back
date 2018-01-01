@@ -27,7 +27,7 @@ import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.core.service.corpus.CorpusService;
-import cn.malgo.core.util.security.SecurityUtil;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  *
