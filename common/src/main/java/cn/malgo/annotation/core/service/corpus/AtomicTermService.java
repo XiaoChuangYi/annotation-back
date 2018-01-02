@@ -75,8 +75,7 @@ public class AtomicTermService {
     public void saveAtomicTerm(String fromAnId, String term, String termType) {
 
         String securityTerm = SecurityUtil.cryptAESBase64(term);
-
-        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm);
+        AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm,termType);
         if (anAtomicTermOld != null) {
             LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1}", term, termType));
             return;
@@ -89,6 +88,8 @@ public class AtomicTermService {
         anAtomicTermNew.setTerm(securityTerm);
         anAtomicTermNew.setType(termType);
         anAtomicTermNew.setState(CommonStatusEnum.ENABLE.name());
+        anAtomicTermNew.setGmtModified(new Date());
+        anAtomicTermNew.setGmtModified(new Date());
 
         int insertResult = anAtomicTermMapper.insertSelective(anAtomicTermNew);
         AssertUtil.state(insertResult > 0, "保存原子术语失败");

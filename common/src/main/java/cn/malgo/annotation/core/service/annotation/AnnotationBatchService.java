@@ -177,5 +177,4 @@ public class AnnotationBatchService extends AnnotationService {
         }
         return anAtomicTermMap;
     }
-
-}
+ }

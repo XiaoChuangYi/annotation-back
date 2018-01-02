@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -23,6 +24,7 @@ import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.core.util.LogUtil;
 import cn.malgo.core.util.security.SecurityUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author 张钟
@@ -170,7 +172,6 @@ public class AtomicTermBatchService {
                                     atomicTermAnnotationModel.getStartPosition(),atomicTermAnnotationModel.getEndPosition(),atomicTermAnnotationModel.getText());
                         }
                         LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
-                        LogUtil.info(logger, "当前标注记录为:" + finalAnnotationNew);
                         annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
                     }
                 } catch (Exception e) {
@@ -182,6 +183,57 @@ public class AtomicTermBatchService {
             pageNum++;
 
         } while (pageInfo.getPages() >= pageNum);
+    }
+
+    /**
+     *批量删除符合当前原子术语的annotation表中的最终标注字段，并且删除原子术语表中对应的记录
+     * @param id
+     * @param term
+     * @param type
+     */
+    @Transactional
+    public void deleteAtomicTerm(String id,String term,String type){
+        int deleteResult=anAtomicTermMapper.deleteByPrimaryKey(id);
+        AssertUtil.state(deleteResult > 0, "删除术语失败");
+        LogUtil.info(logger, "开始批量删除annotation表中符合当前原子术语的标注");
+        Page<Annotation> pageInfo=null;
+        int pageNum=1;
+        int pageSize=2000;
+//        List<String> stateList = new ArrayList<>();
+        do{
+            pageInfo=annotationService.queryByStateList(null,pageNum,pageSize);
+            LogUtil.info(logger,
+                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+
+            for (Annotation annotation : pageInfo.getResult()) {
+                try {
+                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+                    String newFinalAnnotation="";
+                    boolean isChange = false;
+                    //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
+                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+                        //如果标注中纯在待替换的原子术语,进行替换
+                        if (termAnnotationModel.getTerm().equals(term)
+                                && termAnnotationModel.getType().equals(type)) {
+                            isChange=true;
+                            newFinalAnnotation= AnnotationConvert.deleteTag(annotation.getFinalAnnotation(),termAnnotationModel.getTag());
+                        }
+                    }
+                    if(isChange) {
+                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+                        annotationService.updateFinalAnnotation(annotation.getId(), newFinalAnnotation);
+//                        annotation.setFinalAnnotation(newFinalAnnotation);
+                    }
+                }catch (Exception e) {
+                    LogUtil.info(logger, "删除标注中的原子术语失败,标注ID:" + annotation.getId());
+                }
+            }
+            LogUtil.info(logger,
+                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            pageNum++;
+        }while (pageInfo.getPages() >= pageNum);
+
     }
     /**
      *批量替换标注中符合条件的最终标注

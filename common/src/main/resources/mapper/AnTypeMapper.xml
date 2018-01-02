@@ -38,7 +38,7 @@
     FROM AN_TYPE WHERE TYPE_CODE=#{typeCode} AND STATE ='DISABLE'
   </select>
   <select id="selectTypeCount"  resultType="java.lang.Integer">
-    SELECT COUNT(ID) FROM AN_TYPE
+    SELECT MAX(ID+0) FROM AN_TYPE
   </select>
   <select id="selectEnableTypes" resultMap="BaseResultMap">
     SELECT <include refid="ALL_COLUMN"/>
@@ -78,7 +78,7 @@
     <if test="typeName !=null and typeName !=''">
       AND a.TYPE_NAME LIKE concat('%',#{typeName},'%')
     </if>
-    ORDER BY a.type_code
+    ORDER BY a.ID
   </select>
 
 </mapper>

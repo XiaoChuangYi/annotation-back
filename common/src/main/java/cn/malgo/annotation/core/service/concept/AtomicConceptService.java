@@ -113,15 +113,16 @@ public class AtomicConceptService {
         return  concept;
     }
     /**
-     *删除术语
+     *遗弃术语
      * @param id
      * @param state
      */
-    public  void  deleteAtomicTerm(String id,String state){
+    public  void  abandonAtomicTerm(String id,String state){
         AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
         anAtomicTerm.setState(state);
         anAtomicTerm.setId(id);
         int deleteResult=anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
         AssertUtil.state(deleteResult > 0, "删除术语失败");
     }
+
 }

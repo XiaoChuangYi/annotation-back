@@ -37,7 +37,7 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
      * @param term
      * @return
      */
-    AnAtomicTerm selectByTermAndTypeNotNull(@Param("term") String term);
+    AnAtomicTerm selectByTermAndTypeNotNull(@Param("term") String term,@Param("type") String type);
 
     /**
      * 查询全部原子术语

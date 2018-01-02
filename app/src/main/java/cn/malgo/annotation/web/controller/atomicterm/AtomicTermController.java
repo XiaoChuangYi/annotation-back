@@ -1,5 +1,6 @@
 package cn.malgo.annotation.web.controller.atomicterm;
 
+import cn.malgo.annotation.common.util.AssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -111,6 +112,20 @@ public class AtomicTermController extends BaseController {
 
         return ResultVO.success();
 
+    }
+    /**
+     *删除原子术语，并删除对应的标注
+     * @param id
+     * @param term
+     * @param type
+     */
+    @RequestMapping(value = {"/deleteAtomicTerm.do"})
+    public ResultVO deleteAtomicTerm(String id,String term,String type){
+        AssertUtil.notBlank(id,"主键ID为空");
+        AssertUtil.notBlank(term,"term为空");
+        AssertUtil.notBlank(type,"type为空");
+        atomicTermBatchService.deleteAtomicTerm(id,term,type);
+        return  ResultVO.success();
     }
 
 }

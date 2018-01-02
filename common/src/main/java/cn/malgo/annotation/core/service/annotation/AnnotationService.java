@@ -101,9 +101,7 @@ public class AnnotationService {
     public Page<Annotation> queryOnePageForDistribution(String annotationState, String userId,
                                                  int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(annotationState, userId);
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        System.out.println(JSON.parseArray(JSON.toJSONString(annotationList)));
+        annotationMapper.selectByStateAndUserId(annotationState, userId);
         decryptAES(pageInfo.getResult());
         return pageInfo;
     }
@@ -337,7 +335,6 @@ public class AnnotationService {
     public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
         List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
         decryptAES(annotationList);
-        System.out.println(pageNum+">>>>><<<<<"+pageSize);
         return  annotationList;
     }
 

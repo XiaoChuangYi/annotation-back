@@ -4,6 +4,7 @@ import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.concept.AtomicConceptService;
+import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
 import cn.malgo.annotation.web.controller.atomicterm.request.addAtomicConceptRequest;
@@ -32,6 +33,8 @@ public class AtomicConceptController {
 
     @Autowired
     private AtomicTermService atomicTermService;
+
+
     /**
      * 分页查询原子术语
      * @param request
@@ -106,14 +109,16 @@ public class AtomicConceptController {
         return ResultVO.success(concept);
     }
     /**
-     * 删除原子术语信息
+     * 遗弃原子术语信息
      * @param id
      * @return
      */
-    @RequestMapping(value = { "/deleteTerm.do" })
-    public ResultVO  deleteTerm(String id){
+    @RequestMapping(value = { "/abandonAtomicTerm.do" })
+    public ResultVO  abandonAtomicTerm(String id){
         AssertUtil.notBlank(id,"主键ID为空");
-        atomicConceptService.deleteAtomicTerm(id,"DISABLE");
+        atomicConceptService.abandonAtomicTerm(id,"DISABLE");
         return  ResultVO.success();
     }
+
+
 }
