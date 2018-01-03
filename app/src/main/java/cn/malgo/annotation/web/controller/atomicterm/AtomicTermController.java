@@ -16,6 +16,8 @@ import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 
+import java.util.List;
+
 /**
  * @author 张钟
  * @date 2017/11/1
@@ -126,6 +128,14 @@ public class AtomicTermController extends BaseController {
         AssertUtil.notBlank(type,"type为空");
         atomicTermBatchService.deleteAtomicTerm(id,term,type);
         return  ResultVO.success();
+    }
+    /**
+     *查询原子术语用来初始化下拉框
+     */
+    @RequestMapping(value = {"/queryAtomicTermForInitSelectBox.do"})
+    public ResultVO<List<AnAtomicTerm>> queryAtomicTermForInitSelectBox(String term){
+        List<AnAtomicTerm> anAtomicTermList=atomicTermService.queryEnableAtomicTerm(term);
+        return  ResultVO.success(anAtomicTermList);
     }
 
 }

@@ -18,8 +18,8 @@ import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
-import cn.malgo.core.util.LogUtil;
-import cn.malgo.core.util.security.SecurityUtil;
+import cn.malgo.common.LogUtil;
+import cn.malgo.common.security.SecurityUtil;
 
 /**
  *
@@ -137,7 +137,14 @@ public class AtomicTermService {
         decrypt(pageInfo);
         return pageInfo;
     }
-
+    /**
+     *查询所有的'ENABLE'状态的原子术语
+     */
+    public List<AnAtomicTerm> queryEnableAtomicTerm(String term){
+        List<AnAtomicTerm> anAtomicTermList=anAtomicTermMapper.fuzzyQueryByTermAndType(null,null);
+        List<AnAtomicTerm> finalAtomicTermList=decryptTerm(anAtomicTermList,term);
+        return  finalAtomicTermList;
+    }
     /**
      * 分页查询原子术语
      * @param term 传入明文

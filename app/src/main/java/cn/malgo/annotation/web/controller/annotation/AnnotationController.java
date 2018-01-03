@@ -148,21 +148,19 @@ public class AnnotationController extends BaseController {
         atomicTermBatchService.batchSubdivideAtomicTerm(splitAtomicTermArr.getSplitAtomicTermList());
         return ResultVO.success();
     }
-
-//    @RequestMapping(value = {"/addSubdivideAtomicTermToAnnotation.do"})
-//    public ResultVO<AnnotationBratVO> addSubdivideAtomicTermToAnnotation(AddAnnotationRequest request,
-//                                                                         @ModelAttribute("currentAccount") CrmAccount crmAccount){
-//        //新增新的原子术语到原子术语表，如果原先原子术语表中已经有了该条，则更新
-//        atomicTermService.saveAtomicTerm(request.getAnId(),request.getText(),request.getAnnotationType());
-//        //同步批量构建文本中符合该文本的标注，新的最终的标注
-////        atomicTermBatchService.batchSubdivideAtomicTerm(request.getAnnotationType(),request.getStartPosition(),request.getEndPosition(),request.getText());
-//        String newTermsText = AnnotationConvert.addNewTerm("", request.getText(),
-//                request.getAnnotationType());
-//        JSONObject bratJson = AnnotationConvert.convertToBratFormat(request.getText(),newTermsText);
-//        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
-//        annotationBratVO.setBratData(bratJson);
-//        return ResultVO.success(annotationBratVO);
-//    }
+    /**
+     *原子术语界面，合并原子词。构建新的原子术语，并插入到原子术语表，如果原子术语表里已有该条记录，则忽略。
+     * 然后批量更新标注表
+     */
+    @RequestMapping(value = {"/addCombineAtomicTermToAnnotation.do"})
+    public ResultVO<AnnotationBratVO> addCombineAtomicTermToAnnotation(String term,String type){
+        //新增新的原子术语到原子术语表，如果原先原子术语表中已经有了该条，则更新
+        AssertUtil.notBlank(term,"term为空");
+        AssertUtil.notBlank(type,"type为空");
+        atomicTermService.saveAtomicTerm("",term,type);
+        atomicTermBatchService.batchCombineAtomicTerm(term,type);
+        return ResultVO.success();
+    }
     /**
      *不经过apiServer直接修改FinalAnnotation,即新增标注或者新词
      * @param request

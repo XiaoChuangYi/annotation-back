@@ -96,4 +96,6 @@ public interface AnAtomicTermMapper extends CommonMapper<AnAtomicTerm> {
     AnAtomicTerm selectByPrimaryKeyID(@Param("id") String id);
 
     List<AnAtomicTerm> selectAllByConceptId(@Param("conceptId") String conceptId);
+
+
 }

@@ -1,13 +1,12 @@
 package cn.malgo.annotation.core.service.corpus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,9 @@ import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.core.util.LogUtil;
-import cn.malgo.core.util.security.SecurityUtil;
+
+import cn.malgo.common.LogUtil;
+import cn.malgo.common.security.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -134,6 +134,54 @@ public class AtomicTermBatchService {
 
         } while (pageInfo.getPages() >= pageNum);
 
+    }
+    public void batchCombineAtomicTerm(String newTerm,String newType){
+        LogUtil.info(logger, "开始批量替换标准中的原子术语");
+        int pageNum = 1;
+        int pageSize = 2000;
+        Page<Annotation> pageInfo = null;
+        List<String> stateList = new ArrayList<>();
+        stateList.add(AnnotationStateEnum.FINISH.name());
+        do {
+            //根据finish状态到术语标注表中查询
+            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
+            LogUtil.info(logger,
+                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            for (Annotation annotation : pageInfo.getResult()){
+                try {
+                    if(annotation.getTerm().contains(newTerm)){
+                        //删除原先各原子词的标注，然后生成新的对应的标注结构
+                        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                                .convertAnnotationModelList(annotation.getFinalAnnotation());
+                        List<Integer> startPositionList=new ArrayList<>();
+                        List<Integer> endPositionList=new ArrayList<>();
+                        Iterator<TermAnnotationModel> iterator=termAnnotationModelList.iterator();
+                        while (iterator.hasNext()){
+                            TermAnnotationModel termAnnotationModel=iterator.next();
+                            if(newTerm.contains(termAnnotationModel.getTerm())){
+                                startPositionList.add(termAnnotationModel.getStartPosition());
+                                endPositionList.add(termAnnotationModel.getEndPosition());
+                                iterator.remove();
+                            }
+                        }
+                        Collections.sort(startPositionList);
+                        Collections.sort(endPositionList);
+                        System.out.println(JSONArray.parse(JSON.toJSONString(startPositionList)));
+                        System.out.println(JSONArray.parse(JSON.toJSONString(endPositionList)));
+                        String finalAnnotationOld=AnnotationConvert.convertToText(termAnnotationModelList);
+                        String finalAnnotationNew=AnnotationConvert.addNewTag(finalAnnotationOld,newType,startPositionList.get(0).toString(),endPositionList.get(endPositionList.size()-1).toString(),newTerm);
+                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+                        annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
+                    }
+                }
+                catch(Exception ex) {
+                    LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());
+                }
+            }
+            LogUtil.info(logger,
+                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            pageNum++;
+        }while (pageInfo.getPages() >= pageNum);
     }
     public void batchSubdivideAtomicTerm(List<AtomicTermAnnotation> atomicTermAnnotationList) {
         LogUtil.info(logger, "开始批量替换标准中的原子术语");

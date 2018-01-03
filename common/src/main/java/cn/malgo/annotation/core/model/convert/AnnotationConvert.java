@@ -154,7 +154,6 @@ public class AnnotationConvert {
             newText);
         return oldManualAnnotation + newLine;
     }
-
     /**
      * 删除标注中的指定标签,并且对手工标注标签进行重新排序
      * @param oldAnnotation "{0}\t{1} {2} {3}\t{4}\n";

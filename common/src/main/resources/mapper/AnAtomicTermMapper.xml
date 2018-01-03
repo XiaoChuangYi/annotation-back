@@ -43,7 +43,7 @@
         SELECT
         <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM
-        WHERE 1=1
+        WHERE state='ENABLE'
         <if test="term!=null and term!=''">
             AND TERM = #{term}
         </if>
@@ -56,7 +56,7 @@
         SELECT
         <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM
-        WHERE 1=1
+        WHERE state='ENABLE'
         <if test="term!=null and term!=''">
             AND TERM like concat('%',#{term},'%')
         </if>
@@ -69,7 +69,7 @@
         SELECT
         <include refid="ALL_COLUMN"/>
         FROM AN_ATOMIC_TERM
-        WHERE 1=1
+        WHERE state='ENABLE'
         AND TERM = #{term}
         AND TYPE = #{type}
         ORDER BY ID
