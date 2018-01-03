@@ -1,5 +1,6 @@
 package cn.malgo.annotation.common.dal.mapper;
 
+import cn.malgo.annotation.common.dal.model.GroupTerm;
 import cn.malgo.annotation.common.dal.model.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
 import cn.malgo.annotation.common.dal.model.TermLabel;
@@ -7,7 +8,6 @@ import cn.malgo.annotation.common.dal.util.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 public interface TermMapper extends CommonMapper<Term> {
      List<Term> selectEnableTerm();
@@ -23,4 +23,9 @@ public interface TermMapper extends CommonMapper<Term> {
      int coverBatchLabelOfTerm(@Param("idsList") List<Integer> idsList,@Param("label") String label);
      Term selectByPrimaryKeyID(@Param("id") int id);
      List<Term> selectByConceptId(@Param("conceptId") String conceptId);
+     List<Term> selectTermByTermId(@Param("termId") String termId);
+     int getGroupsByOriginName();
+     List<Term> selectTermByOriginNameGroup();
+     List<GroupTerm> selectGroupsAndOriginName(@Param("groupIndex") Integer groupIndex,@Param("groupSize") Integer groupSize);
+     List<Term> selectTermsByOriginName(@Param("originName") String originName);
 }

@@ -1,10 +1,7 @@
 package cn.malgo.annotation.core.service.term;
 
 import cn.malgo.annotation.common.dal.mapper.TermMapper;
-import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
-import cn.malgo.annotation.common.dal.model.MixtureTerm;
-import cn.malgo.annotation.common.dal.model.Term;
-import cn.malgo.annotation.common.dal.model.TermLabel;
+import cn.malgo.annotation.common.dal.model.*;
 import cn.malgo.annotation.common.util.AssertUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -58,7 +55,15 @@ public class TermService {
         termMapper.selectTermByCondition(termName,termType,label,checked,OriginName);
         return  pageInfo;
     }
-
+    /**
+     *更据termId查询相关联的标准术语
+     * @termId
+     */
+    public Page<Term> QueryAssociatedTermByTermId(int pageNum,int pageSize,String termId){
+        Page<Term> pageInfo= PageHelper.startPage(pageNum,pageSize);
+        termMapper.selectTermByTermId(termId);
+        return  pageInfo;
+    }
     /**
      *分页查询术语
      * @param pageNum
@@ -217,5 +222,26 @@ public class TermService {
     public List<String> selectTermType(){
         List<String> typeList=termMapper.selectTermType();
         return typeList;
+    }
+    /**
+     *获取当前术语表根据origin_name分组的组数
+     */
+    public int getGroupsByOriginName(){
+        return termMapper.getGroupsByOriginName();
+    }
+    /**
+     *根据origin_name分组查询数据
+     */
+    public List<List<Term>> queryTermGroupByOriginName(int groupIndex,int groupSize){
+        int groups=(groupIndex==0?0:(groupIndex-1))*groupSize;
+        List<GroupTerm> groupTermList=termMapper.selectGroupsAndOriginName(groups,groupSize);
+        List<List<Term>> finalList=new ArrayList<>();
+        System.out.println();
+        for(GroupTerm currentGroupTerm:groupTermList){
+            System.out.println("当前的组名："+currentGroupTerm.getOriginName()+"组量的大小："+currentGroupTerm.getIdGroups());
+            List<Term> termList=termMapper.selectTermsByOriginName(currentGroupTerm.getOriginName());
+            finalList.add(termList);
+        }
+        return  finalList;
     }
 }

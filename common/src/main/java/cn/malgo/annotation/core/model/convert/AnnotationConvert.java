@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.util.log.LogUtil;
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -101,6 +102,27 @@ public class AnnotationConvert {
         return oldAnnotation + newLine;
     }
     /**
+     *更新新的标注
+     * @param oldAnnotation
+     * @param  oldType
+     * @param newType
+     * @param tag
+     */
+    public static String updateTag(String oldAnnotation,String oldType,String newType,String tag){
+        if(StringUtils.isNotBlank(oldAnnotation)){
+            String [] lines=oldAnnotation.split("\n");
+            String newAnnotation="";
+            for(String temp:lines){
+                if(temp.contains(tag)&&temp.contains(oldType)){
+                    temp=temp.replace(oldType,newType);
+                }
+                newAnnotation+=temp+"\n";
+            }
+            return newAnnotation;
+        }
+        return oldAnnotation;
+    }
+    /**
      * 构建新的标注
      * @param oldManualAnnotation
      * @param newType
@@ -135,7 +157,7 @@ public class AnnotationConvert {
 
     /**
      * 删除标注中的指定标签,并且对手工标注标签进行重新排序
-     * @param oldAnnotation
+     * @param oldAnnotation "{0}\t{1} {2} {3}\t{4}\n";
      * @param tag
      * @return
      */

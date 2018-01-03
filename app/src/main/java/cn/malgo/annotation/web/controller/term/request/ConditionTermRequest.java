@@ -12,6 +12,15 @@ public class ConditionTermRequest extends PageRequest {
     private String checked;
     private String conceptId;
     private String originName;
+    private String termId;
+
+    public String getTermId() {
+        return termId;
+    }
+
+    public void setTermId(String termId) {
+        this.termId = termId;
+    }
 
     public String getOriginName() {
         return originName;

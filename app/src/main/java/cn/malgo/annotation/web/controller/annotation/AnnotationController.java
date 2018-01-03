@@ -234,6 +234,26 @@ public class AnnotationController extends BaseController {
         return ResultVO.success(annotationBratVO);
 
     }
+    @RequestMapping(value = {"/updateFinalAnnotation.do"})
+    public ResultVO<AnnotationBratVO> updateFinalAnnotation(UpdateAnnoTypeRequest request,
+                                                            @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+        UpdateAnnoTypeRequest.check(request);
+//        权限检查,当前的标注是否属于当前用户
+        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
+
+        String finalAnnotationNew=AnnotationConvert.updateTag(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
+
+        //获取原有的新词列表
+        String newTermsText = annotation.getNewTerms();
+        List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
+        //更新单条标注信息，直接保存到数据库中
+        System.out.println("finalAnnotation:"+finalAnnotationNew);
+        Annotation annotationNew = annotationService
+                .autoFinalAnnotationByAnId(request.getAnId(), finalAnnotationNew,newTerms);
+        AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
+        return  ResultVO.success(annotationBratVO);
+    }
     /**
      *删除标注或者同时删除新词，仅操作最终标注字段
      * @param request

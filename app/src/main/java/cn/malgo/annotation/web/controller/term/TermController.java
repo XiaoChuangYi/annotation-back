@@ -9,6 +9,7 @@ import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddTermRequest;
 import cn.malgo.annotation.web.controller.term.request.ConditionTermRequest;
 import cn.malgo.annotation.web.controller.term.request.UpdateTermRequest;
+import cn.malgo.annotation.web.controller.term.result.TermGroupResult;
 import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
@@ -166,5 +167,35 @@ public class TermController extends BaseController {
     public ResultVO<List<String>> getTypesOfTerm(){
         List<String> typeList=termService.selectTermType();
         return  ResultVO.success(typeList);
+    }
+
+    /**
+     *根据termId查询标准术语表相关联的记录
+     */
+    @RequestMapping(value = { "/queryAssociatedByTermId.do" })
+    public ResultVO<PageVO<Term>> queryAssociatedByTermId(ConditionTermRequest request) {
+        //分页查询
+        Page<Term> page = termService.QueryAssociatedTermByTermId(request.getPageNum(), request.getPageSize(),request.getTermId());
+        PageVO<Term> pageVO = new PageVO(page);
+        return ResultVO.success(pageVO);
+    }
+    /**
+     *根据originName分组查询数据
+     */
+    @RequestMapping(value = {"/queryTermGroupByOriginName.do"})
+    public ResultVO<TermGroupResult> queryTermGroupByOriginName(int groupIndex, int groupSize){
+        TermGroupResult termGroupResult=new TermGroupResult();
+        List<List<Term>> termList=termService.queryTermGroupByOriginName(groupIndex,groupSize);
+        termGroupResult.setMixList(termList);
+        termGroupResult.setGroups(termService.getGroupsByOriginName());
+        return ResultVO.success(termGroupResult);
+    }
+    /**
+     *根据originName查询分组后的组数
+     */
+    @RequestMapping(value = {"/getGroupsByOriginName.do"})
+    public ResultVO<Integer> getGroupsByOriginName(){
+        int groups=termService.getGroupsByOriginName();
+        return ResultVO.success(groups);
     }
 }
