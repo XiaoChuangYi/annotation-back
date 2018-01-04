@@ -3,6 +3,7 @@ package cn.malgo.annotation.core.service.corpus;
 import java.util.*;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.common.dal.model.CombineAtomicTerm;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
 import com.alibaba.fastjson.JSON;
@@ -135,41 +136,62 @@ public class AtomicTermBatchService {
         } while (pageInfo.getPages() >= pageNum);
 
     }
-    public void batchCombineAtomicTerm(String newTerm,String newType){
-        LogUtil.info(logger, "开始批量替换标准中的原子术语");
-        int pageNum = 1;
-        int pageSize = 2000;
-        Page<Annotation> pageInfo = null;
-        List<String> stateList = new ArrayList<>();
-        stateList.add(AnnotationStateEnum.FINISH.name());
-        do {
-            //根据finish状态到术语标注表中查询
-            pageInfo = annotationService.queryByStateList(stateList, pageNum, pageSize);
-            LogUtil.info(logger,
-                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            for (Annotation annotation : pageInfo.getResult()){
+    public void batchCombineAtomicTerm(List<String> idList, List<CombineAtomicTerm> combineAtomicTermList,String newTerm, String newType){
+        LogUtil.info(logger, "开始批量替换标注中的原子术语");
+        //通过前台筛选的ids查询所有的符合标注的数据
+        List<Annotation> annotationList = annotationService.queryByIdList(idList);
+            for (Annotation annotation : annotationList){
                 try {
                     if(annotation.getTerm().contains(newTerm)){
-                        //删除原先各原子词的标注，然后生成新的对应的标注结构
+                        //为了生成新的标注，并删掉原来的标注，关键需要知道替换的startPosition和endPosition
+                        //有些文本显示是前后顺序的，标注不一定也是同样的前后顺序
+                        //
                         List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
                                 .convertAnnotationModelList(annotation.getFinalAnnotation());
                         List<Integer> startPositionList=new ArrayList<>();
                         List<Integer> endPositionList=new ArrayList<>();
-                        Iterator<TermAnnotationModel> iterator=termAnnotationModelList.iterator();
-                        while (iterator.hasNext()){
-                            TermAnnotationModel termAnnotationModel=iterator.next();
-                            if(newTerm.contains(termAnnotationModel.getTerm())){
-                                startPositionList.add(termAnnotationModel.getStartPosition());
-                                endPositionList.add(termAnnotationModel.getEndPosition());
-                                iterator.remove();
+                        for(TermAnnotationModel termAnnotationModel:termAnnotationModelList){
+                            for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList) {
+                                if (combineAtomicTerm.getTerm().equals(termAnnotationModel.getTerm())&&
+                                        combineAtomicTerm.getType().equals(termAnnotationModel.getType())) {
+                                    startPositionList.add(termAnnotationModel.getStartPosition());
+                                    endPositionList.add(termAnnotationModel.getEndPosition());
+                                }
                             }
                         }
                         Collections.sort(startPositionList);
                         Collections.sort(endPositionList);
-                        System.out.println(JSONArray.parse(JSON.toJSONString(startPositionList)));
-                        System.out.println(JSONArray.parse(JSON.toJSONString(endPositionList)));
+                        //对两个集合取交集，然后各个集合删除交集的部分，即为最终需要的数据
+                        List<Integer> commonList=new ArrayList<>();
+                        commonList.addAll(startPositionList);
+                        commonList.retainAll(endPositionList);
+                        startPositionList.removeAll(commonList);
+                        endPositionList.removeAll(commonList);
+                        System.out.println("去交集后"+JSONArray.parse(JSON.toJSONString(startPositionList)));
+                        System.out.println("去交集后"+JSONArray.parse(JSON.toJSONString(endPositionList)));
                         String finalAnnotationOld=AnnotationConvert.convertToText(termAnnotationModelList);
-                        String finalAnnotationNew=AnnotationConvert.addNewTag(finalAnnotationOld,newType,startPositionList.get(0).toString(),endPositionList.get(endPositionList.size()-1).toString(),newTerm);
+                        if(startPositionList.size()>0){
+                            for(int k=0;k<startPositionList.size();k++){
+                                finalAnnotationOld=AnnotationConvert.addNewTag(finalAnnotationOld,newType,startPositionList.get(k).toString(),
+                                        endPositionList.get(k).toString(),newTerm);
+                            }
+                        }
+                        System.out.println((finalAnnotationOld));
+                        List<TermAnnotationModel> termAnnotationModelListNew = AnnotationConvert
+                                .convertAnnotationModelList(finalAnnotationOld);
+                        Iterator<TermAnnotationModel> iterator=termAnnotationModelListNew.iterator();
+                        //合并术语时，删除原先的术语
+                        while (iterator.hasNext()){
+                            TermAnnotationModel termAnnotationModel=iterator.next();
+                            for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList){
+                                if(combineAtomicTerm.getTerm().equals(termAnnotationModel.getTerm())
+                                        &&combineAtomicTerm.getType().equals(termAnnotationModel.getType())){
+                                    iterator.remove();
+                                }
+                            }
+                        }
+                        String finalAnnotationNew=AnnotationConvert.convertToText(termAnnotationModelListNew);
+                        System.out.println(finalAnnotationNew);
                         LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
                         annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
                     }
@@ -178,10 +200,6 @@ public class AtomicTermBatchService {
                     LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());
                 }
             }
-            LogUtil.info(logger,
-                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            pageNum++;
-        }while (pageInfo.getPages() >= pageNum);
     }
     public void batchSubdivideAtomicTerm(List<AtomicTermAnnotation> atomicTermAnnotationList) {
         LogUtil.info(logger, "开始批量替换标准中的原子术语");
@@ -204,10 +222,14 @@ public class AtomicTermBatchService {
                     boolean isChange = true;
                     //新拆分的原子术语集合跟标注中的原子术语做匹配，如果符合，说明原先标注中已经有该原子术语，说明拆分不合理
                     //只要有一个满足，则不进行拆分，不更新标注
-                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+                    Iterator<TermAnnotationModel> iterator=termAnnotationModelList.iterator();
+                    while (iterator.hasNext()){
+                        TermAnnotationModel termAnnotationModel=iterator.next();
                         for(AtomicTermAnnotation atomicTermAnnotationModel: atomicTermAnnotationList){
                             //如果标注中存在待替换的原子术语,设置为false,不用进行替换
-                            if (termAnnotationModel.getTerm().equals(atomicTermAnnotationModel.getText())) {
+                            //前台拆分的原子术语当中,如果当前标注中有一个匹配到是符合的,则没有拆分的必要
+                            if (termAnnotationModel.getTerm().equals(atomicTermAnnotationModel.getText())
+                                    &&termAnnotationModel.getType().equals(atomicTermAnnotationModel.getAnnotationType())) {
                                 isChange = false;
                             }
                         }
@@ -219,8 +241,19 @@ public class AtomicTermBatchService {
                                     finalAnnotationNew,atomicTermAnnotationModel.getAnnotationType(),
                                     atomicTermAnnotationModel.getStartPosition(),atomicTermAnnotationModel.getEndPosition(),atomicTermAnnotationModel.getText());
                         }
+                        //添加完新的标签后，删除老的标签
+                        List<TermAnnotationModel> newTermAnnotationModelList = AnnotationConvert
+                                .convertAnnotationModelList(finalAnnotationNew);
+                        Iterator<TermAnnotationModel> iterator1=newTermAnnotationModelList.iterator();
+                        String newAtomicStr=atomicTermAnnotationList.get(0).getText();
+                        while (iterator1.hasNext()){
+                            TermAnnotationModel termAnnotationModel=iterator1.next();
+                            if(!termAnnotationModel.getTerm().equals(newAtomicStr)&&termAnnotationModel.getTerm().contains(newAtomicStr)){
+                                iterator1.remove();
+                            }
+                        }
                         LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
-                        annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
+                        annotationService.updateFinalAnnotation(annotation.getId(), AnnotationConvert.convertToText(newTermAnnotationModelList));
                     }
                 } catch (Exception e) {
                     LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());

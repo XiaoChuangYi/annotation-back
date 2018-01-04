@@ -1,10 +1,15 @@
 package cn.malgo.annotation.test;
 
 import cn.malgo.annotation.core.service.type.ConceptShowService;
+import com.alibaba.fastjson.JSON;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by cjl on 2017/11/22.
@@ -15,12 +20,28 @@ public class excel2mysql {
     @Autowired
     private ConceptShowService conceptShowService;
 
-//    @Test
-//    public void select(){
-//        ConceptShow concept=conceptService.selecAll();
-//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<");
-//        System.out.println(JSON.parseObject(JSON.toJSONString(concept)));
-//    }
+    @Test
+    public void select(){
+        List<Integer> startPositionList=new ArrayList<>();
+        List<Integer> endPositionList=new ArrayList<>();
+        startPositionList.add(1);
+        startPositionList.add(2);
+        startPositionList.add(3);
+        startPositionList.add(4);
+        endPositionList.add(3);
+        endPositionList.add(4);
+        endPositionList.add(5);
+        endPositionList.add(6);
+        List<Integer> commonList=new ArrayList<>();
+        commonList.addAll(startPositionList);
+        commonList.retainAll(endPositionList);
+        startPositionList.removeAll(commonList);
+        endPositionList.removeAll(commonList);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<");
+        System.out.println(JSON.parseArray(JSON.toJSONString(commonList)));
+        System.out.println(JSON.parseArray(JSON.toJSONString(startPositionList)));
+        System.out.println(JSON.parseArray(JSON.toJSONString(endPositionList)));
+    }
 
 //    @Test
 //    public  void readExcelAndInsetMysql(){

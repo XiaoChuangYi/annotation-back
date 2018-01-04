@@ -22,9 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by cjl on 2017/11/20.
@@ -196,46 +194,54 @@ public class TypeService {
      * @param typeId
      * */
     public void deleteType(String typeId){
-        AnType anTypedel=anTypeMapper.selectByPrimaryKey(typeId);
-        anTypedel.setState(TypeStateEnum.DISABLE.name());
-        int delResult=anTypeMapper.updateByPrimaryKeySelective(anTypedel);
+        AnType anType=anTypeMapper.selectByPrimaryKey(typeId);
+        anType.setState(TypeStateEnum.DISABLE.name());
+        int delResult=anTypeMapper.updateByPrimaryKeySelective(anType);
         AssertUtil.state(delResult > 0, "删除类型失败");
     }
-//    /**
-//     * 根据type/term查询标术语注表中的标注
-//     *@param type
-//     *@param term
-//     */
-//    public List<Annotation> queryAnnotationByType(String type, String term){
-//        List<String> stateList=new ArrayList<>();
-//        stateList.add(AnnotationStateEnum.FINISH.name());
-//        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
-//        List<Annotation> finalAnnotation = new LinkedList<>();
-//        Page<Annotation> pageInfo = annotationService.queryByStateList(stateList, 1, total);
-//        for (Annotation annotation : pageInfo.getResult()) {
-//            try {
-//                //最终标注
-//                List<TermAnnotationModel> finalModelList = AnnotationConvert
-//                        .convertAnnotationModelList(annotation.getFinalAnnotation());
-//                boolean isHave = false;
-//                for (TermAnnotationModel currentModel : finalModelList) {
-//                    //如果标注中存在待替换的type类型,进行替换
-//                    if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
-//                        isHave = true;
-//                        break;
-//                    }
-//                }
-//                if (isHave) {
-//                    finalAnnotation.add(annotation);
-//                    LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
-//                }
-//            } catch (Exception ex) {
-//                LogUtil.info(logger,
-//                        "结束处理第" + ex.getMessage());
-//            }
-//        }
-//        return finalAnnotation;
-//    }
+    /**
+     * 根据type/term集合查询标术语注表中的标注
+     * @param combineAtomicTermList
+     */
+    public List<Annotation> queryAnnotationByCombineAtomicTerm(List<CombineAtomicTerm> combineAtomicTermList) {
+        int pageNum = 1;
+        int pageSize = 2000;
+        List<Annotation> finalAnnotation = new ArrayList<>();
+        Page<Annotation> pageInfo = null;
+        Set<String> setAtomicTerm=new HashSet<>();
+        do {
+            pageInfo = annotationService.queryByStateList(null, pageNum, pageSize);
+            LogUtil.info(logger,
+                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            for (Annotation annotation : pageInfo.getResult()) {
+                try {
+                    List<TermAnnotationModel> finalModelList = AnnotationConvert
+                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+                    setAtomicTerm.clear();
+                    for (TermAnnotationModel currentModel : finalModelList) {
+                        //如果参数传入的原子术语集合都能匹配到当前标注中的原子术语,则加入返回的集合
+                        for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList) {
+                            if (currentModel.getType().equals(combineAtomicTerm.getType()) && currentModel.getTerm().equals(combineAtomicTerm.getTerm())) {
+                                    setAtomicTerm.add(currentModel.getTerm());
+                            }
+                        }
+                    }
+                    if (setAtomicTerm.size()==combineAtomicTermList.size()) {
+                        finalAnnotation.add(annotation);
+                        LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
+                    }
+                } catch (Exception ex) {
+                    LogUtil.info(logger,
+                            "异常处理第" + pageNum + "批次,原因:"+ ex.getMessage());
+                }
+            }
+            LogUtil.info(logger,
+                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
+            pageNum++;
+        }while (pageInfo.getPages() >= pageNum) ;
+        return finalAnnotation;
+    }
+
     /**
      * 根据type/term查询标术语注表中的标注
      *@param type

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
+import cn.malgo.annotation.common.dal.model.CombineAtomicTerm;
 import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
 import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.web.controller.type.CombineAtomicTermArr;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -114,7 +116,20 @@ public class AnnotationController extends BaseController {
 
         return ResultVO.success(pageVO);
     }
-
+    /**
+     *传入文本，生成brat格式的数据返给前台(前台太慢了)
+     */
+    @RequestMapping(value = {"/generateBratDataByText.do"})
+    public ResultVO<List<AnnotationBratVO>> generateBratDataByText(String id,String text){
+        Annotation annotation=new Annotation();
+        annotation.setTerm(text);
+        annotation.setId(id);
+        annotation.setFinalAnnotation("");
+        AnnotationBratVO annotationBratVO=convertFromAnTermAnnotation(annotation);
+        List<AnnotationBratVO> annotationBratVOList=new ArrayList<>();
+        annotationBratVOList.add(annotationBratVO);
+        return ResultVO.success(annotationBratVOList);
+    }
     /**
      * 更新单条标注信息,附带新词
      * @param request
@@ -153,12 +168,14 @@ public class AnnotationController extends BaseController {
      * 然后批量更新标注表
      */
     @RequestMapping(value = {"/addCombineAtomicTermToAnnotation.do"})
-    public ResultVO<AnnotationBratVO> addCombineAtomicTermToAnnotation(String term,String type){
+    public ResultVO<AnnotationBratVO> addCombineAtomicTermToAnnotation(AnnotationArr annotationArr, CombineAtomicTermArr combineAtomicTermArr, String term, String type){
         //新增新的原子术语到原子术语表，如果原先原子术语表中已经有了该条，则更新
         AssertUtil.notBlank(term,"term为空");
         AssertUtil.notBlank(type,"type为空");
+        AssertUtil.notEmpty(annotationArr.getAnnotationList(),"标注ID集合为空");
+        AssertUtil.notEmpty(combineAtomicTermArr.getCombineAtomicTermList(),"旧原子术语信息集合为空");
         atomicTermService.saveAtomicTerm("",term,type);
-        atomicTermBatchService.batchCombineAtomicTerm(term,type);
+        atomicTermBatchService.batchCombineAtomicTerm(annotationArr.getAnnotationList(),combineAtomicTermArr.getCombineAtomicTermList(),term,type);
         return ResultVO.success();
     }
     /**
@@ -246,7 +263,6 @@ public class AnnotationController extends BaseController {
         String newTermsText = annotation.getNewTerms();
         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
         //更新单条标注信息，直接保存到数据库中
-        System.out.println("finalAnnotation:"+finalAnnotationNew);
         Annotation annotationNew = annotationService
                 .autoFinalAnnotationByAnId(request.getAnId(), finalAnnotationNew,newTerms);
         AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);

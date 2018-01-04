@@ -47,6 +47,13 @@ public interface AnnotationMapper extends CommonMapper<Annotation> {
      */
     List<Annotation> selectByStateList(@Param("stateList") List<String> stateList);
 
+
+    /**
+     * 根据术语状态查询术语
+     * @param idList
+     * @return
+     */
+    List<Annotation> selectByIdList(@Param("idList") List<String> idList);
     /**
      *根据状态后台实现分页查询
 //     * @param state

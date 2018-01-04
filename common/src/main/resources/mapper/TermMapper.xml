@@ -237,7 +237,11 @@
     CT.standard_name
     FROM TERM TM LEFT JOIN CONCEPT CT
     ON TM.CONCEPT_ID=CT.concept_id
-    WHERE 1=1
+    WHERE TM.state='ENABLE'
+    <if test="originName!=null and originName!='' ">
+      AND origin_name=#{originName}
+    </if>
+    OR TM.state IS NULL
     <if test="originName!=null and originName!='' ">
       AND origin_name=#{originName}
     </if>

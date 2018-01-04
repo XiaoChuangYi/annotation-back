@@ -97,6 +97,7 @@ public class AnnotationConvert {
                 return oldAnnotation;
             }
         }
+
         String newLine = MessageFormat.format(AN_LINE_FORMAT, newTag, newType, pNewStart.toString(), pNewEnd.toString(),
                 newText);
         return oldAnnotation + newLine;

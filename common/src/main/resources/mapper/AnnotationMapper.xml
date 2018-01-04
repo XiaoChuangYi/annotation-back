@@ -108,6 +108,18 @@
         </if>
         ORDER BY ID
     </select>
+    <select id="selectByIdList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM ANNOTATION WHERE 1=1
+        <if test="idList!=null">
+            AND ID IN
+            <foreach collection="idList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY ID
+    </select>
 
     <select id="selectByTermId" resultMap="BaseResultMap">
         SELECT

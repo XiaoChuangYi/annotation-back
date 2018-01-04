@@ -353,6 +353,16 @@ public class AnnotationService {
         return pageInfo;
     }
     /**
+     * 根据状态分页查询标注信息
+     * @param idList
+     * @return
+     */
+    public List<Annotation> queryByIdList(List<String> idList) {
+        List<Annotation> annotationList=annotationMapper.selectByIdList(idList);
+        decryptAES(annotationList);
+        return annotationList;
+    }
+    /**
      *批量更新标注表的最终和手动标注
      * @param
      */

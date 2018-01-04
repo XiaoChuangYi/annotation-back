@@ -92,8 +92,23 @@ public class TypeController extends BaseController {
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());
         return  ResultVO.success();
     }
+    /**
+     * 更据原子术语信息，分页查询annotation表
+     */
+    @RequestMapping(value = {"/selectAnnotationByTermTypeArr.do"})
+    public ResultVO<List<AnnotationBratVO>> selectAnnotationByTermTypeArr(CombineAtomicTermArr combineAtomicTermArr){
+        List<Annotation> annotationPagination =typeService.queryAnnotationByCombineAtomicTerm(combineAtomicTermArr.getCombineAtomicTermList());
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination);
+        return  ResultVO.success(annotationBratVOList);
+    }
 
-
+    /**
+     * @param type
+     * @param term
+     * @param pageIndex
+     * @param pageSize
+     * 更据原子术语信息，分页查询annotation表
+     */
     @RequestMapping(value = "selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
         AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
