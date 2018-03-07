@@ -3,49 +3,49 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "AN_ATOMIC_TERM")
+@Table(name = "an_atomic_term")
 public class AnAtomicTerm {
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 术语内容
      */
-    @Column(name = "TERM")
+    @Column(name = "term")
     private String term;
 
     /**
      * 术语类型
      */
-    @Column(name = "TYPE")
+    @Column(name = "type")
     private String type;
 
     /**
      * 状态
      */
-    @Column(name = "STATE")
+    @Column(name = "state")
     private String state;
 
     /**
      * 新词来源
      */
-    @Column(name = "FROM_ANID")
+    @Column(name = "from_anid")
     private String fromAnId;
 
     /**
      * 创建时间
      */
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
     /**
      * 修改时间
      */
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
-    @Column(name = "CONCEPT_ID")
+    @Column(name = "concept_id")
     private String conceptId;
 
     private String standardName;

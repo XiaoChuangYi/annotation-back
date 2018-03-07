@@ -37,7 +37,7 @@
   </sql>
   <select id="selectAllByTermName" resultMap="MixtureMap">
     select id,term_id,term_name
-    FROM TERM WHERE state='ENABLE'
+    FROM term WHERE state='ENABLE'
     <if test="termName !=null and termName !='' ">
       AND term_name LIKE concat('%',#{termName},'%')
     </if>
@@ -48,7 +48,7 @@
   </select>
   <select id="selectEnableTerm" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN" />
-    FROM TERM WHERE state='ENABLE' OR state IS NULL
+    FROM term WHERE state='ENABLE' OR state IS NULL
   </select>
   <select id="selectTermByTermId" resultMap="BaseResultMap">
     select
@@ -64,8 +64,8 @@
     state,
     TM.concept_id,
     CT.standard_name
-    FROM TERM TM LEFT JOIN CONCEPT CT
-    ON TM.CONCEPT_ID=CT.concept_id
+    FROM term TM LEFT JOIN concept CT
+    ON TM.concept_id=CT.concept_id
     WHERE state='ENABLE'
     <if test="termId!=null and termId!=''">
       AND TM.term_id =#{termId}
@@ -90,8 +90,8 @@
     state,
     TM.concept_id,
     CT.standard_name
-    FROM TERM TM LEFT JOIN CONCEPT CT
-    ON TM.CONCEPT_ID=CT.concept_id
+    FROM term TM LEFT JOIN concept CT
+    ON TM.concept_id=CT.concept_id
     WHERE state='ENABLE'
     <if test="termName!=null and termName!=''">
       AND term_name LIKE CONCAT('%',#{termName},'%')
@@ -107,10 +107,10 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  TM.CONCEPT_ID !=''
+        AND  TM.concept_id !=''
       </when>
       <otherwise>
-        AND  TM.CONCEPT_ID =''
+        AND  TM.concept_id =''
       </otherwise>
     </choose>
     OR state IS NULL
@@ -128,18 +128,18 @@
     </if>
     <choose>
       <when test="checked!=null and checked =='true'">
-        AND  TM.CONCEPT_ID !=''
+        AND  TM.concept_id !=''
       </when>
       <otherwise>
-        AND  TM.CONCEPT_ID =''
+        AND  TM.concept_id =''
       </otherwise>
     </choose>
   </select>
   <select id="selectTermType" resultType="java.lang.String">
-    SELECT DISTINCT(term_type) from TERM
+    SELECT DISTINCT(term_type) from term
   </select>
   <update id="updateBatchLabelOfTerm" parameterType="java.util.List">
-    UPDATE TERM SET label=
+    UPDATE term SET label=
     <foreach collection="labelList" item="item" index="index" open="CASE ID" separator=" " close="END">
       when #{item.id} THEN
       #{item.label}
@@ -150,8 +150,8 @@
     </foreach>
   </update>
   <update id="updateBatchConceptIdOfTerm" parameterType="java.util.List">
-    UPDATE TERM SET CONCEPT_ID=
-    <foreach collection="idList" item="item" index="index" open="CASE ID" separator=" " close="END">
+    UPDATE term SET concept_id=
+    <foreach collection="idList" item="item" index="index" open="CASE id" separator=" " close="END">
       when #{item} THEN
       #{conceptId}
     </foreach>
@@ -161,12 +161,12 @@
     </foreach>
   </update>
   <update id="coverBatchLabelOfTerm" parameterType="java.util.List">
-    UPDATE TERM SET label=
-    <foreach collection="idsList" item="item" index="index" open="CASE ID" separator=" " close="END">
+    UPDATE term SET label=
+    <foreach collection="idsList" item="item" index="index" open="CASE id" separator=" " close="END">
       when #{item} THEN
       #{label}
     </foreach>
-    WHERE ID in
+    WHERE id in
     <foreach collection="idsList" item="item" index="index"  open="(" close=")" separator=",">
       ${item}
     </foreach>
@@ -174,7 +174,7 @@
   <select id="selectByPrimaryKeyID" resultMap="BaseResultMap">
     SELECT
     <include refid="ALL_COLUMN"/>
-    FROM TERM WHERE  1=1
+    FROM term WHERE  1=1
     <if test="id!=null and id!='' ">
       AND id=#{id}
     </if>
@@ -193,30 +193,30 @@
     state,
     TM.concept_id,
     CT.standard_name
-    FROM TERM TM LEFT JOIN CONCEPT CT
-    ON TM.CONCEPT_ID=CT.concept_id
+    FROM term TM LEFT JOIN concept CT
+    ON TM.concept_id=CT.concept_id
     WHERE state='ENABLE'
     <if test="conceptId!=null and conceptId!=''">
-      AND  TM.CONCEPT_ID =#{conceptId}
+      AND  TM.concept_id =#{conceptId}
     </if>
     OR state IS NULL
     <if test="conceptId!=null and conceptId!=''">
-      AND  TM.CONCEPT_ID =#{conceptId}
+      AND  TM.concept_id =#{conceptId}
     </if>
   </select>
   
   <select id="getGroupsByOriginName" resultType="java.lang.Integer">
-    SELECT COUNT(idGroup) from (select count(id) as idGroup from TERM GROUP BY origin_name order by ID) a
+    SELECT COUNT(idGroup) from (select count(id) as idGroup from term GROUP BY origin_name order by id) a
   </select>
   <select id="selectTermByOriginNameGroup" resultMap="BaseResultMap">
-    SELECT * FROM TERM GROUP BY origin_name order by ID
+    SELECT * FROM term GROUP BY origin_name order by id
   </select>
   <resultMap id="Groups" type="cn.malgo.annotation.common.dal.model.GroupTerm">
     <result column="id_groups" jdbcType="INTEGER" property="idGroups" />
     <result column="origin_name" jdbcType="VARCHAR" property="originName" />
   </resultMap>
   <select id="selectGroupsAndOriginName" resultMap="Groups">
-    select count(id) as id_groups,origin_name from TERM GROUP BY origin_name order by ID
+    select count(id) as id_groups,origin_name from term GROUP BY origin_name order by id
     <if test="groupIndex !=null and groupSize!= null">
       limit #{groupIndex},#{groupSize}
     </if>
@@ -235,8 +235,8 @@
     state,
     TM.concept_id,
     CT.standard_name
-    FROM TERM TM LEFT JOIN CONCEPT CT
-    ON TM.CONCEPT_ID=CT.concept_id
+    FROM term TM LEFT JOIN concept CT
+    ON TM.concept_id=CT.concept_id
     WHERE TM.state='ENABLE'
     <if test="originName!=null and originName!='' ">
       AND origin_name=#{originName}

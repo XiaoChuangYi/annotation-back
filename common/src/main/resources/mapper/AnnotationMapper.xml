@@ -5,92 +5,92 @@
         <!--
           WARNING - @mbg.generated
         -->
-        <id column="ID" jdbcType="VARCHAR" property="id"/>
-        <result column="TERM_ID" jdbcType="VARCHAR" property="termId"/>
-        <result column="STATE" jdbcType="VARCHAR" property="state"/>
-        <result column="MODIFIER" jdbcType="VARCHAR" property="modifier"/>
-        <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated"/>
-        <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified"/>
-        <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
-        <result column="TERM" jdbcType="LONGVARCHAR" property="term"/>
-        <result column="AUTO_ANNOTATION" jdbcType="LONGVARCHAR" property="autoAnnotation"/>
-        <result column="MANUAL_ANNOTATION" jdbcType="LONGVARCHAR" property="manualAnnotation"/>
-        <result column="FINAL_ANNOTATION" jdbcType="LONGVARCHAR" property="finalAnnotation"/>
-        <result column="NEW_TERMS" jdbcType="LONGVARCHAR" property="newTerms"/>
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="term_id" jdbcType="VARCHAR" property="termId"/>
+        <result column="state" jdbcType="VARCHAR" property="state"/>
+        <result column="modifier" jdbcType="VARCHAR" property="modifier"/>
+        <result column="gmt_created" jdbcType="TIMESTAMP" property="gmtCreated"/>
+        <result column="gmt_modifier" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="memo" jdbcType="VARCHAR" property="memo"/>
+        <result column="term" jdbcType="LONGVARCHAR" property="term"/>
+        <result column="auto_annotation" jdbcType="LONGVARCHAR" property="autoAnnotation"/>
+        <result column="manual_annotation" jdbcType="LONGVARCHAR" property="manualAnnotation"/>
+        <result column="final_annotation" jdbcType="LONGVARCHAR" property="finalAnnotation"/>
+        <result column="new_terms" jdbcType="LONGVARCHAR" property="newTerms"/>
     </resultMap>
 
     <sql id="ALL_COLUMN">
-    ID,
-    TERM_ID,
-    STATE,
-    MODIFIER,
-    GMT_CREATED,
-    GMT_MODIFIED,
-    MEMO,
-    TERM,
-    AUTO_ANNOTATION,
-    MANUAL_ANNOTATION,
-    FINAL_ANNOTATION,
-    NEW_TERMS
+    id,
+    term_id,
+    state,
+    modifier,
+    gmt_created,
+    gmt_modified,
+    memo,
+    term,
+    auto_annotation,
+    manual_annotation,
+    final_annotation,
+    new_terms
   </sql>
     <update id="batchUpdateFinalAndManualAnnotation">
-        UPDATE ANNOTATION SET FINAL_ANNOTATION=
-        <foreach close="end" collection="annotationList" index="index" item="item" open="case ID" separator=" ">
+        UPDATE annotation SET final_annotation=
+        <foreach close="end" collection="annotationList" index="index" item="item" open="case id" separator=" ">
             when #{item.id} THEN
             #{item.finalAnnotation}
         </foreach>
-        ,MANUAL_ANNOTATION=
-        <foreach collection="annotationList" index="index" item="item" open="case ID" close="end" separator=" ">
+        ,manual_annotation=
+        <foreach collection="annotationList" index="index" item="item" open="case id" close="end" separator=" ">
             when #{item.id} THEN
             #{item.manualAnnotation}
         </foreach>
-          WHERE ID in
+          WHERE id in
         <foreach collection="annotationList" index="index" item="item" open="(" close=")" separator=",">
             #{item.id,jdbcType=VARCHAR}
         </foreach>
     </update>
     <update id="batchUpdateFinalAnnotation">
         <foreach close="" collection="annotationList" index="index" item="item" open="" separator=" ">
-            UPDATE ANNOTATION SET FINAL_ANNOTATION=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},
+            UPDATE annotation SET final_annotation=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},
             CHAR(10), ''), CHAR(13), '')
-            WHERE ID=#{item.id,jdbcType=VARCHAR};
+            WHERE id=#{item.id,jdbcType=VARCHAR};
         </foreach>
     </update>
 
     <select id="selectByStateModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="state!=null and state!=''">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
-        AND MODIFIER = #{modifier}
-        ORDER BY ID DESC
+        AND modifier = #{modifier}
+        ORDER BY id DESC
     </select>
 
     <select id="selectByStateListModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="stateList!=null">
-            AND STATE IN
+            AND state IN
             <foreach collection="stateList" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        AND MODIFIER = #{modifier}
-        ORDER BY STATE DESC
-        ,GMT_CREATED ASC
+        AND modifier = #{modifier}
+        ORDER BY state DESC
+        ,gmt_created ASC
     </select>
 
     <select id="selectFinalAnnotationByPagination"  resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="state!=null and state!='' ">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
-        ORDER BY ID
+        ORDER BY id
         <if test="start!=null and pageSize!=null">
         LIMIT #{start,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
         </if>
@@ -99,35 +99,35 @@
     <select id="selectByStateList" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="stateList!=null">
-            AND STATE IN
+            AND state IN
             <foreach collection="stateList" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        ORDER BY ID
+        ORDER BY id
     </select>
     <select id="selectByIdList" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="idList!=null">
-            AND ID IN
+            AND id IN
             <foreach collection="idList" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        ORDER BY ID
+        ORDER BY id
     </select>
 
     <select id="selectByTermId" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE TERM_ID = #{termId}
+        FROM annotation WHERE term_id = #{termId}
     </select>
     <select id="selectTermAnnotationCount"  resultType="java.lang.Integer">
-        SELECT COUNT(ID) FROM ANNOTATION WHERE 1=1
+        SELECT COUNT(id) FROM annotation WHERE 1=1
         <if test="state!=null and state!=''">
             AND  state=#{state}
         </if>
@@ -135,51 +135,48 @@
     <select id="selectByStateAndTermFuzzy" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="state!=null and state!=''">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
         <if test="term!=null and term!=''">
-            AND TERM LIKE CONCAT('%',#{term},'%')
+            AND term LIKE CONCAT('%',#{term},'%')
         </if>
-        AND MODIFIER = #{modifier}
+        AND modifier = #{modifier}
         ORDER BY
-        GMT_CREATED ASC
+        gmt_created ASC
     </select>
     <select id="selectByStateAndUserId" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM ANNOTATION WHERE 1=1
+        FROM annotation WHERE 1=1
         <if test="state!=null and state!=''">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
         <if test="userId!=null and userId!=''">
-            AND MODIFIER = #{userId}
+            AND modified = #{userId}
         </if>
         ORDER BY
-        GMT_CREATED DESC
+        gmt_created DESC
     </select>
     <update id="batchUpdateAnnotationUserId" parameterType="java.util.List">
-        UPDATE ANNOTATION SET MODIFIER =#{modifier}
-        WHERE ID IN
+        UPDATE annotation SET modifier =#{modifier}
+        WHERE id IN
         <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
     <select id="selectIDsByNum" resultType="java.lang.String">
         SELECT
-        ID
-        FROM ANNOTATION WHERE 1=1
+        id
+        FROM annotation WHERE 1=1
         <if test="state!=null and state!=''">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
         <if test="userId!=null and userId!=''">
-            AND MODIFIER = #{userId}
+            AND modifier = #{userId}
         </if>
         ORDER BY
-        GMT_CREATED DESC
-        <!--<if test="total !=null">-->
-         <!--LIMIT 0,#{total,jdbcType=INTEGER}-->
-        <!--</if>-->
+        gmt_created DESC
     </select>
 </mapper>

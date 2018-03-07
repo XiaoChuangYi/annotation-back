@@ -73,7 +73,7 @@ public class AtomicTermController extends BaseController {
      * 置空原子术语表的concept_id
      * @param id
      */
-    @RequestMapping(value = "clearConceptIdOfAtomicTerm.do")
+    @RequestMapping(value = "/clearConceptIdOfAtomicTerm.do")
     public  ResultVO clearConceptIdOfAtomicTerm(String id){
         atomicTermService.clearConceptIdOfAtomicTerm(id);
         return  ResultVO.success();
@@ -116,7 +116,7 @@ public class AtomicTermController extends BaseController {
 
     }
     /**
-     *删除原子术语，并删除对应的标注
+     * 删除原子术语，并删除对应的标注
      * @param id
      * @param term
      * @param type

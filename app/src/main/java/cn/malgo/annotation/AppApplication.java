@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @date 2017/8/2
  */
 @EnableTransactionManagement
-@EnableAsync
+@EnableAsync//告诉springBoot开启异步调用功能
 @SpringBootApplication
 @EnableFeignClients//开启Feign功能(伪客户端功能，便捷访问其它服务器)
 @EnableScheduling

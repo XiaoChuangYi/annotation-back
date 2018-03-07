@@ -29,7 +29,6 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
-
         response.setHeader("Content-type", "text/html;charset=UTF-8");
         HttpSession httpSession = request.getSession();
         CrmAccount crmAccount = (CrmAccount) httpSession.getAttribute("currentAccount");
@@ -41,7 +40,6 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         return true;
-
     }
 
     @Override

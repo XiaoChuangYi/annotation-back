@@ -85,7 +85,7 @@ public class TypeService {
         anTypeMapper.updateTypeCodeById(typeCode,id);
     }
     /**
-     * 批量更新原子术语表和标注表中的类型type
+     * 批量更新原子术语表中的类型type
      *@param typeOld
      *@param typeNew
      */
@@ -100,7 +100,7 @@ public class TypeService {
         }
     }
     /**
-     * 批量更新原子术语表和标注表中的类型type
+     * 批量更新corpus表中的类型type
      *@param typeOld
      *@param typeNew
      */
@@ -247,15 +247,15 @@ public class TypeService {
      *@param type
      *@param term
      */
-    public AnnotationPagination queryAnnotationByType(String type, String term,int cPageNum,int cPageSize){
-        LogUtil.info(logger, "开始批量查询原子术语列表"+cPageNum);
-        int pageNum = 1;
-        int pageSize = 2000;
-        int currentIndex=cPageNum;
+    public AnnotationPagination     queryAnnotationByType(String type, String term,int cPageNum,int cPageSize){
+        LogUtil.info(logger, "开始批量查询标注术语，当前前端参数传入的pageIndex:"+cPageNum);
+        int pageSize = 100;
+        int currentIndex=cPageNum;//当前标注数据库中遍历的索引值
         int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
         List<Annotation> finalAnnotationList = new LinkedList<>();
         outer:do {
-            List<Annotation> anAtomicTermList = annotationService.queryFinalAnnotationPagination(AnnotationStateEnum.FINISH.name(), cPageNum, pageSize);
+            //cPageNum为前端传入的开始查询的startIndex
+            List<Annotation> anAtomicTermList = annotationService.queryFinalAnnotationPagination(AnnotationStateEnum.FINISH.name(), currentIndex, pageSize);
             for (Annotation annotation : anAtomicTermList) {
                 try {
                     //最终标注
@@ -268,25 +268,30 @@ public class TypeService {
                             break;
                         }
                     }
+                    //如果有符合的原子术语，则添加该条标注数据到最终集合中
+                    //如果最终集合中的条数已经符合参数传递的pageSize的值，则暂停最外层循环直接返回
                     if (isHave) {
+                        finalAnnotationList.add(annotation);
                         if(finalAnnotationList.size()==cPageSize)
                         {
-                            currentIndex=currentIndex+cPageNum;
+                            currentIndex++;
+//                            currentIndex=cPageNum;//当最终集合的大小符合cPageSize的时候，计算出当前在数据库中已经遍历到的索引值
                             break outer;
                         }
-                        finalAnnotationList.add(annotation);
                         LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
                     }
                 } catch (Exception ex) {
                     LogUtil.info(logger,
                             "结束处理第" + ex.getMessage());
                 }
-                cPageNum++;
+                //count计数器，每遍历一条数据，+1
+                currentIndex++;
             }
-            pageNum++;
-        }while((pageNum*pageSize+currentIndex)<total);
-        System.out.println((pageNum*pageSize+currentIndex)+"<<<<<<<<<<<<<<<<>>>>>>>>>>"+total);
+            System.out.println("当前的currentIndex:"+currentIndex);
+        }while(currentIndex<total);
+        System.out.println("当前遍历到数据库的索引值："+currentIndex+"<<<<<<<<<<<<<<<<>>>>>>>>>>数据库中总的标注数据："+total);
         AnnotationPagination annotationPagination=new AnnotationPagination<Annotation>();
+        //传给前端两个参数，参数一：遍历Annotation表的的currentIndex,以及根据前端的pageSize大小的返回的集合
         annotationPagination.setLastIndex(currentIndex);
         annotationPagination.setList(finalAnnotationList);
         return annotationPagination;

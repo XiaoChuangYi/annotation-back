@@ -2,31 +2,31 @@ package cn.malgo.annotation.common.dal.model;
 
 import javax.persistence.*;
 
-@Table(name = "ACCOUNT_ROLE_RELATION")
+@Table(name = "account_role_relation")
 public class AccountRoleRelation {
     /**
      * 主键ID
      */
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 用户角色ID
      */
-    @Column(name = "USEROLE_ID")
+    @Column(name = "userole_id")
     private String useroleId;
 
     /**
      * 账号ID
      */
-    @Column(name = "ACCOUNT_NO")
+    @Column(name = "account_no")
     private String accountNo;
 
     /**
      * 角色ID
      */
-    @Column(name = "ROLE_ID")
+    @Column(name = "role_id")
     private String roleId;
 
     /**

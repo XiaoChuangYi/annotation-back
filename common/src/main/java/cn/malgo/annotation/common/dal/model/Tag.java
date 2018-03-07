@@ -2,7 +2,7 @@ package cn.malgo.annotation.common.dal.model;
 
 import javax.persistence.*;
 
-@Table(name="TAG")
+@Table(name="tag")
 public class Tag {
     @Id
     private Integer id;

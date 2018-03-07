@@ -5,12 +5,12 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="ID" jdbcType="VARCHAR" property="id" />
-    <result column="USEROLE_ID" jdbcType="VARCHAR" property="useroleId" />
-    <result column="ACCOUNT_NO" jdbcType="VARCHAR" property="accountNo" />
-    <result column="ROLE_ID" jdbcType="VARCHAR" property="roleId" />
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="userole_id" jdbcType="VARCHAR" property="useroleId" />
+    <result column="account_no" jdbcType="VARCHAR" property="accountNo" />
+    <result column="role_id" jdbcType="VARCHAR" property="roleId" />
   </resultMap>
   <select id="selectCountRelation" resultType="java.lang.Integer">
-    select COUNT(ID) FROM ACCOUNT_ROLE_RELATION
+    select COUNT(id) FROM account_role_relation
   </select>
 </mapper>

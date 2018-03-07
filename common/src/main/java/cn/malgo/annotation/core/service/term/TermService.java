@@ -43,7 +43,7 @@ public class TermService {
     }
 
     /**
-     *按条件分页查询术语
+     * 按条件分页查询术语
      * @param pageNum
      * @param pageSize
      * @param termName

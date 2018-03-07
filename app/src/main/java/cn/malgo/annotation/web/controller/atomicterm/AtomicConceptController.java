@@ -99,7 +99,7 @@ public class AtomicConceptController {
      * 查询concept信息
      */
     @RequestMapping(value = { "/queryAllConcept.do" })
-    public ResultVO<List<Concept>> selectAllConcept(){
+        public ResultVO<List<Concept>> selectAllConcept(){
         List<Concept> conceptList=atomicConceptService.selectAllConcept();
         return ResultVO.success(conceptList);
     }

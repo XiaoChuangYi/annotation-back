@@ -64,6 +64,21 @@ public class AnnotationBatchService extends AnnotationService {
         } while (pageInfo.getPages() >= pageNum);
 
     }
+    /**
+     *批量解密annotation
+     */
+    public  void batchDecryptAnnotation(){
+       List<Annotation> annotationList=annotationMapper.selectAll();
+       decryptAES(annotationList);
+       for(Annotation currentAnnotation:annotationList) {
+           LogUtil.info(logger, "开始解密第" + currentAnnotation.getId() + "标注");
+           try {
+               annotationMapper.updateByPrimaryKeySelective(currentAnnotation);
+           } catch (Exception e) {
+             LogUtil.info(logger,"解密失败anId"+currentAnnotation.getId());
+           }
+       }
+    }
 
     /**
      * 更新标注
@@ -88,7 +103,6 @@ public class AnnotationBatchService extends AnnotationService {
             LogUtil.info(logger, "结束处理第" + batchCount + "批次,剩余:" + (page.getTotal() - 10));
             batchCount++;
         } while (page.getTotal() > 10);
-
     }
 
     /**

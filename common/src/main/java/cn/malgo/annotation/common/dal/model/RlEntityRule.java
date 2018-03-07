@@ -3,55 +3,55 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "RL_ENTITY_RULE")
+@Table(name = "rl_entity_rule")
 public class RlEntityRule {
     /**
      * 主键,规则ID
      */
     @Id
-    @Column(name = "RULE_ID")
+    @Column(name = "rule_id")
     private String ruleId;
 
     /**
      * 规则名称
      */
-    @Column(name = "RULE_NAME")
+    @Column(name = "rule_name")
     private String ruleName;
 
     /**
      * 规则类型
      */
-    @Column(name = "RULE_TYPE")
+    @Column(name = "rule_type")
     private String ruleType;
 
     /**
      * 状态
      */
-    @Column(name = "STATE")
+    @Column(name = "state")
     private String state;
 
     /**
      * 备注
      */
-    @Column(name = "MEMO")
+    @Column(name = "memo")
     private String memo;
 
     /**
      * 创建时间
      */
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
     /**
      * 修改时间
      */
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
     /**
      * 规则内容
      */
-    @Column(name = "RULE_VALUE")
+    @Column(name = "rule_value")
     private String ruleValue;
 
     /**

@@ -3,37 +3,37 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "CRM_ROLE")
+@Table(name = "crm_role")
 public class CrmRole {
     /**
      * 主键ID
      */
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 角色ID
      */
-    @Column(name = "ROLE_ID")
+    @Column(name = "role_id")
     private String roleId;
 
     /**
      * 角色名称
      */
-    @Column(name = "ROLE_NAME")
+    @Column(name = "role_name")
     private String roleName;
 
     /**
      * 生成时间
      */
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
     /**
      * 更新时间
      */
-    @Column(name = "GMT_UPDATE")
+    @Column(name = "gmt_update")
     private Date gmtUpdate;
 
     /**

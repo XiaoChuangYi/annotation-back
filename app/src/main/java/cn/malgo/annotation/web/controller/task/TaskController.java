@@ -33,6 +33,22 @@ public class TaskController extends BaseController {
     @Autowired
     private CorpusService corpusService;
 
+
+    /**
+     * 批量解密annotation表的final_annotation，auto_annotation，manual_annotation字段
+     * @return
+     */
+     @RequestMapping(value = "/batchDecryptAnnotation.do")
+     public ResultVO batchDecryptAnnotation(){
+         new Thread(new Runnable() {
+             @Override
+             public void run() {
+                 annotationBatchService.batchDecryptAnnotation();
+             }
+         }).start();
+         return ResultVO.success();
+     }
+
     /**
      * 批量加密原子术语库
      * @return

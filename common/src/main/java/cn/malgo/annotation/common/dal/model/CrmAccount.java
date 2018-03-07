@@ -3,43 +3,43 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "CRM_ACCOUNT")
+@Table(name = "crm_account")
 public class CrmAccount {
     /**
      * 账号ID
      */
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 账号编码
      */
-    @Column(name = "ACCOUNT_NO")
+    @Column(name = "account_no")
     private String accountNo;
 
     /**
      * 登录密码
      */
-    @Column(name = "LOGIN_PWD")
+    @Column(name = "login_pwd")
     private String loginPwd;
 
     /**
      * 账号状态
      */
-    @Column(name = "STATE")
+    @Column(name = "state")
     private String state;
 
     /**
      * 创建时间
      */
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
     /**
      * 修改时间
      */
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
     /**

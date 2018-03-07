@@ -170,7 +170,7 @@ public class TermController extends BaseController {
     }
 
     /**
-     *根据termId查询标准术语表相关联的记录
+     * 根据termId查询标准术语表相关联的记录
      */
     @RequestMapping(value = { "/queryAssociatedByTermId.do" })
     public ResultVO<PageVO<Term>> queryAssociatedByTermId(ConditionTermRequest request) {

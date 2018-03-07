@@ -5,29 +5,29 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="ID" jdbcType="VARCHAR" property="id" />
-    <result column="ROLE_ID" jdbcType="VARCHAR" property="roleId" />
-    <result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName" />
-    <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated" />
-    <result column="GMT_UPDATE" jdbcType="TIMESTAMP" property="gmtUpdate" />
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="role_id" jdbcType="VARCHAR" property="roleId" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="gmt_created" jdbcType="TIMESTAMP" property="gmtCreated" />
+    <result column="gmt_update" jdbcType="TIMESTAMP" property="gmtUpdate" />
   </resultMap>
   <sql id="ALL_COLUMN">
-    ID,
-    ROLE_ID,
-    ROLE_NAME,
-    GMT_CREATED,
-    GMT_MODIFIED
+    id,
+    role_id,
+    role_name,
+    gmt_created,
+    gmt_update
   </sql>
   <select id="selectCrmRoleByRoleId" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN"/>
-    FROM CRM_ROLE WHERE CRM_ID=#{roleId}
+    FROM crm_role WHERE role_id=#{roleId}
   </select>
   <select id="selectCrmRoleByRoleName" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN"/>
-    FROM CRM_ROLE WHERE CRM_NAME=#{roleName}
+    FROM crm_role WHERE role_name=#{roleName}
   </select>
   <select id="selectCrmRoleCount"  resultType="java.lang.Integer">
-     SELECT COUNT(ID) FROM CRM_ROLE
+     SELECT COUNT(id) FROM crm_role
   </select>
 </mapper>
 

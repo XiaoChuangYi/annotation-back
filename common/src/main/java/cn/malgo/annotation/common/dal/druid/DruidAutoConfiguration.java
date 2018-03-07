@@ -24,7 +24,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 @ConditionalOnClass(DruidDataSource.class)
 @ConditionalOnProperty(prefix = "druid", name = "url")
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
-public class DruidAutoConfiguration {
+public class  DruidAutoConfiguration {
 
     @Autowired
     private DruidProperties properties;

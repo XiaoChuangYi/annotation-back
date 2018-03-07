@@ -5,24 +5,24 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="ID" property="id" jdbcType="VARCHAR" />
-    <result column="ACCOUNT_NO" property="accountNo" jdbcType="VARCHAR" />
-    <result column="LOGIN_PWD" property="loginPwd" jdbcType="VARCHAR" />
-    <result column="STATE" property="state" jdbcType="VARCHAR" />
-    <result column="GMT_CREATED" property="gmtCreated" jdbcType="TIMESTAMP" />
-    <result column="GMT_MODIFIED" property="gmtModified" jdbcType="TIMESTAMP" />
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="account_no" property="accountNo" jdbcType="VARCHAR" />
+    <result column="login_pwd" property="loginPwd" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="VARCHAR" />
+    <result column="gmt_created" property="gmtCreated" jdbcType="TIMESTAMP" />
+    <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP" />
   </resultMap>
 
   <sql id="ALL_COLUMN">
-    ID,
-    ACCOUNT_NO,
-    LOGIN_PWD,
-    STATE,
-    GMT_CREATED,
-    GMT_MODIFIED
+    id,
+    account_no,
+    login_pwd,
+    state,
+    gmt_created,
+    gmt_modified
   </sql>
     <select id="selectByAccountNo" resultMap="BaseResultMap">
       SELECT <include refid="ALL_COLUMN"/>
-      FROM CRM_ACCOUNT WHERE ACCOUNT_NO = #{accountNo}
+      FROM crm_account WHERE account_no = #{accountNo}
     </select>
 </mapper>

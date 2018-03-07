@@ -17,15 +17,15 @@
   </sql>
   <select id="selectConceptByConceptId" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />
-    FROM CONCEPT WHERE concept_id=#{conceptId}
+    FROM concept WHERE concept_id=#{conceptId}
   </select>
   <select id="selectConceptByStandardName" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />
-    FROM CONCEPT WHERE standard_name=#{standardName}
+    FROM concept WHERE standard_name=#{standardName}
   </select>
   <select id="selectAllConceptByCondition" resultMap="BaseResultMap">
     SELECT  <include refid="ALL_COLUMN" />
-    FROM CONCEPT WHERE 1=1
+    FROM concept WHERE 1=1
     <if test="standardName !=null and standardName !='' ">
       AND  standard_name LIKE  concat('%',#{standardName},'%')
     </if>

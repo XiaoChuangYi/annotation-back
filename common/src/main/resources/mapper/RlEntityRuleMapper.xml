@@ -5,49 +5,49 @@
         <!--
           WARNING - @mbg.generated
         -->
-        <id column="RULE_ID" jdbcType="VARCHAR" property="ruleId"/>
-        <result column="RULE_NAME" jdbcType="VARCHAR" property="ruleName"/>
-        <result column="RULE_TYPE" jdbcType="VARCHAR" property="ruleType"/>
-        <result column="STATE" jdbcType="VARCHAR" property="state"/>
-        <result column="MEMO" jdbcType="VARCHAR" property="memo"/>
-        <result column="GMT_CREATED" jdbcType="TIMESTAMP" property="gmtCreated"/>
-        <result column="GMT_MODIFIED" jdbcType="TIMESTAMP" property="gmtModified"/>
-        <result column="RULE_VALUE" jdbcType="LONGVARCHAR" property="ruleValue"/>
+        <id column="rule_id" jdbcType="VARCHAR" property="ruleId"/>
+        <result column="rule_name" jdbcType="VARCHAR" property="ruleName"/>
+        <result column="rule_type" jdbcType="VARCHAR" property="ruleType"/>
+        <result column="state" jdbcType="VARCHAR" property="state"/>
+        <result column="memo" jdbcType="VARCHAR" property="memo"/>
+        <result column="gmt_created" jdbcType="TIMESTAMP" property="gmtCreated"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="rule_value" jdbcType="LONGVARCHAR" property="ruleValue"/>
     </resultMap>
 
     <sql id="ALL_COLUMN">
-    RULE_ID,
-    RULE_NAME,
-    RULE_VALUE,
-    RULE_TYPE,
-    STATE,
-    MEMO,
-    GMT_CREATED,
-    GMT_MODIFIED
+    rule_id,
+    rule_name,
+    rule_value,
+    rule_type,
+    state,
+    memo,
+    gmt_created,
+    gmt_modified
   </sql>
 
 
     <select id="selectByRule" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM RL_ENTITY_RULE WHERE RULE_VALUE = #{ruleValue} AND RULE_TYPE = #{ruleType}
+        FROM rl_entity_rule WHERE rule_value = #{ruleValue} AND rule_type = #{ruleType}
     </select>
 
     <select id="selectByOnePage" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM RL_ENTITY_RULE WHERE 1=1
+        FROM rl_entity_rule WHERE 1=1
         <if test="ruleName!=null and ruleName!=''">
-            AND RULE_NAME LIKE CONCAT('%',#{ruleName},'%')
+            AND rule_name LIKE CONCAT('%',#{ruleName},'%')
         </if>
         <if test="ruleValue!=null and ruleValue!=''">
-            AND RULE_VALUE LIKE CONCAT('%',#{ruleValue},'%')
+            AND rule_value LIKE CONCAT('%',#{ruleValue},'%')
         </if>
         <if test="ruleType!=null and ruleType!=''">
-            AND RULE_TYPE = #{ruleType}
+            AND rule_type = #{ruleType}
         </if>
         <if test="state!=null and state!=''">
-            AND STATE = #{state}
+            AND state = #{state}
         </if>
     </select>
 

@@ -3,16 +3,16 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "ANNOTATION")
+@Table(name = "annotation")
 public class Annotation {
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 术语ID
      */
-    @Column(name = "TERM_ID")
+    @Column(name = "term_id")
     private String termId;
 
     /**
@@ -21,58 +21,58 @@ public class Annotation {
     PROCESSING("标注中"),
     FINISH("标注完成");
      */
-    @Column(name = "STATE")
+    @Column(name = "state")
     private String state;
 
     /**
      * 修改人
      */
-    @Column(name = "MODIFIER")
+    @Column(name = "modifier")
     private String modifier;
 
     /**
      * 创建时间
      */
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
     /**
      * 修改时间
      */
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
-    @Column(name = "MEMO")
+    @Column(name = "memo")
     private String memo;
 
     /**
      * 术语内容
      */
-    @Column(name = "TERM")
+    @Column(name = "term")
     private String term;
 
     /**
      * 自动标注结果
      */
-    @Column(name = "AUTO_ANNOTATION")
+    @Column(name = "auto_annotation")
     private String autoAnnotation;
 
     /**
      * 手工标注结果
      */
-    @Column(name = "MANUAL_ANNOTATION")
+    @Column(name = "manual_annotation")
     private String manualAnnotation;
 
     /**
      * 最终标注结果
      */
-    @Column(name = "FINAL_ANNOTATION")
+    @Column(name = "final_annotation")
     private String finalAnnotation;
 
     /**
      * 新术语
      */
-    @Column(name = "NEW_TERMS")
+    @Column(name = "new_terms")
     private String newTerms;
 
     /**

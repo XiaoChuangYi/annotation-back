@@ -43,7 +43,7 @@ public class AnnotationService {
     private SequenceGenerator      sequenceGenerator;
 
     @Autowired
-    private AnnotationMapper annotationMapper;
+    protected AnnotationMapper annotationMapper;
 
     @Autowired
     private ApiServerService       apiServerService;
@@ -66,7 +66,6 @@ public class AnnotationService {
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.PROCESSING.name());
         stateList.add(AnnotationStateEnum.INIT.name());
-
         annotationMapper.selectByStateListModifier(stateList, userId);
         decryptAES(pageInfo.getResult());
         apiServerService.batchPhraseUpdatePosWithNewTerm(pageInfo.getResult());
@@ -76,30 +75,10 @@ public class AnnotationService {
         return pageInfo;
     }
     /**
-     *根据分配查询的逻辑获取指定数量数据的id集合
-     * @param state
-     * @param userId
-     * @param total
-     */
-    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
-        Page<String> pageInfo = PageHelper.startPage(1, total);
-//        List<Annotation> annotationList=annotationMapper.selectByStateAndUserId(state, userId);
-        annotationMapper.selectIDsByNum(state,userId);
-        return pageInfo;
-    }
-    /**
-     * 批量更新标准表的modifier字段
-     */
-    public  void updateBatchAnnotationUserId(List<String> annotationList,String userId){
-        int updateBatch=annotationMapper.batchUpdateAnnotationUserId(annotationList,userId);
-        AssertUtil.state(updateBatch > 0, "批量更新失败");
-    }
-
-    /**
      * 分页多条件查询数据库中的标注
      */
     public Page<Annotation> queryOnePageForDistribution(String annotationState, String userId,
-                                                 int pageNum, int pageSize) {
+                                                        int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateAndUserId(annotationState, userId);
         decryptAES(pageInfo.getResult());
@@ -117,41 +96,214 @@ public class AnnotationService {
     }
 
     /**
-     * 根据状态分页查询标注
+     * 根据标注ID查询单条标注
      * @param
      * @return
      */
     public Annotation queryByAnIdThroughApiServer(String anId) {
-
         Annotation annotation = annotationMapper.selectByPrimaryKey(anId);
         decryptAES(annotation);
         List<Annotation> annotationList = new ArrayList<>();
         annotationList.add(annotation);
-
         List<Annotation> annotationListNew = apiServerService
-            .batchPhraseUpdatePosWithNewTerm(annotationList);
-
+                .batchPhraseUpdatePosWithNewTerm(annotationList);
         return annotationListNew.get(0);
+    }
+    /**
+     * 分页查询标注,未解密
+     * @param annotationState
+     * @param userId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<Annotation> queryOnePageUNEncrypted(String annotationState, String userId,
+                                                    int pageNum, int pageSize) {
+        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        annotationMapper.selectByStateModifier(annotationState, userId);
+        return pageInfo;
     }
 
     /**
-     * 通过termId 来自动标注
-     * 首次标注,主要用于定时任务的批处理
-     * @param termId
+     * 根据标注ID查询标注信息
+     * @param id
+     * @return
      */
-    public void autoAnnotationByTermId(String termId) {
+    public Annotation queryByAnId(String id) {
+        Annotation annotation = annotationMapper.selectByPrimaryKey(id);
+        decryptAES(annotation);
+        return annotation;
+    }
 
-        //通过调用apiServer服务,获取自动标注结果
-        Corpus corpus = corpusService.queryByTermId(termId);
-        String autoAnnotation = apiServerService.phraseTokenize(corpus.getTerm());
+    /**
+     * 数据库层分页查询标注信息
+     * @param state
+     * @param pageNum
+     * @param pageSize
+     */
+    public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
+        List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
+        decryptAES(annotationList);
+        return  annotationList;
+    }
 
-        //检查是否存标注信息
-        Annotation annotation = annotationMapper.selectByTermId(termId);
-        if (annotation == null) {
-            saveTermAnnotation(corpus, autoAnnotation);
-        } else {
-            updateAutoAnnotation(annotation.getId(), autoAnnotation);
-        }
+    /**
+     * 根据状态分页查询标注信息
+     * @param stateList
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<Annotation> queryByStateList(List<String> stateList, int pageNum,
+                                             int pageSize) {
+        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        annotationMapper.selectByStateList(stateList);
+        decryptAES(pageInfo.getResult());
+        return pageInfo;
+    }
+    /**
+     * 根据anId集合查询标注信息
+     * @param idList
+     * @return
+     */
+    public List<Annotation> queryByIdList(List<String> idList) {
+        List<Annotation> annotationList=annotationMapper.selectByIdList(idList);
+        decryptAES(annotationList);
+        return annotationList;
+    }
+
+    /**
+     *根据分配查询的逻辑获取指定数量数据的id集合
+     * @param state
+     * @param userId
+     * @param total
+     */
+    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
+        Page<String> pageInfo = PageHelper.startPage(1, total);
+        annotationMapper.selectIDsByNum(state,userId);
+        return pageInfo;
+    }
+
+    /**
+     * 批量更新标注annotation表的modifier字段
+     */
+    public  void updateBatchAnnotationUserId(List<String> annotationList,String userId){
+        int updateBatch=annotationMapper.batchUpdateAnnotationUserId(annotationList,userId);
+        AssertUtil.state(updateBatch > 0, "批量更新失败");
+    }
+
+    /**
+     *批量更新标注表的最终和手动标注
+     * @param
+     */
+    public void updateBatchAnnotation(List<Annotation> annotationList){
+        int updateResult= annotationMapper.batchUpdateFinalAndManualAnnotation(annotationList);
+        AssertUtil.state(updateResult > 0, "更新标注失败");
+
+    }
+    /**
+     * 更新自动标注
+     * @param anId
+     * @param autoAnnotation
+     */
+    private void updateAutoAnnotation(String anId, String autoAnnotation) {
+        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setAutoAnnotation(securityAnnotation);
+        annotation.setFinalAnnotation(securityAnnotation);
+        annotation.setGmtModified(new Date());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新自动标注失败");
+    }
+    /**
+     * 更新最终标注并更新新词列表
+     * @param anId
+     * @param finalAnnotation
+     */
+    public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setNewTerms(newTerms);
+        annotation.setGmtModified(new Date());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
+    /**
+     * 更新最终标注
+     * @param anId
+     * @param finalAnnotation
+     */
+    public void updateFinalAnnotation(String anId, String finalAnnotation) {
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setGmtModified(new Date());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+    }
+    /**
+     * 根据anId更新手工标注，最终标注，新词列表
+     * @param anId
+     * @param manualAnnotation
+     * @param newTerms
+     * @param finalAnnotation
+     */
+    private void updateManualAnnotation(String anId, String manualAnnotation, String newTerms,
+                                        String finalAnnotation) {
+        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setManualAnnotation(securityManualAnnotation);
+        annotation.setNewTerms(newTerms);
+        annotation.setGmtModified(new Date());
+        annotation.setState(AnnotationStateEnum.PROCESSING.name());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新手工标注失败");
+    }
+
+    /**
+     * 根据anId更新标注状态
+     * @param anId
+     * @param annotationStateEnum
+     */
+    public void updateAnnotationState(String anId, AnnotationStateEnum annotationStateEnum) {
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setGmtModified(new Date());
+        annotation.setState(annotationStateEnum.name());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新标注状态失败");
+    }
+
+    /**
+     * 重载更新手动标注
+     * @param anId
+     * @param manualAnnotation
+     * */
+    public  void updateMunalAnnotation(String anId,String manualAnnotation){
+        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+
+        Annotation annotation = new Annotation();
+        annotation.setId(anId);
+        annotation.setManualAnnotation(securityManualAnnotation);
+        annotation.setGmtModified(new Date());
+
+        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+        AssertUtil.state(updateResult > 0, "更新最终标注失败");
     }
 
     /**
@@ -178,11 +330,31 @@ public class AnnotationService {
     }
 
     /**
-     * 通过annotationId,来标注annottion表的最终标准字段
+     * 通过termId 来自动标注
+     * 首次标注,主要用于定时任务的批处理
+     * @param termId
      */
-    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnnotaion,List<TermTypeVO> newTerms){
+    public void autoAnnotationByTermId(String termId) {
+
+        //通过调用apiServer服务,获取自动标注结果
+        Corpus corpus = corpusService.queryByTermId(termId);
+        String autoAnnotation = apiServerService.phraseTokenize(corpus.getTerm());
+
+        //检查是否存标注信息
+        Annotation annotation = annotationMapper.selectByTermId(termId);
+        if (annotation == null) {
+            saveTermAnnotation(corpus, autoAnnotation);
+        } else {
+            updateAutoAnnotation(annotation.getId(), autoAnnotation);
+        }
+    }
+
+    /**
+     * 通过annotationId,更新annotation表的final_annotation字段和new_terms字段
+     */
+    public Annotation autoFinalAnnotationByAnId(String anId,String finalAnnotation,List<TermTypeVO> newTerms){
         String newTermsStr = TermTypeVO.convertToString(newTerms);
-        updateFinalAnnotation(anId,finalAnnotaion,newTermsStr);
+        updateFinalAnnotation(anId,finalAnnotation,newTermsStr);
         Annotation result = annotationMapper.selectByPrimaryKey(anId);
         decryptAES(result);
         return result;
@@ -263,22 +435,6 @@ public class AnnotationService {
 
         AssertUtil.state(updateResult > 0, "设置术语状态为未识别异常");
     }
-
-    /**
-     * 分页查询标注,未解密
-     * @param annotationState
-     * @param userId
-     * @param pageNum
-     * @param pageSize
-     * @return
-     */
-    public Page<Annotation> queryOnePageUNEncrypted(String annotationState, String userId,
-                                                    int pageNum, int pageSize) {
-        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        annotationMapper.selectByStateModifier(annotationState, userId);
-        return pageInfo;
-    }
-
     /**
      * 保存标注,主要用于标注自动标注
      * @param corpus
@@ -316,128 +472,6 @@ public class AnnotationService {
     }
 
     /**
-     * 根据标注ID查询标注信息
-     * @param id
-     * @return
-     */
-    public Annotation queryByAnId(String id) {
-        Annotation annotation = annotationMapper.selectByPrimaryKey(id);
-        decryptAES(annotation);
-        return annotation;
-    }
-
-    /**
-     *后台分页查询标注信息
-     * @param state
-     * @param pageNum
-     * @param pageSize
-     */
-    public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
-        List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
-        decryptAES(annotationList);
-        return  annotationList;
-    }
-
-    /**
-     * 根据状态分页查询标注信息
-     * @param stateList
-     * @param pageNum
-     * @param pageSize
-     * @return
-     */
-    public Page<Annotation> queryByStateList(List<String> stateList, int pageNum,
-                                             int pageSize) {
-        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        annotationMapper.selectByStateList(stateList);
-        decryptAES(pageInfo.getResult());
-        return pageInfo;
-    }
-    /**
-     * 根据状态分页查询标注信息
-     * @param idList
-     * @return
-     */
-    public List<Annotation> queryByIdList(List<String> idList) {
-        List<Annotation> annotationList=annotationMapper.selectByIdList(idList);
-        decryptAES(annotationList);
-        return annotationList;
-    }
-    /**
-     *批量更新标注表的最终和手动标注
-     * @param
-     */
-    public void updateBatchAnnotation(List<Annotation> annotationList){
-        int updateResult= annotationMapper.batchUpdateFinalAndManualAnnotation(annotationList);
-        AssertUtil.state(updateResult > 0, "更新标注失败");
-
-    }
-    /**
-     * 更新自动标注
-     * @param anId
-     * @param autoAnnotation
-     */
-    private void updateAutoAnnotation(String anId, String autoAnnotation) {
-        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setAutoAnnotation(securityAnnotation);
-        annotation.setFinalAnnotation(securityAnnotation);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新自动标注失败");
-    }
-    /**
-     * 更新最终标注并更新新词列表
-     * @param anId
-     * @param finalAnnotation
-     */
-    public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
-        annotation.setNewTerms(newTerms);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新最终标注失败");
-    }
-    /**
-     * 更新最终标注
-     * @param anId
-     * @param finalAnnotation
-     */
-    public void updateFinalAnnotation(String anId, String finalAnnotation) {
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新最终标注失败");
-    }
-    /**
-     * 重载更新手动标注
-     * @param anId
-     * @param manualAnnotation
-     * */
-    public  void updateMunalAnnotation(String anId,String manualAnnotation){
-        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setManualAnnotation(securityManualAnnotation);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新最终标注失败");
-    }
-
-    /**
      * 加密标注信息,并且更新
      * @param annotation 传入的标注需是明文
      */
@@ -451,46 +485,7 @@ public class AnnotationService {
         annotationMapper.updateByPrimaryKeySelective(annotation);
     }
 
-    /**
-     * 更新手工标注
-     * @param anId
-     * @param manualAnnotation
-     * @param newTerms
-     * @param finalAnnotation
-     */
-    private void updateManualAnnotation(String anId, String manualAnnotation, String newTerms,
-                                        String finalAnnotation) {
-        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
-        annotation.setManualAnnotation(securityManualAnnotation);
-        annotation.setNewTerms(newTerms);
-        annotation.setGmtModified(new Date());
-        annotation.setState(AnnotationStateEnum.PROCESSING.name());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新手工标注失败");
-    }
-
-    /**
-     * 更新标注状态
-     * @param anId
-     * @param annotationStateEnum
-     */
-    public void updateAnnotationState(String anId, AnnotationStateEnum annotationStateEnum) {
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setGmtModified(new Date());
-        annotation.setState(annotationStateEnum.name());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新标注状态失败");
-    }
-
-    private void decryptAES(List<Annotation> annotationList) {
+    protected void decryptAES(List<Annotation> annotationList) {
         for (Annotation annotation : annotationList) {
             decryptAES(annotation);
         }

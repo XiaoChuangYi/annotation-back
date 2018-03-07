@@ -1,6 +1,7 @@
 package cn.malgo.annotation.core.service.corpus;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.CombineAtomicTerm;
@@ -142,18 +143,23 @@ public class AtomicTermBatchService {
         List<Annotation> annotationList = annotationService.queryByIdList(idList);
             for (Annotation annotation : annotationList){
                 try {
-                    if(annotation.getTerm().contains(newTerm)){
+                    //部分数字文本带有小数点，因此变换逻辑
+                    long count=combineAtomicTermList.stream()
+                            .filter(x->annotation.getTerm().contains(x.getTerm()))
+                            .count();
+                    if(combineAtomicTermList.size()==count){
                         //为了生成新的标注，并删掉原来的标注，关键需要知道替换的startPosition和endPosition
                         //有些文本显示是前后顺序的，标注不一定也是同样的前后顺序
-                        //
                         List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
                                 .convertAnnotationModelList(annotation.getFinalAnnotation());
                         List<Integer> startPositionList=new ArrayList<>();
                         List<Integer> endPositionList=new ArrayList<>();
                         for(TermAnnotationModel termAnnotationModel:termAnnotationModelList){
                             for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList) {
-                                if (combineAtomicTerm.getTerm().equals(termAnnotationModel.getTerm())&&
-                                        combineAtomicTerm.getType().equals(termAnnotationModel.getType())) {
+
+                                if (combineAtomicTerm.getTerm().toUpperCase().equals(termAnnotationModel.getTerm().toUpperCase())&&
+                                        combineAtomicTerm.getType().equals(termAnnotationModel.getType())){
+                                    System.out.println("combineAtomicTerm"+combineAtomicTerm.getTerm().toUpperCase()+";termAnnotationModel"+termAnnotationModel.getTerm().toUpperCase());
                                     startPositionList.add(termAnnotationModel.getStartPosition());
                                     endPositionList.add(termAnnotationModel.getEndPosition());
                                 }
@@ -176,7 +182,7 @@ public class AtomicTermBatchService {
                                         endPositionList.get(k).toString(),newTerm);
                             }
                         }
-                        System.out.println((finalAnnotationOld));
+                        System.out.println("finalAnnotationOld："+finalAnnotationOld);
                         List<TermAnnotationModel> termAnnotationModelListNew = AnnotationConvert
                                 .convertAnnotationModelList(finalAnnotationOld);
                         Iterator<TermAnnotationModel> iterator=termAnnotationModelListNew.iterator();
@@ -184,14 +190,15 @@ public class AtomicTermBatchService {
                         while (iterator.hasNext()){
                             TermAnnotationModel termAnnotationModel=iterator.next();
                             for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList){
-                                if(combineAtomicTerm.getTerm().equals(termAnnotationModel.getTerm())
+                                if(combineAtomicTerm.getTerm().toUpperCase().equals(termAnnotationModel.getTerm().toUpperCase())
                                         &&combineAtomicTerm.getType().equals(termAnnotationModel.getType())){
+                                    System.out.println("combineAtomicTerm："+combineAtomicTerm.getTerm().toUpperCase()+" ; termAnnotationModel："+termAnnotationModel.getTerm().toUpperCase());
                                     iterator.remove();
                                 }
                             }
                         }
                         String finalAnnotationNew=AnnotationConvert.convertToText(termAnnotationModelListNew);
-                        System.out.println(finalAnnotationNew);
+                        System.out.println("finalAnnotationNew："+finalAnnotationNew);
                         LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
                         annotationService.updateFinalAnnotation(annotation.getId(), finalAnnotationNew);
                     }

@@ -3,31 +3,31 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "AN_TYPE")
+@Table(name = "an_type")
 public class AnType {
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
-    @Column(name="PARENT_ID")
+    @Column(name="parent_id")
     private String parentId;
 
-    @Column(name = "TYPE_NAME")
+    @Column(name = "type_name")
     private String typeName;
 
-    @Column(name="TYPE_CODE")
+    @Column(name="type_code")
     private String typeCode;
 
-    @Column(name="STATE")
+    @Column(name="state")
     private String state;
 
-    @Column(name="HAS_CHILDREN")
+    @Column(name="has_children")
     private int hasChildren;
 
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
     private String parentType;

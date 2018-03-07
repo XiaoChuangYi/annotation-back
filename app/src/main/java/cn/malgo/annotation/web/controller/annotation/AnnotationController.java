@@ -153,7 +153,7 @@ public class AnnotationController extends BaseController {
         return ResultVO.success(annotationBratVO);
     }
     /**
-     * 原子术语界面，细分原子术语。构建对应文本新的标注，并同步更新原先标注表中含有该文本的标准字段，同时添加新的原子术语到原子术语表
+     * 原子术语界面，继续拆分原子术语。并构建拆分后新术语文本的标注，并同步更新annotation表中字段finalAnnotation中含有该文本的记录，同时添加新的原子术语到原子术语表
      */
     @RequestMapping(value = {"/addSubdivideAtomicTermToAnnotation.do"})
     public ResultVO addSubdivideAtomicTermAndUpdateAnnotation(SplitAtomicTermArr splitAtomicTermArr){
@@ -163,8 +163,22 @@ public class AnnotationController extends BaseController {
         atomicTermBatchService.batchSubdivideAtomicTerm(splitAtomicTermArr.getSplitAtomicTermList());
         return ResultVO.success();
     }
+
+
     /**
-     *原子术语界面，合并原子词。构建新的原子术语，并插入到原子术语表，如果原子术语表里已有该条记录，则忽略。
+     * 更新覆盖多个标签
+     *
+     */
+     @RequestMapping(value = {"/updateMultipleAtomicAnnotation.do"})
+     public ResultVO updateMultipleAtomicAnnotation(String anId,CombineAtomicTermArr combineAtomicTermArr, String term, String type){
+
+         List<String> anIdArr=new ArrayList<>();
+         anIdArr.add(anId);
+         atomicTermBatchService.batchCombineAtomicTerm(anIdArr,combineAtomicTermArr.getCombineAtomicTermList(),term,type);
+         return ResultVO.success();
+     }
+    /**
+     * 原子术语界面，合并原子词。构建新的原子术语，并插入到原子术语表，如果原子术语表里已有该条记录，则忽略。
      * 然后批量更新标注表
      */
     @RequestMapping(value = {"/addCombineAtomicTermToAnnotation.do"})
@@ -174,12 +188,12 @@ public class AnnotationController extends BaseController {
         AssertUtil.notBlank(type,"type为空");
         AssertUtil.notEmpty(annotationArr.getAnnotationList(),"标注ID集合为空");
         AssertUtil.notEmpty(combineAtomicTermArr.getCombineAtomicTermList(),"旧原子术语信息集合为空");
-        atomicTermService.saveAtomicTerm("",term,type);
+//        atomicTermService.saveAtomicTerm("",term,type);
         atomicTermBatchService.batchCombineAtomicTerm(annotationArr.getAnnotationList(),combineAtomicTermArr.getCombineAtomicTermList(),term,type);
         return ResultVO.success();
     }
     /**
-     *不经过apiServer直接修改FinalAnnotation,即新增标注或者新词
+     * 不经过apiServer直接修改FinalAnnotation,即新增标注或者新词
      * @param request
      * @return
      */
@@ -190,9 +204,10 @@ public class AnnotationController extends BaseController {
          Annotation annotation = annotationService.queryByAnId(request.getAnId());
          AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
          //构建新的最终的标注
-         String finalAnnotationNew = AnnotationConvert.addNewTag(
+         String finalAnnotationNew = AnnotationConvert.addNewTagForAnnotation(
                  annotation.getFinalAnnotation(), request.getAnnotationType(),
                  request.getStartPosition(), request.getEndPosition(), request.getText());
+
          String newTermsText = annotation.getNewTerms();
          if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
              newTermsText = AnnotationConvert.addNewTerm(newTermsText, request.getText(),
@@ -300,7 +315,7 @@ public class AnnotationController extends BaseController {
             }
         }
         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
-        //更新单条标注信息,先调用apiServer获取,后保存到数据库
+        //更新单条标注信息,后保存到数据库
         Annotation annotationNew = annotationService
                 .autoFinalAnnotationByAnId(request.getAnId(), finalAnnotationNew, newTerms);
 
@@ -428,7 +443,7 @@ public class AnnotationController extends BaseController {
      * @return
      */
     @RequestMapping(value = "/getAnnotationText.do")
-    public ResultVO<String> getAnnotationText(String anId,@ModelAttribute("currentAccount") CrmAccount crmAccount){
+    public ResultVO<Annotation> getAnnotationText(String anId,@ModelAttribute("currentAccount") CrmAccount crmAccount){
         AssertUtil.notBlank(anId, "术语ID为空");
         Annotation annotation = annotationService.queryByAnId(anId);
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");

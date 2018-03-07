@@ -3,43 +3,43 @@ package cn.malgo.annotation.common.dal.model;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "CORPUS")
+@Table(name = "corpus")
 public class Corpus {
     /**
      * ID
      */
     @Id
-    @Column(name = "ID")
+    @Column(name = "id")
     private String id;
 
     /**
      * 术语内容
      */
-    @Column(name = "TERM")
+    @Column(name = "term")
     private String term;
 
     /**
      * 术语类型
      */
-    @Column(name = "TYPE")
+    @Column(name = "type")
     private String type;
 
     /**
      * 0-UNCONFIRMED; 1-CONFIRMED; 2-EXPORTED
      */
-    @Column(name = "STATE")
+    @Column(name = "state")
     private String state;
 
     /**
      * 备注
      */
-    @Column(name = "MEMO")
+    @Column(name = "memo")
     private String memo;
 
-    @Column(name = "GMT_CREATED")
+    @Column(name = "gmt_created")
     private Date gmtCreated;
 
-    @Column(name = "GMT_MODIFIED")
+    @Column(name = "gmt_modified")
     private Date gmtModified;
 
     /**

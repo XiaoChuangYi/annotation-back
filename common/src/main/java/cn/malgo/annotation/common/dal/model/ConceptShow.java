@@ -2,7 +2,7 @@ package cn.malgo.annotation.common.dal.model;
 
 import javax.persistence.*;
 
-@Table(name = "CONCEPT_SHOW")
+@Table(name = "concept_show")
 public class ConceptShow {
     @Id
     @Column(name = "concept_id")

@@ -5,191 +5,188 @@
         <!--
           WARNING - @mbg.generated
         -->
-        <id column="ID" property="id" jdbcType="VARCHAR"/>
-        <result column="TERM" property="term" jdbcType="VARCHAR"/>
-        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
-        <result column="STATE" property="state" jdbcType="VARCHAR"/>
-        <result column="CONCEPT_ID" property="conceptId" jdbcType="VARCHAR"/>
-        <result column="FROM_ANID" property="fromAnId" jdbcType="VARCHAR"/>
-        <result column="GMT_CREATED" property="gmtCreated" jdbcType="TIMESTAMP"/>
-        <result column="GMT_MODIFIED" property="gmtModified" jdbcType="TIMESTAMP"/>
-        <result column="STATE" property="state" jdbcType="VARCHAR"/>
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="term" property="term" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
+        <result column="concept_id" property="conceptId" jdbcType="VARCHAR"/>
+        <result column="from_anid" property="fromAnId" jdbcType="VARCHAR"/>
+        <result column="gmt_created" property="gmtCreated" jdbcType="TIMESTAMP"/>
+        <result column="gmt_modified" property="gmtModified" jdbcType="TIMESTAMP"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
         <result column="standard_name" property="standardName" jdbcType="VARCHAR"/>
     </resultMap>
 
 
     <sql id="ALL_COLUMN">
-          ID,
-          TERM,
-          TYPE,
-          STATE,
-          CONCEPT_ID,
-          GMT_CREATED,
-          GMT_MODIFIED
+          id,
+          term,
+          type,
+          state,
+          concept_id,
+          gmt_created,
+          gmt_modified
     </sql>
     <select id="selectByTerm" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM WHERE TERM = #{term}
+        FROM an_atomic_term WHERE term = #{term}
     </select>
 
     <select id="selectByState" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM WHERE STATE = #{state}
+        FROM an_atomic_term WHERE state = #{state}
     </select>
 
     <select id="selectByTermAndType" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        FROM an_atomic_term
         WHERE state='ENABLE'
         <if test="term!=null and term!=''">
-            AND TERM = #{term}
+            AND term = #{term}
         </if>
         <if test="type!=null and type!=''">
-            AND TYPE = #{type}
+            AND type = #{type}
         </if>
-        ORDER BY ID
+        ORDER BY id
     </select>
     <select id="fuzzyQueryByTermAndType" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        FROM an_atomic_term
         WHERE state='ENABLE'
         <if test="term!=null and term!=''">
-            AND TERM like concat('%',#{term},'%')
+            AND term like concat('%',#{term},'%')
         </if>
         <if test="type!=null and type!=''">
-            AND TYPE = #{type}
+            AND type = #{type}
         </if>
-        ORDER BY ID
+        ORDER BY id
     </select>
     <select id="selectByTermAndTypeNotNull" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM
+        FROM an_atomic_term
         WHERE state='ENABLE'
-        AND TERM = #{term}
-        AND TYPE = #{type}
-        ORDER BY ID
+        AND term = #{term}
+        AND type = #{type}
+        ORDER BY id
     </select>
     <select id="selectAtomicIDsByOldType" resultMap="BaseResultMap">
         SELECT <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM WHERE TYPE=#{type}
+        FROM an_atomic_term WHERE type=#{type}
     </select>
     <update id="batchUpdateAtomicType" parameterType="java.util.List">
-        UPDATE AN_ATOMIC_TERM SET TYPE =#{type}
-        WHERE ID IN 
+        UPDATE an_atomic_term SET type=#{type}
+        WHERE id IN
         <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
     <update id="batchUpdateAtomicConceptId" parameterType="java.util.List">
-        UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
-        WHERE ID IN
+        UPDATE an_atomic_term SET concept_id =#{conceptId}
+        WHERE id IN
         <foreach collection="idsList" item="item" open="(" close=")" separator="," index="">
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
     <update id="updateConceptIdByPrimaryKey">
-        UPDATE AN_ATOMIC_TERM SET CONCEPT_ID =#{conceptId}
-        WHERE ID =#{id,jdbcType=VARCHAR}
+        UPDATE an_atomic_term SET concept_id =#{conceptId}
+        WHERE id =#{id,jdbcType=VARCHAR}
     </update>
     <select id="selectByTermAndTypeIsSynonyms" resultMap="BaseResultMap">
         SELECT
-        AAT.ID,
-        TERM,
-        TYPE,
-        STATE,
-        AAT.CONCEPT_ID,
-        GMT_CREATED,
-        GMT_MODIFIED,
+        AAT.id,
+        term,
+        type,
+        state,
+        AAT.concept_id,
+        gmt_created,
+        gmt_modified,
         CT.standard_name
-        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
-        ON AAT.CONCEPT_ID=CT.concept_id
+        FROM an_atomic_term AAT LEFT JOIN concept CT
+        ON AAT.concept_id=CT.concept_id
         WHERE state='ENABLE'
         <if test="term!=null and term!=''">
-            AND TERM = #{term}
+            AND term = #{term}
         </if>
         <if test="type!=null and type!=''">
-            AND TYPE = #{type}
+            AND type = #{type}
         </if>
         <if test="id!=null and id!=''">
-            AND AAT.ID =#{id}
+            AND AAT.id =#{id}
         </if>
         <choose>
             <when test="checked!=null and checked =='true'">
-                AND  AAT.CONCEPT_ID !=''
+                AND  AAT.concept_id !=''
             </when>
             <otherwise>
-                AND  AAT.CONCEPT_ID =''
+                AND  AAT.concept_id =''
             </otherwise>
         </choose>
-        ORDER BY AAT.ID
+        ORDER BY AAT.id
     </select>
     <select id="selectTotalByChecked" resultType="java.lang.Integer">
         SELECT
-        COUNT(ID)
-        FROM AN_ATOMIC_TERM
+        COUNT(id)
+        FROM an_atomic_term
         WHERE 1=1
         <choose>
             <when test="checked!=null and checked =='true'">
-                AND  CONCEPT_ID !=''
+                AND  concept_id !=''
             </when>
             <otherwise>
-                AND  CONCEPT_ID =''
+                AND  concept_id =''
             </otherwise>
         </choose>
     </select>
     <select id="selectAllByCondition" resultMap="BaseResultMap">
         SELECT
-        AAT.ID,
-        TERM,
-        TYPE,
-        STATE,
-        AAT.CONCEPT_ID,
-        GMT_CREATED,
-        GMT_MODIFIED,
+        AAT.id,
+        term,
+        type,
+        state,
+        AAT.concept_id,
+        gmt_created,
+        gmt_modified,
         CT.standard_name
-        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
-        ON AAT.CONCEPT_ID=CT.concept_id
-        WHERE AAT.STATE='ENABLE'
+        FROM an_atomic_term AAT LEFT JOIN concept CT
+        ON AAT.concept_id=CT.concept_id
+        WHERE AAT.state='ENABLE'
         <choose>
             <when test="checked!=null and checked =='true'">
-                AND  AAT.CONCEPT_ID !=''
+                AND  AAT.concept_id !=''
             </when>
             <otherwise>
-                AND  AAT.CONCEPT_ID =''
+                AND  AAT.concept_id =''
             </otherwise>
         </choose>
     </select>
     <select id="selectAllAtomicTerm" resultMap="BaseResultMap">
-        SELECT
-        <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
-        ORDER BY ID
+        select term,type from an_atomic_term where term in (select term from an_atomic_term GROUP BY term having count(id)>1 )
     </select>
     <select id="selectByPrimaryKeyID" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
-        FROM AN_ATOMIC_TERM WHERE  state='ENABLE'
+        FROM an_atomic_term WHERE  state='ENABLE'
         <if test="id!=null and id!='' ">
-        AND ID=#{id}
+        AND id=#{id}
         </if>
     </select>
     <select id="selectAllByConceptId" resultMap="BaseResultMap">
         SELECT
-        AAT.ID,
-        TERM,
-        TYPE,
-        STATE,
-        AAT.CONCEPT_ID,
-        GMT_CREATED,
-        GMT_MODIFIED,
+        AAT.id,
+        term,
+        type,
+        state,
+        AAT.concept_id,
+        gmt_created,
+        gmt_modified,
         CT.standard_name
-        FROM AN_ATOMIC_TERM AAT LEFT JOIN CONCEPT CT
-        ON AAT.CONCEPT_ID=CT.concept_id
+        FROM an_atomic_term AAT LEFT JOIN concept CT
+        ON AAT.concept_id=CT.concept_id
         WHERE 1=1
         <if test="conceptId!=null and conceptId!='' ">
         AND AAT.concept_id=#{conceptId}

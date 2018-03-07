@@ -2,10 +2,11 @@ package cn.malgo.annotation.core.model.convert;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import cn.malgo.annotation.common.util.log.LogUtil;
-import com.alibaba.fastjson.JSON;
+import cn.malgo.core.definition.Entity;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -57,9 +58,14 @@ public class AnnotationConvert {
         int tagIndexMax = 1;
         String[] lines = annotation.split("\n");
         for (String an : lines) {
-            Integer tagIndex = Integer.valueOf(an.split("\t")[0].replace("T", ""));
-            if (tagIndex > tagIndexMax) {
-                tagIndexMax = tagIndex;
+            //
+            if("".equals(an.split("\t")[0].replace("T", ""))){
+
+            }else{
+                Integer tagIndex = Integer.valueOf(an.split("\t")[0].replace("T", ""));
+                if (tagIndex > tagIndexMax) {
+                    tagIndexMax = tagIndex;
+                }
             }
         }
         return "T" + (tagIndexMax + 1);
@@ -100,7 +106,7 @@ public class AnnotationConvert {
 
         String newLine = MessageFormat.format(AN_LINE_FORMAT, newTag, newType, pNewStart.toString(), pNewEnd.toString(),
                 newText);
-        return oldAnnotation + newLine;
+        return oldAnnotation +newLine;
     }
     /**
      *更新新的标注
@@ -121,7 +127,49 @@ public class AnnotationConvert {
             }
             return newAnnotation;
         }
+
         return oldAnnotation;
+    }
+
+    /**
+     * 构建新的标注
+     * @param finalAnnotation
+     * @param newType
+     * @param newStart
+     * @param newEnd
+     * @param newText
+     * @return
+     */
+    public static String addNewTagForAnnotation(String finalAnnotation, String newType, String newStart,
+                                   String newEnd, String newText) {
+        String newTag = getNewTag(finalAnnotation);
+        System.out.println("newTag:"+newTag);
+        List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+                .convertAnnotationModelList(finalAnnotation);
+
+        //检查相同的手工标注是否已经存在
+        for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+            boolean isSameType = termAnnotationModel.getType().equals(newType);
+            boolean isSameTerm = termAnnotationModel.getTerm().equals(newText);
+            boolean isSameStart = termAnnotationModel.getStartPosition() == Integer
+                    .valueOf(newStart);
+            boolean isSameEnd = termAnnotationModel.getEndPosition() == Integer.valueOf(newEnd);
+            if (isSameType && isSameTerm && isSameStart && isSameEnd) {
+                return finalAnnotation;
+            }
+        }
+//        Document document = new Document("",new LinkedList<>());
+//        DocumentManipulator.parseBratAnnotations(finalAnnotation,document);
+//        document.getEntities().add(new Entity(newTag,Integer.valueOf(newStart),Integer.valueOf(newEnd),newType,newText));
+//        return  DocumentManipulator.toBratAnnotations(document);
+        String newLine = MessageFormat.format(AN_LINE_FORMAT, newTag, newType, newStart, newEnd,
+                newText);
+        if(!finalAnnotation.endsWith("\n"))
+        {
+            return finalAnnotation +"\n"+ newLine;
+        }else {
+            return finalAnnotation  + newLine;
+        }
     }
     /**
      * 构建新的标注
@@ -273,6 +321,7 @@ public class AnnotationConvert {
     public static List<TermAnnotationModel> convertAnnotationModelList(String text) {
 
         LogUtil.debug(logger,"待转换文本:"+text);
+        System.out.println("待转换文本:"+text);
 
         List<TermAnnotationModel> termAnnotationModelList = new ArrayList<>();
         if (StringUtils.isBlank(text)) {
@@ -281,9 +330,12 @@ public class AnnotationConvert {
 
         String[] lines = text.split("\n");
         for (String line : lines) {
+            if(!StringUtils.isNotBlank(line))
+                continue;
             TermAnnotationModel termAnnotationModel = new TermAnnotationModel();
 
             String[] elements = line.split("\t");
+            System.out.println("elements:"+JSONArray.toJSONString(elements));
             termAnnotationModel.setTag(elements[0]);
             termAnnotationModel.setTerm(elements[2]);
 

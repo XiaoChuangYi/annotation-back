@@ -109,11 +109,12 @@ public class TypeController extends BaseController {
      * @param pageSize
      * 更据原子术语信息，分页查询annotation表
      */
-    @RequestMapping(value = "selectAnnotationServerPagination.do")
+    @RequestMapping(value = "/selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
         AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
         PageResult<AnnotationBratVO> pageResult=new PageResult<>();
+
         pageResult.setDataList(annotationBratVOList);
         pageResult.setTotal(annotationPagination.getLastIndex());
         return  ResultVO.success(pageResult);

@@ -9,7 +9,7 @@
     <result column="tag_name" jdbcType="VARCHAR" property="tagName" />
   </resultMap>
   <insert id="insertBatch" useGeneratedKeys="true">
-    INSERT INTO  TAG (tag_name) VALUES 
+    INSERT INTO  tag (tag_name) VALUES
     <foreach collection="listTag" index="index" item="item"  separator=",">
       (#{item})
     </foreach>

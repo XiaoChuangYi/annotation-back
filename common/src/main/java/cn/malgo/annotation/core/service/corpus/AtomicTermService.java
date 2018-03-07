@@ -111,13 +111,13 @@ public class AtomicTermService {
     }
 
     /**
-     *分页查询全部原子术语
+     * 分页查询全部原子术语
      * @param pageNum
      * @param pageSize
      */
     public Page<AnAtomicTerm> QueryAll(int pageNum,int pageSize){
         Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum,pageSize);
-        anAtomicTermMapper.selectAll();
+        anAtomicTermMapper.selectAllAtomicTerm();
         decrypt(pageInfo);
         return  pageInfo;
     }
