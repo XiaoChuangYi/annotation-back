@@ -67,7 +67,7 @@ public class AnnotationService {
         stateList.add(AnnotationStateEnum.PROCESSING.name());
         stateList.add(AnnotationStateEnum.INIT.name());
         annotationMapper.selectByStateListModifier(stateList, userId);
-        decryptAES(pageInfo.getResult());
+//        decryptAES(pageInfo.getResult());
         apiServerService.batchPhraseUpdatePosWithNewTerm(pageInfo.getResult());
         for (Annotation annotation : pageInfo.getResult()) {
             updateFinalAnnotation(annotation.getId(), annotation.getFinalAnnotation());
@@ -81,7 +81,7 @@ public class AnnotationService {
                                                         int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateAndUserId(annotationState, userId);
-        decryptAES(pageInfo.getResult());
+//        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
     /**
@@ -91,7 +91,7 @@ public class AnnotationService {
                                                  int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateAndTermFuzzy(annotationState, userId,annotationTerm);
-        decryptAES(pageInfo.getResult());
+//        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
 
@@ -102,7 +102,7 @@ public class AnnotationService {
      */
     public Annotation queryByAnIdThroughApiServer(String anId) {
         Annotation annotation = annotationMapper.selectByPrimaryKey(anId);
-        decryptAES(annotation);
+//        decryptAES(annotation);
         List<Annotation> annotationList = new ArrayList<>();
         annotationList.add(annotation);
         List<Annotation> annotationListNew = apiServerService
@@ -131,7 +131,7 @@ public class AnnotationService {
      */
     public Annotation queryByAnId(String id) {
         Annotation annotation = annotationMapper.selectByPrimaryKey(id);
-        decryptAES(annotation);
+//        decryptAES(annotation);
         return annotation;
     }
 
@@ -143,7 +143,7 @@ public class AnnotationService {
      */
     public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
         List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
-        decryptAES(annotationList);
+//        decryptAES(annotationList);
         return  annotationList;
     }
 
@@ -158,7 +158,7 @@ public class AnnotationService {
                                              int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateList(stateList);
-        decryptAES(pageInfo.getResult());
+//        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
     /**
@@ -168,7 +168,7 @@ public class AnnotationService {
      */
     public List<Annotation> queryByIdList(List<String> idList) {
         List<Annotation> annotationList=annotationMapper.selectByIdList(idList);
-        decryptAES(annotationList);
+//        decryptAES(annotationList);
         return annotationList;
     }
 
@@ -182,6 +182,16 @@ public class AnnotationService {
         Page<String> pageInfo = PageHelper.startPage(1, total);
         annotationMapper.selectIDsByNum(state,userId);
         return pageInfo;
+    }
+
+    /**
+     * 根据anId更新单条标注记录
+     * @anId
+     */
+    public void updateSingleDecryptAnnotation(String anId){
+        Annotation annotation=annotationMapper.selectByPrimaryKey(anId);
+        decryptAES(annotation);
+        annotationMapper.updateByPrimaryKeySelective(annotation);
     }
 
     /**
@@ -207,12 +217,12 @@ public class AnnotationService {
      * @param autoAnnotation
      */
     private void updateAutoAnnotation(String anId, String autoAnnotation) {
-        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+//        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
 
         Annotation annotation = new Annotation();
         annotation.setId(anId);
-        annotation.setAutoAnnotation(securityAnnotation);
-        annotation.setFinalAnnotation(securityAnnotation);
+        annotation.setAutoAnnotation(autoAnnotation);
+        annotation.setFinalAnnotation(autoAnnotation);
         annotation.setGmtModified(new Date());
 
         int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
@@ -240,11 +250,11 @@ public class AnnotationService {
      * @param finalAnnotation
      */
     public void updateFinalAnnotation(String anId, String finalAnnotation) {
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+//        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
 
         Annotation annotation = new Annotation();
         annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setFinalAnnotation(finalAnnotation);
         annotation.setGmtModified(new Date());
 
         int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
@@ -259,13 +269,13 @@ public class AnnotationService {
      */
     private void updateManualAnnotation(String anId, String manualAnnotation, String newTerms,
                                         String finalAnnotation) {
-        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+//        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+//        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
 
         Annotation annotation = new Annotation();
         annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
-        annotation.setManualAnnotation(securityManualAnnotation);
+        annotation.setFinalAnnotation(finalAnnotation);
+        annotation.setManualAnnotation(manualAnnotation);
         annotation.setNewTerms(newTerms);
         annotation.setGmtModified(new Date());
         annotation.setState(AnnotationStateEnum.PROCESSING.name());
@@ -356,7 +366,7 @@ public class AnnotationService {
         String newTermsStr = TermTypeVO.convertToString(newTerms);
         updateFinalAnnotation(anId,finalAnnotation,newTermsStr);
         Annotation result = annotationMapper.selectByPrimaryKey(anId);
-        decryptAES(result);
+//        decryptAES(result);
         return result;
     }
 
@@ -386,7 +396,7 @@ public class AnnotationService {
 
         Annotation result = annotationMapper.selectByPrimaryKey(anId);
 
-        decryptAES(result);
+//        decryptAES(result);
 
         return result;
 
@@ -414,12 +424,13 @@ public class AnnotationService {
 
         String finalAnnotation = annotationOld.getFinalAnnotation().replace("-unconfirmed",
             "");
-        String finalAnnotationAfterCrypt = SecurityUtil.cryptAESBase64(finalAnnotation);
+
+//        String finalAnnotationAfterCrypt = SecurityUtil.cryptAESBase64(finalAnnotation);
 
         Annotation annotation = new Annotation();
         annotation.setId(anId);
         annotation.setState(AnnotationStateEnum.FINISH.name());
-        annotation.setFinalAnnotation(finalAnnotationAfterCrypt);
+        annotation.setFinalAnnotation(finalAnnotation);
         annotationMapper.updateByPrimaryKeySelective(annotation);
     }
 
@@ -453,15 +464,15 @@ public class AnnotationService {
     @Transactional(propagation = Propagation.REQUIRED)
     private void saveTermAnnotation(String termId, String term, String autoAnnotation) {
 
-        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+//        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
 
         String id = sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
         Annotation annotation = new Annotation();
         annotation.setId(id);
         annotation.setTermId(termId);
         annotation.setTerm(term);
-        annotation.setAutoAnnotation(securityAnnotation);
-        annotation.setFinalAnnotation(securityAnnotation);
+        annotation.setAutoAnnotation(autoAnnotation);
+        annotation.setFinalAnnotation(autoAnnotation);
         annotation.setState(AnnotationStateEnum.INIT.name());
 
         int saveResult = annotationMapper.insert(annotation);
@@ -476,12 +487,12 @@ public class AnnotationService {
      * @param annotation 传入的标注需是明文
      */
     public void cryptAnnotationAndUpdate(Annotation annotation) {
-        annotation
-            .setAutoAnnotation(SecurityUtil.cryptAESBase64(annotation.getAutoAnnotation()));
-        annotation
-            .setFinalAnnotation(SecurityUtil.cryptAESBase64(annotation.getFinalAnnotation()));
-        annotation.setManualAnnotation(
-            SecurityUtil.cryptAESBase64(annotation.getManualAnnotation()));
+//        annotation
+//            .setAutoAnnotation(SecurityUtil.cryptAESBase64(annotation.getAutoAnnotation()));
+//        annotation
+//            .setFinalAnnotation(SecurityUtil.cryptAESBase64(annotation.getFinalAnnotation()));
+//        annotation.setManualAnnotation(
+//            SecurityUtil.cryptAESBase64(annotation.getManualAnnotation()));
         annotationMapper.updateByPrimaryKeySelective(annotation);
     }
 

@@ -31,7 +31,7 @@ public class TypeAnnotationBatchService {
         int pageNum = 1;
         int pageSize = 1000;
         Page<Annotation> pageInfo = null;
-        List<Annotation> finalAnno=new LinkedList<>();
+        List<Annotation> finalAnnotation=new LinkedList<>();
         int total=annotationService.annotationTermSize(null);
         int endPageIndex=total/pageSize;
         if(total%pageSize>0){
@@ -62,18 +62,20 @@ public class TypeAnnotationBatchService {
                         }
                     }
                     annotation.setGmtModified(new Date());
-                    annotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
-                    annotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
-                    finalAnno.add(annotation);
+                    annotation.setManualAnnotation(AnnotationConvert.convertToText(manualModelList));
+                    annotation.setFinalAnnotation(AnnotationConvert.convertToText(finalModelList));
+//                    annotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
+//                    annotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
+                    finalAnnotation.add(annotation);
                 }catch (Exception ex){
                     LogUtil.info(logger,
                             "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
                 }
             }
         }
-        if(finalAnno.size()>0){
-            LogUtil.info(logger, "存在带替换的标注术语:" + finalAnno.size());
-            annotationService.updateBatchAnnotation(finalAnno);
+        if(finalAnnotation.size()>0){
+            LogUtil.info(logger, "存在带替换的标注术语:" + finalAnnotation.size());
+            annotationService.updateBatchAnnotation(finalAnnotation);
         }
     }
     /**

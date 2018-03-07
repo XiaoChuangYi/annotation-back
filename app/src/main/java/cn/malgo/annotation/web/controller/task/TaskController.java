@@ -1,10 +1,9 @@
 package cn.malgo.annotation.web.controller.task;
 
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
@@ -33,7 +32,18 @@ public class TaskController extends BaseController {
     @Autowired
     private CorpusService corpusService;
 
+    @Autowired
+    private AnnotationService annotationService;
 
+    /**
+     * 根据anId解密单条annotation表的final_annotation，auto_annotation，manual_annotation字段
+     * @return
+     */
+    @RequestMapping(value = "/singleDecryptAnnotationByAnId.do/{anId}",method = RequestMethod.GET)
+    public ResultVO singleDecryptAnnotationByAnId(@PathVariable String anId){
+        annotationService.updateSingleDecryptAnnotation(anId);
+        return ResultVO.success();
+    }
     /**
      * 批量解密annotation表的final_annotation，auto_annotation，manual_annotation字段
      * @return
