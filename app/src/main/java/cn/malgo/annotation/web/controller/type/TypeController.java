@@ -5,14 +5,13 @@ import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.common.dal.model.AnnotationPagination;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
+import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.QueryTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
-import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.alibaba.fastjson.JSONObject;
@@ -34,14 +33,15 @@ import java.util.List;
 public class TypeController extends BaseController {
 
     @Autowired
-    private TypeService typeService;
+    private AnnotationBatchService annotationBatchService;
 
     @Autowired
-    private TypeAnnotationBatchService typeAnnotationBatchService;
+    private TypeService typeService;
+
 
     @RequestMapping(value = "/getPaginationType.do")
     public ResultVO<PageVO<AnType>> getAllType(QueryTypeRequest request){
-        Page<AnType> page =typeService.selectPaginationTypesAndShowParent(request.getPageNum(),request.getPageSize(),request.getTypeCode(),request.getTypeName());
+        Page<AnType> page =typeService.listEnableTypeByPagingCondition(request.getPageNum(),request.getPageSize(),request.getTypeCode(),request.getTypeName());
         PageVO<AnType> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -49,20 +49,20 @@ public class TypeController extends BaseController {
 
     @RequestMapping(value = "/getTypes.do")
     public ResultVO<List<AnType>> getAllType(){
-        List<AnType> anTypeList =typeService.selectAllTypes();
+        List<AnType> anTypeList =typeService.listEnableType();
         return ResultVO.success(anTypeList);
     }
 
     @RequestMapping(value = "/getTypesById.do")
     public ResultVO<List<AnType>> getAllType(String id){
-        List<AnType> anTypeList=typeService.selectAllTypesById(id);
+        List<AnType> anTypeList=typeService.listChildrenTypeByParentId(id);
         return ResultVO.success(anTypeList);
     }
 
     @RequestMapping(value = "/addType.do")
     public ResultVO addType(AddTypeRequest request){
         AddTypeRequest.check(request);
-        typeService.insertType(request.getParentId(),request.getTypeName(),request.getTypeCode());
+        typeService.saveType(request.getParentId(),request.getTypeName(),request.getTypeCode());
         return  ResultVO.success();
     }
 
@@ -76,7 +76,7 @@ public class TypeController extends BaseController {
     @RequestMapping(value = "/deleteType.do")
     public ResultVO deleteType(String typeId){
         AssertUtil.notBlank(typeId,"类型Id为空");
-        typeService.deleteType(typeId);
+        typeService.removeType(typeId);
         return  ResultVO.success();
     }
     /**
@@ -86,7 +86,7 @@ public class TypeController extends BaseController {
     public ResultVO updateType(UpdateTypeRequest request){
         UpdateTypeRequest.check(request);
 //        asyncTypeBatchService.asyncAutoBatchType(request.getTypeOld(),request.getTypeNew());
-        typeAnnotationBatchService.batchReplaceAnnotationTerm(request.getTypeOld(),request.getTypeNew());
+        annotationBatchService.batchReplaceAnnotationTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateBatchTypeOnAtomicTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateBatchTypeOnTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());
@@ -97,7 +97,7 @@ public class TypeController extends BaseController {
      */
     @RequestMapping(value = {"/selectAnnotationByTermTypeArr.do"})
     public ResultVO<List<AnnotationBratVO>> selectAnnotationByTermTypeArr(CombineAtomicTermArr combineAtomicTermArr){
-        List<Annotation> annotationPagination =typeService.queryAnnotationByCombineAtomicTerm(combineAtomicTermArr.getCombineAtomicTermList());
+        List<Annotation> annotationPagination =annotationBatchService.listAnnotationByUnitAnnotationArr(combineAtomicTermArr.getCombineAtomicTermList());
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination);
         return  ResultVO.success(annotationBratVOList);
     }
@@ -111,7 +111,7 @@ public class TypeController extends BaseController {
      */
     @RequestMapping(value = "/selectAnnotationServerPagination.do")
     public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
-        AnnotationPagination annotationPagination =typeService.queryAnnotationByType(type,term,pageIndex,pageSize);
+        AnnotationPagination annotationPagination =annotationBatchService.listAnnotationContainsUnitAnnotationByServerPaging(type,term,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
         PageResult<AnnotationBratVO> pageResult=new PageResult<>();
 

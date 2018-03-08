@@ -37,7 +37,7 @@ public class TermController extends BaseController {
      */
     @RequestMapping(value = {"/queryPaginationByConceptId.do"})
     public  ResultVO<PageVO<Term>> queryPaginationByConceptId(ConditionTermRequest request){
-        Page<Term> page=termService.queryByConceptId(request.getConceptId(),request.getPageNum(),request.getPageSize());
+        Page<Term> page=termService.listTermByConceptId(request.getConceptId(),request.getPageNum(),request.getPageSize());
         PageVO<Term> pageVO=new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -59,7 +59,7 @@ public class TermController extends BaseController {
     @RequestMapping(value = { "/queryAll.do" })
     public ResultVO<PageVO<Term>> queryAll(PageRequest request) {
         //分页查询
-        Page<Term> page = termService.QueryAll(request.getPageNum(), request.getPageSize());
+        Page<Term> page = termService.listTermByPaging(request.getPageNum(), request.getPageSize());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -72,7 +72,7 @@ public class TermController extends BaseController {
     @RequestMapping(value = { "/queryByCondition.do" })
     public ResultVO<PageVO<Term>> queryAllByCondition(ConditionTermRequest request) {
         //分页查询
-        Page<Term> page = termService.QueryAllByCondition(request.getPageNum(), request.getPageSize(),
+        Page<Term> page = termService.listTermByPagingCondition(request.getPageNum(), request.getPageSize(),
                 request.getTermName(),request.getTermType(),request.getLabel(),request.getChecked(),request.getOriginName());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
@@ -134,7 +134,7 @@ public class TermController extends BaseController {
     @RequestMapping(value = { "/addTerm.do" })
     public ResultVO  addTerm(AddTermRequest request){
         AddTermRequest.check(request);
-        termService.insertTerm(request.getConceptId(),request.getPconceptId(),
+        termService.saveTerm(request.getConceptId(),request.getPconceptId(),
                 request.getConceptName(),request.getConceptCode(),request.getConceptType(),request.getOriginName(),"","ENABLE");
         return  ResultVO.success();
     }
@@ -157,7 +157,7 @@ public class TermController extends BaseController {
     @RequestMapping(value = {"/deleteTerm.do"})
     public ResultVO deleteTerm(Integer id){
         AssertUtil.notNull(id,"主键ID为空");
-        termService.deleteTerm(id);
+        termService.removeTerm(id);
         return  ResultVO.success();
     }
     /**
@@ -165,7 +165,7 @@ public class TermController extends BaseController {
      */
     @RequestMapping(value = { "/getTypesOfTerm.do" })
     public ResultVO<List<String>> getTypesOfTerm(){
-        List<String> typeList=termService.selectTermType();
+        List<String> typeList=termService.listDistinctTermType();
         return  ResultVO.success(typeList);
     }
 
@@ -175,7 +175,7 @@ public class TermController extends BaseController {
     @RequestMapping(value = { "/queryAssociatedByTermId.do" })
     public ResultVO<PageVO<Term>> queryAssociatedByTermId(ConditionTermRequest request) {
         //分页查询
-        Page<Term> page = termService.QueryAssociatedTermByTermId(request.getPageNum(), request.getPageSize(),request.getTermId());
+        Page<Term> page = termService.listTermAssociatedConceptByTermId(request.getPageNum(), request.getPageSize(),request.getTermId());
         PageVO<Term> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -185,9 +185,9 @@ public class TermController extends BaseController {
     @RequestMapping(value = {"/queryTermGroupByOriginName.do"})
     public ResultVO<TermGroupResult> queryTermGroupByOriginName(int groupIndex, int groupSize){
         TermGroupResult termGroupResult=new TermGroupResult();
-        List<List<Term>> termList=termService.queryTermGroupByOriginName(groupIndex,groupSize);
+        List<List<Term>> termList=termService.listTermGroupByOriginName(groupIndex,groupSize);
         termGroupResult.setMixList(termList);
-        termGroupResult.setGroups(termService.getGroupsByOriginName());
+        termGroupResult.setGroups(termService.countTermGroupsByOriginName());
         return ResultVO.success(termGroupResult);
     }
     /**
@@ -195,7 +195,7 @@ public class TermController extends BaseController {
      */
     @RequestMapping(value = {"/getGroupsByOriginName.do"})
     public ResultVO<Integer> getGroupsByOriginName(){
-        int groups=termService.getGroupsByOriginName();
+        int groups=termService.countTermGroupsByOriginName();
         return ResultVO.success(groups);
     }
 }

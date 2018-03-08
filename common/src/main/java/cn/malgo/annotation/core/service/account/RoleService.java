@@ -16,44 +16,15 @@ import java.util.List;
  */
 @Service
 public class RoleService {
-    @Autowired
-    private SequenceGenerator sequenceGenerator;
 
     @Autowired
     private CrmRoleMapper crmRoleMapper;
 
     /**
-     * 保存角色
-     * @param roleName
-     *
-     * */
-    public CrmRole saveRole(String roleName,String roleId){
-        CrmRole crmRoleOld=crmRoleMapper.selectCrmRoleByRoleName(roleName);
-        AssertUtil.state(crmRoleOld==null,"角色已经存在");
-        String id=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
-        int count=crmRoleMapper.selectCrmRoleCount();
-        CrmRole crmRoleNew=new CrmRole();
-        count++;
-        crmRoleNew.setId(count+"");
-        crmRoleNew.setRoleId(roleId);//定义个枚举类，作为角色的编码
-        crmRoleNew.setRoleName(roleName);
-        crmRoleNew.setGmtCreated(new Date());
-        int insertResult=crmRoleMapper.insert(crmRoleNew);
-        AssertUtil.state(insertResult>0,"保存角色失败");
-        return crmRoleMapper.selectCrmRoleByRoleId(id);
-    }
-    /**
      *查询角色列表
      * */
-    public List<CrmRole> selectAllRole(){
+    public List<CrmRole> listRole(){
         List<CrmRole> crmRoleList=crmRoleMapper.selectAll();
         return crmRoleList;
-    }
-    /**
-     *更新角色
-     *@param roleName
-     * */
-    public CrmRole updateRole(String roleName,String roleId){
-        return  null;
     }
 }

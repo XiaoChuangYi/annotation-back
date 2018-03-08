@@ -2,12 +2,12 @@ package cn.malgo.annotation.web.controller.task;
 
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermBatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.corpus.CorpusService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.result.ResultVO;

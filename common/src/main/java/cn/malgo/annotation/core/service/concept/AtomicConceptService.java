@@ -34,7 +34,7 @@ public class AtomicConceptService {
      *@param originName
      */
     @Transactional
-    public void addNewConceptAndUpdateAntomic(String id, String originName){
+    public void addNewConceptAndUpdateAtomicTerm(String id, String originName){
         List<Concept> conceptList=conceptMapper.selectConceptByStandardName(originName);
         AssertUtil.state(conceptList.size()==0,"同义词表中已有"+originName+"记录");
         String conceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
@@ -78,51 +78,6 @@ public class AtomicConceptService {
         int updateResult=anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
         AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
-    /**
-     *修改标注名称
-     * @param standName
-     * @param conceptId
-     */
-    public void updateStandNameofConcept(String standName,String conceptId){
-        Concept concept=new Concept();
-        concept.setStandardName(standName);
-        Concept oldConcept=conceptMapper.selectConceptByConceptId(conceptId);
-        if(oldConcept==null){
-            //新增该条数据
-        }else{
-            concept.setId(oldConcept.getId());
-            int updateResult=conceptMapper.updateByPrimaryKeySelective(concept);
-            AssertUtil.state(updateResult > 0, "更新术语名称失败");
-        }
 
-    }
-
-    /**
-     *查询concept
-     */
-    public List<Concept> selectAllConcept(){
-        List<Concept> conceptList=conceptMapper.selectAll();
-        return conceptList;
-    }
-
-    /**
-     *根据conceptId查询单条concept
-     */
-    public  Concept selectOneConcept(String conceptId){
-        Concept concept=conceptMapper.selectConceptByConceptId(conceptId);
-        return  concept;
-    }
-    /**
-     *遗弃术语
-     * @param id
-     * @param state
-     */
-    public  void  abandonAtomicTerm(String id,String state){
-        AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
-        anAtomicTerm.setState(state);
-        anAtomicTerm.setId(id);
-        int deleteResult=anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
-        AssertUtil.state(deleteResult > 0, "删除术语失败");
-    }
 
 }

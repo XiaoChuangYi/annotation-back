@@ -63,14 +63,14 @@ public class VisualService {
                     List<String> labelList1=new ArrayList<>();
                     labelList1.add("Adjective");
                     arcs1.setLabels(labelList1);
-                    arcs1.setTargets(getAllTypes());
+                    arcs1.setTargets(listEnableType());
                 arcsList.add(arcs1);
                     Arcs arcs2=new Arcs();
                     arcs2.setType("Rel");
                     List<String> labelList2=new ArrayList<>();
                     labelList2.add("Rel");
                     arcs2.setLabels(labelList2);
-                    arcs2.setTargets(getAllTypes());
+                    arcs2.setTargets(listEnableType());
                 arcsList.add(arcs2);
                 item.put("arcs",arcsList);
                 item.put("children",new JSONArray());
@@ -83,7 +83,7 @@ public class VisualService {
      * 获取所有的type
      * @return
      */
-    private List<String> getAllTypes(){
+    private List<String> listEnableType(){
         List<AnType> anTypeList=anTypeMapper.selectEnableTypes();
         List<String> typeCodeList=new ArrayList<>();
         for(AnType anType:anTypeList){

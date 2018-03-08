@@ -19,14 +19,14 @@ public class TagService {
     /**
      *查询所有标签
      */
-    public List<Tag> selectAllTags(){
+    public List<Tag> listTag(){
         List<Tag> tagList=tagMapper.selectAll();
         return tagList;
     }
     /**
      *新增标签
      */
-    public void insertTag(String tagName){
+    public void saveTag(String tagName){
         Tag tag=new Tag();
         tag.setTagName(tagName);
         int insertResult=tagMapper.insertUseGeneratedKeys(tag);
@@ -35,7 +35,7 @@ public class TagService {
     /**
      *新增标签列表
      */
-    public  void insertTags(List<String> tags){
+    public  void saveTagAggregate(List<String> tags){
         int insertResult=tagMapper.insertBatch(tags);
         AssertUtil.state(insertResult>0,"批量插入标签失败！");
     }

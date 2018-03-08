@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
-import cn.malgo.annotation.common.dal.model.CombineAtomicTerm;
 import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
-import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import cn.malgo.annotation.web.controller.type.CombineAtomicTermArr;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +45,12 @@ public class AnnotationController extends BaseController {
     private AnnotationService annotationService;
 
     @Autowired
-    private AtomicTermService atomicTermService;
+    private AnnotationBatchService annotationBatchService;
 
     @Autowired
-    private AtomicTermBatchService atomicTermBatchService;
+    private AtomicTermService atomicTermService;
+
+
 
     /**
      *批量更新所选标注记录的modifier字段，从而只派给特定的用户处理
@@ -69,7 +70,7 @@ public class AnnotationController extends BaseController {
     @RequestMapping(value = {"/queryForDistributionAnnotation.do"})
     public ResultVO<PageVO<AnnotationBratVO>> queryForDistributionAnnotation(QueryDistributionRequest request){
         //分页查询
-        Page<Annotation> page = annotationService.queryOnePageForDistribution(request.getState(),
+        Page<Annotation> page = annotationService.listAnnotationByPaging(request.getState(),
                 request.getUserId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
@@ -87,7 +88,7 @@ public class AnnotationController extends BaseController {
                                                                          @ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
         //分页查询
-        Page<Annotation> page = annotationService.queryOnePageThroughApiServer(
+        Page<Annotation> page = annotationService.listAnnotationByPagingThroughApiServer(
             crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
@@ -107,7 +108,7 @@ public class AnnotationController extends BaseController {
                                                          @ModelAttribute("currentAccount") CrmAccount crmAccount) {
 
         //分页查询
-        Page<Annotation> page = annotationService.queryOnePageDirectly(request.getTerm(),request.getState(),
+        Page<Annotation> page = annotationService.listAnnotationByPagingCondition(request.getTerm(),request.getState(),
             crmAccount.getId(), request.getPageNum(), request.getPageSize());
 
         List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(page.getResult());
@@ -141,7 +142,7 @@ public class AnnotationController extends BaseController {
         //基础参数检查
         UpdateAnnotationRequest.check(request);
 
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //更新单条标注信息
@@ -160,7 +161,7 @@ public class AnnotationController extends BaseController {
         for(AtomicTermAnnotation current :splitAtomicTermArr.getSplitAtomicTermList()){
             atomicTermService.saveAtomicTerm(current.getAnId(),current.getText(),current.getAnnotationType());
         }
-        atomicTermBatchService.batchSubdivideAtomicTerm(splitAtomicTermArr.getSplitAtomicTermList());
+        annotationBatchService.batchSubdivideUnitAnnotation(splitAtomicTermArr.getSplitAtomicTermList());
         return ResultVO.success();
     }
 
@@ -174,7 +175,7 @@ public class AnnotationController extends BaseController {
 
          List<String> anIdArr=new ArrayList<>();
          anIdArr.add(anId);
-         atomicTermBatchService.batchCombineAtomicTerm(anIdArr,combineAtomicTermArr.getCombineAtomicTermList(),term,type);
+         annotationBatchService.batchCombineUnitAnnotation(anIdArr,combineAtomicTermArr.getCombineAtomicTermList(),term,type);
          return ResultVO.success();
      }
     /**
@@ -189,7 +190,7 @@ public class AnnotationController extends BaseController {
         AssertUtil.notEmpty(annotationArr.getAnnotationList(),"标注ID集合为空");
         AssertUtil.notEmpty(combineAtomicTermArr.getCombineAtomicTermList(),"旧原子术语信息集合为空");
 //        atomicTermService.saveAtomicTerm("",term,type);
-        atomicTermBatchService.batchCombineAtomicTerm(annotationArr.getAnnotationList(),combineAtomicTermArr.getCombineAtomicTermList(),term,type);
+        annotationBatchService.batchCombineUnitAnnotation(annotationArr.getAnnotationList(),combineAtomicTermArr.getCombineAtomicTermList(),term,type);
         return ResultVO.success();
     }
     /**
@@ -201,7 +202,7 @@ public class AnnotationController extends BaseController {
      public ResultVO<AnnotationBratVO> addFinalAnnotation(AddAnnotationRequest request,
                                                           @ModelAttribute("currentAccount") CrmAccount crmAccount){
          //检查当前的标注是否属于当前的用户
-         Annotation annotation = annotationService.queryByAnId(request.getAnId());
+         Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
          AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
          //构建新的最终的标注
          String finalAnnotationNew = AnnotationConvert.addNewTagForAnnotation(
@@ -238,7 +239,7 @@ public class AnnotationController extends BaseController {
         AddAnnotationRequest.check(request);
 
         //权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //构建新的手工标注
@@ -269,7 +270,7 @@ public class AnnotationController extends BaseController {
                                                             @ModelAttribute("currentAccount") CrmAccount crmAccount) {
         UpdateAnnoTypeRequest.check(request);
 //        权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         String finalAnnotationNew=AnnotationConvert.updateTag(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
@@ -295,7 +296,7 @@ public class AnnotationController extends BaseController {
         DeleteAnnotationRequest.check(request);
 
         //权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //构建新的手工标注
@@ -336,7 +337,7 @@ public class AnnotationController extends BaseController {
         DeleteAnnotationRequest.check(request);
 
         //权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //构建新的手工标注
@@ -378,7 +379,7 @@ public class AnnotationController extends BaseController {
         DeleteNewTermsRequest.check(request);
 
         //权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.queryByAnId(request.getAnId());
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         String newTermsAfterDelete = AnnotationConvert.deleteNewTerm(annotation.getNewTerms(),
@@ -412,7 +413,7 @@ public class AnnotationController extends BaseController {
     public ResultVO finishAnnotation(String anId,
                                      @ModelAttribute("currentAccount") CrmAccount crmAccount) {
         AssertUtil.notBlank(anId, "标注ID为空");
-        Annotation annotation = annotationService.queryByAnId(anId);
+        Annotation annotation = annotationService.getAnnotationByAnId(anId);
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         annotationService.finishAnnotation(anId);
@@ -428,7 +429,7 @@ public class AnnotationController extends BaseController {
     public ResultVO setUnRecognize(String anId,
                                    @ModelAttribute("currentAccount") CrmAccount crmAccount) {
         AssertUtil.notBlank(anId, "术语ID为空");
-        Annotation annotation = annotationService.queryByAnId(anId);
+        Annotation annotation = annotationService.getAnnotationByAnId(anId);
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         annotationService.setUnRecognize(anId);
@@ -445,10 +446,10 @@ public class AnnotationController extends BaseController {
     @RequestMapping(value = "/getAnnotationText.do")
     public ResultVO<Annotation> getAnnotationText(String anId,@ModelAttribute("currentAccount") CrmAccount crmAccount){
         AssertUtil.notBlank(anId, "术语ID为空");
-        Annotation annotation = annotationService.queryByAnId(anId);
+        Annotation annotation = annotationService.getAnnotationByAnId(anId);
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
-        Annotation annotationResult =  annotationService.queryByAnIdThroughApiServer(anId);
+        Annotation annotationResult =  annotationService.getAnnotationByAnIdThroughApiServer(anId);
 
         return ResultVO.success(annotationResult);
     }

@@ -4,6 +4,7 @@ import java.util.*;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.Corpus;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
@@ -25,7 +26,6 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.model.check.AnnotationChecker;
 import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
 import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 import cn.malgo.annotation.core.service.corpus.CorpusService;
 import cn.malgo.common.security.SecurityUtil;
 
@@ -37,7 +37,7 @@ import cn.malgo.common.security.SecurityUtil;
 @Service
 public class AnnotationService {
 
-    private Logger                 logger = Logger.getLogger(AnnotationService.class);
+    private Logger logger = Logger.getLogger(AnnotationService.class);
 
     @Autowired
     private SequenceGenerator      sequenceGenerator;
@@ -52,7 +52,7 @@ public class AnnotationService {
     private CorpusService corpusService;
 
     @Autowired
-    private AtomicTermService      atomicTermService;
+    private AtomicTermService atomicTermService;
 
 
     /**
@@ -60,7 +60,7 @@ public class AnnotationService {
      * @param
      * @return
      */
-    public Page<Annotation> queryOnePageThroughApiServer(String userId, int pageNum,
+    public Page<Annotation> listAnnotationByPagingThroughApiServer(String userId, int pageNum,
                                                          int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         List<String> stateList = new ArrayList<>();
@@ -77,37 +77,12 @@ public class AnnotationService {
     /**
      * 分页多条件查询数据库中的标注
      */
-    public Page<Annotation> queryOnePageForDistribution(String annotationState, String userId,
+    public Page<Annotation> listAnnotationByPaging(String annotationState, String userId,
                                                         int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateAndUserId(annotationState, userId);
 //        decryptAES(pageInfo.getResult());
         return pageInfo;
-    }
-    /**
-     * 分页条件查询数据库中的标注
-     */
-    public Page<Annotation> queryOnePageDirectly(String annotationTerm,String annotationState, String userId,
-                                                 int pageNum, int pageSize) {
-        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        annotationMapper.selectByStateAndTermFuzzy(annotationState, userId,annotationTerm);
-//        decryptAES(pageInfo.getResult());
-        return pageInfo;
-    }
-
-    /**
-     * 根据标注ID查询单条标注
-     * @param
-     * @return
-     */
-    public Annotation queryByAnIdThroughApiServer(String anId) {
-        Annotation annotation = annotationMapper.selectByPrimaryKey(anId);
-//        decryptAES(annotation);
-        List<Annotation> annotationList = new ArrayList<>();
-        annotationList.add(annotation);
-        List<Annotation> annotationListNew = apiServerService
-                .batchPhraseUpdatePosWithNewTerm(annotationList);
-        return annotationListNew.get(0);
     }
     /**
      * 分页查询标注,未解密
@@ -117,7 +92,7 @@ public class AnnotationService {
      * @param pageSize
      * @return
      */
-    public Page<Annotation> queryOnePageUNEncrypted(String annotationState, String userId,
+    public Page<Annotation> listAnnotationUNEncrypted(String annotationState, String userId,
                                                     int pageNum, int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateModifier(annotationState, userId);
@@ -125,23 +100,22 @@ public class AnnotationService {
     }
 
     /**
-     * 根据标注ID查询标注信息
-     * @param id
-     * @return
+     * 分页条件查询数据库中的标注,支持字段term的查询
      */
-    public Annotation queryByAnId(String id) {
-        Annotation annotation = annotationMapper.selectByPrimaryKey(id);
-//        decryptAES(annotation);
-        return annotation;
+    public Page<Annotation> listAnnotationByPagingCondition(String annotationTerm,String annotationState, String userId,
+                                                 int pageNum, int pageSize) {
+        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        annotationMapper.selectByStateAndTermFuzzy(annotationState, userId,annotationTerm);
+//        decryptAES(pageInfo.getResult());
+        return pageInfo;
     }
-
     /**
      * 数据库层分页查询标注信息
      * @param state
      * @param pageNum
      * @param pageSize
      */
-    public List<Annotation> queryFinalAnnotationPagination(String state,int pageNum,int pageSize){
+    public List<Annotation> listAnnotationByServerPaging(String state,int pageNum,int pageSize){
         List<Annotation> annotationList=annotationMapper.selectFinalAnnotationByPagination(state,pageNum,pageSize);
 //        decryptAES(annotationList);
         return  annotationList;
@@ -154,36 +128,60 @@ public class AnnotationService {
      * @param pageSize
      * @return
      */
-    public Page<Annotation> queryByStateList(List<String> stateList, int pageNum,
+    public Page<Annotation> listAnnotationByStateList(List<String> stateList, int pageNum,
                                              int pageSize) {
         Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
         annotationMapper.selectByStateList(stateList);
 //        decryptAES(pageInfo.getResult());
         return pageInfo;
     }
+
     /**
      * 根据anId集合查询标注信息
      * @param idList
      * @return
      */
-    public List<Annotation> queryByIdList(List<String> idList) {
+    public List<Annotation> listAnnotationByAnIds(List<String> idList) {
         List<Annotation> annotationList=annotationMapper.selectByIdList(idList);
 //        decryptAES(annotationList);
         return annotationList;
     }
 
+//    /**
+//     *根据分配查询的逻辑获取指定数量数据的id集合
+//     * @param state
+//     * @param userId
+//     * @param total
+//     */
+//    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
+//        Page<String> pageInfo = PageHelper.startPage(1, total);
+//        annotationMapper.selectIDsByNum(state,userId);
+//        return pageInfo;
+//    }
     /**
-     *根据分配查询的逻辑获取指定数量数据的id集合
-     * @param state
-     * @param userId
-     * @param total
+     * 根据标注ID查询单条标注
+     * @param
+     * @return
      */
-    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
-        Page<String> pageInfo = PageHelper.startPage(1, total);
-        annotationMapper.selectIDsByNum(state,userId);
-        return pageInfo;
+    public Annotation getAnnotationByAnIdThroughApiServer(String anId) {
+        Annotation annotation = annotationMapper.selectByPrimaryKey(anId);
+//        decryptAES(annotation);
+        List<Annotation> annotationList = new ArrayList<>();
+        annotationList.add(annotation);
+        List<Annotation> annotationListNew = apiServerService
+                .batchPhraseUpdatePosWithNewTerm(annotationList);
+        return annotationListNew.get(0);
     }
-
+    /**
+     * 根据标注ID查询标注信息
+     * @param id
+     * @return
+     */
+    public Annotation getAnnotationByAnId(String id) {
+        Annotation annotation = annotationMapper.selectByPrimaryKey(id);
+//        decryptAES(annotation);
+        return annotation;
+    }
     /**
      * 根据anId更新单条标注记录
      * @anId
@@ -211,33 +209,33 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新标注失败");
 
     }
-    /**
-     * 更新自动标注
-     * @param anId
-     * @param autoAnnotation
-     */
-    private void updateAutoAnnotation(String anId, String autoAnnotation) {
-//        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setAutoAnnotation(autoAnnotation);
-        annotation.setFinalAnnotation(autoAnnotation);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新自动标注失败");
-    }
+//    /**
+//     * 更新自动标注
+//     * @param anId
+//     * @param autoAnnotation
+//     */
+//    private void updateAutoAnnotation(String anId, String autoAnnotation) {
+////        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
+//
+//        Annotation annotation = new Annotation();
+//        annotation.setId(anId);
+//        annotation.setAutoAnnotation(autoAnnotation);
+//        annotation.setFinalAnnotation(autoAnnotation);
+//        annotation.setGmtModified(new Date());
+//
+//        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+//        AssertUtil.state(updateResult > 0, "更新自动标注失败");
+//    }
     /**
      * 更新最终标注并更新新词列表
      * @param anId
      * @param finalAnnotation
      */
     public void updateFinalAnnotation(String anId, String finalAnnotation,String newTerms) {
-        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
+//        String securityFinalAnnotation = SecurityUtil.cryptAESBase64(finalAnnotation);
         Annotation annotation = new Annotation();
         annotation.setId(anId);
-        annotation.setFinalAnnotation(securityFinalAnnotation);
+        annotation.setFinalAnnotation(finalAnnotation);
         annotation.setNewTerms(newTerms);
         annotation.setGmtModified(new Date());
 
@@ -299,22 +297,22 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新标注状态失败");
     }
 
-    /**
-     * 重载更新手动标注
-     * @param anId
-     * @param manualAnnotation
-     * */
-    public  void updateMunalAnnotation(String anId,String manualAnnotation){
-        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
-
-        Annotation annotation = new Annotation();
-        annotation.setId(anId);
-        annotation.setManualAnnotation(securityManualAnnotation);
-        annotation.setGmtModified(new Date());
-
-        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-        AssertUtil.state(updateResult > 0, "更新最终标注失败");
-    }
+//    /**
+//     * 重载更新手动标注
+//     * @param anId
+//     * @param manualAnnotation
+//     * */
+//    public  void updateMunalAnnotation(String anId,String manualAnnotation){
+//        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
+//
+//        Annotation annotation = new Annotation();
+//        annotation.setId(anId);
+//        annotation.setManualAnnotation(securityManualAnnotation);
+//        annotation.setGmtModified(new Date());
+//
+//        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
+//        AssertUtil.state(updateResult > 0, "更新最终标注失败");
+//    }
 
     /**
      * 批量自动标注
@@ -339,25 +337,25 @@ public class AnnotationService {
 
     }
 
-    /**
-     * 通过termId 来自动标注
-     * 首次标注,主要用于定时任务的批处理
-     * @param termId
-     */
-    public void autoAnnotationByTermId(String termId) {
-
-        //通过调用apiServer服务,获取自动标注结果
-        Corpus corpus = corpusService.queryByTermId(termId);
-        String autoAnnotation = apiServerService.phraseTokenize(corpus.getTerm());
-
-        //检查是否存标注信息
-        Annotation annotation = annotationMapper.selectByTermId(termId);
-        if (annotation == null) {
-            saveTermAnnotation(corpus, autoAnnotation);
-        } else {
-            updateAutoAnnotation(annotation.getId(), autoAnnotation);
-        }
-    }
+//    /**
+//     * 通过termId 来自动标注
+//     * 首次标注,主要用于定时任务的批处理
+//     * @param termId
+//     */
+//    public void autoAnnotationByTermId(String termId) {
+//
+//        //通过调用apiServer服务,获取自动标注结果
+//        Corpus corpus = corpusService.queryByTermId(termId);
+//        String autoAnnotation = apiServerService.phraseTokenize(corpus.getTerm());
+//
+//        //检查是否存标注信息
+//        Annotation annotation = annotationMapper.selectByTermId(termId);
+//        if (annotation == null) {
+//            saveTermAnnotation(corpus, autoAnnotation);
+//        } else {
+//            updateAutoAnnotation(annotation.getId(), autoAnnotation);
+//        }
+//    }
 
     /**
      * 通过annotationId,更新annotation表的final_annotation字段和new_terms字段
@@ -379,7 +377,7 @@ public class AnnotationService {
      */
     public Annotation autoAnnotationByAnId(String anId, String manual,
                                            List<TermTypeVO> newTerms) {
-        Annotation annotation = queryByAnId(anId);
+        Annotation annotation = getAnnotationByAnId(anId);
 
         List<Annotation> annotationList = new ArrayList<>();
 
@@ -408,7 +406,7 @@ public class AnnotationService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public void finishAnnotation(String anId) {
-        Annotation annotationOld = queryByAnId(anId);
+        Annotation annotationOld = getAnnotationByAnId(anId);
 
         //检查是否有歧义未处理
         boolean hasAmbiguity = AnnotationChecker
@@ -446,14 +444,14 @@ public class AnnotationService {
 
         AssertUtil.state(updateResult > 0, "设置术语状态为未识别异常");
     }
-    /**
-     * 保存标注,主要用于标注自动标注
-     * @param corpus
-     * @param autoAnnotation
-     */
-    private void saveTermAnnotation(Corpus corpus, String autoAnnotation) {
-        saveTermAnnotation(corpus.getId(), corpus.getTerm(), autoAnnotation);
-    }
+//    /**
+//     * 保存标注,主要用于标注自动标注
+//     * @param corpus
+//     * @param autoAnnotation
+//     */
+//    private void saveTermAnnotation(Corpus corpus, String autoAnnotation) {
+//        saveTermAnnotation(corpus.getId(), corpus.getTerm(), autoAnnotation);
+//    }
 
     /**
      * 保存标注,主要用于标注自动标注
@@ -513,7 +511,7 @@ public class AnnotationService {
     /**
      * 查询标注表的总条数
      * */
-    public  int  annotationTermSize(String state){
+    public  int  countAnnotationSizeByState(String state){
         return  annotationMapper.selectTermAnnotationCount(state);
     }
 

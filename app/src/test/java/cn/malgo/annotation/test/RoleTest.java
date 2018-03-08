@@ -23,7 +23,7 @@ public class RoleTest {
 
     @Test
     public void testRoleList(){
-        List<CrmRole> roleList=roleService.selectAllRole();
+        List<CrmRole> roleList=roleService.listRole();
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<");
         System.out.println(JSON.parseArray(JSON.toJSONString(roleList)));
     }

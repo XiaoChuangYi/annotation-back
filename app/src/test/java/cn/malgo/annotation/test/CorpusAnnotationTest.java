@@ -49,15 +49,15 @@ public class CorpusAnnotationTest {
 //        System.out.println(saveResult);
 //    }
 //
-    @Test
-    public void testSelectById() {
-        annotationService.updateFinalAnnotation("7318083869326200832","T1\tBody-structure 0 1\t腹\n" +
-                "T2\tSpace 1 2\t内\n" +
-                "T3\tBody-structure 2 4\t器官\n" +
-                "T4\tToken 4 5\t的\n" +
-                "T5\tDisease 5 7\t损伤\n");
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<");
-    }
+//    @Test
+//    public void testSelectById() {
+//        annotationService.updateFinalAnnotation("7318083869326200832","T1\tBody-structure 0 1\t腹\n" +
+//                "T2\tSpace 1 2\t内\n" +
+//                "T3\tBody-structure 2 4\t器官\n" +
+//                "T4\tToken 4 5\t的\n" +
+//                "T5\tDisease 5 7\t损伤\n");
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<");
+//    }
 //
 //    @Test
 //    public void testQueryOnePage() {

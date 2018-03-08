@@ -17,8 +17,6 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class excel2mysql {
-    @Autowired
-    private ConceptShowService conceptShowService;
 
     @Test
     public void select(){

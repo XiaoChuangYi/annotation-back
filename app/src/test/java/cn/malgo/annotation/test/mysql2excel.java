@@ -2,7 +2,7 @@ package cn.malgo.annotation.test;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.util.ExcelUtil;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import com.github.pagehelper.Page;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class mysql2excel {
 
     @Test
     public  void readMysqlAndToExcel(){
-        Page<AnAtomicTerm> pageInfo=atomicTermService.QueryAll(1,10);
+        Page<AnAtomicTerm> pageInfo=atomicTermService.listAnAtomicTermByPaging(1,10);
         String [] title = new String[]{"ID","术语","类型","状态","来源ID","生成时间","更新时间"};//标题
         List<AnAtomicTerm> anAtomicTermList=pageInfo.getResult();
         String [][]values = new String[anAtomicTermList.size()][];

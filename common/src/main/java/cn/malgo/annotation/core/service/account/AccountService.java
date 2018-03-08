@@ -36,7 +36,7 @@ public class AccountService {
     /**
      * 获取用户信息
      */
-     public List<CrmAccount> queryAccount(){
+     public List<CrmAccount> listAccount(){
          List<CrmAccount> crmAccountList=crmAccountMapper.selectAll();
          return  crmAccountList;
      }

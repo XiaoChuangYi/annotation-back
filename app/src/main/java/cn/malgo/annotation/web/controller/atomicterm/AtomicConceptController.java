@@ -3,12 +3,11 @@ package cn.malgo.annotation.web.controller.atomicterm;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.common.util.AssertUtil;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import cn.malgo.annotation.core.service.concept.AtomicConceptService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.core.service.concept.ConceptService;
 import cn.malgo.annotation.web.controller.atomicterm.request.QueryAtomicRequest;
 import cn.malgo.annotation.web.controller.atomicterm.request.addAtomicConceptRequest;
-import cn.malgo.annotation.web.controller.term.request.AddConceptRequest;
 import cn.malgo.annotation.web.controller.type.PageResult;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +30,9 @@ public class AtomicConceptController {
     private AtomicConceptService atomicConceptService;
 
     @Autowired
+    private ConceptService conceptService;
+
+    @Autowired
     private AtomicTermService atomicTermService;
 
 
@@ -42,7 +43,7 @@ public class AtomicConceptController {
      */
     @RequestMapping(value = "/list.do")
     public ResultVO<PageVO<AnAtomicTerm>> getOnePage(QueryAtomicRequest request) {
-        Page<AnAtomicTerm> page = atomicTermService.queryOnePage(request.getTerm(),
+        Page<AnAtomicTerm> page = atomicTermService.listAnAtomicTermByPagingCondition(request.getTerm(),
                 request.getType(), request.getId(),request.getPageNum(), request.getPageSize(),request.getChecked());
         PageVO<AnAtomicTerm> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
@@ -54,7 +55,7 @@ public class AtomicConceptController {
      */
     @RequestMapping(value = "/fuzzyList.do")
     public ResultVO<PageVO<AnAtomicTerm>> fuzzyQueryPage(QueryAtomicRequest request){
-        Map<String,Object> atomicTermMap=atomicTermService.queryFuzzyByTerm(request.getTerm(),request.getPageNum(),request.getPageSize(),request.getChecked());
+        Map<String,Object> atomicTermMap=atomicTermService.mapAnAtomicTermByPagingCondition(request.getTerm(),request.getPageNum(),request.getPageSize(),request.getChecked());
         PageResult<AnAtomicTerm> pageResult=new PageResult<>();
         pageResult.setTotal(Integer.parseInt(atomicTermMap.get("total").toString()));
         pageResult.setDataList((List<AnAtomicTerm>)atomicTermMap.get("atomicTermList"));
@@ -69,7 +70,7 @@ public class AtomicConceptController {
     @RequestMapping(value = { "/addConcept.do" })
     public ResultVO addNewConcept(addAtomicConceptRequest request){
         addAtomicConceptRequest.check(request);
-        atomicConceptService.addNewConceptAndUpdateAntomic(request.getId(),request.getOriginName());
+        atomicConceptService.addNewConceptAndUpdateAtomicTerm(request.getId(),request.getOriginName());
         return  ResultVO.success();
     }
     /**
@@ -92,7 +93,7 @@ public class AtomicConceptController {
      */
     @RequestMapping(value = { "/updateStandName.do" })
     public ResultVO updateConceptName(String newStandName,String conceptId){
-        atomicConceptService.updateStandNameofConcept(newStandName,conceptId);
+        conceptService.updateConceptStandardName(newStandName,conceptId);
         return  ResultVO.success();
     }
     /**
@@ -100,12 +101,12 @@ public class AtomicConceptController {
      */
     @RequestMapping(value = { "/queryAllConcept.do" })
         public ResultVO<List<Concept>> selectAllConcept(){
-        List<Concept> conceptList=atomicConceptService.selectAllConcept();
+        List<Concept> conceptList=conceptService.listConcept();
         return ResultVO.success(conceptList);
     }
     @RequestMapping(value = {"/getSingleConcept.do"})
     public ResultVO<Concept> selectAllConcept(String conceptId){
-        Concept concept=atomicConceptService.selectOneConcept(conceptId);
+        Concept concept=conceptService.getConceptByConceptId(conceptId);
         return ResultVO.success(concept);
     }
     /**
@@ -116,7 +117,7 @@ public class AtomicConceptController {
     @RequestMapping(value = { "/abandonAtomicTerm.do" })
     public ResultVO  abandonAtomicTerm(String id){
         AssertUtil.notBlank(id,"主键ID为空");
-        atomicConceptService.abandonAtomicTerm(id,"DISABLE");
+        atomicTermService.abandonAtomicTerm(id,"DISABLE");
         return  ResultVO.success();
     }
 

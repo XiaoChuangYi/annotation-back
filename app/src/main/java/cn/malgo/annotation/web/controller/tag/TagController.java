@@ -23,14 +23,14 @@ public class TagController  extends BaseController {
 
     @RequestMapping(value="/getAllTags.do")
     public ResultVO<List<Tag>>  getAllTags(){
-        List<Tag> tagList=tagService.selectAllTags();
+        List<Tag> tagList=tagService.listTag();
         return  ResultVO.success(tagList);
     }
 
     @RequestMapping(value = "/addTag.do")
     public ResultVO addTag(String tagName){
         AssertUtil.notBlank(tagName,"标签名称为空！");
-        tagService.insertTag(tagName);
+        tagService.saveTag(tagName);
         return  ResultVO.success();
     }
     /**
@@ -39,7 +39,7 @@ public class TagController  extends BaseController {
     @RequestMapping(value = "/addTags.do")
     public ResultVO addTags(TagArr tagArr){
         AssertUtil.notEmpty(tagArr.getTagList(),"标签列表为空！");
-        tagService.insertTags(tagArr.getTagList());
+        tagService.saveTagAggregate(tagArr.getTagList());
         return  ResultVO.success();
     }
 

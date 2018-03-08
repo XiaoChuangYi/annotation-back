@@ -2,7 +2,7 @@ package cn.malgo.annotation.web.controller.excel;
 
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.util.ExcelUtil;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import cn.malgo.annotation.web.result.ResultVO;
 import com.github.pagehelper.Page;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -28,7 +27,7 @@ public class ExcelController {
 
     @RequestMapping(value = "/db2excel.do")
     public ResultVO dbToExcel(HttpServletResponse response){
-        Page<AnAtomicTerm> pageInfo=atomicTermService.QueryAll(1,5170);
+        Page<AnAtomicTerm> pageInfo=atomicTermService.listAnAtomicTermByPaging(1,5170);
         String fileName = "原子术语"+System.currentTimeMillis()+".xls"; //文件名
 //        String [] title = new String[]{"ID","术语","类型","状态","来源ID","生成时间","更新时间"};//标题
         String [] title = new String[]{"术语","类型"};

@@ -42,21 +42,14 @@ public class CorpusService {
      * @param pageSize
      * @return
      */
-    public Page<Corpus> queryOnePageByState(TermStateEnum termStateEnum, int pageNum,
+    public Page<Corpus> listCorpusByPagingCondition(TermStateEnum termStateEnum, int pageNum,
                                             int pageSize) {
         Page<Corpus> pageInfo = PageHelper.startPage(pageNum, pageSize);
         corpusMapper.selectByState(termStateEnum.name());
         return pageInfo;
     }
 
-    /**
-     * 通过ID查询术语
-     * @param termId
-     * @return
-     */
-    public Corpus queryByTermId(String termId) {
-        return corpusMapper.selectByPrimaryKey(termId);
-    }
+
 
     /**
      * 更新术语的状态
@@ -83,7 +76,7 @@ public class CorpusService {
         try {
             do {
                 LogUtil.info(logger, MessageFormat.format("开始处理第{0}批次", batchCount));
-                page = queryOnePageByState(TermStateEnum.INIT, 1, pageSize);
+                page = listCorpusByPagingCondition(TermStateEnum.INIT, 1, pageSize);
                 Future<Boolean> future = asyncAnnotationService
                     .asyncAutoAnnotation(page.getResult());
                 Boolean result = future.get();

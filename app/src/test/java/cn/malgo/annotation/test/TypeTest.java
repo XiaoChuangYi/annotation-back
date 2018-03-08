@@ -2,8 +2,6 @@ package cn.malgo.annotation.test;
 
 import cn.malgo.annotation.common.dal.model.AnType;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.annotation.core.service.type.AsyncTypeBatchService;
-import cn.malgo.annotation.core.service.type.TypeAnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
@@ -26,11 +24,7 @@ public class TypeTest {
         @Autowired
         private AnnotationService annotationService;
 
-        @Autowired
-        private TypeAnnotationBatchService typeAnnotationBatchService;
 
-        @Autowired
-        private AsyncTypeBatchService asyncTypeBatchService;
 
 //        @Test
 //        public  void  addType(){

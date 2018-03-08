@@ -22,6 +22,8 @@ public class AsyncAnnotationService {
     @Autowired
     private AnnotationService annotationService;
 
+    @Autowired
+    private AnnotationBatchService annotationBatchService;
     /**
      * 异步自动标注
      * @param corpusList
@@ -32,6 +34,22 @@ public class AsyncAnnotationService {
         boolean result = true;
         try {
             annotationService.autoAnnotationByTermList(corpusList);
+        } catch (Exception e) {
+            result = false;
+        }
+        return new AsyncResult<>(result);
+    }
+
+    /**
+     * 异步自动更新标注表中的type类型
+     *@param typeOld
+     *@param typeNew
+     */
+    @Async("taskAsyncPool")
+    public Future<Boolean> asyncAutoBatchReplaceUnitAnnotation(String typeOld,String typeNew) {
+        boolean result = true;
+        try {
+            annotationBatchService.batchReplaceAnnotationTerm(typeOld,typeNew);
         } catch (Exception e) {
             result = false;
         }

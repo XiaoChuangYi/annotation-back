@@ -47,24 +47,17 @@ public class TypeService {
 
     /**
      * 根据ID查询其子数据
-     * @param Id
+     * @param parentId
      */
-    public  List<AnType> selectAllTypesById(String Id){
-        List<AnType> anTypeList=anTypeMapper.selectTypeByTypeId(Id);
+    public  List<AnType> listChildrenTypeByParentId(String parentId){
+        List<AnType> anTypeList=anTypeMapper.selectTypeByTypeId(parentId);
         return  anTypeList;
     }
+
     /**
      * 查询所有类型
      */
-    public Page<AnType> selectPaginationTypes(int pageNum,int pageSize){
-        Page<AnType> pageInfo= PageHelper.startPage(pageNum, pageSize);
-        anTypeMapper.selectEnableTypes();
-        return pageInfo;
-    }
-    /**
-     * 查询所有类型
-     */
-    public Page<AnType> selectPaginationTypesAndShowParent(int pageNum,int pageSize,String typeCode,String typeName){
+    public Page<AnType> listEnableTypeByPagingCondition(int pageNum,int pageSize,String typeCode,String typeName){
         Page<AnType> pageInfo= PageHelper.startPage(pageNum, pageSize);
         anTypeMapper.selectEnableTypeAndShowParent(typeCode,typeName);
         return pageInfo;
@@ -72,7 +65,7 @@ public class TypeService {
     /**
      * 查询所有类型
      */
-    public List<AnType> selectAllTypes(){
+    public List<AnType> listEnableType(){
         List<AnType> anTypeList=anTypeMapper.selectEnableTypes();
         return anTypeList;
     }
@@ -159,7 +152,7 @@ public class TypeService {
      * @param typeName
      * */
     @Transactional
-    public void insertType(String parentId,String typeName,String typeCode){
+    public void saveType(String parentId,String typeName,String typeCode){
         AnType anTypeOld=anTypeMapper.selectTypeByTypeCodeEnable(typeCode);
         AssertUtil.state(anTypeOld==null,"该type类型已经存在");
         AnType anTypeNew=new AnType();
@@ -193,107 +186,10 @@ public class TypeService {
      * 删除type,设置该type的state为disable
      * @param typeId
      * */
-    public void deleteType(String typeId){
+    public void removeType(String typeId){
         AnType anType=anTypeMapper.selectByPrimaryKey(typeId);
         anType.setState(TypeStateEnum.DISABLE.name());
         int delResult=anTypeMapper.updateByPrimaryKeySelective(anType);
         AssertUtil.state(delResult > 0, "删除类型失败");
-    }
-    /**
-     * 根据type/term集合查询标术语注表中的标注
-     * @param combineAtomicTermList
-     */
-    public List<Annotation> queryAnnotationByCombineAtomicTerm(List<CombineAtomicTerm> combineAtomicTermList) {
-        int pageNum = 1;
-        int pageSize = 2000;
-        List<Annotation> finalAnnotation = new ArrayList<>();
-        Page<Annotation> pageInfo = null;
-        Set<String> setAtomicTerm=new HashSet<>();
-        do {
-            pageInfo = annotationService.queryByStateList(null, pageNum, pageSize);
-            LogUtil.info(logger,
-                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            for (Annotation annotation : pageInfo.getResult()) {
-                try {
-                    List<TermAnnotationModel> finalModelList = AnnotationConvert
-                            .convertAnnotationModelList(annotation.getFinalAnnotation());
-                    setAtomicTerm.clear();
-                    for (TermAnnotationModel currentModel : finalModelList) {
-                        //如果参数传入的原子术语集合都能匹配到当前标注中的原子术语,则加入返回的集合
-                        for(CombineAtomicTerm combineAtomicTerm:combineAtomicTermList) {
-                            if (currentModel.getType().equals(combineAtomicTerm.getType()) && currentModel.getTerm().equals(combineAtomicTerm.getTerm())) {
-                                    setAtomicTerm.add(currentModel.getTerm());
-                            }
-                        }
-                    }
-                    if (setAtomicTerm.size()==combineAtomicTermList.size()) {
-                        finalAnnotation.add(annotation);
-                        LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
-                    }
-                } catch (Exception ex) {
-                    LogUtil.info(logger,
-                            "异常处理第" + pageNum + "批次,原因:"+ ex.getMessage());
-                }
-            }
-            LogUtil.info(logger,
-                    "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            pageNum++;
-        }while (pageInfo.getPages() >= pageNum) ;
-        return finalAnnotation;
-    }
-
-    /**
-     * 根据type/term查询标术语注表中的标注
-     *@param type
-     *@param term
-     */
-    public AnnotationPagination     queryAnnotationByType(String type, String term,int cPageNum,int cPageSize){
-        LogUtil.info(logger, "开始批量查询标注术语，当前前端参数传入的pageIndex:"+cPageNum);
-        int pageSize = 100;
-        int currentIndex=cPageNum;//当前标注数据库中遍历的索引值
-        int total=annotationService.annotationTermSize(AnnotationStateEnum.FINISH.name());
-        List<Annotation> finalAnnotationList = new LinkedList<>();
-        outer:do {
-            //cPageNum为前端传入的开始查询的startIndex
-            List<Annotation> anAtomicTermList = annotationService.queryFinalAnnotationPagination(AnnotationStateEnum.FINISH.name(), currentIndex, pageSize);
-            for (Annotation annotation : anAtomicTermList) {
-                try {
-                    //最终标注
-                    List<TermAnnotationModel> finalModelList = AnnotationConvert
-                            .convertAnnotationModelList(annotation.getFinalAnnotation());
-                    boolean isHave = false;
-                    for (TermAnnotationModel currentModel : finalModelList) {
-                        if (currentModel.getType().equals(type) && currentModel.getTerm().equals(term)) {
-                            isHave = true;
-                            break;
-                        }
-                    }
-                    //如果有符合的原子术语，则添加该条标注数据到最终集合中
-                    //如果最终集合中的条数已经符合参数传递的pageSize的值，则暂停最外层循环直接返回
-                    if (isHave) {
-                        finalAnnotationList.add(annotation);
-                        if(finalAnnotationList.size()==cPageSize)
-                        {
-                            currentIndex++;
-//                            currentIndex=cPageNum;//当最终集合的大小符合cPageSize的时候，计算出当前在数据库中已经遍历到的索引值
-                            break outer;
-                        }
-                        LogUtil.info(logger, "存在带替换的标注术语为:" + annotation.getId());
-                    }
-                } catch (Exception ex) {
-                    LogUtil.info(logger,
-                            "结束处理第" + ex.getMessage());
-                }
-                //count计数器，每遍历一条数据，+1
-                currentIndex++;
-            }
-            System.out.println("当前的currentIndex:"+currentIndex);
-        }while(currentIndex<total);
-        System.out.println("当前遍历到数据库的索引值："+currentIndex+"<<<<<<<<<<<<<<<<>>>>>>>>>>数据库中总的标注数据："+total);
-        AnnotationPagination annotationPagination=new AnnotationPagination<Annotation>();
-        //传给前端两个参数，参数一：遍历Annotation表的的currentIndex,以及根据前端的pageSize大小的返回的集合
-        annotationPagination.setLastIndex(currentIndex);
-        annotationPagination.setList(finalAnnotationList);
-        return annotationPagination;
     }
 }

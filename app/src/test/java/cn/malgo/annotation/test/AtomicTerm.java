@@ -2,6 +2,8 @@ package cn.malgo.annotation.test;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermBatchService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,8 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
-import cn.malgo.annotation.core.service.corpus.AtomicTermBatchService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class AtomicTerm {
     private AtomicTermBatchService atomicTermBatchService;
 
     @Autowired
-    private AtomicTermService      atomicTermService;
+    private AtomicTermService atomicTermService;
 
     @Autowired
     private AnnotationService annotationService;
@@ -84,10 +84,10 @@ public class AtomicTerm {
 //        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 //        System.out.println(JSON.parseArray(JSON.toJSONString(anAtomicTermList)));
 //    }
-    @Test
-    public void test(){
-        List<String> idsList=annotationService.getAnnotationIDsByCondition("FINISH","",10);
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        System.out.println(JSON.parseArray(JSON.toJSONString(idsList)));
-    }
+//    @Test
+//    public void test(){
+//        List<String> idsList=annotationService.getAnnotationIDsByCondition("FINISH","",10);
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>打印<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//        System.out.println(JSON.parseArray(JSON.toJSONString(idsList)));
+//    }
 }

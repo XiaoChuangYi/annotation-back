@@ -81,12 +81,12 @@ public class AccountController {
 
     @RequestMapping(value = "/getRoles.do")
     public ResultVO<List<CrmRole>> getAllRole(){
-        List<CrmRole> roleVOList=roleService.selectAllRole();
+        List<CrmRole> roleVOList=roleService.listRole();
         return ResultVO.success(roleVOList);
     }
     @RequestMapping(value = "/getAccount.do")
     public  ResultVO<List<CrmAccount>> getAllAccount(){
-        List<CrmAccount> crmAccountList=accountService.queryAccount();
+        List<CrmAccount> crmAccountList=accountService.listAccount();
         return  ResultVO.success(crmAccountList);
     }
     @RequestMapping(value = "/getRolesByAccount.do")

@@ -33,29 +33,6 @@
     final_annotation,
     new_terms
   </sql>
-    <update id="batchUpdateFinalAndManualAnnotation">
-        UPDATE annotation SET final_annotation=
-        <foreach close="end" collection="annotationList" index="index" item="item" open="case id" separator=" ">
-            when #{item.id} THEN
-            #{item.finalAnnotation}
-        </foreach>
-        ,manual_annotation=
-        <foreach collection="annotationList" index="index" item="item" open="case id" close="end" separator=" ">
-            when #{item.id} THEN
-            #{item.manualAnnotation}
-        </foreach>
-          WHERE id in
-        <foreach collection="annotationList" index="index" item="item" open="(" close=")" separator=",">
-            #{item.id,jdbcType=VARCHAR}
-        </foreach>
-    </update>
-    <update id="batchUpdateFinalAnnotation">
-        <foreach close="" collection="annotationList" index="index" item="item" open="" separator=" ">
-            UPDATE annotation SET final_annotation=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},
-            CHAR(10), ''), CHAR(13), '')
-            WHERE id=#{item.id,jdbcType=VARCHAR};
-        </foreach>
-    </update>
 
     <select id="selectByStateModifier" resultMap="BaseResultMap">
         SELECT
@@ -68,6 +45,19 @@
         ORDER BY id DESC
     </select>
 
+    <select id="selectByStateAndUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="ALL_COLUMN"/>
+        FROM annotation WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND state = #{state}
+        </if>
+        <if test="userId!=null and userId!=''">
+            AND modified = #{userId}
+        </if>
+        ORDER BY
+        gmt_created DESC
+    </select>
     <select id="selectByStateListModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -92,7 +82,7 @@
         </if>
         ORDER BY id
         <if test="start!=null and pageSize!=null">
-        LIMIT #{start,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+            LIMIT #{start,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
         </if>
     </select>
 
@@ -146,19 +136,29 @@
         ORDER BY
         gmt_created ASC
     </select>
-    <select id="selectByStateAndUserId" resultMap="BaseResultMap">
-        SELECT
-        <include refid="ALL_COLUMN"/>
-        FROM annotation WHERE 1=1
-        <if test="state!=null and state!=''">
-            AND state = #{state}
-        </if>
-        <if test="userId!=null and userId!=''">
-            AND modified = #{userId}
-        </if>
-        ORDER BY
-        gmt_created DESC
-    </select>
+    <update id="batchUpdateFinalAndManualAnnotation">
+        UPDATE annotation SET final_annotation=
+        <foreach close="end" collection="annotationList" index="index" item="item" open="case id" separator=" ">
+            when #{item.id} THEN
+            #{item.finalAnnotation}
+        </foreach>
+        ,manual_annotation=
+        <foreach collection="annotationList" index="index" item="item" open="case id" close="end" separator=" ">
+            when #{item.id} THEN
+            #{item.manualAnnotation}
+        </foreach>
+        WHERE id in
+        <foreach collection="annotationList" index="index" item="item" open="(" close=")" separator=",">
+            #{item.id,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+    <update id="batchUpdateFinalAnnotation">
+        <foreach close="" collection="annotationList" index="index" item="item" open="" separator=" ">
+            UPDATE annotation SET final_annotation=REPLACE(REPLACE(#{item.finalAnnotation,jdbcType=LONGVARCHAR},
+            CHAR(10), ''), CHAR(13), '')
+            WHERE id=#{item.id,jdbcType=VARCHAR};
+        </foreach>
+    </update>
     <update id="batchUpdateAnnotationUserId" parameterType="java.util.List">
         UPDATE annotation SET modifier =#{modifier}
         WHERE id IN

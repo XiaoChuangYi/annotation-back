@@ -2,8 +2,8 @@ package cn.malgo.annotation.web.controller.term;
 
 import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.common.dal.model.MixtureTerm;
-import cn.malgo.annotation.core.service.concept.MixtureService;
-import cn.malgo.annotation.core.service.corpus.AtomicTermService;
+import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
+import cn.malgo.annotation.core.service.concept.ConceptService;
 import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddConceptRequest;
@@ -24,8 +24,11 @@ import java.util.List;
 @RequestMapping(value = { "/concept" })
 public class ConceptController extends BaseController {
 
+//    @Autowired
+//    private MixtureService mixtureService;
+
     @Autowired
-    private MixtureService mixtureService;
+    private ConceptService conceptService;
 
     @Autowired
     private TermService termService;
@@ -43,7 +46,7 @@ public class ConceptController extends BaseController {
     @RequestMapping(value = { "/addConcept.do" })
     public ResultVO addNewConcept(AddConceptRequest request){
         AddConceptRequest.check(request);
-        mixtureService.addNewConcept(request.getId(),request.getOriginName());
+        conceptService.saveConcept(request.getId(),request.getOriginName());
         return  ResultVO.success();
     }
     /**
@@ -55,7 +58,7 @@ public class ConceptController extends BaseController {
      */
     @RequestMapping(value = { "/updateConcept.do" })
     public ResultVO updateTermOrAddConcept(int id,String conceptId,String conceptName){
-        mixtureService.updateTermOrAddConcept(id,conceptId,conceptName);
+        conceptService.updateTermOrSaveConcept(id,conceptId,conceptName);
         return  ResultVO.success();
     }
     /**
@@ -66,7 +69,6 @@ public class ConceptController extends BaseController {
      */
     @RequestMapping(value = { "/bindConceptTermId.do" })
     public ResultVO bindConceptTermId(int id,String termId){
-        mixtureService.bindTermIdOfConcept(id,termId);
         return  ResultVO.success();
     }
     /**
@@ -77,7 +79,7 @@ public class ConceptController extends BaseController {
      */
     @RequestMapping(value = { "/updateStandName.do" })
     public ResultVO updateConceptName(String newStandName,String conceptId){
-        mixtureService.updateStandNameofConcept(newStandName,conceptId);
+        conceptService.updateConceptStandardName(newStandName,conceptId);
         return  ResultVO.success();
     }
     /**
@@ -85,7 +87,7 @@ public class ConceptController extends BaseController {
      */
     @RequestMapping(value = { "/queryAllConcept.do" })
     public ResultVO<List<Concept>> selectAllConcept(){
-        List<Concept> conceptList=mixtureService.selectAllConcept();
+        List<Concept> conceptList=conceptService.listConcept();
         return ResultVO.success(conceptList);
     }
 
@@ -94,13 +96,13 @@ public class ConceptController extends BaseController {
      */
     @RequestMapping(value = {"/queryConceptPagination.do"})
     public ResultVO<PageVO<Concept>> selectConceptPagination(QueryConceptRequest request){
-        Page<Concept> page = mixtureService.selectConceptPagination(request.getPageIndex(), request.getPageSize(),request.getStandardName());
+        Page<Concept> page = conceptService.listConceptByPagingCondition(request.getPageIndex(), request.getPageSize(),request.getStandardName());
         PageVO<Concept> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
     @RequestMapping(value = {"/getSingleConcept.do"})
     public ResultVO<Concept> selectAllConcept(String conceptId){
-        Concept concept=mixtureService.selectOneConcept(conceptId);
+        Concept concept=conceptService.getConceptByConceptId(conceptId);
         return ResultVO.success(concept);
     }
     /**
@@ -109,8 +111,8 @@ public class ConceptController extends BaseController {
     @RequestMapping(value = {"/queryTermOrAtomicTermByTerm.do"})
     public ResultVO<List<MixtureTerm>> queryTermOrAtomicTermByTerm(String termText){
         //术语表直接模糊查询数据库
-        List<MixtureTerm> mixtureTermList=termService.selectByTermName(termText);
-        List<MixtureTerm> finalTermList=atomicTermService.queryMixtureFuzzyByTerm(mixtureTermList,termText);
+        List<MixtureTerm> mixtureTermList=termService.listMixtureTermByTermName(termText);
+        List<MixtureTerm> finalTermList=atomicTermService.listMixtureTermByCondition(mixtureTermList,termText);
         return  ResultVO.success(finalTermList);
     }
 }

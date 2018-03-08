@@ -320,8 +320,8 @@ public class AnnotationConvert {
      */
     public static List<TermAnnotationModel> convertAnnotationModelList(String text) {
 
-        LogUtil.debug(logger,"待转换文本:"+text);
-        System.out.println("待转换文本:"+text);
+//        LogUtil.debug(logger,"待转换文本:"+text);
+//        System.out.println("待转换文本:"+text);
 
         List<TermAnnotationModel> termAnnotationModelList = new ArrayList<>();
         if (StringUtils.isBlank(text)) {
@@ -335,7 +335,7 @@ public class AnnotationConvert {
             TermAnnotationModel termAnnotationModel = new TermAnnotationModel();
 
             String[] elements = line.split("\t");
-            System.out.println("elements:"+JSONArray.toJSONString(elements));
+//            System.out.println("elements:"+JSONArray.toJSONString(elements));
             termAnnotationModel.setTag(elements[0]);
             termAnnotationModel.setTerm(elements[2]);
 

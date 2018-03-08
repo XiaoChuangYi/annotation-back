@@ -1,9 +1,17 @@
 package cn.malgo.annotation.core.service.concept;
 
 import cn.malgo.annotation.common.dal.mapper.ConceptMapper;
+import cn.malgo.annotation.common.dal.mapper.TermMapper;
 import cn.malgo.annotation.common.dal.model.Concept;
+import cn.malgo.annotation.common.dal.model.Term;
+import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
+import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
+import cn.malgo.annotation.common.util.AssertUtil;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,32 +23,97 @@ public class ConceptService {
     @Autowired
     private ConceptMapper conceptMapper;
 
-    /**
-     *新增concept
-     * @param  conceptName
-     */
-    public  void  insertConcept(String conceptName){
-        Concept concept=new Concept();
-        concept.setStandardName(conceptName);
-        conceptMapper.insertUseGeneratedKeys(concept);
-    }
-    /**
-     *更新concept
-     * @param id
-     * @param conceptName
-     */
-    public void updateConcept(int id,String conceptName){
-        Concept concept=new Concept();
-        concept.setId(id);
-        concept.setStandardName(conceptName);
-        conceptMapper.updateByPrimaryKey(concept);
-    }
+    @Autowired
+    private TermMapper termMapper;
+
+    @Autowired
+    private SequenceGenerator sequenceGenerator;
     /**
      *查询concept
      */
-    public List<Concept> selectAllConcept(){
+    public List<Concept> listConcept(){
         List<Concept> conceptList=conceptMapper.selectAll();
         return conceptList;
+    }
+    /**
+     *分页查询concept
+     * @param pageNum
+     * @param pageSize
+     */
+    public Page<Concept> listConceptByPagingCondition(int pageNum, int pageSize, String standardName){
+        Page<Concept> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        conceptMapper.selectAllConceptByCondition(standardName);
+        return pageInfo;
+    }
+
+    /**
+     *根据conceptId查询单条concept
+     */
+    public  Concept getConceptByConceptId(String conceptId){
+        Concept concept=conceptMapper.selectConceptByConceptId(conceptId);
+        return  concept;
+    }
+    /**
+     *@param id
+     *@param originName
+     */
+    @Transactional
+    public void saveConcept(int id, String originName){
+        List<Concept> conceptList=conceptMapper.selectConceptByStandardName(originName);
+        AssertUtil.state(conceptList.size()==0,"术语表中已有该条记录");
+        String conceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+        Term termNew=new Term();
+        termNew.setId(id);
+        termNew.setConceptId(conceptId);
+
+        Concept concept=new Concept();
+        concept.setStandardName(originName);
+        concept.setConceptId(conceptId);
+
+        int insertResult=conceptMapper.insertUseGeneratedKeys(concept);
+        AssertUtil.state(insertResult > 0, "新增概念失败");
+        int updateResult=termMapper.updateByPrimaryKeySelective(termNew);
+        AssertUtil.state(updateResult > 0, "更新术语失败");
+    }
+
+    /**
+     *归入旧的concept,即将当前行的conceptId更新为一个新的conceptId,如果concept表有则更新
+     *@param  id
+     *@param  conceptId
+     */
+    @Transactional
+    public void updateTermOrSaveConcept(int id,String conceptId,String conceptName){
+        Term term=new Term();
+        term.setId(id);
+        if(conceptId!=null&&!"".equals(conceptId)) {
+            //当前concept表中已有该条记录，直接更新term表中的conceptID
+            term.setConceptId(conceptId);
+        }else {
+            String pConceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+            term.setConceptId(pConceptId);
+            Concept concept=new Concept();
+            concept.setStandardName(conceptName);
+            concept.setConceptId(pConceptId);
+            int insertResult=conceptMapper.insertUseGeneratedKeys(concept);
+            AssertUtil.state(insertResult > 0, "插入概念失败");
+        }
+        int updateResult=termMapper.updateByPrimaryKeySelective(term);
+        AssertUtil.state(updateResult > 0, "更新术语失败");
+    }
+    /**
+     *修改标注名称
+     * @param standName
+     * @param conceptId
+     */
+    public void updateConceptStandardName(String standName,String conceptId){
+        Concept oldConcept=conceptMapper.selectConceptByConceptId(conceptId);
+        if(oldConcept!=null){
+            Concept concept=new Concept();
+            concept.setStandardName(standName);
+            concept.setId(oldConcept.getId());
+            int updateResult=conceptMapper.updateByPrimaryKeySelective(concept);
+            AssertUtil.state(updateResult > 0, "更新术语名称失败");
+        }
     }
 
 }
