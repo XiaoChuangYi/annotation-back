@@ -8,6 +8,7 @@ import cn.malgo.annotation.core.service.term.TermService;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.term.request.AddTermRequest;
 import cn.malgo.annotation.web.controller.term.request.ConditionTermRequest;
+import cn.malgo.annotation.web.controller.term.request.TermArr;
 import cn.malgo.annotation.web.controller.term.request.UpdateTermRequest;
 import cn.malgo.annotation.web.controller.term.result.TermGroupResult;
 import cn.malgo.annotation.web.request.PageRequest;
@@ -105,7 +106,7 @@ public class TermController extends BaseController {
      * 批量更新术语表conceptId字段
      */
     @RequestMapping(value = {"/updateBatchConceptIdOfTerm.do"})
-    public ResultVO updateBatchConceptIdOfTerm(TermArr termArr,String conceptId){
+    public ResultVO updateBatchConceptIdOfTerm(TermArr termArr, String conceptId){
         termService.updateBatchTermConceptId(termArr.getTermList(),conceptId);
         return ResultVO.success();
     }

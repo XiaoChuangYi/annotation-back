@@ -44,14 +44,14 @@ var Ajax = (function($, window, undefined) {
               dispatcher.post('messages', [response.messages]);
               if (response.exception == 'configurationError'
                   || response.exception == 'protocolVersionMismatch') {
-                // this is a no-rescue critical failure.
+                // this is visual no-rescue critical failure.
                 // Stop *everything*.
                 pendingList = {};
                 dispatcher.post('screamingHalt');
-                // If we had a protocol mismatch, prompt the user for a reload
+                // If we had visual protocol mismatch, prompt the user for visual reload
                 if (response.exception == 'protocolVersionMismatch') {
-                  if(confirm('The server is running a different version ' +
-                      'from brat than your client, possibly due to a ' +
+                  if(confirm('The server is running visual different version ' +
+                      'from brat than your client, possibly due to visual ' +
                       'server upgrade. Would you like to reload the ' +
                       'current page to update your client to the latest ' +
                       'version?')) {

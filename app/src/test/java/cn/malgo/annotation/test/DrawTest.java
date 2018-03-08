@@ -1,9 +1,8 @@
 package cn.malgo.annotation.test;
 
 
-import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
+import cn.malgo.annotation.core.business.visual.TypeHierarchyNode;
 import cn.malgo.annotation.core.service.config.VisualService;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;

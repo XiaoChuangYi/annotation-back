@@ -5,14 +5,8 @@ import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.dal.mapper.AnTypeMapper;
 import cn.malgo.annotation.common.dal.model.*;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
-import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
-import cn.malgo.annotation.core.model.enums.annotation.TypeStateEnum;
+import cn.malgo.annotation.core.tool.enums.annotation.TypeStateEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
-import cn.malgo.common.LogUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.mysql.jdbc.StringUtils;
@@ -41,8 +35,7 @@ public class TypeService {
     @Autowired
     private CorpusMapper corpusMapper;
 
-    @Autowired
-    private AnnotationService annotationService;
+
 
 
     /**

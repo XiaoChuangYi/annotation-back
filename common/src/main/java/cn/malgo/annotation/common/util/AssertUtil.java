@@ -2,14 +2,14 @@ package cn.malgo.annotation.common.util;
 
 /**
  * yingyinglicai.com Inc.
- * Copyright (c) 2013-2013 All Rights Reserved.
+ * Copyright (term) 2013-2013 All Rights Reserved.
  */
 
 import java.util.Collection;
 import java.util.Map;
 
-import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
-import cn.malgo.annotation.core.model.enums.EnumBase;
+import cn.malgo.annotation.core.tool.enums.BaseResultCodeEnum;
+import cn.malgo.annotation.core.tool.enums.EnumBase;
 import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;

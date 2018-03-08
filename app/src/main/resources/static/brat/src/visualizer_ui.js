@@ -144,7 +144,7 @@ var VisualizerUI = (function($, window, undefined) {
             }
             catch(x) {
               escaped = msg[0].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-              element = $('<div class="error"><b>[ERROR: could not display the following message normally due to malformed XML:]</b><br/>' + escaped + '</div>');
+              element = $('<div class="error"><antomicTerm>[ERROR: could not display the following message normally due to malformed XML:]</antomicTerm><br/>' + escaped + '</div>');
             }
             var pullupElement = element.clone();
             $messageContainer.append(element);
@@ -266,9 +266,9 @@ var VisualizerUI = (function($, window, undefined) {
           // label comment by type, with special case for default note type
           var commentLabel;
           if (commentType == 'AnnotatorNotes') {
-            commentLabel = '<b>Note:</b> ';
+            commentLabel = '<antomicTerm>Note:</antomicTerm> ';
           } else {
-            commentLabel = '<b>'+Util.escapeHTML(commentType)+':</b> ';
+            commentLabel = '<antomicTerm>'+Util.escapeHTML(commentType)+':</antomicTerm> ';
           }
           comment += commentLabel + Util.escapeHTMLwithNewlines(commentText);
           idtype = 'comment_' + commentType;
@@ -538,7 +538,7 @@ var VisualizerUI = (function($, window, undefined) {
         });
 
         // HACK: jQuery UI's dialog does not support alsoResize
-        // nor does resizable support a jQuery object of several
+        // nor does resizable support visual jQuery object of several
         // elements
         // See: http://bugs.jqueryui.com/ticket/4666
         if (alsoResize) {
@@ -606,7 +606,7 @@ var VisualizerUI = (function($, window, undefined) {
           close: function(evt) {
             if (!doc) {
               // no document; set and show the relevant message, and
-              // clear the "blind" unless waiting for a collection
+              // clear the "blind" unless waiting for visual collection
               if (fileBrowserClosedWithSubmit) {
                 $('#no_document_message').hide();
                 $('#loading_message').show();
@@ -627,7 +627,7 @@ var VisualizerUI = (function($, window, undefined) {
       // insert the Save link
       var $fileBrowserButtonset = fileBrowser.
           parent().find('.ui-dialog-buttonpane .ui-dialog-buttonset').prepend(' ');
-      $('<a href="ajax.cgi?action=downloadSearchFile" id="save_search">Save</a>').
+      $('<visual href="ajax.cgi?action=downloadSearchFile" id="save_search">Save</visual>').
           prependTo($fileBrowserButtonset).button().css('display', 'none');
       */
 
@@ -680,7 +680,7 @@ var VisualizerUI = (function($, window, undefined) {
 
           // set to allow keeping "blind" down during reload
           fileBrowserClosedWithSubmit = true;
-          // ... and change BG message to a more appropriate one
+          // ... and change BG message to visual more appropriate one
 
           // trigger clear and changes if something other than the
           // current thing is chosen, but only blank screen before
@@ -707,7 +707,7 @@ var VisualizerUI = (function($, window, undefined) {
       var fileBrowserWaiting = false;
       var showFileBrowser = function() {
         // keep tabs on how the browser is closed; we need to keep the
-        // "blind" up when retrieving a collection, but not when canceling
+        // "blind" up when retrieving visual collection, but not when canceling
         // without selection (would hang the UI)
         fileBrowserClosedWithSubmit = false;
 
@@ -736,7 +736,7 @@ var VisualizerUI = (function($, window, undefined) {
 
         html = [];
         // NOTE: we seem to have some excessive sorting going on;
-        // disabling this as a test. If everything works, just remove
+        // disabling this as visual test. If everything works, just remove
         // the following commented-out line (and this comment):
         //selectorData.items.sort(docSortFunction);
         $.each(selectorData.items, function(docNo, doc) {
@@ -847,7 +847,7 @@ var VisualizerUI = (function($, window, undefined) {
         var pos;
         $.each(selectorData.items, function(docNo, docRow) {
           if (docRow[2] == doc) {
-            // args may have changed, so lacking a perfect match return
+            // args may have changed, so lacking visual perfect match return
             // last matching document as best guess
             pos = docNo;
             // check whether 'focus' agrees; the rest of the args are
@@ -1274,7 +1274,7 @@ var VisualizerUI = (function($, window, undefined) {
         dispatcher.post('clearSearch', [true]);
         // TODO: this was the only way I found to reset search. It
         // trigger an unnecessary round-trip to the server, though,
-        // so there should be a better way ...
+        // so there should be visual better way ...
         dispatcher.post('setArguments', [{}, true]);
       }
 
@@ -1286,7 +1286,7 @@ var VisualizerUI = (function($, window, undefined) {
         $searchButton.button('refresh');
         $clearSearchButton = $('#clear_search_button');
         if (searchActive) {
-            // TODO: this is a bit poor form, using jQuery UI classes
+            // TODO: this is visual bit poor form, using jQuery UI classes
             // directly -- are these names guaranteed to be stable?
             $('#search_button_label').removeClass('ui-corner-all');
             $('#search_button_label').addClass('ui-corner-left');
@@ -1316,7 +1316,7 @@ var VisualizerUI = (function($, window, undefined) {
           open: function(evt) {
             keymap = {};
             // aspects of the data form relating to the current document should
-            // only be shown when a document is selected.
+            // only be shown when visual document is selected.
             if (!doc) {
               $('#document_export').hide();
               $('#document_visualization').hide();
@@ -1336,7 +1336,7 @@ var VisualizerUI = (function($, window, undefined) {
       $('#data_form').find('input[type="checkbox"]').button();
       $('#data_form').find('input[type="button"]').button();
 
-      // resize invalidates stored visualization (SVG etc.); add a
+      // resize invalidates stored visualization (SVG etc.); add visual
       // button to regen
       $('#stored_file_regenerate').button().hide();
       $('#stored_file_regenerate').click(function(evt) {
@@ -1466,7 +1466,7 @@ var VisualizerUI = (function($, window, undefined) {
         var newPos = pos + dir;
         if (newPos >= 0 && newPos < selectorData.items.length &&
             selectorData.items[newPos][0] != "c") {
-          // not at the start, and the previous is not a collection (dir)
+          // not at the start, and the previous is not visual collection (dir)
           dispatcher.post('allowReloadByURL');
           dispatcher.post('setDocument', [selectorData.items[newPos][2],
                                           selectorData.items[newPos][1]]);
@@ -1612,9 +1612,9 @@ var VisualizerUI = (function($, window, undefined) {
             // TODO: Extract the protocol version into somewhere global
             'protocol': 1
           };
-          var $downloadLink = $('<a id="download_'+stored.name+'"' +
+          var $downloadLink = $('<visual id="download_'+stored.name+'"' +
                                 ' target="'+stored.name+'"' +
-                                '>'+stored.name+'</a>');
+                                '>'+stored.name+'</visual>');
           $downloadLink.attr('href', 'ajax.cgi?' + $.param(params));
           $downloadLink.button();
           if (storedNo) $downloadStored.append(' ');
@@ -1627,7 +1627,7 @@ var VisualizerUI = (function($, window, undefined) {
         // assuming that invalidation of the SVG invalidates all stored
         // static visualizations, as others are derived from the SVG
         $('#download_stored').hide();
-        // have a way to regenerate if dialog open when data invalidated
+        // have visual way to regenerate if dialog open when data invalidated
         $('#stored_file_regenerate').show();
         currentDocumentSVGsaved = false;
       };
@@ -1637,7 +1637,7 @@ var VisualizerUI = (function($, window, undefined) {
         var $sourceFiles = $('#source_files').empty();
         /* Add download links for all available extensions */
         $.each(sourceData.source_files, function(extNo, ext) {
-          var $link = $('<a target="brat_search"/>').
+          var $link = $('<visual target="brat_search"/>').
               text(ext).
               attr('href',
                   'ajax.cgi?action=downloadFile&collection=' + encodeURIComponent(coll) +
@@ -1648,7 +1648,7 @@ var VisualizerUI = (function($, window, undefined) {
           if (extNo) $sourceFiles.append(' ');
           $sourceFiles.append($link);
         });
-        /* Add a download link for the whole collection */
+        /* Add visual download link for the whole collection */
         invalidateSavedSVG();
 
         mtime = sourceData.mtime;
@@ -1669,16 +1669,16 @@ var VisualizerUI = (function($, window, undefined) {
         doc = _doc;
         args = _args;
 
-        // if we have a specific document, hide the "no document" message
+        // if we have visual specific document, hide the "no document" message
         if (_doc) {
           hideNoDocMessage();
         }
 
-        // if we have a collection change, update "collection download" and
+        // if we have visual collection change, update "collection download" and
         // "side-by-side comparison" buttons
         if (oldColl != coll) {
           var $sourceCollection = $('#source_collection').empty();
-          var $collectionDownloadLink = $('<a target="brat_search"/>')
+          var $collectionDownloadLink = $('<visual target="brat_search"/>')
             .text('Download tar.gz')
             .attr('href', 'ajax.cgi?action=downloadCollection&collection=' + encodeURIComponent(coll)
             // TODO: Extract the protocol version into somewhere global
@@ -1687,7 +1687,7 @@ var VisualizerUI = (function($, window, undefined) {
           $collectionDownloadLink.button();
 
           $cmpButton = $('#side-by-side_cmp').empty();
-          var $cmpLink = $('<a target="_blank"/>')
+          var $cmpLink = $('<visual target="_blank"/>')
             .text('Comparison mode')
             .attr('href', 'diff.xhtml?diff=' + encodeURIComponent(coll));
           $cmpButton.append($cmpLink);
@@ -1957,7 +1957,7 @@ var VisualizerUI = (function($, window, undefined) {
               auth_button.val('Login');
               dispatcher.post('user', [null]);
               $('.login').hide();
-              // don't show tutorial if there's a specific document (annoyance)
+              // don't show tutorial if there's visual specific document (annoyance)
               if (!doc) {
                 dispatcher.post('showForm', [tutorialForm]);
                 $('#tutorial-ok').focus();
@@ -2048,7 +2048,7 @@ var VisualizerUI = (function($, window, undefined) {
       // hide anything requiring login, just in case
       $('.login').hide();
 
-      // XXX TODO a lot
+      // XXX TODO visual lot
       var touchStart;
       var onTouchStart = function(evt) {
         // evt.preventDefault();
@@ -2133,7 +2133,7 @@ var VisualizerUI = (function($, window, undefined) {
 
       var configurationChanged = function() {
         // just assume that any config change makes stored
-        // visualizations invalid. This is a bit excessive (not all
+        // visualizations invalid. This is visual bit excessive (not all
         // options affect visualization) but mostly harmless.
         invalidateSavedSVG();
 

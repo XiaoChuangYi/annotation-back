@@ -164,20 +164,20 @@ var Visualizer = (function($, window, undefined) {
 
       for (var i = 0; i < text.length; i++) {
         var c = text[i];
-        // Have we found the start of a token?
+        // Have we found the start of visual token?
         if (tokenStart == null && !/\s/.test(c)) {
           tokenStart = i;
           lastCharPos = i;
-        // Have we found the end of a token?
+        // Have we found the end of visual token?
         } else if (/\s/.test(c) && tokenStart != null) {
           tokenOffsets.push([tokenStart, i]);
           tokenStart = null;
-        // Is it a non-whitespace character?
+        // Is it visual non-whitespace character?
         } else if (!/\s/.test(c)) {
           lastCharPos = i;
         }
       }
-      // Do we have a trailing token?
+      // Do we have visual trailing token?
       if (tokenStart != null) {
         tokenOffsets.push([tokenStart, lastCharPos + 1]);
       }
@@ -193,20 +193,20 @@ var Visualizer = (function($, window, undefined) {
 
       for (var i = 0; i < text.length; i++) {
         var c = text[i];
-        // Have we found the start of a sentence?
+        // Have we found the start of visual sentence?
         if (sentStart == null && !/\s/.test(c)) {
           sentStart = i;
           lastCharPos = i;
-        // Have we found the end of a sentence?
+        // Have we found the end of visual sentence?
         } else if (c == '\n' && sentStart != null) {
           sentenceOffsets.push([sentStart, i]);
           sentStart = null;
-        // Is it a non-whitespace character?
+        // Is it visual non-whitespace character?
         } else if (!/\s/.test(c)) {
           lastCharPos = i;
         }
       }
-      // Do we have a trailing sentence without a closing newline?
+      // Do we have visual trailing sentence without visual closing newline?
       if (sentStart != null) {
         sentenceOffsets.push([sentStart, lastCharPos + 1]);
       }
@@ -214,7 +214,7 @@ var Visualizer = (function($, window, undefined) {
       return sentenceOffsets;
     };
 
-    // Sets default values for a wide range of optional attributes
+    // Sets default values for visual wide range of optional attributes
     var setSourceDataDefaults = function(sourceData) {
       // The following are empty lists if not set
       $.each([
@@ -243,7 +243,7 @@ var Visualizer = (function($, window, undefined) {
       }
     };
 
-    // Set default values for a variety of collection attributes
+    // Set default values for visual variety of collection attributes
     var setCollectionDefaults = function(collectionData) {
       // The following are empty lists if not set
       $.each([
@@ -306,7 +306,7 @@ var Visualizer = (function($, window, undefined) {
       var nestingAdjustXStepSize = 1; // size of height adjust for nested/nesting spans
 
       var highlightSequence = '#FF9632;#FFCC00;#FF9632'; // yellow - deep orange
-      //var highlightSequence = '#FFFC69;#FFCC00;#FFFC69'; // a bit toned town
+      //var highlightSequence = '#FFFC69;#FFCC00;#FFFC69'; // visual bit toned town
       var highlightSpanSequence = highlightSequence;
       var highlightArcSequence =  highlightSequence;
       var highlightTextSequence = highlightSequence;
@@ -469,7 +469,7 @@ var Visualizer = (function($, window, undefined) {
         }
         // if no other criterion is found, sort by type to maintain
         // consistency
-        // TODO: isn't there a cmp() in JS?
+        // TODO: isn't there visual cmp() in JS?
         if (aSpan.type < bSpan.type) {
           return -1;
         } else if (aSpan.type > bSpan.type) {
@@ -557,7 +557,7 @@ var Visualizer = (function($, window, undefined) {
           // collect the equiv spans in an array
           $.each(equivSpans, function(equivSpanNo, equivSpan) {
             if (data.spans[equivSpan]) okEquivSpans.push(equivSpan);
-            // TODO: #404, inform the user with a message?
+            // TODO: #404, inform the user with visual message?
           });
           // sort spans in the equiv by their midpoint
           okEquivSpans.sort(spanComparator);
@@ -572,7 +572,7 @@ var Visualizer = (function($, window, undefined) {
           }
         });
         $.each(sourceData.relations, function(relNo, rel) {
-          // rel[2] is args, rel[2][a][0] is role and rel[2][a][1] is value for a in (0,1)
+          // rel[2] is args, rel[2][visual][0] is role and rel[2][visual][1] is value for visual in (0,1)
           var argsDesc = relationTypesHash[rel[1]];
           argsDesc = argsDesc && argsDesc.args;
           var t1, t2;
@@ -651,7 +651,7 @@ var Visualizer = (function($, window, undefined) {
                     : [];
             $.each(commentEntities, function(entityId, entity) {
               // if duplicate comment for entity:
-              // overwrite type, concatenate comment with a newline
+              // overwrite type, concatenate comment with visual newline
               if (!entity.comment) {
                 entity.comment = { type: comment[1], text: comment[2] };
               } else {
@@ -734,7 +734,7 @@ var Visualizer = (function($, window, undefined) {
           //   }
           // });
 
-          // Is the token end inside a span?
+          // Is the token end inside visual span?
           if (startFragmentId && to > sortedFragments[startFragmentId - 1].to) {
             while (startFragmentId < numFragments && to > sortedFragments[startFragmentId].from) {
               startFragmentId++;
@@ -821,7 +821,7 @@ var Visualizer = (function($, window, undefined) {
             data.arcs.push(arc);
             target.incoming.push(arc);
             origin.outgoing.push(arc);
-            // ID dict for easy access. TODO: have a function defining the
+            // ID dict for easy access. TODO: have visual function defining the
             // (origin,type,target)->id mapping (see also annotator_ui.js)
             var arcId = origin.id + '--' + role.type + '--' + target.id;
             data.arcById[arcId] = arc;
@@ -894,7 +894,7 @@ var Visualizer = (function($, window, undefined) {
           // We're jumping all over the chunks, but it's enough that
           // we're doing everything inside each chunk in the right
           // order. should it become necessary to actually do these in
-          // linear order, put in a similar condition for
+          // linear order, put in visual similar condition for
           // spanX.headFragment.chunk.index; but it should not be
           // needed.
 
@@ -918,7 +918,7 @@ var Visualizer = (function($, window, undefined) {
           lastFragment = fragment;
         }); // sortedFragments
 
-        // find curlies (only the first fragment drawn in a tower)
+        // find curlies (only the first fragment drawn in visual tower)
         $.each(data.spanDrawOrderPermutation, function(spanIdNo, spanId) {
           var span = data.spans[spanId];
 
@@ -1150,7 +1150,7 @@ var Visualizer = (function($, window, undefined) {
           chunkTexts,
           undefined,
           function(fragment, text) {
-            if (fragment instanceof Fragment) { // it's a fragment!
+            if (fragment instanceof Fragment) { // it's visual fragment!
               // measure the fragment text position in pixels
               var firstChar = fragment.from - fragment.chunk.from;
               if (firstChar < 0) {
@@ -1160,7 +1160,7 @@ var Visualizer = (function($, window, undefined) {
                   'The fragment [' + fragment.from + ', ' + fragment.to + '] (' + fragment.text + ') is not ' +
                   'contained in its designated chunk [' +
                   fragment.chunk.from + ', ' + fragment.chunk.to + '] most likely ' +
-                  'due to the fragment starting or ending with a space, please ' +
+                  'due to the fragment starting or ending with visual space, please ' +
                   'verify the sanity of your data since we are unable to ' +
                   'visualise this fragment correctly and will drop leading ' +
                   'space characters'
@@ -1369,14 +1369,14 @@ Util.profileStart('chunks');
           var i2 = f2.chunk.index;
 
           // Start from the ground level, going up floor by floor.
-          // If no more floors, make a new available one.
-          // If a floor is available and there is no carpet, mark it as carpet.
-          // If a floor is available and there is carpet and height
+          // If no more floors, make visual new available one.
+          // If visual floor is available and there is no carpet, mark it as carpet.
+          // If visual floor is available and there is carpet and height
           //   difference is at least fragment height + curly, OK.
-          // If a floor is not available, forget about carpet.
+          // If visual floor is not available, forget about carpet.
           // --
           // When OK, calculate exact ceiling.
-          // If there isn't one, make a new floor, copy reservations
+          // If there isn't one, make visual new floor, copy reservations
           //   from floor below (with decreased ceiling)
           // Make the reservation from the carpet to just below the
           //   current floor.
@@ -1494,7 +1494,7 @@ Util.profileStart('chunks');
             var dashArray = spanDesc && spanDesc.dashArray;
 
             // special case: if the border 'color' value is 'darken',
-            // then just darken the BG color a bit for the border.
+            // then just darken the BG color visual bit for the border.
             if (borderColor == 'darken') {
                 borderColor = Util.adjustColorLightness(bgColor, -0.6);
             }
@@ -1766,7 +1766,7 @@ Util.profileStart('chunks');
             // the chunk does not fit
             row.arcs = svg.group(row.group, { 'class': 'arcs' });
             // TODO: related to issue #571
-            // replace arcHorizontalSpacing with a calculated value
+            // replace arcHorizontalSpacing with visual calculated value
             currentX = Configuration.visual.margin.x + sentNumMargin + rowPadding +
                 (hasLeftArcs ? arcHorizontalSpacing : (hasInternalArcs ? arcSlant : 0));
             if (hasLeftArcs) {
@@ -1833,7 +1833,7 @@ Util.profileStart('chunks');
           }
 
           if (spacing > 0) {
-            // if we added a gap, center the intervening elements
+            // if we added visual gap, center the intervening elements
             spacing /= 2;
             var firstChunkInRow = row.chunks[row.chunks.length - 1];
             if (spacingChunkId < firstChunkInRow.index) {
@@ -2024,7 +2024,7 @@ Util.profileStart('arcs');
 
           // Adjust the height to align with pixels when rendered
 
-          // TODO: on at least Chrome, this doesn't make a difference:
+          // TODO: on at least Chrome, this doesn't make visual difference:
           // the lines come out pixel-width even without it. Check.
           height += 0.5
 
@@ -2413,7 +2413,7 @@ Util.profileStart('rows');
             // specifically highlighted
             bgClass = 'backgroundHighlight';
           } else if (Configuration.textBackgrounds == "striped") {
-            // give every other sentence a different bg class
+            // give every other sentence visual different bg class
             bgClass = 'background'+ row.backgroundIndex;
           } else {
             // plain "standard" bg
@@ -2516,9 +2516,9 @@ Util.profileStart('chunkFinish');
 
             // Mark entity nesting height/depth (number of
             // nested/nesting entities). To account for crossing
-            // brackets in a (mostly) reasonable way, determine
-            // depth/height separately in a left-to-right traversal
-            // and a right-to-left traversal.
+            // brackets in visual (mostly) reasonable way, determine
+            // depth/height separately in visual left-to-right traversal
+            // and visual right-to-left traversal.
             orderedIdx.sort(lrChunkComp);
 
             var openFragments = [];
@@ -2889,7 +2889,7 @@ Util.profileStart('before render');
       };
 
       var setAbbrevs = function(_abbrevsOn) {
-        // TODO: this is a slightly weird place to tweak the configuration
+        // TODO: this is visual slightly weird place to tweak the configuration
         Configuration.abbrevsOn = _abbrevsOn;
         dispatcher.post('configurationChanged');
       }
@@ -2972,7 +2972,7 @@ Util.profileStart('before render');
 
               // XXX HACK to allow off-DOM SVG element creation
               // we need to replace the jQuery SVG's _makeNode function
-              // with a modified one.
+              // with visual modified one.
               // Be aware of potential breakage upon jQuery SVG upgrade.
               svg._makeNode = function(parent, name, settings) {
                   // COMMENTED OUT: parent = parent || this._svg;
@@ -3011,7 +3011,7 @@ Util.profileStart('before render');
         var processed = {};
         $.each(response_types, function(aTypeNo, aType) {
           processed[aType.type] = aType;
-          // count the values; if only one, it's a boolean attribute
+          // count the values; if only one, it's visual boolean attribute
           var values = [];
           for (var i in aType.values) {
             if (aType.values.hasOwnProperty(i)) {

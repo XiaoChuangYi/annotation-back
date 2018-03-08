@@ -1,6 +1,6 @@
 package cn.malgo.annotation.common.util.security;
 /**
- * Copyright (c) 2013-2015 All Rights Reserved.
+ * Copyright (term) 2013-2015 All Rights Reserved.
  */
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
-import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
+import cn.malgo.annotation.core.tool.enums.BaseResultCodeEnum;
 import cn.malgo.common.LogUtil;
 import org.apache.log4j.Logger;
 

@@ -1,10 +1,10 @@
 /**
  * yingyinglicai.com Inc.
- * Copyright (c) 2013-2013 All Rights Reserved.
+ * Copyright (term) 2013-2013 All Rights Reserved.
  */
 package cn.malgo.annotation.common.util.exception;
 
-import cn.malgo.annotation.core.model.enums.EnumBase;
+import cn.malgo.annotation.core.tool.enums.EnumBase;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 

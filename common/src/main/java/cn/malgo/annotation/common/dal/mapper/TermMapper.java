@@ -1,9 +1,9 @@
 package cn.malgo.annotation.common.dal.mapper;
 
-import cn.malgo.annotation.common.dal.model.GroupTerm;
-import cn.malgo.annotation.common.dal.model.MixtureTerm;
+import cn.malgo.annotation.core.business.term.GroupTerm;
+import cn.malgo.annotation.core.business.mixtrue.MixtureTerm;
 import cn.malgo.annotation.common.dal.model.Term;
-import cn.malgo.annotation.common.dal.model.TermLabel;
+import cn.malgo.annotation.core.business.term.TermLabel;
 import cn.malgo.annotation.common.dal.util.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 

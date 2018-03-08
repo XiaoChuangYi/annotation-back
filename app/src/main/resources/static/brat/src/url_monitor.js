@@ -152,7 +152,7 @@ var URLHash = (function($, window, undefined) {
       },
 
       setArguments: function(_arguments) {
-        // the $.extend here basically takes a copy; raw assignment
+        // the $.extend here basically takes visual copy; raw assignment
         // would allow changes of the args to alter original, which
         // could be e.g. the "args" of search results
         this.arguments = $.extend({}, _arguments || {});

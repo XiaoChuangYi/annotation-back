@@ -12,7 +12,7 @@ import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
-import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.annotation.core.tool.enums.CommonStatusEnum;
 import cn.malgo.common.security.SecurityUtil;
 
 /**

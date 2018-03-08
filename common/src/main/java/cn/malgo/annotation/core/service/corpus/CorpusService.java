@@ -16,7 +16,7 @@ import com.github.pagehelper.PageHelper;
 import cn.malgo.annotation.common.dal.mapper.CorpusMapper;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.log.LogUtil;
-import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
+import cn.malgo.annotation.core.tool.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.annotation.AsyncAnnotationService;
 
 /**

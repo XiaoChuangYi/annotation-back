@@ -2,8 +2,9 @@ package cn.malgo.annotation.web.controller.atomicterm;
 
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
-import cn.malgo.annotation.core.service.atomicTerm.AtomicTermBatchService;
 import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
+import cn.malgo.annotation.web.controller.atomicterm.request.AtomicTermArr;
+import cn.malgo.annotation.web.controller.type.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 张钟
@@ -31,9 +33,6 @@ public class AtomicTermController extends BaseController {
 
     @Autowired
     private AtomicTermService atomicTermService;
-
-    @Autowired
-    private AtomicTermBatchService atomicTermBatchService;
 
     @Autowired
     private AnnotationBatchService annotationBatchService;
@@ -53,16 +52,6 @@ public class AtomicTermController extends BaseController {
         return ResultVO.success(pageVO);
     }
     /**
-     * 批量更新术语表conceptId字段
-     * @param atomicTermArr
-     * @param conceptId
-     */
-    @RequestMapping(value = {"/updateBatchConceptIdOfAtomicTerm.do"})
-    public ResultVO updateBatchConceptIdOfAtomicTerm(AtomicTermArr atomicTermArr,String conceptId){
-        atomicTermService.updateBatchConceptIdOfAtomicTerm(atomicTermArr.getAtomicTermList(),conceptId);
-        return ResultVO.success();
-    }
-    /**
      * 根据conceptId分页查询原子术语
      * @param request
      */
@@ -72,6 +61,40 @@ public class AtomicTermController extends BaseController {
         Page<AnAtomicTerm> page = atomicTermService.listAnAtomicTermAssociatedConceptByConceptId(request.getConceptId(), request.getPageNum(), request.getPageSize());
         PageVO<AnAtomicTerm> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
+    }
+
+    /**
+     *分页根据term模糊查询原子术语
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "/fuzzyList.do")
+    public ResultVO<PageVO<AnAtomicTerm>> fuzzyQueryPage(QueryAtomicRequest request){
+        Map<String,Object> atomicTermMap=atomicTermService.mapAnAtomicTermByPagingCondition(request.getTerm(),request.getPageNum(),request.getPageSize(),request.getChecked());
+        PageResult<AnAtomicTerm> pageResult=new PageResult<>();
+        pageResult.setTotal(Integer.parseInt(atomicTermMap.get("total").toString()));
+        pageResult.setDataList((List<AnAtomicTerm>)atomicTermMap.get("atomicTermList"));
+        return  ResultVO.success(pageResult);
+    }
+
+
+    /**
+     *查询原子术语用来初始化下拉框
+     */
+    @RequestMapping(value = {"/queryAtomicTermForInitSelectBox.do"})
+    public ResultVO<List<AnAtomicTerm>> queryAtomicTermForInitSelectBox(String term){
+        List<AnAtomicTerm> anAtomicTermList=atomicTermService.listAtomicTermByCondition(term);
+        return  ResultVO.success(anAtomicTermList);
+    }
+    /**
+     * 批量更新术语表conceptId字段
+     * @param atomicTermArr
+     * @param conceptId
+     */
+    @RequestMapping(value = {"/updateBatchConceptIdOfAtomicTerm.do"})
+    public ResultVO updateBatchConceptIdOfAtomicTerm(AtomicTermArr atomicTermArr, String conceptId){
+        atomicTermService.updateBatchConceptIdOfAtomicTerm(atomicTermArr.getAtomicTermList(),conceptId);
+        return ResultVO.success();
     }
 
     /**
@@ -127,13 +150,17 @@ public class AtomicTermController extends BaseController {
         annotationBatchService.deleteAtomicTermAndUnitAnnotation(id,term,type);
         return  ResultVO.success();
     }
+
     /**
-     *查询原子术语用来初始化下拉框
+     * 遗弃原子术语信息
+     * @param id
+     * @return
      */
-    @RequestMapping(value = {"/queryAtomicTermForInitSelectBox.do"})
-    public ResultVO<List<AnAtomicTerm>> queryAtomicTermForInitSelectBox(String term){
-        List<AnAtomicTerm> anAtomicTermList=atomicTermService.listAtomicTermByCondition(term);
-        return  ResultVO.success(anAtomicTermList);
+    @RequestMapping(value = { "/abandonAtomicTerm.do" })
+    public ResultVO  abandonAtomicTerm(String id){
+        AssertUtil.notBlank(id,"主键ID为空");
+        atomicTermService.abandonAtomicTerm(id,"DISABLE");
+        return  ResultVO.success();
     }
 
 }

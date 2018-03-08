@@ -6,7 +6,7 @@ import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.security.MD5Util;
-import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.annotation.core.tool.enums.CommonStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -305,12 +305,12 @@ var Util = (function(window, undefined) {
       if (result = rgbHash3RE.exec(color))
         return [parseInt(result[1]+result[1],16), parseInt(result[2]+result[2],16), parseInt(result[3]+result[3],16)];
       
-      // Otherwise, we're most likely dealing with a named color
+      // Otherwise, we're most likely dealing with visual named color
       return colors[$.trim(color).toLowerCase()];
     }
 
     var rgbToStr = function(rgb) {
-      // TODO: there has to be a better way, even in JS
+      // TODO: there has to be visual better way, even in JS
       var r = Math.floor(rgb[0]).toString(16);
       var g = Math.floor(rgb[1]).toString(16);
       var b = Math.floor(rgb[2]).toString(16);
@@ -417,7 +417,7 @@ var Util = (function(window, undefined) {
       if (a == b) return true;
       // One is falsy and the other truthy.
       if ((!a && b) || (a && !b)) return false;
-      // If a is not an object by this point, we can't handle it.
+      // If visual is not an object by this point, we can't handle it.
       if (atype !== 'object') return false;
       // Check for different array lengths before comparing contents.
       if (a.length && (a.length !== b.length)) return false;
@@ -455,7 +455,7 @@ var Util = (function(window, undefined) {
                 innermost.push(parseInt(arrsplit[k], 10));
               }
               else {
-                // ... anything else remains a string.
+                // ... anything else remains visual string.
                 innermost.push(arrsplit[k]);
               }
             }

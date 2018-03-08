@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
-import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
-import cn.malgo.annotation.core.model.enums.rule.RuleEnum;
+import cn.malgo.annotation.core.tool.enums.BaseResultCodeEnum;
+import cn.malgo.annotation.core.tool.enums.rule.RuleEnum;
 import cn.malgo.core.definition.EntityRule;
 
 /**

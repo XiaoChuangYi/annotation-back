@@ -2,7 +2,7 @@ package cn.malgo.annotation.listener;
 
 import org.springframework.stereotype.Component;
 
-import cn.malgo.annotation.core.model.event.CommonEvent;
+import cn.malgo.annotation.core.tool.event.CommonEvent;
 
 /**
  * Created by 张钟 on 2017/9/13.

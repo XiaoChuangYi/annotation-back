@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
-import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
+import cn.malgo.annotation.core.business.annotation.AnnotationPagination;
+import cn.malgo.annotation.core.business.annotation.AtomicTermAnnotation;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
-import cn.malgo.annotation.web.controller.type.CombineAtomicTermArr;
+import cn.malgo.annotation.web.controller.type.PageResult;
+import cn.malgo.annotation.web.controller.annotation.request.CombineAtomicTermArr;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,8 +23,8 @@ import com.github.pagehelper.Page;
 import cn.malgo.annotation.common.dal.model.CrmAccount;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationOptionEnum;
+import cn.malgo.annotation.core.tool.convert.AnnotationConvert;
+import cn.malgo.annotation.core.tool.enums.annotation.AnnotationOptionEnum;
 import cn.malgo.annotation.core.service.annotation.AnnotationService;
 import cn.malgo.annotation.web.controller.annotation.request.*;
 import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
@@ -171,7 +173,7 @@ public class AnnotationController extends BaseController {
      *
      */
      @RequestMapping(value = {"/updateMultipleAtomicAnnotation.do"})
-     public ResultVO updateMultipleAtomicAnnotation(String anId,CombineAtomicTermArr combineAtomicTermArr, String term, String type){
+     public ResultVO updateMultipleAtomicAnnotation(String anId, CombineAtomicTermArr combineAtomicTermArr, String term, String type){
 
          List<String> anIdArr=new ArrayList<>();
          anIdArr.add(anId);
@@ -436,6 +438,33 @@ public class AnnotationController extends BaseController {
         return ResultVO.success();
     }
 
+    /**
+     * @param type
+     * @param term
+     * @param pageIndex
+     * @param pageSize
+     * 更据原子术语信息，分页查询annotation表
+     */
+    @RequestMapping(value = "/selectAnnotationServerPagination.do")
+    public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
+        AnnotationPagination annotationPagination =annotationBatchService.listAnnotationContainsUnitAnnotationByServerPaging(type,term,pageIndex,pageSize);
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
+        PageResult<AnnotationBratVO> pageResult=new PageResult<>();
+
+        pageResult.setDataList(annotationBratVOList);
+        pageResult.setTotal(annotationPagination.getLastIndex());
+        return  ResultVO.success(pageResult);
+    }
+
+    /**
+     * 更据原子术语组信息，分页查询annotation表
+     */
+    @RequestMapping(value = {"/selectAnnotationByTermTypeArr.do"})
+    public ResultVO<List<AnnotationBratVO>> selectAnnotationByTermTypeArr(CombineAtomicTermArr combineAtomicTermArr){
+        List<Annotation> annotationPagination =annotationBatchService.listAnnotationByUnitAnnotationArr(combineAtomicTermArr.getCombineAtomicTermList());
+        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination);
+        return  ResultVO.success(annotationBratVOList);
+    }
 
     /**
      * 根据标注id,获取经过apiServer处理的最新标注数据

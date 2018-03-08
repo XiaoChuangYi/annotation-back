@@ -1,27 +1,20 @@
 package cn.malgo.annotation.web.controller.type;
 
-import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.AnType;
-import cn.malgo.annotation.common.dal.model.AnnotationPagination;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.convert.AnnotationConvert;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.type.TypeService;
-import cn.malgo.annotation.web.controller.annotation.result.AnnotationBratVO;
 import cn.malgo.annotation.web.controller.common.BaseController;
 import cn.malgo.annotation.web.controller.type.request.AddTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.QueryTypeRequest;
 import cn.malgo.annotation.web.controller.type.request.UpdateTypeRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -91,59 +84,5 @@ public class TypeController extends BaseController {
         typeService.updateBatchTypeOnTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());
         return  ResultVO.success();
-    }
-    /**
-     * 更据原子术语信息，分页查询annotation表
-     */
-    @RequestMapping(value = {"/selectAnnotationByTermTypeArr.do"})
-    public ResultVO<List<AnnotationBratVO>> selectAnnotationByTermTypeArr(CombineAtomicTermArr combineAtomicTermArr){
-        List<Annotation> annotationPagination =annotationBatchService.listAnnotationByUnitAnnotationArr(combineAtomicTermArr.getCombineAtomicTermList());
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination);
-        return  ResultVO.success(annotationBratVOList);
-    }
-
-    /**
-     * @param type
-     * @param term
-     * @param pageIndex
-     * @param pageSize
-     * 更据原子术语信息，分页查询annotation表
-     */
-    @RequestMapping(value = "/selectAnnotationServerPagination.do")
-    public ResultVO<PageVO<AnnotationBratVO>> selectAnnotationServerPagination(String type, String term, int pageIndex, int pageSize){
-        AnnotationPagination annotationPagination =annotationBatchService.listAnnotationContainsUnitAnnotationByServerPaging(type,term,pageIndex,pageSize);
-        List<AnnotationBratVO> annotationBratVOList = convertAnnotationBratVOList(annotationPagination.getList());
-        PageResult<AnnotationBratVO> pageResult=new PageResult<>();
-
-        pageResult.setDataList(annotationBratVOList);
-        pageResult.setTotal(annotationPagination.getLastIndex());
-        return  ResultVO.success(pageResult);
-    }
-
-    /**
-     * 模型转换,标注模型转换成brat模型
-     * @param annotationList
-     * @return
-     */
-    private List<AnnotationBratVO> convertAnnotationBratVOList(List<Annotation> annotationList) {
-        List<AnnotationBratVO> annotationBratVOList = new ArrayList<>();
-        for (Annotation annotation : annotationList) {
-            AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotation);
-            annotationBratVOList.add(annotationBratVO);
-        }
-        return annotationBratVOList;
-    }
-
-    /**
-     * 模型转换,标注模型转换成brat模型
-     * @param annotation
-     * @return
-     */
-    private AnnotationBratVO convertFromAnTermAnnotation(Annotation annotation) {
-        JSONObject bratJson = AnnotationConvert.convertToBratFormat(annotation);
-        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
-        BeanUtils.copyProperties(annotation, annotationBratVO);
-        annotationBratVO.setBratData(bratJson);
-        return annotationBratVO;
     }
 }

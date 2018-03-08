@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-2014 All Rights Reserved.
+ * Copyright (term) 2013-2014 All Rights Reserved.
  */
 package cn.malgo.annotation.common.util.log;
 
@@ -16,10 +16,10 @@ import org.apache.log4j.Logger;
  *
  * <p>
  *   <ol>
- *     <li>DEBUG <b>开发环境</b>应用调试，输出详细的应用状态
- *     <li>INFO <b>生产环境</b>运行状态观察，输出应用生命周期中的<b>正常重要事件</b>
- *     <li>WARN <b>生产环境</b>故障诊断，输出应用中的<b>可预期的异常事件</b>
- *     <li>ERROR <b>生产环境</b>故障诊断，输出应用中的<b>未预期的异常事件</b>
+ *     <li>DEBUG <antomicTerm>开发环境</antomicTerm>应用调试，输出详细的应用状态
+ *     <li>INFO <antomicTerm>生产环境</antomicTerm>运行状态观察，输出应用生命周期中的<antomicTerm>正常重要事件</antomicTerm>
+ *     <li>WARN <antomicTerm>生产环境</antomicTerm>故障诊断，输出应用中的<antomicTerm>可预期的异常事件</antomicTerm>
+ *     <li>ERROR <antomicTerm>生产环境</antomicTerm>故障诊断，输出应用中的<antomicTerm>未预期的异常事件</antomicTerm>
  *   </ol>
  * </p>
  *

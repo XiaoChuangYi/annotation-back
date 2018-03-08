@@ -4,10 +4,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cn.malgo.annotation.common.dal.model.Annotation;
-import cn.malgo.annotation.common.dal.model.AnnotationPagination;
-import cn.malgo.annotation.common.dal.model.CombineAtomicTerm;
+import cn.malgo.annotation.core.business.annotation.AnnotationPagination;
+import cn.malgo.annotation.core.business.antomicTerm.CombineAtomicTerm;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.annotation.AtomicTermAnnotation;
+import cn.malgo.annotation.core.business.annotation.AtomicTermAnnotation;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
@@ -20,10 +20,10 @@ import com.github.pagehelper.Page;
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
 import cn.malgo.annotation.common.util.log.LogUtil;
-import cn.malgo.annotation.core.model.annotation.TermAnnotationModel;
-import cn.malgo.annotation.core.model.check.AnnotationChecker;
-import cn.malgo.annotation.core.model.convert.AnnotationConvert;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.business.annotation.TermAnnotationModel;
+import cn.malgo.annotation.core.tool.check.AnnotationChecker;
+import cn.malgo.annotation.core.tool.convert.AnnotationConvert;
+import cn.malgo.annotation.core.tool.enums.annotation.AnnotationStateEnum;
 import cn.malgo.common.security.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -245,7 +245,7 @@ public class AnnotationBatchService extends AnnotationService {
             }
         }
         if(finalAnnotation.size()>0){
-            LogUtil.info(logger, "存在带替换的标注术语:" + finalAnnotation.size());
+            LogUtil.info(logger, "存在带替换的标注术语,共:" + finalAnnotation.size()+"条需要处理");
             updateBatchAnnotation(finalAnnotation);
         }
     }

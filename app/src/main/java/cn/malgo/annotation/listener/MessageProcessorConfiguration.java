@@ -3,7 +3,7 @@ package cn.malgo.annotation.listener;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.malgo.annotation.core.model.enums.EventEnum;
+import cn.malgo.annotation.core.tool.enums.EventEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

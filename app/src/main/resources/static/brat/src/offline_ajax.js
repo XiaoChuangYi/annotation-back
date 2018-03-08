@@ -37,7 +37,7 @@ var OfflineAjax = (function($, window, undefined) {
             return;
 
           default:
-            // an action that is not a visualisation action got through
+            // an action that is not visual visualisation action got through
             alert("DEBUG TODO XXX UNSUPPORTED ALERT WHATNOW ETC: " + data.action); // XXX
         }
 

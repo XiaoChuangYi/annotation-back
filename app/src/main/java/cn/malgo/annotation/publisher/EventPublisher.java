@@ -1,7 +1,7 @@
 package cn.malgo.annotation.publisher;
 
-import cn.malgo.annotation.core.model.enums.EventEnum;
-import cn.malgo.annotation.core.model.event.CommonEvent;
+import cn.malgo.annotation.core.tool.enums.EventEnum;
+import cn.malgo.annotation.core.tool.event.CommonEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

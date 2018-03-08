@@ -2,8 +2,8 @@ package cn.malgo.annotation.web.controller.annotation.request;
 
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.common.util.exception.BaseRuntimeException;
-import cn.malgo.annotation.core.model.enums.BaseResultCodeEnum;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationOptionEnum;
+import cn.malgo.annotation.core.tool.enums.BaseResultCodeEnum;
+import cn.malgo.annotation.core.tool.enums.annotation.AnnotationOptionEnum;
 
 /**
  * @author 张钟
@@ -28,7 +28,7 @@ public class AddAnnotationRequest {
 
     /**
      * 选项 新词 ,手工标注
-     * @ cn.malgo.annotation.core.model.enums.annotation.AnnotationOptionEnum
+     * @ cn.malgo.annotation.core.tool.enums.annotation.AnnotationOptionEnum
      * **/
     private String option;
 

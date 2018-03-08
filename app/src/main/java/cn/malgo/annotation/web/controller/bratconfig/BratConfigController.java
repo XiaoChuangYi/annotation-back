@@ -1,7 +1,7 @@
 package cn.malgo.annotation.web.controller.bratconfig;
 
 import cn.malgo.annotation.common.dal.model.Draw;
-import cn.malgo.annotation.common.dal.model.result.TypeHierarchyNode;
+import cn.malgo.annotation.core.business.visual.TypeHierarchyNode;
 import cn.malgo.annotation.core.service.config.VisualService;
 import cn.malgo.annotation.web.controller.bratconfig.request.QueryDrawRequest;
 import cn.malgo.annotation.web.controller.bratconfig.request.addDrawRequest;

@@ -13,7 +13,7 @@ import cn.malgo.annotation.common.dal.model.RlEntityRule;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.enums.CommonStatusEnum;
+import cn.malgo.annotation.core.tool.enums.CommonStatusEnum;
 
 /**
  *

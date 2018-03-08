@@ -18,6 +18,7 @@ import java.util.List;
 /**
  * @author 张钟
  * @date 2017/10/24
+ * 手动调用接口完成对数据的初始化
  */
 @RestController
 @RequestMapping(value = "/task")

@@ -18,7 +18,7 @@
     <result column="concept_id" jdbcType="VARCHAR" property="conceptId" />
     <result column="standard_name" jdbcType="VARCHAR" property="standardName" />
   </resultMap>
-  <resultMap id="MixtureMap" type="cn.malgo.annotation.common.dal.model.MixtureTerm">
+  <resultMap id="MixtureMap" type="cn.malgo.annotation.core.business.mixtrue.MixtureTerm">
     <result column="term_id" jdbcType="VARCHAR" property="termId" />
     <result column="term_name" jdbcType="VARCHAR" property="termName" />
   </resultMap>
@@ -211,7 +211,7 @@
   <select id="selectTermByOriginNameGroup" resultMap="BaseResultMap">
     SELECT * FROM term GROUP BY origin_name order by id
   </select>
-  <resultMap id="Groups" type="cn.malgo.annotation.common.dal.model.GroupTerm">
+  <resultMap id="Groups" type="cn.malgo.annotation.core.business.term.GroupTerm">
     <result column="id_groups" jdbcType="INTEGER" property="idGroups" />
     <result column="origin_name" jdbcType="VARCHAR" property="originName" />
   </resultMap>

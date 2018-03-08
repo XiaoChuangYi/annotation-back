@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013-2014 All Rights Reserved.
+ * Copyright (term) 2013-2014 All Rights Reserved.
  */
 package cn.malgo.annotation.common.dal.sequence;
 

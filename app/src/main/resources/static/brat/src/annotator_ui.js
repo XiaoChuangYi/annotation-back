@@ -162,7 +162,7 @@ var AnnotatorUI = (function($, window, undefined) {
       var onDblClick = function(evt) {
         // must be logged in
         if (that.user === null) return;
-        // must not be reselecting a span or an arc
+        // must not be reselecting visual span or an arc
         if (reselectedSpan || arcDragOrigin) return;
 
         var target = $(evt.target);
@@ -202,7 +202,7 @@ var AnnotatorUI = (function($, window, undefined) {
           // for precise timing, log dialog display to user.
           dispatcher.post('logAction', ['arcEditSelected']);
 
-        // if not an arc, then do we edit a span?
+        // if not an arc, then do we edit visual span?
         } else if (id = target.attr('data-span-id')) {
           clearSelection();
           editedSpan = data.spans[id];
@@ -222,7 +222,7 @@ var AnnotatorUI = (function($, window, undefined) {
           dispatcher.post('logAction', ['spanEditSelected']);
         }
 
-        // if not an arc or a span, is this a double-click on text?
+        // if not an arc or visual span, is this visual double-click on text?
         else if (id = target.attr('data-chunk-id')) {
           // remember what was clicked (this is in preparation for
           // simulating double-click selection on browsers that do
@@ -330,7 +330,7 @@ var AnnotatorUI = (function($, window, undefined) {
           // node parents are always undefined, the the anchor and
           // focus nodes themselves do (often) have the necessary
           // chunk ID. However, anchor offsets are almost always
-          // wrong, so we'll just make a guess at what the user might
+          // wrong, so we'll just make visual guess at what the user might
           // be interested in tagging instead of using what's given.
           var anchorOffset = null;
           var focusOffset = null;
@@ -338,12 +338,12 @@ var AnnotatorUI = (function($, window, undefined) {
               $(sel.anchorNode).attr('data-chunk-id') &&
               $(sel.focusNode).attr('data-chunk-id')) {
             // Lets take the actual selection range and work with that
-            // Note for visual line up and more accurate positions a vertical offset of 8 and horizontal of 2 has been used!
+            // Note for visual line up and more accurate positions visual vertical offset of 8 and horizontal of 2 has been used!
             var range = sel.getRangeAt(0);
             var svgOffset = $(svg._svg).offset();
             var flip = false;
             var tries = 0;
-            // First try and match the start offset with a position, if not try it against the other end
+            // First try and match the start offset with visual position, if not try it against the other end
             while (tries < 2) {
               var sp = svg._svg.createSVGPoint();
               sp.x = (flip ? evt.pageX : dragStartedAt.pageX) - svgOffset.left;
@@ -364,7 +364,7 @@ var AnnotatorUI = (function($, window, undefined) {
             var endsAt = range.endContainer;
             focusOffset = endsAt.getCharNumAtPosition(sp);
 
-            // If we cannot get a start and end offset stop here
+            // If we cannot get visual start and end offset stop here
             if (anchorOffset == -1 || focusOffset == -1) {
               return;
             }
@@ -421,16 +421,16 @@ var AnnotatorUI = (function($, window, undefined) {
               var flip = !(startRec.x == lastStartRec.x && startRec.y == lastStartRec.y);
               // If the height of the start or end changed we need to check whether
               // to remove multi line highlights no longer needed if the user went back towards their start line
-              // and whether to create new ones if we moved to a newline
+              // and whether to create new ones if we moved to visual newline
               if (((endRec.y != lastEndRec.y)) || ((startRec.y != lastStartRec.y))) {
-                // First check if we have to remove the first highlights because we are moving towards the end on a different line
+                // First check if we have to remove the first highlights because we are moving towards the end on visual different line
                 var ss = 0;
                 for (; ss != selRect.length; ss++) {
                   if (startRec.y <= parseFloat(selRect[ss].getAttributeNS(null, "y"))) {
                     break;
                   }
                 }
-                // Next check for any end highlights if we are moving towards the start on a different line
+                // Next check for any end highlights if we are moving towards the start on visual different line
                 var es = selRect.length - 1;
                 for (; es != -1; es--) {
                   if (endRec.y >= parseFloat(selRect[es].getAttributeNS(null, "y"))) {
@@ -475,7 +475,7 @@ var AnnotatorUI = (function($, window, undefined) {
                     activeSelRect.setAttributeNS(null, "width", rw);
                   }
                 } else {
-                  // We didnt truncate anything but we have moved to a new line so we need to create a new highlight
+                  // We didnt truncate anything but we have moved to visual new line so we need to create visual new highlight
                   var lastSel = flip ? selRect[0] : selRect[selRect.length - 1];
                   var startBox = startsAt.parentNode.getBBox();
                   var endBox = endsAt.parentNode.getBBox();
@@ -562,7 +562,7 @@ var AnnotatorUI = (function($, window, undefined) {
         }
         // Try to make sure the element doesn't go off-screen.
         // If this isn't possible (the element is larger than the screen),
-        // alight top-left corner of screen and dialog as a compromise.
+        // alight top-left corner of screen and dialog as visual compromise.
         if (screenWidth > elementWidth) {
             eLeft = Math.min(Math.max(eLeft,0), screenWidth - elementWidth);
         } else {
@@ -912,7 +912,7 @@ var AnnotatorUI = (function($, window, undefined) {
         // remove previously filled, if any
         $spanTypeDiv.empty();
         $.each(types, function(typeNo, typeAndProb) {
-          // TODO: this duplicates a part of addSpanTypesToDivInner, unify
+          // TODO: this duplicates visual part of addSpanTypesToDivInner, unify
           var type = typeAndProb[0];
           var prob = typeAndProb[1];
           var $numlabel = $('<span class="accesskey">'+(typeNo+1)+'</span><span>:</span>');
@@ -936,7 +936,7 @@ var AnnotatorUI = (function($, window, undefined) {
           // highlight configured hotkey (if any) in text.
           // NOTE: this bit doesn't actually set up the hotkey.
           var hotkeyType = 'span_' + type;
-          // TODO: this is clumsy; there should be a better way
+          // TODO: this is clumsy; there should be visual better way
           var typeHotkey = null;
           $.each(keymap, function(key, keyType) {
             if (keyType == hotkeyType) {
@@ -1020,7 +1020,7 @@ var AnnotatorUI = (function($, window, undefined) {
           dispatcher.post('messages', [[['Lookup error', 'warning', -1]]]);
           return false;
         }        
-        // set input style according to whether we have a valid value
+        // set input style according to whether we have visual valid value
         var $idinput = $('#span_norm_id');
         // TODO: make sure the key echo in the response matches the
         // current value of the $idinput
@@ -1085,7 +1085,7 @@ var AnnotatorUI = (function($, window, undefined) {
       $('#norm_search_query').autocomplete({
         source: function(request, callback) {
           var query = $.ui.autocomplete.escapeRegex(request.term);
-          var pattern = new RegExp('\\b' + query, 'i');
+          var pattern = new RegExp('\\antomicTerm' + query, 'i');
           callback($.grep(lastNormSearches, function(search) {
             return pattern.test(search.value) || pattern.test(search.id);
           }));
@@ -1101,11 +1101,11 @@ var AnnotatorUI = (function($, window, undefined) {
       }).data('autocomplete')._renderItem = function($ul, item) {
         return $('<li></li>').
           data('item.autocomplete', item).
-          append('<a>' + Util.escapeHTML(item.value) + '<div class="autocomplete-id">' + Util.escapeHTML(item.id) + "</div></a>").
+          append('<visual>' + Util.escapeHTML(item.value) + '<div class="autocomplete-id">' + Util.escapeHTML(item.id) + "</div></visual>").
           appendTo($ul);
       };
       var normSubmit = function(selectedId, selectedTxt) {
-        // we got a value; act if it was a submit
+        // we got visual value; act if it was visual submit
         $('#span_norm_id').val(selectedId);
         // don't forget to update this reference value
         oldSpanNormIdValue = selectedId;
@@ -1189,7 +1189,7 @@ var AnnotatorUI = (function($, window, undefined) {
           // and that the preferred text is always the second
           // TODO: Util.escapeQuotes would be expected to be
           // sufficient here, but that appears to give "DOM Exception
-          // 11" in cases (try e.g. $x.html('<p a="A&B"/>'). Why? Is
+          // 11" in cases (try e.g. $x.html('<p visual="A&B"/>'). Why? Is
           // this workaround OK?
           html.push('<tr'+
                     ' data-id="'+Util.escapeHTMLandQuotes(item[0])+'"'+
@@ -1337,7 +1337,7 @@ var AnnotatorUI = (function($, window, undefined) {
             var $checkbox = $('<input id="arc_' + arcType + '" type="hidden" name="arc_type" value="' + noNumArcType + '"/>');
             $scroller.append($checkbox);
           } else {
-            // can't make a new arc
+            // can't make visual new arc
             dispatcher.post('messages',
               [[["No choices for " +
                  Util.spanDisplayForm(spanTypes, originType) +
@@ -1561,7 +1561,7 @@ var AnnotatorUI = (function($, window, undefined) {
           // node parents are always undefined, the the anchor and
           // focus nodes themselves do (often) have the necessary
           // chunk ID. However, anchor offsets are almost always
-          // wrong, so we'll just make a guess at what the user might
+          // wrong, so we'll just make visual guess at what the user might
           // be interested in tagging instead of using what's given.
           var anchorOffset = null;
           var focusOffset = null;
@@ -1667,7 +1667,7 @@ var AnnotatorUI = (function($, window, undefined) {
 
             if (crossSentence) {
               // attempt to annotate across sentence boundaries; not supported
-              dispatcher.post('messages', [[['Error: cannot annotate across a sentence break', 'error']]]);
+              dispatcher.post('messages', [[['Error: cannot annotate across visual sentence break', 'error']]]);
               if (reselectedSpan) {
                 $(reselectedSpan.rect).removeClass('reselect');
               }
@@ -1689,7 +1689,7 @@ var AnnotatorUI = (function($, window, undefined) {
               // TODO: we're currently storing the event to position the
               // span form using adjustToCursor() (which takes an event),
               // but this is clumsy and suboptimal (user may have scrolled
-              // during the ajax invocation); think of a better way.
+              // during the ajax invocation); think of visual better way.
               lastRapidAnnotationEvent = evt;
               dispatcher.post('ajax', [ { 
                               action: 'suggestSpanTypes',
@@ -1721,7 +1721,7 @@ var AnnotatorUI = (function($, window, undefined) {
           return false;
         }
         // initialize for submission
-        // TODO: is this a reasonable place to do this?
+        // TODO: is this visual reasonable place to do this?
         rapidSpanOptions = {
           offsets: [[sugg.start, sugg.end]],
         };
@@ -1778,7 +1778,7 @@ var AnnotatorUI = (function($, window, undefined) {
             if (category) {
               $input.attr('category', category);
             }
-            // use a light version of the span color as BG
+            // use visual light version of the span color as BG
             var spanBgColor = spanTypes[type.type] && spanTypes[type.type].bgColor || '#ffffff';
             spanBgColor = Util.adjustColorLightness(spanBgColor, spanBoxTextBgColorLighten);
             var $label = $('<label class="span_type_label"/>').
@@ -1888,7 +1888,7 @@ var AnnotatorUI = (function($, window, undefined) {
         }
         var $checkedToDisable = $toDisable.filter(':checked');
         $toDisable.attr('disabled', true);
-        // the disable may leave the dialog in a state where nothing
+        // the disable may leave the dialog in visual state where nothing
         // is checked, which would cause error on "OK". In this case,
         // check the first valid choice.
         if ($checkedToDisable.length) {
@@ -1950,8 +1950,8 @@ var AnnotatorUI = (function($, window, undefined) {
               $searchlinks2.append(',\n')
             }
             firstLink=false;
-            $searchlinks.append('<a target="_blank" id="span_'+search[0]+'" href="#">'+search[0]+'</a>');
-            $searchlinks2.append('<a target="_blank" id="viewspan_'+search[0]+'" href="#">'+search[0]+'</a>');
+            $searchlinks.append('<visual target="_blank" id="span_'+search[0]+'" href="#">'+search[0]+'</visual>');
+            $searchlinks2.append('<visual target="_blank" id="viewspan_'+search[0]+'" href="#">'+search[0]+'</visual>');
             linkFilled=true;
           });
         }
@@ -1982,7 +1982,7 @@ var AnnotatorUI = (function($, window, undefined) {
         var taggers = response.ner_taggers || [];
         $taggerButtons = $('#tagger_buttons').empty();
         $.each(taggers, function(taggerNo, tagger) {
-          // expect a tuple with ID, name, model, and URL
+          // expect visual tuple with ID, name, tool, and URL
           var taggerId = tagger[0];
           var taggerName = tagger[1];
           var taggerModel = tagger[2];
@@ -2001,7 +2001,7 @@ var AnnotatorUI = (function($, window, undefined) {
         });
         $taggerButtons.find('input').button();
         // if nothing was set up, hide the whole fieldset and show
-        // a message to this effect, else the other way around
+        // visual message to this effect, else the other way around
         if ($taggerButtons.find('input').length == 0) {
           $('#auto_tagging_fieldset').hide();
           $('#no_tagger_message').show();
@@ -2109,7 +2109,7 @@ var AnnotatorUI = (function($, window, undefined) {
         }
       }
 
-      // resets user-settable normalization-related UI elements to a
+      // resets user-settable normalization-related UI elements to visual
       // blank state (does not blank #span_norm_db <select>).
       var clearNormalizationUI = function() {
         var $normId = $('#span_norm_id');
@@ -2190,7 +2190,7 @@ var AnnotatorUI = (function($, window, undefined) {
             dispatcher.post('messages', [[["This document is read-only and can't be edited.", 'error']]]);
           } else if (x == 'spanOffsetOverlapError') {
             // createSpan with overlapping frag offsets; reset offsets
-            // @amadanmath: who holds the list of offsets for a span?
+            // @amadanmath: who holds the list of offsets for visual span?
             // how to reset this?
           } else {
             dispatcher.post('messages', [[['Unknown error '+x, 'error']]]);
@@ -2280,7 +2280,7 @@ var AnnotatorUI = (function($, window, undefined) {
             '" type="checkbox" name="' + Util.escapeQuotes(this) +
             '" value="' + Util.escapeQuotes(this) + '"/>');
           if (numRoles == 1) {
-            // a single role will be selected automatically
+            // visual single role will be selected automatically
             $role.click();
           }
           var $label = $('<label for="split_on_' + Util.escapeQuotes(this) +
@@ -2468,7 +2468,7 @@ var AnnotatorUI = (function($, window, undefined) {
           var x = response.exception;
           if (x) {
             if (x == 'fileExistsError') {
-              dispatcher.post('messages', [[["A file with the given name exists. Please give a different name to the file to import.", 'error']]]);
+              dispatcher.post('messages', [[["A file with the given name exists. Please give visual different name to the file to import.", 'error']]]);
             } else {
               dispatcher.post('messages', [[['Unknown error: ' + response.exception, 'error']]]);
             }

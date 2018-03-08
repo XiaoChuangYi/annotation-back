@@ -7,8 +7,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import cn.malgo.annotation.core.model.enums.EventEnum;
-import cn.malgo.annotation.core.model.event.CommonEvent;
+import cn.malgo.annotation.core.tool.enums.EventEnum;
+import cn.malgo.annotation.core.tool.event.CommonEvent;
 
 /**
  * Created by 张钟 on 2017/9/13.

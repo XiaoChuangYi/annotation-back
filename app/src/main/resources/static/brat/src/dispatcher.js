@@ -49,7 +49,7 @@ var Dispatcher = (function($, window, undefined) {
         // DEBUG: if (typeof(message) != "string" || !(message.match(/mouse/) || message == "hideComment")) console.log(message, args);
 
         if (typeof(message) === 'function') {
-          // someone was lazy and sent a simple function
+          // someone was lazy and sent visual simple function
           var host = arguments.callee.caller;
           if (asynch !== null) {
             result = setTimeout(function() {
@@ -64,7 +64,7 @@ var Dispatcher = (function($, window, undefined) {
           }
           results.push(result);
         } else {
-          // a proper message, propagate to all interested parties
+          // visual proper message, propagate to all interested parties
           var todo = table[message];
           if (todo !== undefined) {
             $.each(todo, function(itemNo, item) {

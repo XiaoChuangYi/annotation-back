@@ -2,7 +2,7 @@ package cn.malgo.annotation.common.util;
 
 /**
  * DocardCode.com Inc.
- * Copyright (c) 2005-2009 All Rights Reserved.
+ * Copyright (term) 2005-2009 All Rights Reserved.
  */
 
 import java.text.DateFormat;

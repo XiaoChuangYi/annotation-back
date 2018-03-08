@@ -5,8 +5,6 @@ import java.util.*;
 import cn.malgo.annotation.common.dal.model.Annotation;
 import cn.malgo.annotation.common.dal.model.Corpus;
 import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,9 +21,9 @@ import cn.malgo.annotation.common.service.integration.apiserver.ApiServerService
 import cn.malgo.annotation.common.service.integration.apiserver.result.AnnotationResult;
 import cn.malgo.annotation.common.service.integration.apiserver.vo.TermTypeVO;
 import cn.malgo.annotation.common.util.AssertUtil;
-import cn.malgo.annotation.core.model.check.AnnotationChecker;
-import cn.malgo.annotation.core.model.enums.annotation.AnnotationStateEnum;
-import cn.malgo.annotation.core.model.enums.term.TermStateEnum;
+import cn.malgo.annotation.core.tool.check.AnnotationChecker;
+import cn.malgo.annotation.core.tool.enums.annotation.AnnotationStateEnum;
+import cn.malgo.annotation.core.tool.enums.term.TermStateEnum;
 import cn.malgo.annotation.core.service.corpus.CorpusService;
 import cn.malgo.common.security.SecurityUtil;
 
@@ -147,17 +145,6 @@ public class AnnotationService {
         return annotationList;
     }
 
-//    /**
-//     *根据分配查询的逻辑获取指定数量数据的id集合
-//     * @param state
-//     * @param userId
-//     * @param total
-//     */
-//    public List<String> getAnnotationIDsByCondition(String state,String userId,int total){
-//        Page<String> pageInfo = PageHelper.startPage(1, total);
-//        annotationMapper.selectIDsByNum(state,userId);
-//        return pageInfo;
-//    }
     /**
      * 根据标注ID查询单条标注
      * @param
@@ -209,23 +196,6 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新标注失败");
 
     }
-//    /**
-//     * 更新自动标注
-//     * @param anId
-//     * @param autoAnnotation
-//     */
-//    private void updateAutoAnnotation(String anId, String autoAnnotation) {
-////        String securityAnnotation = SecurityUtil.cryptAESBase64(autoAnnotation);
-//
-//        Annotation annotation = new Annotation();
-//        annotation.setId(anId);
-//        annotation.setAutoAnnotation(autoAnnotation);
-//        annotation.setFinalAnnotation(autoAnnotation);
-//        annotation.setGmtModified(new Date());
-//
-//        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-//        AssertUtil.state(updateResult > 0, "更新自动标注失败");
-//    }
     /**
      * 更新最终标注并更新新词列表
      * @param anId
