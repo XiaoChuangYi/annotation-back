@@ -1,7 +1,9 @@
 package cn.malgo.annotation.core.service.atomicTerm;
 
 import cn.malgo.annotation.common.dal.mapper.AnAtomicTermMapper;
+import cn.malgo.annotation.common.dal.mapper.ConceptMapper;
 import cn.malgo.annotation.common.dal.model.AnAtomicTerm;
+import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.core.business.mixtrue.MixtureTerm;
 import cn.malgo.annotation.common.dal.sequence.CodeGenerateTypeEnum;
 import cn.malgo.annotation.common.dal.sequence.SequenceGenerator;
@@ -15,6 +17,7 @@ import com.github.pagehelper.PageHelper;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -33,6 +36,9 @@ public class AtomicTermService {
     @Autowired
     private AnAtomicTermMapper anAtomicTermMapper;
 
+
+    @Autowired
+    private ConceptMapper conceptMapper;
 
     /**
      * 分页查询全部原子术语
@@ -68,6 +74,21 @@ public class AtomicTermService {
         Page<AnAtomicTerm> pageInfo=PageHelper.startPage(pageNum, pageSize);
         String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
         anAtomicTermMapper.selectByTermAndTypeIsSynonyms(termAfterDecrypt,type,id,checked);
+        decrypt(pageInfo);
+        return pageInfo;
+    }
+    /**
+     * 分页查询原子术语
+     * @param term 传入明文
+     * @param type
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    public Page<AnAtomicTerm> listAnAtomicTermByPagingCondition(String term, String type, int pageNum, int pageSize) {
+        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
+        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        anAtomicTermMapper.selectByTermAndType(termAfterDecrypt, type);
         decrypt(pageInfo);
         return pageInfo;
     }
@@ -124,21 +145,6 @@ public class AtomicTermService {
         return termMap;
     }
 
-    /**
-     * 分页查询原子术语
-     * @param term 传入明文
-     * @param type
-     * @param pageNum
-     * @param pageSize
-     * @return
-     */
-    public Page<AnAtomicTerm> listAnAtomicTermByPagingCondition(String term, String type, int pageNum, int pageSize) {
-        String termAfterDecrypt = SecurityUtil.cryptAESBase64(term);
-        Page<AnAtomicTerm> pageInfo = PageHelper.startPage(pageNum, pageSize);
-        anAtomicTermMapper.selectByTermAndType(termAfterDecrypt, type);
-        decrypt(pageInfo);
-        return pageInfo;
-    }
 
     /**
      * 根据conceptId分页查询原子术语
@@ -186,6 +192,35 @@ public class AtomicTermService {
         int updateResult=anAtomicTermMapper.batchUpdateAtomicConceptId(idList,conceptId);
         AssertUtil.state(updateResult > 0, "更新原子术语concept_id字段失败");
     }
+
+
+
+    /**
+     * 更新将当前原子术语的conceptId更新为一个新的conceptId,如果concept表有则更新
+     *@param  id
+     *@param  conceptId
+     */
+    @Transactional
+    public void updateAtomicTermOrAddConcept(String id,String conceptId,String conceptName){
+        AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
+        anAtomicTerm.setId(id);
+        anAtomicTerm.setGmtModified(new Date());
+        if(conceptId!=null&&!"".equals(conceptId)) {
+            //当前concept表中已有该条记录，直接更新term表中的conceptID
+            anAtomicTerm.setConceptId(conceptId);
+        }else {
+            Concept concept=new Concept();
+            String pConceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+            anAtomicTerm.setConceptId(pConceptId);
+            concept.setStandardName(conceptName);
+            concept.setConceptId(pConceptId);
+            int insertResult=conceptMapper.insertUseGeneratedKeys(concept);
+            AssertUtil.state(insertResult > 0, "插入概念失败");
+        }
+        int updateResult=anAtomicTermMapper.updateByPrimaryKeySelective(anAtomicTerm);
+        AssertUtil.state(updateResult > 0, "更新原子术语失败");
+    }
+
     /**
      * 置空当前原子术语表记录的concept_id
      * @param id
@@ -195,6 +230,30 @@ public class AtomicTermService {
         AssertUtil.state(updateResult > 0, "更新原子术语失败");
     }
 
+    /**
+     * 新增同义词并同时更新原子术语表的concept_id
+     *@param id
+     *@param originName
+     */
+    @Transactional
+    public void saveConceptAndUpdateAtomicTerm(String id, String originName){
+        List<Concept> conceptList=conceptMapper.selectConceptByStandardName(originName);
+        AssertUtil.state(conceptList.size()==0,"同义词表中已有"+originName+"记录");
+        String conceptId=sequenceGenerator.nextCodeByType(CodeGenerateTypeEnum.DEFAULT);
+        AnAtomicTerm anAtomicTerm=new AnAtomicTerm();
+        anAtomicTerm.setId(id);
+        anAtomicTerm.setConceptId(conceptId);
+        anAtomicTerm.setGmtModified(new Date());
+
+        Concept concept=new Concept();
+        concept.setStandardName(originName);
+        concept.setConceptId(conceptId);
+
+        int insertResult=conceptMapper.insertUseGeneratedKeys(concept);
+        AssertUtil.state(insertResult > 0, "新增概念失败");
+        int updateResult=anAtomicTermMapper.updateConceptIdByPrimaryKey(conceptId,id);
+        AssertUtil.state(updateResult > 0, "更新原子术语失败");
+    }
     /**
      * 保存原子术语,如果术语已经存在,更新,否则,新增
      * @param termTypeVO
@@ -217,7 +276,7 @@ public class AtomicTermService {
         String securityTerm = SecurityUtil.cryptAESBase64(term);
         AnAtomicTerm anAtomicTermOld = anAtomicTermMapper.selectByTermAndTypeNotNull(securityTerm,termType);
         if (anAtomicTermOld != null) {
-            LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1}", term, termType));
+            LogUtil.info(logger, MessageFormat.format("原子术语已经存在!术语:{0},类型:{1},ID值:{2}", term, termType,anAtomicTermOld.getId()));
             return;
         }
 

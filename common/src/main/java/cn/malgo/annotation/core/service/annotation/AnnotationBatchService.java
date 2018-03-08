@@ -197,8 +197,8 @@ public class AnnotationBatchService extends AnnotationService {
             LogUtil.info(logger, "检查标注二义性和原子术语对应关系异常,标注ID:" + annotation.getId());
         }
     }
-    public void batchReplaceAnnotationTerm(String typeOld, String typeNew) {
-        LogUtil.info(logger, "开始批量替换术语标注表中的type类型");
+    public void batchReplaceUnitAnnotationType(String typeOld, String typeNew) {
+        LogUtil.info(logger, "开始批量替换标注表单位标注中的type类型");
         int pageNum = 1;
         int pageSize = 1000;
         Page<Annotation> pageInfo = null;
@@ -211,7 +211,7 @@ public class AnnotationBatchService extends AnnotationService {
         for(;pageNum<=endPageIndex;pageNum++){
             pageInfo=listAnnotationByStateList(null,pageNum,pageSize);
             LogUtil.info(logger,
-                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，该批次共"+(pageInfo.getEndRow()-pageInfo.getStartRow())+"条记录");
+                    "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，剩余共"+(total-pageSize*pageNum)+"条记录");
             for (Annotation annotation : pageInfo.getResult()){
                 try {
                     //手动标注
@@ -220,24 +220,29 @@ public class AnnotationBatchService extends AnnotationService {
                     //最终标注
                     List<TermAnnotationModel> finalModelList = AnnotationConvert
                             .convertAnnotationModelList(annotation.getFinalAnnotation());
+                    boolean isAdd=false;
                     for (TermAnnotationModel currentModel : finalModelList) {
                         //如果标注中存在待替换的type类型,进行替换
                         if (currentModel.getType().equals(typeOld)) {
                             currentModel.setType(typeNew);
+                            isAdd=true;
                         }
                     }
                     for (TermAnnotationModel currentModel : manualModelList) {
                         //如果标注中存在待替换的type类型,进行替换
                         if (currentModel.getType().equals(typeOld)) {
                             currentModel.setType(typeNew);
+                            isAdd=true;
                         }
                     }
-                    annotation.setGmtModified(new Date());
-                    annotation.setManualAnnotation(AnnotationConvert.convertToText(manualModelList));
-                    annotation.setFinalAnnotation(AnnotationConvert.convertToText(finalModelList));
+                    if(isAdd) {
+                        annotation.setGmtModified(new Date());
+                        annotation.setManualAnnotation(AnnotationConvert.convertToText(manualModelList));
+                        annotation.setFinalAnnotation(AnnotationConvert.convertToText(finalModelList));
 //                    annotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
 //                    annotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
-                    finalAnnotation.add(annotation);
+                        finalAnnotation.add(annotation);
+                    }
                 }catch (Exception ex){
                     LogUtil.info(logger,
                             "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
@@ -379,7 +384,7 @@ public class AnnotationBatchService extends AnnotationService {
                             }
                         }
                         LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
-//                        updateFinalAnnotation(annotation.getId(), AnnotationConvert.convertToText(newTermAnnotationModelList));
+                        updateFinalAnnotation(annotation.getId(), AnnotationConvert.convertToText(newTermAnnotationModelList));
                     }
                 } catch (Exception e) {
                     LogUtil.info(logger, "替换标注中的原子术语失败,标注ID:" + annotation.getId());

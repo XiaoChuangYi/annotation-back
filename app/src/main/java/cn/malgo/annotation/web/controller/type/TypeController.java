@@ -79,7 +79,7 @@ public class TypeController extends BaseController {
     public ResultVO updateType(UpdateTypeRequest request){
         UpdateTypeRequest.check(request);
 //        asyncTypeBatchService.asyncAutoBatchType(request.getTypeOld(),request.getTypeNew());
-        annotationBatchService.batchReplaceAnnotationTerm(request.getTypeOld(),request.getTypeNew());
+        annotationBatchService.batchReplaceUnitAnnotationType(request.getTypeOld(),request.getTypeNew());
         typeService.updateBatchTypeOnAtomicTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateBatchTypeOnTerm(request.getTypeOld(),request.getTypeNew());
         typeService.updateTypeCodeById(request.getId(),request.getTypeNew());

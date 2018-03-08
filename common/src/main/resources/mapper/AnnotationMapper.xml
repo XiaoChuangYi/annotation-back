@@ -10,7 +10,7 @@
         <result column="state" jdbcType="VARCHAR" property="state"/>
         <result column="modifier" jdbcType="VARCHAR" property="modifier"/>
         <result column="gmt_created" jdbcType="TIMESTAMP" property="gmtCreated"/>
-        <result column="gmt_modifier" jdbcType="TIMESTAMP" property="gmtModified"/>
+        <result column="gmt_modified" jdbcType="TIMESTAMP" property="gmtModified"/>
         <result column="memo" jdbcType="VARCHAR" property="memo"/>
         <result column="term" jdbcType="LONGVARCHAR" property="term"/>
         <result column="auto_annotation" jdbcType="LONGVARCHAR" property="autoAnnotation"/>
@@ -53,7 +53,7 @@
             AND state = #{state}
         </if>
         <if test="userId!=null and userId!=''">
-            AND modified = #{userId}
+            AND modifier = #{userId}
         </if>
         ORDER BY
         gmt_created DESC
@@ -110,7 +110,6 @@
         </if>
         ORDER BY id
     </select>
-
     <select id="selectByTermId" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -135,6 +134,19 @@
         AND modifier = #{modifier}
         ORDER BY
         gmt_created ASC
+    </select>
+    <select id="selectIDsByNum" resultType="java.lang.String">
+        SELECT
+        id
+        FROM annotation WHERE 1=1
+        <if test="state!=null and state!=''">
+            AND state = #{state}
+        </if>
+        <if test="userId!=null and userId!=''">
+            AND modifier = #{userId}
+        </if>
+        ORDER BY
+        gmt_created DESC
     </select>
     <update id="batchUpdateFinalAndManualAnnotation">
         UPDATE annotation SET final_annotation=
@@ -166,17 +178,4 @@
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
-    <select id="selectIDsByNum" resultType="java.lang.String">
-        SELECT
-        id
-        FROM annotation WHERE 1=1
-        <if test="state!=null and state!=''">
-            AND state = #{state}
-        </if>
-        <if test="userId!=null and userId!=''">
-            AND modifier = #{userId}
-        </if>
-        ORDER BY
-        gmt_created DESC
-    </select>
 </mapper>

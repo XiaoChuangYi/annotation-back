@@ -4,6 +4,7 @@ import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.annotation.AnnotationBatchService;
 import cn.malgo.annotation.core.service.atomicTerm.AtomicTermService;
 import cn.malgo.annotation.web.controller.atomicterm.request.AtomicTermArr;
+import cn.malgo.annotation.web.controller.atomicterm.request.addAtomicConceptRequest;
 import cn.malgo.annotation.web.controller.type.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +47,7 @@ public class AtomicTermController extends BaseController {
     public ResultVO<PageVO<AnAtomicTerm>> getOnePage(QueryAtomicRequest request) {
 
         Page<AnAtomicTerm> page = atomicTermService.listAnAtomicTermByPagingCondition(request.getTerm(),
-            request.getType(), request.getPageNum(), request.getPageSize());
+            request.getType(), request.getId(),request.getPageNum(), request.getPageSize(),request.getChecked());
         PageVO<AnAtomicTerm> pageVO = new PageVO(page);
 
         return ResultVO.success(pageVO);
@@ -86,6 +87,32 @@ public class AtomicTermController extends BaseController {
         List<AnAtomicTerm> anAtomicTermList=atomicTermService.listAtomicTermByCondition(term);
         return  ResultVO.success(anAtomicTermList);
     }
+
+    /**
+     * 新增concept信息
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = { "/addConceptAndUpdateAtomic.do" })
+    public ResultVO addConceptAndUpdateAtomic(addAtomicConceptRequest request){
+        addAtomicConceptRequest.check(request);
+        atomicTermService.saveConceptAndUpdateAtomicTerm(request.getId(),request.getOriginName());
+        return  ResultVO.success();
+    }
+    /**
+     * 更新concept信息
+     * @param id
+     * @param conceptId
+     * @param conceptName
+     * @return
+     */
+    @RequestMapping(value = { "/updateAtomicTermOrAddConcept.do" })
+    public ResultVO updateAtomicTermOrAddConcept(String id,String conceptId,String conceptName){
+        atomicTermService.updateAtomicTermOrAddConcept(id,conceptId,conceptName);
+        return  ResultVO.success();
+    }
+
+
     /**
      * 批量更新术语表conceptId字段
      * @param atomicTermArr

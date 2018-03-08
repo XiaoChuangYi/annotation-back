@@ -49,7 +49,7 @@ public class AsyncAnnotationService {
     public Future<Boolean> asyncAutoBatchReplaceUnitAnnotation(String typeOld,String typeNew) {
         boolean result = true;
         try {
-            annotationBatchService.batchReplaceAnnotationTerm(typeOld,typeNew);
+            annotationBatchService.batchReplaceUnitAnnotationType(typeOld,typeNew);
         } catch (Exception e) {
             result = false;
         }
