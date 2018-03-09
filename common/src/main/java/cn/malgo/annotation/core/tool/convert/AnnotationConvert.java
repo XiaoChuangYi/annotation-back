@@ -45,12 +45,17 @@ public class AnnotationConvert {
         JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
         return result;
     }
+
 //    public static JSONObject convertToBratFormat(String term,String finalAnnotation) {
 //        Document document = new Document(term, null);
 //        DocumentManipulator.parseBratAnnotations(finalAnnotation, document);
 //        JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
 //        return result;
 //    }
+    public static String convertAnnotation2Str(List<Entity> entityList){
+        Document document=new Document("",entityList);
+        return DocumentManipulator.toBratAnnotations(document);
+    }
 
     public static List<Entity> getUnitAnnotationList(String oldAnnotation){
         Document document=new Document("",new LinkedList<>());

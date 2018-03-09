@@ -9,6 +9,7 @@ import cn.malgo.annotation.core.business.annotation.AnnotationPagination;
 import cn.malgo.annotation.core.business.antomicTerm.CombineAtomicTerm;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.business.annotation.AtomicTermAnnotation;
+import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.utils.DocumentManipulator;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -219,35 +220,42 @@ public class AnnotationBatchService extends AnnotationService {
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，剩余共"+(total-pageSize*pageNum)+"条记录");
             for (Annotation annotation : pageInfo.getResult()){
                 try {
-                    //手动标注
-                    List<TermAnnotationModel> manualModelList = AnnotationConvert
-                            .convertAnnotationModelList(annotation.getManualAnnotation());
-                    //最终标注
-                    List<TermAnnotationModel> finalModelList = AnnotationConvert
-                            .convertAnnotationModelList(annotation.getFinalAnnotation());
-                    boolean isAdd=false;
-                    for (TermAnnotationModel currentModel : finalModelList) {
-                        //如果标注中存在待替换的type类型,进行替换
-                        if (currentModel.getType().equals(typeOld)) {
-                            currentModel.setType(typeNew);
-                            isAdd=true;
-                        }
-                    }
-                    for (TermAnnotationModel currentModel : manualModelList) {
-                        //如果标注中存在待替换的type类型,进行替换
-                        if (currentModel.getType().equals(typeOld)) {
-                            currentModel.setType(typeNew);
-                            isAdd=true;
-                        }
-                    }
-                    if(isAdd) {
-                        annotation.setGmtModified(new Date());
-                        annotation.setManualAnnotation(AnnotationConvert.convertToText(manualModelList));
-                        annotation.setFinalAnnotation(AnnotationConvert.convertToText(finalModelList));
+
+//                    //手动标注
+//                    List<TermAnnotationModel> manualModelList = AnnotationConvert
+//                            .convertAnnotationModelList(annotation.getManualAnnotation());
+//                    //最终标注
+//                    List<TermAnnotationModel> finalModelList = AnnotationConvert
+//                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+//                    boolean isAdd=false;
+//                    for (TermAnnotationModel currentModel : finalModelList) {
+//                        //如果标注中存在待替换的type类型,进行替换
+//                        if (currentModel.getType().equals(typeOld)) {
+//                            currentModel.setType(typeNew);
+//                            isAdd=true;
+//                        }
+//                    }
+//                    for (TermAnnotationModel currentModel : manualModelList) {
+//                        //如果标注中存在待替换的type类型,进行替换
+//                        if (currentModel.getType().equals(typeOld)) {
+//                            currentModel.setType(typeNew);
+//                            isAdd=true;
+//                        }
+//                    }
+//                    if(isAdd) {
 //                    annotation.setManualAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(manualModelList)));
 //                    annotation.setFinalAnnotation(SecurityUtil.cryptAESBase64(AnnotationConvert.convertToText(finalModelList)));
-                        finalAnnotation.add(annotation);
-                    }
+//                    }
+                    annotation.setGmtModified(new Date());
+                    List<Entity> manualList=AnnotationConvert.getUnitAnnotationList(annotation.getManualAnnotation());
+                    manualList.stream()
+                            .filter(x->x.getType().equals(typeOld)).forEach(x->x.setType(typeNew));
+                    List<Entity> finalList=AnnotationConvert.getUnitAnnotationList(annotation.getFinalAnnotation());
+                    finalList.stream()
+                            .filter(x->x.getType().equals(typeOld)).forEach(x->x.setType(typeNew));
+                    annotation.setManualAnnotation(AnnotationConvert.convertAnnotation2Str(manualList));
+                    annotation.setFinalAnnotation(AnnotationConvert.convertAnnotation2Str(finalList));
+                    finalAnnotation.add(annotation);
                 }catch (Exception ex){
                     LogUtil.info(logger,
                             "结束处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
@@ -435,25 +443,34 @@ public class AnnotationBatchService extends AnnotationService {
 
             for (Annotation annotation : pageInfo.getResult()) {
                 try {
-                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
-                            .convertAnnotationModelList(annotation.getFinalAnnotation());
-                    String newFinalAnnotation="";
-                    boolean isChange = false;
-                    //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
-                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
-                        //如果标注中纯在待替换的原子术语,进行替换
-                        if (termAnnotationModel.getTerm().equals(term)
-                                && termAnnotationModel.getType().equals(type)) {
-                            isChange=true;
-//                            newFinalAnnotation= AnnotationConvert.deleteTag(annotation.getFinalAnnotation(),termAnnotationModel.getTag());
-                            newFinalAnnotation=AnnotationConvert.deleteUnitAnnotationByLambda(annotation.getFinalAnnotation(),
-                                    termAnnotationModel.getTag());
-                        }
-                    }
-                    if(isChange) {
-                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
-                          updateFinalAnnotation(annotation.getId(), newFinalAnnotation);
-                    }
+
+                    AnnotationConvert.getUnitAnnotationList(annotation.getFinalAnnotation()).stream()
+                        .filter(x->x.getTerm().equals(term)&&x.getType().equals(type))
+                        .forEach((x)->
+                                {
+                                    updateFinalAnnotation(annotation.getId(),
+                                        AnnotationConvert.deleteUnitAnnotationByLambda(annotation.getFinalAnnotation(),x.getTag()));
+                                    LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+                                });
+//                    List<TermAnnotationModel> termAnnotationModelList = AnnotationConvert
+//                            .convertAnnotationModelList(annotation.getFinalAnnotation());
+//                    String newFinalAnnotation="";
+//                    boolean isChange = false;
+//                    //用来记录当前词条的所有标注是否有对应的原子术语,默认是有对应
+//                    for (TermAnnotationModel termAnnotationModel : termAnnotationModelList) {
+//                        //如果标注中纯在待替换的原子术语,进行替换
+//                        if (termAnnotationModel.getTerm().equals(term)
+//                                && termAnnotationModel.getType().equals(type)) {
+//                            isChange=true;
+////                            newFinalAnnotation= AnnotationConvert.deleteTag(annotation.getFinalAnnotation(),termAnnotationModel.getTag());
+//                            newFinalAnnotation=AnnotationConvert.deleteUnitAnnotationByLambda(annotation.getFinalAnnotation(),
+//                                    termAnnotationModel.getTag());
+//                        }
+//                    }
+//                    if(isChange) {
+//                        LogUtil.info(logger, "存在带替换的标注记录:" + annotation.getId());
+//                          updateFinalAnnotation(annotation.getId(), newFinalAnnotation);
+//                    }
                 }catch (Exception e) {
                     LogUtil.info(logger, "删除标注中的原子术语失败,标注ID:" + annotation.getId());
                 }
