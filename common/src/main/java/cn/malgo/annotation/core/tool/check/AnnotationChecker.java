@@ -31,7 +31,7 @@ public class AnnotationChecker {
     }
 
     /**
-     * 检查标注中的
+     * 检查标注中各单位标注是否有歧义
      * @param annotation
      * @return
      */

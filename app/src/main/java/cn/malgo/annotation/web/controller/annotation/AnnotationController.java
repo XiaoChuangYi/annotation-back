@@ -206,9 +206,14 @@ public class AnnotationController extends BaseController {
          //检查当前的标注是否属于当前的用户
          Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
          AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
+
          //构建新的最终的标注
-         String finalAnnotationNew = AnnotationConvert.addNewTagForAnnotation(
-                 annotation.getFinalAnnotation(), request.getAnnotationType(),
+//         String finalAnnotationNew = AnnotationConvert.addNewTagForAnnotation(
+//                 annotation.getFinalAnnotation(), request.getAnnotationType(),
+//                 request.getStartPosition(), request.getEndPosition(), request.getText());
+
+
+         String finalAnnotationNew =AnnotationConvert.addUnitAnnotationByLambda(annotation.getFinalAnnotation(), request.getAnnotationType(),
                  request.getStartPosition(), request.getEndPosition(), request.getText());
 
          String newTermsText = annotation.getNewTerms();
@@ -229,44 +234,6 @@ public class AnnotationController extends BaseController {
          return ResultVO.success(annotationBratVO);
      }
 
-    /**
-     * 新增标注或者新词
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = { "/add.do" })
-    public ResultVO<AnnotationBratVO> addAnnotation(AddAnnotationRequest request,
-                                                    @ModelAttribute("currentAccount") CrmAccount crmAccount) {
-
-        AddAnnotationRequest.check(request);
-
-        //权限检查,当前的标注是否属于当前用户
-        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
-        AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
-
-        //构建新的手工标注
-        String manualAnnotationNew = AnnotationConvert.addNewTag(
-            annotation.getManualAnnotation(), request.getAnnotationType(),
-            request.getStartPosition(), request.getEndPosition(), request.getText());
-
-        //获取原有的新词列表
-        String newTermsText = annotation.getNewTerms();
-        //如果是新词,原有新词列表增加新词
-        if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
-            newTermsText = AnnotationConvert.addNewTerm(newTermsText, request.getText(),
-                request.getAnnotationType());
-        }
-        List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
-
-        //更新单条标注信息,先调用apiServer获取,后保存到数据库
-        Annotation annotationNew = annotationService
-            .autoAnnotationByAnId(request.getAnId(), manualAnnotationNew, newTerms);
-
-        AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
-
-        return ResultVO.success(annotationBratVO);
-
-    }
     @RequestMapping(value = {"/updateFinalAnnotation.do"})
     public ResultVO<AnnotationBratVO> updateFinalAnnotation(UpdateAnnoTypeRequest request,
                                                             @ModelAttribute("currentAccount") CrmAccount crmAccount) {
@@ -275,8 +242,9 @@ public class AnnotationController extends BaseController {
         Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
-        String finalAnnotationNew=AnnotationConvert.updateTag(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
+//        String finalAnnotationNew=AnnotationConvert.updateTag(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
 
+        String finalAnnotationNew=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
         //获取原有的新词列表
         String newTermsText = annotation.getNewTerms();
         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
@@ -286,6 +254,7 @@ public class AnnotationController extends BaseController {
         AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
         return  ResultVO.success(annotationBratVO);
     }
+
     /**
      *删除标注或者同时删除新词，仅操作最终标注字段
      * @param request
@@ -302,10 +271,11 @@ public class AnnotationController extends BaseController {
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //构建新的手工标注
-        String finalAnnotationNew = AnnotationConvert
-                .deleteTag(annotation.getFinalAnnotation(), request.getTag());
+//        String finalAnnotationNew = AnnotationConvert
+//                .deleteTag(annotation.getFinalAnnotation(), request.getTag());
+        String finalAnnotationNew =AnnotationConvert.deleteUnitAnnotationByLambda(annotation.getFinalAnnotation(),request.getTag());
 
-        //获取原有的新词列表
+                //获取原有的新词列表
         String newTermsText = annotation.getNewTerms();
         //如果是新词,从新词列表中删除新词
         if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
@@ -326,6 +296,46 @@ public class AnnotationController extends BaseController {
 
         return ResultVO.success(annotationBratVO);
     }
+
+
+    /**
+     * 新增标注或者新词
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = { "/add.do" })
+    public ResultVO<AnnotationBratVO> addAnnotation(AddAnnotationRequest request,
+                                                    @ModelAttribute("currentAccount") CrmAccount crmAccount) {
+
+        AddAnnotationRequest.check(request);
+
+        //权限检查,当前的标注是否属于当前用户
+        Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
+        AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
+
+        //构建新的手工标注
+        String manualAnnotationNew = AnnotationConvert.addNewTag(
+                annotation.getManualAnnotation(), request.getAnnotationType(),
+                request.getStartPosition(), request.getEndPosition(), request.getText());
+
+        //获取原有的新词列表
+        String newTermsText = annotation.getNewTerms();
+        //如果是新词,原有新词列表增加新词
+        if (AnnotationOptionEnum.NEW_TERM.name().equals(request.getOption())) {
+            newTermsText = AnnotationConvert.addNewTerm(newTermsText, request.getText(),
+                    request.getAnnotationType());
+        }
+        List<TermTypeVO> newTerms = TermTypeVO.convertFromString(newTermsText);
+
+        //更新单条标注信息,先调用apiServer获取,后保存到数据库
+        Annotation annotationNew = annotationService
+                .autoAnnotationByAnId(request.getAnId(), manualAnnotationNew, newTerms);
+
+        AnnotationBratVO annotationBratVO = convertFromAnTermAnnotation(annotationNew);
+
+        return ResultVO.success(annotationBratVO);
+    }
+
 
     /**
      * 删除标注或者同时删除新词

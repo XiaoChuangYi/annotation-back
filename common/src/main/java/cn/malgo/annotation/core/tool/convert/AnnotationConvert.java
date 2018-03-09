@@ -1,10 +1,18 @@
 package cn.malgo.annotation.core.tool.convert;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import cn.malgo.annotation.common.util.log.LogUtil;
+import cn.malgo.annotation.core.business.annotation.AtomicTermAnnotation;
+import cn.malgo.annotation.core.business.antomicTerm.CombineAtomicTerm;
+import cn.malgo.core.definition.Entity;
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -37,11 +45,97 @@ public class AnnotationConvert {
         JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
         return result;
     }
-    public static JSONObject convertToBratFormat(String term,String finalAnnotation) {
-        Document document = new Document(term, null);
-        DocumentManipulator.parseBratAnnotations(finalAnnotation, document);
-        JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
-        return result;
+//    public static JSONObject convertToBratFormat(String term,String finalAnnotation) {
+//        Document document = new Document(term, null);
+//        DocumentManipulator.parseBratAnnotations(finalAnnotation, document);
+//        JSONObject result = DocumentManipulator.toBratAjaxFormat(document);
+//        return result;
+//    }
+
+    public static List<Entity> getUnitAnnotationList(String oldAnnotation){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        return document.getEntities();
+    }
+
+    /**
+     * 通过lambda实现合并单位标注
+     * @param combineAtomicTermList
+     * @param annotation
+     * @param term
+     * @param type
+     * @return
+     */
+    public static String getAnnotationAfterCombineAnnotationByLambda(List<CombineAtomicTerm> combineAtomicTermList,
+                                                             Annotation annotation,String term,String type){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(annotation.getFinalAnnotation(),document);
+        int endPosition=0,startPosition=0;
+        List<Integer> startPositionList=new LinkedList<>();
+        List<Integer> endPositionList=new LinkedList<>();
+        for(CombineAtomicTerm o:combineAtomicTermList) {
+             endPosition= document.getEntities().stream()
+                    .filter(x -> x.getTerm().toUpperCase().equals(o.getTerm().toUpperCase())
+                            && x.getType().equals(o.getType()))
+                    .map(s -> s.getEnd()).findFirst().get().intValue();
+            endPositionList.add(endPosition);
+            startPosition=document.getEntities().stream()
+                    .filter(x->x.getTerm().toUpperCase().equals(o.getTerm().toUpperCase())
+                            && x.getType().equals(o.getType()))
+                    .map(s->s.getStart()).findFirst().get().intValue();
+            startPositionList.add(startPosition);
+            //先删除合并的单位标注
+            document.setEntities(document.getEntities().stream()
+                    .filter(x->!(x.getTerm().toUpperCase().equals(o.getTerm().toUpperCase())&&x.getType().equals(o.getType())))
+                    .collect(Collectors.toList()));
+        }
+        logger.info("startPosition："+startPositionList.stream().mapToInt(x->x.intValue()).summaryStatistics().getMin()+"；endPosition："+ endPositionList.stream().mapToInt(x->x.intValue()).summaryStatistics().getMax());
+        return addUnitAnnotationByLambda(DocumentManipulator.toBratAnnotations(document),type,
+                startPositionList.stream().mapToInt(x->x.intValue()).summaryStatistics().getMin()+"",
+                endPositionList.stream().mapToInt(x->x.intValue()).summaryStatistics().getMax()+"",
+                term);
+    }
+    /**
+     * 通过lambda实现细分标注中的单位标注
+     * @param atomicTermAnnotationList
+     * @param oldAnnotation
+     * @param originText
+     * @return
+     */
+    public static String getAnnotationAfterDivideUnitAnnotation(List<AtomicTermAnnotation> atomicTermAnnotationList,String oldAnnotation,String originText){
+        //新增细分单位标注
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        Entity replaceEntity=null;
+        if((replaceEntity=document.getEntities().stream().filter(x->x.getTerm().equals(originText)).findFirst().get())!=null){
+        for(AtomicTermAnnotation x:atomicTermAnnotationList){
+            oldAnnotation=DocumentManipulator.toBratAnnotations(document);
+            document.getEntities().add(new Entity(getNewTagByLambda(oldAnnotation),
+                    replaceEntity.getStart() + Integer.valueOf(x.getStartPosition()),
+                    replaceEntity.getStart() + Integer.valueOf(x.getEndPosition()),
+                    x.getAnnotationType(),
+                    x.getText()));
+        }
+        //删除被拆分标注
+        document.setEntities(document.getEntities().stream().filter(x->!x.getTerm().equals(originText)).collect(Collectors.toList()));
+        return DocumentManipulator.toBratAnnotations(document);
+        }
+        return oldAnnotation;
+    }
+
+    /**
+     * 通过lambda获取指定标注的新的Tag标签
+     */
+    public static String getNewTagByLambda(String annotation){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(annotation,document);
+        List<Entity> entityList=document.getEntities();
+        int num=entityList.size()>0?entityList.stream()
+                .map(x->x.getTag().substring(1,x.getTag().length()))
+                .map(s -> Integer.valueOf(s))
+                .max(Comparator.comparing(Function.identity())).get().intValue():1;
+        num++;
+        return "T"+num;
     }
     /**
      * 根据标注内容,生成新的标注标签
@@ -69,7 +163,62 @@ public class AnnotationConvert {
         return "T" + (tagIndexMax + 1);
     }
     /**
-     *构建新的标准
+     * 通过lambda实现，更新原先标注中指定的单位标注类型
+     * @param oldAnnotation
+     * @param  oldType
+     * @param newType
+     * @param tag
+     */
+    public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String oldType,String newType,String tag){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        if(document.getEntities().size()>0)
+            document.getEntities().stream().filter(x->x.getTag().equals(tag)&&x.getType().equals(oldType))
+            .forEach(e->e.setType(newType));
+        logger.info("更新后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
+
+    /**
+     *根据tag删除标注中指定的单位标注
+     * @param tag
+     * @param oldAnnotation
+     */
+    public static String deleteUnitAnnotationByLambda(String oldAnnotation,String tag){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        document.setEntities(document.getEntities().stream()
+                .filter(x->!x.getTag().equals(tag))
+                .collect(Collectors.toList()));
+        logger.info("删除后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
+    /**
+     * 通过lambda添加新的单位标注从而构建新标注
+     * oldAnnotation
+     * @param newType
+     * @param newStart
+     * @param newEnd
+     * @param newTerm
+     * @return
+     */
+    public static String addUnitAnnotationByLambda(String oldAnnotation,String newType,String newStart,
+                                           String newEnd,String newTerm){
+        String newTag=getNewTagByLambda(oldAnnotation);
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        if(document.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
+                                        &&x.getStart()==Integer.valueOf(newStart)&&x.getEnd()==Integer.valueOf(newEnd))
+                .count()>0){
+            return oldAnnotation;
+        }else{
+            document.getEntities().add(new Entity(newTag,Integer.valueOf(newStart),Integer.valueOf(newEnd),newType,newTerm));
+            return DocumentManipulator.toBratAnnotations(document);
+        }
+    }
+
+    /**
+     *构建新的标注
      * @param oldAnnotation
      * @param newType
      * @param newStart
@@ -106,6 +255,8 @@ public class AnnotationConvert {
                 newText);
         return oldAnnotation +newLine;
     }
+
+
     /**
      *更新新的标注
      * @param oldAnnotation
@@ -125,7 +276,6 @@ public class AnnotationConvert {
             }
             return newAnnotation;
         }
-
         return oldAnnotation;
     }
 
@@ -201,6 +351,9 @@ public class AnnotationConvert {
             newText);
         return oldManualAnnotation + newLine;
     }
+
+
+
     /**
      * 删除标注中的指定标签,并且对手工标注标签进行重新排序
      * @param oldAnnotation "{0}\t{1} {2} {3}\t{4}\n";
@@ -254,6 +407,7 @@ public class AnnotationConvert {
         termArray.add(newTermObject);
         return JSONArray.toJSONString(termArray);
     }
+
 
     /**
      * 从原有的新词列表中删除新词
