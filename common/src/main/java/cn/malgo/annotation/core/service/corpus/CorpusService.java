@@ -66,7 +66,7 @@ public class CorpusService {
     }
 
     /**
-     * 批量自动标注
+     * 批量对Corpus表的原始文本进行自动标注
      */
     public void batchAutoAnnotation() {
         int batchCount = 1;
@@ -92,6 +92,5 @@ public class CorpusService {
         } catch (Exception e) {
             LogUtil.error(logger, e, "预处理标注失败!terms:" + JSONObject.toJSONString(page.getResult()));
         }
-
     }
 }

@@ -1,4 +1,4 @@
-package cn.malgo.annotation.web.controller.tag;
+package cn.malgo.annotation.web.controller.tag.request;
 
 import java.util.List;
 

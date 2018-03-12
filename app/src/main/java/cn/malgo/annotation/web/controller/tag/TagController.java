@@ -4,6 +4,7 @@ import cn.malgo.annotation.common.dal.model.Tag;
 import cn.malgo.annotation.common.util.AssertUtil;
 import cn.malgo.annotation.core.service.tag.TagService;
 import cn.malgo.annotation.web.controller.common.BaseController;
+import cn.malgo.annotation.web.controller.tag.request.TagArr;
 import cn.malgo.annotation.web.result.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

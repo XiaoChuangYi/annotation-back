@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by cjl on 2018/1/2.
  */
-public class TermGroupResult {
+public class TermGroupVO {
     private  List<List<Term>> mixList;
     private  int groups;
 

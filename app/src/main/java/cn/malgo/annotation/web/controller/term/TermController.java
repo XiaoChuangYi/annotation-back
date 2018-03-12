@@ -10,7 +10,7 @@ import cn.malgo.annotation.web.controller.term.request.AddTermRequest;
 import cn.malgo.annotation.web.controller.term.request.ConditionTermRequest;
 import cn.malgo.annotation.web.controller.term.request.TermArr;
 import cn.malgo.annotation.web.controller.term.request.UpdateTermRequest;
-import cn.malgo.annotation.web.controller.term.result.TermGroupResult;
+import cn.malgo.annotation.web.controller.term.result.TermGroupVO;
 import cn.malgo.annotation.web.request.PageRequest;
 import cn.malgo.annotation.web.result.PageVO;
 import cn.malgo.annotation.web.result.ResultVO;
@@ -184,8 +184,8 @@ public class TermController extends BaseController {
      *根据originName分组查询数据
      */
     @RequestMapping(value = {"/queryTermGroupByOriginName.do"})
-    public ResultVO<TermGroupResult> queryTermGroupByOriginName(int groupIndex, int groupSize){
-        TermGroupResult termGroupResult=new TermGroupResult();
+    public ResultVO<TermGroupVO> queryTermGroupByOriginName(int groupIndex, int groupSize){
+        TermGroupVO termGroupResult=new TermGroupVO();
         List<List<Term>> termList=termService.listTermGroupByOriginName(groupIndex,groupSize);
         termGroupResult.setMixList(termList);
         termGroupResult.setGroups(termService.countTermGroupsByOriginName());

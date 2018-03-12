@@ -1,6 +1,5 @@
 package cn.malgo.annotation.test;
 
-import cn.malgo.annotation.core.service.type.ConceptShowService;
 import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.junit.runner.RunWith;

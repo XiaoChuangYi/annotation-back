@@ -21,7 +21,7 @@ public class LoginInterceptorConfig extends WebMvcConfigurerAdapter {
         // excludePathPatterns 用户排除拦截
         List<String> excludePathPatterns = new ArrayList<>();
         excludePathPatterns.add("/*/anonymous/*.do");
-        excludePathPatterns.add("/excel/*.do");//excel导入到处不需要拦截
+        excludePathPatterns.add("/excel/*.do");//excel导入导出不需要拦截
 
         InterceptorRegistration interceptorRegistration = registry
             .addInterceptor(new LoginInterceptor()).addPathPatterns("/**");

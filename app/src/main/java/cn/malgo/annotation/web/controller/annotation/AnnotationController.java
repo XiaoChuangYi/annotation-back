@@ -191,7 +191,6 @@ public class AnnotationController extends BaseController {
         AssertUtil.notBlank(type,"type为空");
         AssertUtil.notEmpty(annotationArr.getAnnotationList(),"标注ID集合为空");
         AssertUtil.notEmpty(combineAtomicTermArr.getCombineAtomicTermList(),"旧原子术语信息集合为空");
-//        atomicTermService.saveAtomicTerm("",term,type);
         annotationBatchService.batchCombineUnitAnnotation(annotationArr.getAnnotationList(),combineAtomicTermArr.getCombineAtomicTermList(),term,type);
         return ResultVO.success();
     }
@@ -208,11 +207,6 @@ public class AnnotationController extends BaseController {
          AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
          //构建新的最终的标注
-//         String finalAnnotationNew = AnnotationConvert.addNewTagForAnnotation(
-//                 annotation.getFinalAnnotation(), request.getAnnotationType(),
-//                 request.getStartPosition(), request.getEndPosition(), request.getText());
-
-
          String finalAnnotationNew =AnnotationConvert.addUnitAnnotationByLambda(annotation.getFinalAnnotation(), request.getAnnotationType(),
                  request.getStartPosition(), request.getEndPosition(), request.getText());
 
@@ -242,8 +236,6 @@ public class AnnotationController extends BaseController {
         Annotation annotation = annotationService.getAnnotationByAnId(request.getAnId());
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
-//        String finalAnnotationNew=AnnotationConvert.updateTag(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
-
         String finalAnnotationNew=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getFinalAnnotation(),request.getOldType(),request.getNewType(),request.getTag());
         //获取原有的新词列表
         String newTermsText = annotation.getNewTerms();
@@ -271,8 +263,6 @@ public class AnnotationController extends BaseController {
         AssertUtil.state(crmAccount.getId().equals(annotation.getModifier()), "您无权操作当前术语");
 
         //构建新的手工标注
-//        String finalAnnotationNew = AnnotationConvert
-//                .deleteTag(annotation.getFinalAnnotation(), request.getTag());
         String finalAnnotationNew =AnnotationConvert.deleteUnitAnnotationByLambda(annotation.getFinalAnnotation(),request.getTag());
 
                 //获取原有的新词列表

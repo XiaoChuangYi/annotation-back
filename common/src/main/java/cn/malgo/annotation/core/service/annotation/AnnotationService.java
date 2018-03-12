@@ -267,22 +267,6 @@ public class AnnotationService {
         AssertUtil.state(updateResult > 0, "更新标注状态失败");
     }
 
-//    /**
-//     * 重载更新手动标注
-//     * @param anId
-//     * @param manualAnnotation
-//     * */
-//    public  void updateMunalAnnotation(String anId,String manualAnnotation){
-//        String securityManualAnnotation = SecurityUtil.cryptAESBase64(manualAnnotation);
-//
-//        Annotation annotation = new Annotation();
-//        annotation.setId(anId);
-//        annotation.setManualAnnotation(securityManualAnnotation);
-//        annotation.setGmtModified(new Date());
-//
-//        int updateResult = annotationMapper.updateByPrimaryKeySelective(annotation);
-//        AssertUtil.state(updateResult > 0, "更新最终标注失败");
-//    }
 
     /**
      * 批量自动标注
@@ -306,27 +290,6 @@ public class AnnotationService {
         }
 
     }
-
-//    /**
-//     * 通过termId 来自动标注
-//     * 首次标注,主要用于定时任务的批处理
-//     * @param termId
-//     */
-//    public void autoAnnotationByTermId(String termId) {
-//
-//        //通过调用apiServer服务,获取自动标注结果
-//        Corpus corpus = corpusService.queryByTermId(termId);
-//        String autoAnnotation = apiServerService.phraseTokenize(corpus.getTerm());
-//
-//        //检查是否存标注信息
-//        Annotation annotation = annotationMapper.selectByTermId(termId);
-//        if (annotation == null) {
-//            saveTermAnnotation(corpus, autoAnnotation);
-//        } else {
-//            updateAutoAnnotation(annotation.getId(), autoAnnotation);
-//        }
-//    }
-
     /**
      * 通过annotationId,更新annotation表的final_annotation字段和new_terms字段
      */
@@ -414,14 +377,7 @@ public class AnnotationService {
 
         AssertUtil.state(updateResult > 0, "设置术语状态为未识别异常");
     }
-//    /**
-//     * 保存标注,主要用于标注自动标注
-//     * @param corpus
-//     * @param autoAnnotation
-//     */
-//    private void saveTermAnnotation(Corpus corpus, String autoAnnotation) {
-//        saveTermAnnotation(corpus.getId(), corpus.getTerm(), autoAnnotation);
-//    }
+
 
     /**
      * 保存标注,主要用于标注自动标注
@@ -451,6 +407,12 @@ public class AnnotationService {
     }
 
     /**
+     * 查询标注表的总条数
+     * */
+    public  int  countAnnotationSizeByState(String state){
+        return  annotationMapper.selectTermAnnotationCount(state);
+    }
+    /**
      * 加密标注信息,并且更新
      * @param annotation 传入的标注需是明文
      */
@@ -477,12 +439,6 @@ public class AnnotationService {
             SecurityUtil.decryptAESBase64(annotation.getManualAnnotation()));
         annotation.setFinalAnnotation(
             SecurityUtil.decryptAESBase64(annotation.getFinalAnnotation()));
-    }
-    /**
-     * 查询标注表的总条数
-     * */
-    public  int  countAnnotationSizeByState(String state){
-        return  annotationMapper.selectTermAnnotationCount(state);
     }
 
 }
