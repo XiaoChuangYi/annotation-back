@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microservice.pojo.TypeHierarchyNode;
 import com.microservice.result.ResultVO;
-import com.microservice.service.render.RenderService;
+import com.microservice.service.RenderService;
 import com.microservice.vo.BratConfigVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

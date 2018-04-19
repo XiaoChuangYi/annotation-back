@@ -26,11 +26,11 @@
 	</properties>
 
     <modules>
-        <module>app</module>
+        <module>annotation-word-pos</module>
 		<module>annotation-sentence</module>
         <module>common</module>
-        <module>configdata</module>
-		<module>other</module>
+        <module>annotation-config</module>
+		<module>other-service</module>
 		<module>eureka</module>
 		<module>zuul</module>
 		<module>annotation-negation</module>
