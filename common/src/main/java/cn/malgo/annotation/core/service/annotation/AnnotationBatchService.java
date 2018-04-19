@@ -208,6 +208,9 @@ public class AnnotationBatchService extends AnnotationService {
             LogUtil.info(logger, "检查标注二义性和原子术语对应关系异常,标注ID:" + annotation.getId());
         }
     }
+
+
+
     public void batchReplaceUnitAnnotationType(String typeOld, String typeNew) {
         LogUtil.info(logger, "开始批量替换标注表单位标注中的type类型");
         int pageNum = 1;
@@ -247,6 +250,8 @@ public class AnnotationBatchService extends AnnotationService {
             updateBatchAnnotation(finalAnnotation);
         }
     }
+
+
     /**
      * 批量合并包含指定单位标注(term/type)组标注数据
      */

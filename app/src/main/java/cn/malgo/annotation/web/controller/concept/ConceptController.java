@@ -1,4 +1,4 @@
-package cn.malgo.annotation.web.controller.conceptController;
+package cn.malgo.annotation.web.controller.concept;
 
 import cn.malgo.annotation.common.dal.model.Concept;
 import cn.malgo.annotation.core.business.mixtrue.MixtureTerm;

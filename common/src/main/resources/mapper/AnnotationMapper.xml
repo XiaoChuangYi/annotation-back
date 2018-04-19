@@ -58,6 +58,7 @@
         ORDER BY
         gmt_created DESC
     </select>
+
     <select id="selectByStateListModifier" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>

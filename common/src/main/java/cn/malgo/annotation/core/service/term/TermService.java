@@ -56,6 +56,7 @@ public class TermService {
         termMapper.selectTermByTermId(termId);
         return  pageInfo;
     }
+
     /**
      *分页查询术语
      * @param pageNum
@@ -66,6 +67,7 @@ public class TermService {
         termMapper.selectEnableTerm();
         return  pageInfo;
     }
+
     /**
      * @param  termName
      */

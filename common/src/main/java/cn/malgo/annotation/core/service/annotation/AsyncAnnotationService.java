@@ -21,9 +21,6 @@ public class AsyncAnnotationService {
 
     @Autowired
     private AnnotationService annotationService;
-
-    @Autowired
-    private AnnotationBatchService annotationBatchService;
     /**
      * 异步自动标注
      * @param corpusList

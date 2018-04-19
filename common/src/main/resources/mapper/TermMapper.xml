@@ -22,6 +22,7 @@
     <result column="term_id" jdbcType="VARCHAR" property="termId" />
     <result column="term_name" jdbcType="VARCHAR" property="termName" />
   </resultMap>
+
   <sql id="ALL_COLUMN">
     id,
     term_id,
@@ -35,6 +36,7 @@
     state,
     concept_id
   </sql>
+
   <select id="selectAllByTermName" resultMap="MixtureMap">
     select id,term_id,term_name
     FROM term WHERE state='ENABLE'
@@ -46,10 +48,12 @@
       AND term_name LIKE concat('%',#{termName},'%')
     </if>
   </select>
+
   <select id="selectEnableTerm" resultMap="BaseResultMap">
     select <include refid="ALL_COLUMN" />
     FROM term WHERE state='ENABLE' OR state IS NULL
   </select>
+
   <select id="selectTermByTermId" resultMap="BaseResultMap">
     select
     TM.id,
@@ -76,6 +80,7 @@
     </if>
     ORDER BY TM.id
   </select>
+
   <select id="selectTermByCondition" resultMap="BaseResultMap">
     select
     TM.id,
@@ -135,9 +140,11 @@
       </otherwise>
     </choose>
   </select>
+
   <select id="selectTermType" resultType="java.lang.String">
     SELECT DISTINCT(term_type) from term
   </select>
+
   <update id="updateBatchLabelOfTerm" parameterType="java.util.List">
     UPDATE term SET label=
     <foreach collection="labelList" item="item" index="index" open="CASE ID" separator=" " close="END">
@@ -149,6 +156,8 @@
       ${item.id}
     </foreach>
   </update>
+
+
   <update id="updateBatchConceptIdOfTerm" parameterType="java.util.List">
     UPDATE term SET concept_id=
     <foreach collection="idList" item="item" index="index" open="CASE id" separator=" " close="END">
@@ -160,6 +169,7 @@
       ${item}
     </foreach>
   </update>
+
   <update id="coverBatchLabelOfTerm" parameterType="java.util.List">
     UPDATE term SET label=
     <foreach collection="idsList" item="item" index="index" open="CASE id" separator=" " close="END">
@@ -171,6 +181,7 @@
       ${item}
     </foreach>
   </update>
+
   <select id="selectByPrimaryKeyID" resultMap="BaseResultMap">
     SELECT
     <include refid="ALL_COLUMN"/>
@@ -179,6 +190,7 @@
       AND id=#{id}
     </if>
   </select>
+
   <select id="selectByConceptId" resultMap="BaseResultMap">
     select
     TM.id,
@@ -208,19 +220,23 @@
   <select id="getGroupsByOriginName" resultType="java.lang.Integer">
     SELECT COUNT(idGroup) from (select count(id) as idGroup from term GROUP BY origin_name order by id) a
   </select>
+
   <select id="selectTermByOriginNameGroup" resultMap="BaseResultMap">
     SELECT * FROM term GROUP BY origin_name order by id
   </select>
+
   <resultMap id="Groups" type="cn.malgo.annotation.core.business.term.GroupTerm">
     <result column="id_groups" jdbcType="INTEGER" property="idGroups" />
     <result column="origin_name" jdbcType="VARCHAR" property="originName" />
   </resultMap>
+
   <select id="selectGroupsAndOriginName" resultMap="Groups">
     select count(id) as id_groups,origin_name from term GROUP BY origin_name order by id
     <if test="groupIndex !=null and groupSize!= null">
       limit #{groupIndex},#{groupSize}
     </if>
   </select>
+
   <select id="selectTermsByOriginName" resultMap="BaseResultMap">
     select
     TM.id,

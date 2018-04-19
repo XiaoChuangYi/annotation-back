@@ -44,6 +44,7 @@
     SELECT <include refid="ALL_COLUMN"/>
     FROM an_type WHERE state='ENABLE' ORDER BY type_code
   </select>
+
   <update id="updateByTypeCodeSelective" parameterType="cn.malgo.annotation.common.dal.model.AnType">
       UPDATE  an_type
       <trim prefix="set" suffixOverrides=",">
@@ -55,9 +56,11 @@
       </trim>
     where type_code=#{typeCode}
   </update>
+
   <update id="updateTypeCodeById">
     UPDATE  an_type SET type_code =#{typeCode} WHERE id=#{id}
   </update>
+
   <select id="selectTypeByTypeId" resultMap="BaseResultMap">
     SELECT <include refid="ALL_COLUMN" />
     FROM an_type WHERE parent_id=#{Id}

@@ -52,6 +52,7 @@
         </if>
         ORDER BY id
     </select>
+
     <select id="fuzzyQueryByTermAndType" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -65,6 +66,7 @@
         </if>
         ORDER BY id
     </select>
+
     <select id="selectByTermAndTypeNotNull" resultMap="BaseResultMap">
         SELECT
         <include refid="ALL_COLUMN"/>
@@ -74,10 +76,14 @@
         AND type = #{type}
         ORDER BY id
     </select>
+
     <select id="selectAtomicIDsByOldType" resultMap="BaseResultMap">
         SELECT <include refid="ALL_COLUMN"/>
         FROM an_atomic_term WHERE type=#{type}
     </select>
+
+
+
     <update id="batchUpdateAtomicType" parameterType="java.util.List">
         UPDATE an_atomic_term SET type=#{type}
         WHERE id IN
@@ -85,6 +91,7 @@
             #{item,jdbcType=VARCHAR}
         </foreach>
     </update>
+
     <update id="batchUpdateAtomicConceptId" parameterType="java.util.List">
         UPDATE an_atomic_term SET concept_id =#{conceptId}
         WHERE id IN
