@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class AnnotationSentenceDynamicSqlProvider {
 
     public String queryAutoDistributionAnnotation(Map map){
-        AnnotationSentence annotationSentence=(AnnotationSentence)map.get("annotationSentence");
+//        AnnotationSentence annotationSentence=(AnnotationSentence)map.get("annotationSentence");
         List<String> stateList=(List<String>)map.get("stateList");
         String stateStr=stateList.stream().map(x->"'"+x.toString()+"'").collect(Collectors.joining(","));
         return new SQL(){
@@ -23,9 +23,9 @@ public class AnnotationSentenceDynamicSqlProvider {
                 FROM("annotation_sentence");
                 WHERE("1=1");
                 //如果当前的用户是admin,仅仅做state过滤
-                if (StringUtils.isNotBlank(annotationSentence.getUserModifier())) {
-                        WHERE("user_modifier !='" + annotationSentence.getUserModifier() + "'");
-                }
+//                if (StringUtils.isNotBlank(annotationSentence.getUserModifier())) {
+//                        WHERE("user_modifier !='" + annotationSentence.getUserModifier() + "'");
+//                }
                 if(StringUtils.isNotBlank(stateStr)&&!"''".equals(stateStr)){
                     WHERE("state in ("+stateStr+")");
                 }

@@ -35,11 +35,9 @@ public class AnnotationSentenceService {
     /**
      * 主动分配，其它未分配指派的标注信息
      */
-    public Page<AnnotationSentence> queryAnnotationUnDistribution(int pageIndex, int pageSize, List<String> stateList,String userModifier){
+    public Page<AnnotationSentence> queryAnnotationUnDistribution(int pageIndex, int pageSize, List<String> stateList){
         Page<AnnotationSentence> pageInfo=PageHelper.startPage(pageIndex,pageSize);
-        AnnotationSentence paramAnnotation=new AnnotationSentence();
-        paramAnnotation.setUserModifier(userModifier);
-        annotationSentenceMapper.listAutoDistributionAnnotationSentence(paramAnnotation,stateList);
+        annotationSentenceMapper.listAutoDistributionAnnotationSentence(stateList);
         return pageInfo;
     }
 

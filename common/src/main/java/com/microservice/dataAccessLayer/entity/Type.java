@@ -13,6 +13,7 @@ public class Type {
     private String state;
     private String typeCode;
     private String parentId;
+    private String parentType;
     private int hasChildren;
 
     public String getId() {
@@ -21,6 +22,14 @@ public class Type {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getParentType() {
+        return parentType;
+    }
+
+    public void setParentType(String parentType) {
+        this.parentType = parentType;
     }
 
     public String getTypeName() {

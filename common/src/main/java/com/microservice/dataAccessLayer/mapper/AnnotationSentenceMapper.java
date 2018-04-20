@@ -39,7 +39,7 @@ public interface AnnotationSentenceMapper {
             @Result(column = "gmt_modified",property = "gmtModified"),
             @Result(column = "memo",property = "memo")
     })
-    List<AnnotationSentence> listAutoDistributionAnnotationSentence(@Param("annotationSentence") AnnotationSentence annotationSentence,
+    List<AnnotationSentence> listAutoDistributionAnnotationSentence(
                                                                @Param("stateList") List<String> stateList);
 
     @Select("select * from annotation_sentence where id=#{id}")

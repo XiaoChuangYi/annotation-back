@@ -45,7 +45,7 @@ public class AnnotationSentenceController extends BaseController{
         if(pageInfo.getResult().size()==0){
             stateList=new ArrayList<>();
             stateList.add(AnnotationSentenceStateEnum.UN_DISTRIBUTION.getMessage());
-            pageInfo=annotationSentenceService.queryAnnotationUnDistribution(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
+            pageInfo=annotationSentenceService.queryAnnotationUnDistribution(pageIndex,pageSize,stateList);
             if(pageInfo.getResult().size()>0){
                 //将当前未分配的标注授权给当前的用户
                 AnnotationSentence autoDistributionAnnotationSentence=pageInfo.get(0);
