@@ -1,5 +1,7 @@
 package com.microservice.dataAccessLayer.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 /**
@@ -11,7 +13,9 @@ public class Corpus {
     private String type;
     private String state;
     private String memo;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date gmtCreated;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date gmtModified;
 
     public String getId() {

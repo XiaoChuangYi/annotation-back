@@ -1,5 +1,7 @@
 package com.microservice.dataAccessLayer.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 
 /**
@@ -8,8 +10,13 @@ import java.util.Date;
 public class Type {
     private String id;
     private String typeName;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date gmtCreated;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date gmtModified;
+
     private String state;
     private String typeCode;
     private String parentId;
