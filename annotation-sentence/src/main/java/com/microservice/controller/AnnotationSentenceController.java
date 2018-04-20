@@ -14,6 +14,7 @@ import com.microservice.utils.AnnotationConvert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +41,19 @@ public class AnnotationSentenceController extends BaseController{
 //        String userModifier=jsonParam.getString("userModifier");
 
         Page<AnnotationSentence> pageInfo= annotationSentenceService.queryAnnotationByCondition(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
+        //如果根据当前用户的信息没有查找到被分配的标注，则自动给他分配其它的标注
+        if(pageInfo.getResult().size()==0){
+            stateList=new ArrayList<>();
+            stateList.add(AnnotationSentenceStateEnum.UN_DISTRIBUTION.getMessage());
+            pageInfo=annotationSentenceService.queryAnnotationUnDistribution(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
+            if(pageInfo.getResult().size()>0){
+                //将当前未分配的标注授权给当前的用户
+                AnnotationSentence autoDistributionAnnotationSentence=pageInfo.get(0);
+                autoDistributionAnnotationSentence.setState(AnnotationSentenceStateEnum.DISTRIBUTIONED.getMessage());
+                autoDistributionAnnotationSentence.setUserModifier(Integer.toString(userAccount.getId()));
+                annotationSentenceService.updateAnnotationSentence(autoDistributionAnnotationSentence);
+            }
+        }
         List<AnnotationSentenceBratVO> annotationSentenceBratVOList =AnnotationConvert.convert2AnnotationBratVOList(pageInfo.getResult());
         PageVO<AnnotationSentenceBratVO> pageVO=new PageVO(pageInfo,false);
         pageVO.setDataList(annotationSentenceBratVOList);

@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface AnnotationSentenceMapper {
 
+
+
     @SelectProvider(type = AnnotationSentenceDynamicSqlProvider.class,method = "queryAnnotationSentenceSelective")
     @Results({
             @Result(id=true,column ="id" ,property = "id"),
@@ -26,6 +28,19 @@ public interface AnnotationSentenceMapper {
                                                                @Param("stateList") List<String> stateList);
 
 
+    @SelectProvider(type = AnnotationSentenceDynamicSqlProvider.class,method = "queryAutoDistributionAnnotation")
+    @Results({
+            @Result(id=true,column ="id" ,property = "id"),
+            @Result(column ="origin_text" ,property = "originText"),
+            @Result(column = "annotation_text",property = "annotationText"),
+            @Result(column = "state",property = "state"),
+            @Result(column = "user_modifier",property = "userModifier"),
+            @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
+            @Result(column = "memo",property = "memo")
+    })
+    List<AnnotationSentence> listAutoDistributionAnnotationSentence(@Param("annotationSentence") AnnotationSentence annotationSentence,
+                                                               @Param("stateList") List<String> stateList);
 
     @Select("select * from annotation_sentence where id=#{id}")
     @Results({
