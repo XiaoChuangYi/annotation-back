@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.microservice.dataAccessLayer.entity.Draw;
+import com.microservice.dataAccessLayer.entity.BratDraw;
 import com.microservice.dataAccessLayer.entity.Type;
-import com.microservice.dataAccessLayer.mapper.DrawMapper;
+import com.microservice.dataAccessLayer.mapper.BratDrawMapper;
 import com.microservice.dataAccessLayer.mapper.TypeMapper;
 import com.microservice.pojo.Arcs;
 import com.microservice.pojo.TypeHierarchyNode;
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class RenderService {
 
     @Autowired
-    private DrawMapper drawMapper;
+    private BratDrawMapper drawMapper;
 
     @Autowired
     private TypeMapper typeMapper;
@@ -38,10 +38,10 @@ public class RenderService {
      *获取渲染配置
      * @return list
      */
-    public List<TypeHierarchyNode> getDrawingSection(){
-        List<Draw> drawList=drawMapper.selectDrawJoinAnType();
+    public List<TypeHierarchyNode> getDrawingSection(int taskId){
+        List<BratDraw> drawList=drawMapper.selectDrawJoinAnType(taskId);
         List<TypeHierarchyNode> typeHierarchyNodeList=new ArrayList<>();
-        for(Draw draw:drawList){
+        for(BratDraw draw:drawList){
             String [] drawNameArr=draw.getDrawName().isEmpty()?(new String[]{}):draw.getDrawName().split(",");
             List<String> termList=new ArrayList<>();
             termList.add(draw.getTypeCode());
@@ -144,7 +144,7 @@ public class RenderService {
      * 构造bratConfig的entity_types的数据结构
      * @param typeHierarchyNodeList
      */
-    public JSONArray fillTypeConfiguration(List<TypeHierarchyNode> typeHierarchyNodeList) {
+    public JSONArray fillTypeConfiguration(List<TypeHierarchyNode> typeHierarchyNodeList,int taskId) {
         JSONArray itemArr = new JSONArray();
         if (typeHierarchyNodeList.size() > 0) {
             for (TypeHierarchyNode typeHierarchyNode : typeHierarchyNodeList) {
@@ -153,19 +153,19 @@ public class RenderService {
                 } else {
                     String typeCode = typeHierarchyNode.getTerms().get(0);
                     JSONObject item = new JSONObject();
-                    item.put("name", typeMapper.getTypeByTypeCode(typeCode).getTypeName());
+                    item.put("name", typeMapper.getTypeByTypeCode(typeCode,taskId).getTypeName());
                     item.put("type", typeCode);
                     item.put("unused", typeHierarchyNode.isUnused());
-                    item.put("labels", getTypeAliaArr(typeCode));//通过type类型到AN_TYPE表里取到对应的别名，添加进去
+                    item.put("labels", getTypeAliaArr(typeCode,taskId));//通过type类型到AN_TYPE表里取到对应的别名，添加进去
                     item.put("attributes", new JSONArray());//目前放一个空的json数组
                     item.put("normalizations", new JSONArray());
                     //添加绘图参数
-                Map<String,String> map=getDrawArgument(typeCode);
+                Map<String,String> map=getDrawArgument(typeCode,taskId);
                 for(String key:map.keySet()){
                     item.put(key,map.get(key));
                 }
 //                    添加arcs数组
-                List<String> typeList=listEnableType();
+                List<String> typeList=listEnableType(taskId);
                 List<Arcs> arcsList=new ArrayList<>();
                 Arcs arcs1=new Arcs();
                 arcs1.setType("Adjective");
@@ -194,8 +194,8 @@ public class RenderService {
      * @param typeCode
      * @return aliaList
      */
-    private List<String> getTypeAliaArr(String typeCode){
-        Draw draw=drawMapper.selectDrawByTypeCode(typeCode);
+    private List<String> getTypeAliaArr(String typeCode,int taskId){
+        BratDraw draw=drawMapper.selectDrawByTypeCode(typeCode,taskId);
         List<String> aliaList=new ArrayList<>();
         if(draw!=null){
             if(!"".equals(draw.getTypeLabel())){
@@ -211,8 +211,8 @@ public class RenderService {
      *根据对应的type，获取对应的DRAW表里的draw_name字段的数据
      * @param typeCode
      */
-    private Map<String,String> getDrawArgument(String typeCode){
-        Draw draw=drawMapper.selectDrawByTypeCode(typeCode);
+    private Map<String,String> getDrawArgument(String typeCode,int taskId){
+        BratDraw draw=drawMapper.selectDrawByTypeCode(typeCode,taskId);
         Map<String,String> map=new HashMap<>();
         if(!"".equals(draw.getDrawName())){
             String [] arguments=draw.getDrawName().split(",");
@@ -234,8 +234,8 @@ public class RenderService {
     /**
      * 获取所有的type
      */
-    private List<String> listEnableType(){
-        List<Type> anTypeList=typeMapper.listEnableType();
+    private List<String> listEnableType(int taskId){
+        List<Type> anTypeList=typeMapper.listEnableType(taskId);
         List<String> typeCodeList=new ArrayList<>();
         for(Type anType:anTypeList){
             typeCodeList.add(anType.getTypeCode());
@@ -243,21 +243,21 @@ public class RenderService {
         return  typeCodeList;
     }
 
-    public List<Draw> listDraw(){
-        return drawMapper.selectDrawByCondition(new Draw());
+    public List<BratDraw> listDraw(){
+        return drawMapper.selectDrawByCondition(new BratDraw());
     }
 
-    public Page<Draw> listDrawByCondition(int pageNum,int pageSize,String drawName,String typeCode){
-        Page<Draw> pageInfo= PageHelper.startPage(pageNum, pageSize);
-        Draw draw=new Draw();
+    public Page<BratDraw> listDrawByCondition(int pageNum,int pageSize,String drawName,String typeCode,int taskId){
+        Page<BratDraw> pageInfo= PageHelper.startPage(pageNum, pageSize);
+        BratDraw draw=new BratDraw();
         draw.setTypeCode(typeCode);
         draw.setDrawName(drawName);
         drawMapper.selectDrawByCondition(draw);
         return pageInfo;
     }
 
-    public Draw getDrawByTypeCode(String typeCode){
-        return drawMapper.selectDrawByTypeCode(typeCode);
+    public BratDraw getDrawByTypeCode(String typeCode ,int taskId){
+        return drawMapper.selectDrawByTypeCode(typeCode,taskId);
     }
 
     /**
@@ -266,7 +266,7 @@ public class RenderService {
      * @param drawName
      */
     public void updateDrawById(int id,String drawName,String typeLabel){
-        Draw draw=new Draw();
+        BratDraw draw=new BratDraw();
         draw.setId(id);
         if(StringUtils.isNotBlank(drawName))
             draw.setDrawName(drawName);
@@ -279,11 +279,12 @@ public class RenderService {
      * @param id
      * @param drawName
      */
-    public  void  addDraw(int id,String drawName,String typeLabel){
-        Draw pDraw=new Draw();
+    public  void  addDraw(int id,String drawName,String typeLabel,int taskId){
+        BratDraw pDraw=new BratDraw();
         pDraw.setDrawName(drawName);
         pDraw.setId(id);
         pDraw.setTypeLabel(typeLabel);
+        pDraw.setTaskId(taskId);
         drawMapper.insertDrawSelective(pDraw);
     }
 

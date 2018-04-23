@@ -7,6 +7,7 @@ import com.microservice.result.PageVO;
 import com.microservice.result.ResultVO;
 import com.microservice.service.TypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +20,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/microServiceType")
-public class TypeController {
+public class TypeController extends BaseController{
+
+
 
     @Autowired
     private TypeService typeService;
@@ -29,7 +32,7 @@ public class TypeController {
      */
     @RequestMapping(value = "/listType.do")
     public List<Type> listType(){
-        return typeService.listEnableType();
+        return typeService.listEnableType(currentTaskId);
     }
 
     /**
@@ -41,7 +44,7 @@ public class TypeController {
         int pageSize=jsonParam.getIntValue("pageSize");
         String typeCode=jsonParam.getString("typeCode");
         String typeName=jsonParam.getString("typeName");
-        Page<Type> page =typeService.listEnableTypeByPagingCondition(pageIndex,pageSize,typeCode,typeName);
+        Page<Type> page =typeService.listEnableTypeByPagingCondition(pageIndex,pageSize,typeCode,typeName,currentTaskId);
         PageVO<Type> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
@@ -52,7 +55,7 @@ public class TypeController {
     @RequestMapping(value = "/queryChildrenTypeByTypeId.do")
     public ResultVO<List<Type>> queryChildrenTypeByTypeId(@RequestBody JSONObject jsonParam){
         String typeId=jsonParam.getString("typeId");
-        List<Type> childrenTypeList=typeService.listChildrenTypeByParentId(typeId);
+        List<Type> childrenTypeList=typeService.listChildrenTypeByParentId(typeId,currentTaskId);
         return ResultVO.success(childrenTypeList);
     }
 
@@ -65,7 +68,7 @@ public class TypeController {
         String typeCode=jsonParam.getString("typeCode");
         String typeName=jsonParam.getString("typeName");
         String parentId=jsonParam.getString("parentId");
-        typeService.saveType(parentId,typeName,typeCode);
+        typeService.saveType(parentId,typeName,typeCode,currentTaskId);
         return ResultVO.success();
     }
     /**
@@ -77,7 +80,7 @@ public class TypeController {
         String typeId=jsonParam.getString("typeId");
         String typeName=jsonParam.getString("typeName");
         String oldParentId=jsonParam.getString("oldParentId");
-        typeService.updateType(newParentId,typeId,typeName,oldParentId);
+        typeService.updateType(newParentId,typeId,typeName,oldParentId,currentTaskId);
         return ResultVO.success();
     }
     /**
@@ -86,7 +89,7 @@ public class TypeController {
     @RequestMapping(value = "/deleteType.do")
     public  ResultVO deleteType(@RequestBody JSONObject jsonParam){
         String typeId=jsonParam.getString("typeId");
-        typeService.removeType(typeId);
+        typeService.removeType(typeId,currentTaskId);
         return ResultVO.success();
     }
 

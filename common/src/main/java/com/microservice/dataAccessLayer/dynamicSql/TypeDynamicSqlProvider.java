@@ -3,6 +3,7 @@ package com.microservice.dataAccessLayer.dynamicSql;
 import com.microservice.dataAccessLayer.entity.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
+import sun.awt.SunHints;
 
 /**
  * Created by cjl on 2018/4/11.
@@ -15,6 +16,9 @@ public class TypeDynamicSqlProvider {
                 SELECT("*");
                 FROM("an_type");
                 WHERE("1=1");
+                if(type.getTaskId()>=0)
+                    WHERE("task_id=#{taskId}");
+
                 if(StringUtils.isNotBlank(type.getId())){
                     WHERE("id=#{id}");
                 }
@@ -36,11 +40,15 @@ public class TypeDynamicSqlProvider {
                 LEFT_OUTER_JOIN("an_type b on a.parent_id=b.id ");
                 WHERE("a.state='ENABLE' ");
                 if(StringUtils.isNotBlank(type.getTypeName())){
-                    WHERE("type_name like concat('%',#{typeName},'%')");
+                    WHERE("a.type_name like concat('%',#{typeName},'%')");
                 }
                 if(StringUtils.isNotBlank(type.getTypeCode())){
-                    WHERE("type_code like concat('%',#{typeCode},'%')");
+                    WHERE("a.type_code like concat('%',#{typeCode},'%')");
                 }
+                if(type.getTaskId()>=0)
+                    WHERE("a.task_id=#{taskId}");
+
+                ORDER_BY("a.id");
             }
         }.toString();
     }
@@ -66,6 +74,9 @@ public class TypeDynamicSqlProvider {
                 if(StringUtils.isNotBlank(type.getTypeCode())){
                     SET("type_code=#{typeCode}");
                 }
+                if(type.getTaskId()>=0)
+                    SET("task_id=#{taskId}");
+
                 WHERE("id=#{id}");
             }
         }.toString();
@@ -79,13 +90,15 @@ public class TypeDynamicSqlProvider {
                 if(StringUtils.isNotBlank(type.getState()))
                     VALUES("state","#{state}");
                 if(StringUtils.isNotBlank(type.getTypeName()))
-                    VALUES("type_name","{typeName}");
+                    VALUES("type_name","#{typeName}");
                 if(StringUtils.isNotBlank(type.getParentId()))
-                    VALUES("parent_id","{parentId}");
+                    VALUES("parent_id","#{parentId}");
                 if(StringUtils.isNotBlank(type.getTypeCode()))
-                    VALUES("type_code","{typeCode}");
+                    VALUES("type_code","#{typeCode}");
+                if(type.getTaskId()>=0)
+                    VALUES("task_id","#{taskId}");
                 if(type.getHasChildren()>=0)
-                    VALUES("has_children","{hasChildren}");
+                    VALUES("has_children","#{hasChildren}");
                 if(type.getGmtCreated()!=null)
                     VALUES("gmt_created","#{gmtCreated}");
                 if(type.getGmtModified()!=null)

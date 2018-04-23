@@ -18,6 +18,7 @@ public interface TypeMapper {
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
@@ -32,6 +33,7 @@ public interface TypeMapper {
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
@@ -41,71 +43,76 @@ public interface TypeMapper {
     List<Type> listTypeAndShowParent(Type type);
 
 
-    @Select("select * from an_type where parent_id=#{id}")
+    @Select("select * from an_type where parent_id=#{id} and task_id=#{taskId}")
     @Results({
             @Result(id=true,property = "id",column = "id"),
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
             @Result(property = "gmtModified",column = "gmt_modified")
     })
-    List<Type> listChildrenTypeById(@Param("id") String id);
+    List<Type> listChildrenTypeById(@Param("id") String id,@Param("taskId") int taskId);
 
-    @Select("select * from an_type where state='ENABLE' order by type_code")
+    @Select("select * from an_type where state='ENABLE' and task_id=#{taskId} order by type_code")
     @Results({
             @Result(id=true,property = "id",column = "id"),
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
             @Result(property = "gmtModified",column = "gmt_modified")
     })
-    List<Type> listEnableType();
+    List<Type> listEnableType(@Param("taskId") int taskId);
 
-    @Select("select * from an_type where type_code=#{typeCode}")
+    @Select("select * from an_type where type_code=#{typeCode} and task_id=#{taskId}")
     @Results({
             @Result(id=true,property = "id",column = "id"),
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
             @Result(property = "gmtModified",column = "gmt_modified")
     })
-    Type getTypeByTypeCode(@Param("typeCode") String typeCode);
+    Type getTypeByTypeCode(@Param("typeCode") String typeCode,@Param("taskId") int taskId);
 
 
-    @Select("select * from an_type where type_code=#{typeCode} and state='ENABLE'")
+    @Select("select * from an_type where type_code=#{typeCode} and task_id=#{taskId} and state='ENABLE'")
     @Results({
             @Result(id=true,property = "id",column = "id"),
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
             @Result(property = "gmtModified",column = "gmt_modified")
     })
-    Type getDisableTypeByTypeCode(@Param("typeCode") String typeCode);
+    Type getDisableTypeByTypeCode(@Param("typeCode") String typeCode,@Param("taskId") int taskId);
 
-    @Select("select * from an_type where id=#{parentId}")
+    @Select("select * from an_type where id=#{parentId} and task_id=#{taskId}")
     @Results({
             @Result(id=true,property = "id",column = "id"),
             @Result(property = "typeName",column = "type_name"),
             @Result(property = "typeCode",column = "type_code"),
             @Result(property = "parentId",column = "parent_id"),
+            @Result(property = "taskId",column = "task_id"),
             @Result(property = "state",column = "state"),
             @Result(property = "hasChildren",column = "has_children"),
             @Result(property = "gmtCreated",column = "gmt_created"),
             @Result(property = "gmtModified",column = "gmt_modified")
     })
-    Type getTypeByParentId(@Param("parentId") String id);
+    Type getTypeByParentId(@Param("parentId") String id,@Param("taskId") int taskId);
 
 
     @Update("update type set type_code=#{typeCode} where id=#{id}")

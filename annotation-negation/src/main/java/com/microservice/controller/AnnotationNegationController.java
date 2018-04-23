@@ -40,7 +40,6 @@ public class AnnotationNegationController extends BaseController{
         int pageIndex=jsonParam.getIntValue("pageIndex");
         int pageSize=jsonParam.getIntValue("pageSize");
         List<String> stateList= JSON.parseArray(JSON.toJSONString(jsonParam.get("states")),String.class);
-//        String userModifier=jsonParam.getString("userModifier");
 
         Page<AnnotationNegation> pageInfo= annotationNegationService.queryAnnotationByCondition(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
         List<AnnotationNegationBratVO> annotationNegationBratVOList = AnnotationNegationConvert.convert2AnnotationBratVOList(pageInfo.getResult());

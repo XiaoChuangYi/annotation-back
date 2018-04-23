@@ -3,12 +3,21 @@ package com.microservice.dataAccessLayer.entity;
 /**
  * Created by cjl on 2018/4/2.
  */
-public class Draw {
+public class BratDraw {
     private int id;
     private String drawName;
     private String typeLabel;
+    private int typeId;
     private int taskId;
 
+
+    public int getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(int typeId) {
+        this.typeId = typeId;
+    }
 
     public int getTaskId() {
         return taskId;

@@ -22,6 +22,16 @@ public class Type {
     private String parentId;
     private String parentType;
     private int hasChildren;
+    private int taskId;
+
+
+    public int getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+    }
 
     public String getId() {
         return id;

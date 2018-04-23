@@ -25,9 +25,10 @@ public class TypeService {
     /**
      * 根据ID查询其子类型数据
      * @param parentId
+     * @param taskId
      */
-    public  List<Type> listChildrenTypeByParentId(String parentId){
-        List<Type> anTypeList=typeMapper.listChildrenTypeById(parentId);
+    public  List<Type> listChildrenTypeByParentId(String parentId ,int taskId){
+        List<Type> anTypeList=typeMapper.listChildrenTypeById(parentId,taskId);
         return  anTypeList;
     }
 
@@ -37,20 +38,23 @@ public class TypeService {
      * @param pageSize
      * @param typeCode
      * @param typeName
+     * @param taskId
      */
-    public Page<Type> listEnableTypeByPagingCondition(int pageNum, int pageSize, String typeCode, String typeName){
+    public Page<Type> listEnableTypeByPagingCondition(int pageNum, int pageSize, String typeCode, String typeName,int taskId){
         Page<Type> pageInfo= PageHelper.startPage(pageNum, pageSize);
         Type paramType=new Type();
         paramType.setTypeCode(typeCode);
         paramType.setTypeName(typeName);
+        paramType.setTaskId(taskId);
         typeMapper.listTypeAndShowParent(paramType);
         return pageInfo;
     }
     /**
      * 查询所有可用类型
+     * @param taskId
      */
-    public List<Type> listEnableType(){
-        List<Type> anTypeList=typeMapper.listEnableType();
+    public List<Type> listEnableType(int taskId){
+        List<Type> anTypeList=typeMapper.listEnableType(taskId);
         return anTypeList;
     }
 
@@ -71,9 +75,10 @@ public class TypeService {
      * @param parentId
      * @param typeName
      * @param originParentId
+     * @param taskId
      * */
     @Transactional
-    public void updateType(String parentId,String id,String typeName,String originParentId){
+    public void updateType(String parentId,String id,String typeName,String originParentId,int taskId){
         Type anTypeParam=new Type();
         anTypeParam.setId(id);
         anTypeParam.setTypeName(typeName);
@@ -85,7 +90,7 @@ public class TypeService {
         // 2.如果有记录，则说明当前行曾经归属于该type类型下，对该hasChildren字段-1
         if(StringUtils.isNotBlank(parentId)){
             anTypeParam.setParentId(parentId);
-            Type anTypeForUpdateNum=typeMapper.getTypeByParentId(parentId);
+            Type anTypeForUpdateNum=typeMapper.getTypeByParentId(parentId,taskId);
             if(anTypeForUpdateNum!=null){
                 anTypeForUpdateNum.setHasChildren(anTypeForUpdateNum.getHasChildren()+1);
                 typeMapper.updateTypeSelectiveById(anTypeForUpdateNum);
@@ -93,7 +98,7 @@ public class TypeService {
         }
 
         if(StringUtils.isNotBlank(originParentId)) {
-            Type anTypeForUpdateSubtractNum = typeMapper.getTypeByParentId(originParentId);
+            Type anTypeForUpdateSubtractNum = typeMapper.getTypeByParentId(originParentId,taskId);
             if(anTypeForUpdateSubtractNum!=null){
                 if(anTypeForUpdateSubtractNum.getHasChildren()>0)
                 {
@@ -110,18 +115,19 @@ public class TypeService {
      * @param typeName
      * */
     @Transactional
-    public void saveType(String parentId,String typeName,String typeCode){
-        Type anTypeOld=typeMapper.getTypeByTypeCode(typeCode);
+    public void saveType(String parentId,String typeName,String typeCode,int taskId){
+        Type anTypeOld=typeMapper.getTypeByTypeCode(typeCode,taskId);
         if(anTypeOld!=null)
             return;
         Type anTypeNew=new Type();
         anTypeNew.setParentId(parentId);
         anTypeNew.setTypeName(typeName);
         anTypeNew.setTypeCode(typeCode);
+        anTypeNew.setTaskId(taskId);
         anTypeNew.setState(TypeStateEnum.ENABLE.name());
         anTypeNew.setGmtCreated(new Date());
         anTypeNew.setGmtModified(new Date());
-        anTypeOld=typeMapper.getDisableTypeByTypeCode(typeCode);
+        anTypeOld=typeMapper.getDisableTypeByTypeCode(typeCode,taskId);
         if(anTypeOld!=null){
             typeMapper.updateTypeSelectiveById(anTypeNew);
         }else{
@@ -132,7 +138,7 @@ public class TypeService {
         }
         //如果当前的parentId不为空，则说明用户要改变当前的记录的父类型
         //根据当前的parentId作为id,将对应的记录的has_children字段+1
-        Type anTypeForUpdateNum=typeMapper.getTypeByParentId(parentId);
+        Type anTypeForUpdateNum=typeMapper.getTypeByParentId(parentId,taskId);
         if(anTypeForUpdateNum!=null){
             anTypeForUpdateNum.setHasChildren(anTypeForUpdateNum.getHasChildren()+1);
             typeMapper.updateTypeSelectiveById(anTypeForUpdateNum);
@@ -142,8 +148,8 @@ public class TypeService {
      * 删除type,设置该type的state为disable
      * @param typeId
      * */
-    public void removeType(String typeId){
-        Type anType=typeMapper.getTypeByParentId(typeId);
+    public void removeType(String typeId,int taskId){
+        Type anType=typeMapper.getTypeByParentId(typeId,taskId);
         anType.setState(TypeStateEnum.DISABLE.name());
         typeMapper.updateTypeSelectiveById(anType);
     }

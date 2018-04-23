@@ -3,6 +3,7 @@ package com.microservice.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
+import com.microservice.dataAccessLayer.entity.BratDraw;
 import com.microservice.dataAccessLayer.entity.Draw;
 import com.microservice.pojo.TypeHierarchyNode;
 import com.microservice.result.PageVO;
@@ -10,6 +11,7 @@ import com.microservice.result.ResultVO;
 import com.microservice.service.RenderService;
 import com.microservice.vo.BratConfigVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/microServiceRender")
-public class RenderController {
+public class RenderController extends BaseController{
 
     @Autowired
     private RenderService renderService;
@@ -36,8 +38,8 @@ public class RenderController {
         uiNames.put("attributes","attributes");
         bratConfigVO.setUi_names(uiNames);
         bratConfigVO.setRelation_attribute_types(new JSONArray());
-        List<TypeHierarchyNode> typeHierarchyNodeList =renderService.getDrawingSection();
-        JSONArray array=renderService.fillTypeConfiguration(typeHierarchyNodeList);
+        List<TypeHierarchyNode> typeHierarchyNodeList =renderService.getDrawingSection(currentTaskId);
+        JSONArray array=renderService.fillTypeConfiguration(typeHierarchyNodeList,currentTaskId);
         bratConfigVO.setEntity_types(array);
         return  ResultVO.success(bratConfigVO);
     }
@@ -51,8 +53,8 @@ public class RenderController {
         int pageSize=jsonParam.getIntValue("pageSize");
         String type=jsonParam.getString("type");
         String color=jsonParam.getString("color");
-        Page<Draw> page=renderService.listDrawByCondition(pageIndex,pageSize,color,type);
-        PageVO<Draw> pageVO = new PageVO(page);
+        Page<BratDraw> page=renderService.listDrawByCondition(pageIndex,pageSize,color,type,currentTaskId);
+        PageVO<BratDraw> pageVO = new PageVO(page);
         return ResultVO.success(pageVO);
     }
     /**
@@ -73,7 +75,7 @@ public class RenderController {
         int id=jsonParam.getIntValue("id");
         String typeLabel=jsonParam.getString("typeLabel");
         String drawName=jsonParam.getString("drawName");
-        renderService.addDraw(id,drawName,typeLabel);
+        renderService.addDraw(id,drawName,typeLabel,currentTaskId);
         return  ResultVO.success();
     }
     /**
