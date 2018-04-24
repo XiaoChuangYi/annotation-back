@@ -19,7 +19,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping(value = "/microServiceType")
+@RequestMapping(value = "/type")
 public class TypeController extends BaseController{
 
     @Autowired

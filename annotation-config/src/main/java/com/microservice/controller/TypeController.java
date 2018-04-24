@@ -25,8 +25,8 @@ public class TypeController {
      * 查询所有状态为'ENABLE'的type类型
      */
     @RequestMapping(value = "/listType.do")
-    public List<Type> listType(){
-        return typeService.listEnableType();
+    public List<Type> listType(int taskId){
+        return typeService.listEnableType(taskId);
     }
 
     /**

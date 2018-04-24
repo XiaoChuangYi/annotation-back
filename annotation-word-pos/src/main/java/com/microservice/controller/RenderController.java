@@ -32,8 +32,8 @@ public class RenderController {
         uiNames.put("attributes","attributes");
         bratConfigVO.setUi_names(uiNames);
         bratConfigVO.setRelation_attribute_types(new JSONArray());
-        List<TypeHierarchyNode> typeHierarchyNodeList =renderService.getDrawingSection();
-        JSONArray array=renderService.fillTypeConfiguration(typeHierarchyNodeList);
+        List<TypeHierarchyNode> typeHierarchyNodeList =renderService.getDrawingSection(1);
+        JSONArray array=renderService.fillTypeConfiguration(typeHierarchyNodeList,1);
         bratConfigVO.setEntity_types(array);
         return  ResultVO.success(bratConfigVO);
     }

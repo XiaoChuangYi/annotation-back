@@ -22,7 +22,7 @@ import java.util.List;
  * Created by cjl on 2018/3/29.
  */
 @RestController
-@RequestMapping(value = "/microServiceRender")
+@RequestMapping(value = "/render")
 public class RenderController extends BaseController{
 
     @Autowired

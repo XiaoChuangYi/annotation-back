@@ -35,6 +35,11 @@ public class UserAccountController {
         List<UserAccount> userAccountList=userAccountService.listUserAccount();
         return ResultVO.success(userAccountList);
     }
+
+    @RequestMapping(value = "/anonymous/test.do")
+    public String test(){
+        return "get success!";
+    }
     /**
      * 用户登录
      * 备注：@RequestBody，可以正常解析请求数据
