@@ -86,21 +86,6 @@ public class AnnotationConvert {
     }
 
     /**
-     * 通过lambda获取指定标注的新的Tag标签
-     */
-    public static String getNewTagByLambda(String oldAnnotation){
-        Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
-        List<Entity> entityList=document.getEntities();
-        int num=entityList.size()>0?entityList.stream()
-                .map(x->x.getTag().substring(1,x.getTag().length()))
-                .map(s -> Integer.valueOf(s))
-                .max(Comparator.comparing(Function.identity())).get().intValue():1;
-        num++;
-        return "T"+num;
-    }
-
-    /**
      * 通过lambda添加新的单位标注从而构建新标注
      * @param oldAnnotation
      * @param newType
@@ -109,15 +94,21 @@ public class AnnotationConvert {
      * @param newTerm
      * @return
      */
-    public static String addUnitAnnotationByLambda(String oldAnnotation,String newType,int newStart,
+    public static String addUnitAnnotation(String oldAnnotation,String newType,int newStart,
                                                    int newEnd,String newTerm){
-        String newTag=getNewTagByLambda(oldAnnotation);
         Document document=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        List<Entity> entityList=document.getEntities();
+        int num=entityList.size()>0 ? entityList.stream()
+            .map(x->x.getTag().substring(1,x.getTag().length()))
+            .map(s -> Integer.valueOf(s))
+            .max(Comparator.comparing(Function.identity())).get().intValue()+1:1;
+        String newTag= "T"+num;
+
         if(document.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
                 &&x.getStart()==newStart&&x.getEnd()==newEnd)
                 .count()>0){
-            return oldAnnotation;
+            return oldAnnotation; // 已存在同样的标注就不添加 TODO 有隐患.
         }else{
             document.getEntities().add(new Entity(newTag,newStart,newEnd,newType,newTerm));
             return DocumentManipulator.toBratAnnotations(document);
@@ -129,13 +120,26 @@ public class AnnotationConvert {
      * @param tag
      * @param oldAnnotation
      */
-    public static String deleteUnitAnnotationByLambda(String oldAnnotation,String tag){
+    public static String deleteUnitAnnotation(String oldAnnotation,String tag){
         Document document=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
         document.setEntities(document.getEntities().stream()
                 .filter(x->!x.getTag().equals(tag))
                 .collect(Collectors.toList()));
         logger.info("删除后的标注："+ JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
+
+    /**
+     * 修改tag对应的标注类型
+     * @param oldAnnotation
+     * @param tag
+     * @return
+     */
+    public static String changeUnitAnnotation(String oldAnnotation,String tag, String type){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        document.getEntities().stream().filter(x -> x.getTag().equals(tag)).forEach(x -> x.setType(type));
         return DocumentManipulator.toBratAnnotations(document);
     }
 }
