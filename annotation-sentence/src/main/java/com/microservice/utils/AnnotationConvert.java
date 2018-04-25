@@ -138,4 +138,21 @@ public class AnnotationConvert {
         logger.info("删除后的标注："+ JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
         return DocumentManipulator.toBratAnnotations(document);
     }
+
+    /**
+     * 通过lambda实现，更新原先标注中指定的单位标注类型
+     * @param oldAnnotation
+     * @param  oldType
+     * @param newType
+     * @param tag
+     */
+    public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String oldType,String newType,String tag){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
+        if(document.getEntities().size()>0)
+            document.getEntities().stream().filter(x->x.getTag().equals(tag)&&x.getType().equals(oldType))
+                    .forEach(e->e.setType(newType));
+        logger.info("更新后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
 }

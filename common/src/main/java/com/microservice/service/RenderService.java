@@ -55,11 +55,12 @@ public class RenderService {
         typeHierarchyNode.setArgs(args);
         if(terms.size()==0) {
 //            logger.info("terms集合为空");
-            return null;
+            return typeHierarchyNode;
         }
         for(String temp:terms){
 //            logger.info("集合terms中"+temp+"为空");
-            return null;
+            if(StringUtils.isBlank(temp))
+            return typeHierarchyNode;
         }
         typeHierarchyNode.setUnused(false);
         //unused if any of the terms marked with "!"
@@ -252,6 +253,7 @@ public class RenderService {
         BratDraw draw=new BratDraw();
         draw.setTypeCode(typeCode);
         draw.setDrawName(drawName);
+        draw.setTaskId(taskId);
         drawMapper.selectDrawByCondition(draw);
         return pageInfo;
     }
@@ -276,13 +278,13 @@ public class RenderService {
     }
     /**
      * 新增draw表
-     * @param id
+     * @param typeId
      * @param drawName
      */
-    public  void  addDraw(int id,String drawName,String typeLabel,int taskId){
+    public  void  addDraw(int typeId,String drawName,String typeLabel,int taskId){
         BratDraw pDraw=new BratDraw();
+        pDraw.setTypeId(typeId);
         pDraw.setDrawName(drawName);
-        pDraw.setId(id);
         pDraw.setTypeLabel(typeLabel);
         pDraw.setTaskId(taskId);
         drawMapper.insertDrawSelective(pDraw);

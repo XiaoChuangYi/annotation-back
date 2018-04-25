@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @SessionAttributes("userAccount")
 public class BaseController {
-
     @Value("${current.task.name}")
     protected String currentTaskName;
 

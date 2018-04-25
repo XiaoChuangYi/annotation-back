@@ -13,7 +13,7 @@ public class BratDrawDynamicSqlProvider {
     public String selectDrawByCondition(final BratDraw draw){
         return new SQL(){
             {
-                SELECT("d.id,type_code,IFNULL(draw_name,''),type_label");
+                SELECT("d.id,type_code,IFNULL(draw_name,'') as draw_name,type_label");
                 FROM("brat_draw d");
                 INNER_JOIN("an_type a on d.type_id=a.id ");
                 WHERE("1=1");

@@ -81,4 +81,12 @@ public class AnnotationService {
         annotationMapper.batchUpdateAnnotation(annotationList);
     }
 
+    /**
+     * 审核标注
+     * @param anId
+     */
+    public void finishAnnotation(String anId){
+
+    }
+
 }

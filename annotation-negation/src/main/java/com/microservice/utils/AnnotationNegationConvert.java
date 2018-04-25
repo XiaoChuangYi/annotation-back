@@ -36,7 +36,7 @@ public class AnnotationNegationConvert {
      */
     public static JSONObject convertToBratFormat(String originTerm,String annotationData){
         Document document=new Document(originTerm,null);
-        DocumentManipulator.parseBratAnnotations(annotationData,document);
+        DocumentManipulator.parseBratAnnotations(annotationData==null?"":annotationData,document);
         JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
         List<Integer> endPositionList=document.getEntities().stream().map(x->x.getEnd()).sorted().collect(Collectors.toList());
 
@@ -93,7 +93,7 @@ public class AnnotationNegationConvert {
      */
     public static String getNewTagByLambda(String oldAnnotation){
         Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         List<Entity> entityList=document.getEntities();
         int num=entityList.size()>0?entityList.stream()
                 .map(x->x.getTag().substring(1,x.getTag().length()))
@@ -116,7 +116,7 @@ public class AnnotationNegationConvert {
                                                    int newEnd,String newTerm){
         String newTag=getNewTagByLambda(oldAnnotation);
         Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         if(document.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
                 &&x.getStart()==newStart&&x.getEnd()==newEnd)
                 .count()>0){

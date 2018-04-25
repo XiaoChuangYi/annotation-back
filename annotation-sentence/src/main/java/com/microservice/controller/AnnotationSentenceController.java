@@ -3,6 +3,8 @@ package com.microservice.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
+import com.microservice.dataAccessLayer.entity.Account;
+import com.microservice.dataAccessLayer.entity.Annotation;
 import com.microservice.dataAccessLayer.entity.AnnotationSentence;
 import com.microservice.dataAccessLayer.entity.UserAccount;
 import com.microservice.enums.AnnotationSentenceStateEnum;
@@ -118,6 +120,28 @@ public class AnnotationSentenceController extends BaseController{
         //更新单条标注信息到数据库
         AnnotationSentenceBratVO finalAnnotationSentenceBratVO=updateAnnotationSentenceAnnotationText(anId,newAnnotationSentence);
         return ResultVO.success(finalAnnotationSentenceBratVO);
+    }
+
+    /**
+     *  更新标注
+     */
+    @RequestMapping(value = "/updateFinalAnnotation.do")
+    public  ResultVO<AnnotationSentenceBratVO> updateFinalAnnotation(@RequestBody JSONObject params,@ModelAttribute("userAccount") UserAccount account){
+        int anId=params.getIntValue("anId");
+        String tag=params.getString("tag");
+        String newType=params.getString("newType");
+        String oldType=params.getString("oldType");
+
+        //判断当前用户是否可以操作该条标注数据
+        AnnotationSentence annotation=annotationSentenceService.getAnnotationSentence(anId);
+        if(!annotation.getUserModifier().equals(Integer.toString(account.getId())))
+            return ResultVO.error("当前用户无权操作该");
+
+        String finalAnnotation=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getAnnotationText(),oldType,newType,tag);
+
+        //更新单条标注信息到数据库
+        AnnotationSentenceBratVO annotationBratVO=updateAnnotationSentenceAnnotationText(anId,finalAnnotation);
+        return ResultVO.success(annotationBratVO);
     }
 
 

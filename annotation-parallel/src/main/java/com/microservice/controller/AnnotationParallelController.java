@@ -24,7 +24,7 @@ import java.util.List;
  * Created by cjl on 2018/4/16.
  */
 @RestController
-@RequestMapping(value = "/annotationParallel")
+@RequestMapping(value = "/annotationAppose")
 public class AnnotationParallelController extends BaseController{
 
     @Autowired

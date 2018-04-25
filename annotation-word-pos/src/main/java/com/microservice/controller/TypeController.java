@@ -7,7 +7,6 @@ import com.microservice.result.PageVO;
 import com.microservice.result.ResultVO;
 import com.microservice.service.TypeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +21,6 @@ import java.util.List;
 @RequestMapping(value = "/type")
 public class TypeController extends BaseController{
 
-
     @Autowired
     private TypeService typeService;
 
@@ -30,9 +28,8 @@ public class TypeController extends BaseController{
      * 查询所有状态为'ENABLE'的type类型
      */
     @RequestMapping(value = "/listType.do")
-    public ResultVO<List<Type>> listType() {
-        List<Type> typeList=typeService.listEnableType(currentTaskId);
-        return ResultVO.success(typeList);
+    public List<Type> listType(){
+        return typeService.listEnableType(currentTaskId);
     }
 
     /**

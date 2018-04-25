@@ -21,7 +21,7 @@ import java.util.Map;
  * Created by cjl on 2018/4/11.
  */
 @RestController
-@RequestMapping(value = "/microServiceAtomic")
+@RequestMapping(value = "/atomic")
 public class AnAtomicController extends BaseController{
     @Autowired
     private AnAtomicTermService atomicTermService;
@@ -35,7 +35,7 @@ public class AnAtomicController extends BaseController{
      * @return
      */
     @RequestMapping(value = "/listAtomicTerm.do")
-    public ResultVO<PageVO<AnAtomicTerm>> listAtomicTermCondition(@RequestParam JSONObject params) {
+    public ResultVO<PageVO<AnAtomicTerm>> listAtomicTermCondition(@RequestBody JSONObject params) {
 
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
@@ -55,7 +55,7 @@ public class AnAtomicController extends BaseController{
      * @param params
      */
     @RequestMapping(value = "/queryPaginationByConceptId.do")
-    public ResultVO<PageVO<AnAtomicTerm>> queryPaginationByConceptId(@RequestParam JSONObject params) {
+    public ResultVO<PageVO<AnAtomicTerm>> queryPaginationByConceptId(@RequestBody JSONObject params) {
 
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
@@ -72,7 +72,7 @@ public class AnAtomicController extends BaseController{
      * @return
      */
     @RequestMapping(value = "/fuzzyList.do")
-    public ResultVO<PageVO<AnAtomicTerm>> fuzzyQueryPage(@RequestParam JSONObject params){
+    public ResultVO<PageVO<AnAtomicTerm>> fuzzyQueryPage(@RequestBody JSONObject params){
 
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
@@ -91,7 +91,7 @@ public class AnAtomicController extends BaseController{
      * 查询原子术语用来初始化下拉框
      */
     @RequestMapping(value = {"/queryAtomicTermForInitSelectBox.do"})
-    public ResultVO<List<AnAtomicTerm>> queryAtomicTermForInitSelectBox(@RequestParam JSONObject params){
+    public ResultVO<List<AnAtomicTerm>> queryAtomicTermForInitSelectBox(@RequestBody JSONObject params){
         String term=params.getString("term");
         List<AnAtomicTerm> anAtomicTermList=atomicTermService.listAtomicTermByCondition(term);
         return  ResultVO.success(anAtomicTermList);
@@ -103,7 +103,7 @@ public class AnAtomicController extends BaseController{
      * @return
      */
     @RequestMapping(value = { "/addConceptAndUpdateAtomic.do" })
-    public ResultVO addConceptAndUpdateAtomic(@RequestParam JSONObject params){
+    public ResultVO addConceptAndUpdateAtomic(@RequestBody JSONObject params){
         String id=params.getString("id");
         String originName=params.getString("originName");
         atomicTermService.saveConceptAndUpdateAtomicTerm(id,originName);
@@ -115,7 +115,7 @@ public class AnAtomicController extends BaseController{
      * @return
      */
     @RequestMapping(value = { "/updateAtomicTermOrAddConcept.do" })
-    public ResultVO updateAtomicTermOrAddConcept(@RequestParam JSONObject params){
+    public ResultVO updateAtomicTermOrAddConcept(@RequestBody JSONObject params){
         String id=params.getString("id");
         String conceptId=params.getString("conceptId");
         String conceptName=params.getString("conceptName");
@@ -129,7 +129,7 @@ public class AnAtomicController extends BaseController{
      * 批量更新术语表conceptId字段
      */
     @RequestMapping(value = {"/updateBatchConceptIdOfAtomicTerm.do"})
-    public ResultVO updateBatchConceptIdOfAtomicTerm(@RequestParam JSONObject params){
+    public ResultVO updateBatchConceptIdOfAtomicTerm(@RequestBody JSONObject params){
 
         List<String> idArr=params.getJSONArray("atomicTermArr").toJavaObject(List.class);
         String conceptId=params.getString("conceptId");
