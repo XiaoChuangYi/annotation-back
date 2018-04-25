@@ -1,5 +1,6 @@
 package com.microservice.controller;
 
+import cn.malgo.core.definition.Document;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
@@ -29,8 +30,6 @@ public class AnnotationSentenceController extends BaseController{
 
     @Autowired
     private AnnotationSentenceService annotationSentenceService;
-
-
 
     /**
      * 查询句子标注，分页，条件
@@ -96,8 +95,27 @@ public class AnnotationSentenceController extends BaseController{
         if(!annotationSentence.getUserModifier().equals(Integer.toString(userAccount.getId()))){
             return ResultVO.error("当前用户无法操作ID为'"+anId+"'的记录");
         }
-        String newAnnotationSentence=AnnotationConvert.addUnitAnnotationByLambda(annotationSentence.getAnnotationText(),
+        String newAnnotationSentence=AnnotationConvert.addUnitAnnotation(annotationSentence.getAnnotationText(),
                 type,startPosition,endPosition,term);
+
+        AnnotationSentenceBratVO finalAnnotationSentenceBratVO=updateAnnotationSentenceAnnotationText(anId,newAnnotationSentence);
+        return ResultVO.success(finalAnnotationSentenceBratVO);
+    }
+
+    /**
+     * 新增标注
+     */
+    @RequestMapping(value = "/changeAnnotationSentence.do")
+    public ResultVO<AnnotationSentenceBratVO> changeAnnotationSentence(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
+        String type=jsonParam.getString("type");
+        String tag=jsonParam.getString("tag");
+        int anId=jsonParam.getIntValue("id");
+
+        AnnotationSentence annotationSentence=annotationSentenceService.getAnnotationSentence(anId);
+        if(!annotationSentence.getUserModifier().equals(Integer.toString(userAccount.getId()))){
+            return ResultVO.error("当前用户无法操作ID为'"+anId+"'的记录");
+        }
+        String newAnnotationSentence=AnnotationConvert.changeUnitAnnotation(annotationSentence.getAnnotationText(), tag, type);
 
         AnnotationSentenceBratVO finalAnnotationSentenceBratVO=updateAnnotationSentenceAnnotationText(anId,newAnnotationSentence);
         return ResultVO.success(finalAnnotationSentenceBratVO);
@@ -116,7 +134,7 @@ public class AnnotationSentenceController extends BaseController{
         if(!annotationSentence.getUserModifier().equals(Integer.toString(userAccount.getId())))
             return ResultVO.error("当前用户无权操作该"+anId+"记录");
 
-        String newAnnotationSentence=AnnotationConvert.deleteUnitAnnotationByLambda(annotationSentence.getAnnotationText(),tag);
+        String newAnnotationSentence=AnnotationConvert.deleteUnitAnnotation(annotationSentence.getAnnotationText(),tag);
         //更新单条标注信息到数据库
         AnnotationSentenceBratVO finalAnnotationSentenceBratVO=updateAnnotationSentenceAnnotationText(anId,newAnnotationSentence);
         return ResultVO.success(finalAnnotationSentenceBratVO);
@@ -137,7 +155,7 @@ public class AnnotationSentenceController extends BaseController{
         if(!annotation.getUserModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该");
 
-        String finalAnnotation=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getAnnotationText(),oldType,newType,tag);
+        String finalAnnotation=AnnotationConvert.changeUnitAnnotation(annotation.getAnnotationText(),newType,tag);
 
         //更新单条标注信息到数据库
         AnnotationSentenceBratVO annotationBratVO=updateAnnotationSentenceAnnotationText(anId,finalAnnotation);

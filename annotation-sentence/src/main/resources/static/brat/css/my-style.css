@@ -1,0 +1,133 @@
+/* -*- Mode: CSS; tab-width: 2; indent-tabs-mode: nil; -*- */
+/* vim:set ft=css ts=2 sw=2 sts=2 autoindent: */
+
+/* Styling for annotations */
+
+/* alternative font test */
+/*
+text {
+  font-size: 13px;
+  font-family: helvetica,arial,freesans,clean,sans-serif;
+}
+*/
+
+  .el-input.is-disabled.el-input__inner{
+    background-color: #fbfdff;
+  }
+  .el-input.is-disabled{
+    background-color: #fbfdff;
+  }
+  .el-select-dropdown__item{
+    height:18px;
+    padding-top:1px;
+    padding-bottom:1px; 
+  }
+  .el-select-dropdown__wrap{
+    max-height: 400px;
+  }
+  /*
+   container.vue css
+  */
+  .container {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    width: 100%;
+    padding: -10px;
+  }
+  .header {
+    height: 60px;
+    line-height: 60px;
+    background: #324057;
+    /*color:#fff;*/
+  }
+  .userinfo {
+    text-align: right;
+    padding-right: 35px;
+    float: right;
+  }
+  .userinfo-inner {
+    cursor: pointer;
+    font-size: 17px;
+    color:white;
+  }
+      
+  .logo {
+    height:60px;
+    font-size: 22px;
+    padding-left:20px;
+    padding-right:20px;
+    border-color: rgba(238,241,146,0.3);
+    border-right-width: 1px;
+    border-right-style: solid;
+  }
+  .logo-width{
+    width:180px;
+  }
+  .logo-collapse-width{
+    width:180px
+  }
+  .tools{
+    padding: 0px 23px;
+    width:14px;
+    height: 60px;
+    line-height: 60px;
+    cursor: pointer;
+    color: white;
+  }
+  .main {
+      display:flex;
+      position: absolute;
+      top: 60px;
+      bottom: 0px;
+      /*overflow: hidden;     */
+    }
+    .aside {
+        flex:0 0 180px;
+        width: 180px;
+        position: absolute;
+        top: 0px;
+        bottom: 0px;     
+      }
+    .el-menu{
+          height: 100%;
+     }
+    .collapsed{
+        width:60px;
+    }
+    .collapsed.item{
+      position: relative;
+    }
+    .collapsed.submenu{
+      position:absolute;
+          top:0px;
+          left:60px;
+          z-index:99999;
+          height:auto;
+          display:none;
+    }
+    .menu-collapsed{
+        flex:0 0 60px;
+        width: 60px;
+    }
+    .menu-expanded{
+      flex:0 0 180px;
+      width: 180px;
+    }
+    .content-container {
+        /*background: #f1f2f7;*/
+        background:white; 
+        flex:1;
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        left: 180px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px;
+      }
+    .content-wrapper {
+          /*background-color: #fff;*/
+          box-sizing: border-box;
+        }
