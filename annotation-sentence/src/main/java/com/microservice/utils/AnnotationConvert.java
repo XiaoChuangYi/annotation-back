@@ -35,7 +35,9 @@ public class AnnotationConvert {
         Document document=new Document(originTerm,null);
         DocumentManipulator.parseBratAnnotations(annotationData,document);
         JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
-        List<Integer> endPositionList=document.getEntities().stream().map(x->x.getEnd()).sorted().collect(Collectors.toList());
+        List<Integer> endPositionList=document.getEntities().stream()
+            .filter(x -> !x.getType().endsWith("-deleted"))
+            .map(x->x.getEnd()).sorted().collect(Collectors.toList());
 
         List<Integer> startPositionList = endPositionList.stream().collect(Collectors.toList());
         if (endPositionList.size() == 0 || endPositionList.get(endPositionList.size()-1) < document.getText().length()){

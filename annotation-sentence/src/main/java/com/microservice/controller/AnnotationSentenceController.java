@@ -29,8 +29,6 @@ public class AnnotationSentenceController extends BaseController{
     @Autowired
     private AnnotationSentenceService annotationSentenceService;
 
-
-
     /**
      * 查询句子标注，分页，条件
      */
