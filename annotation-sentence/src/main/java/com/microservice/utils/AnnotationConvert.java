@@ -33,7 +33,7 @@ public class AnnotationConvert {
      */
     public static JSONObject convertToBratFormat(String originTerm,String annotationData){
         Document document=new Document(originTerm,null);
-        DocumentManipulator.parseBratAnnotations(annotationData,document);
+        DocumentManipulator.parseBratAnnotations(annotationData==null?"":annotationData,document);
         JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
         List<Integer> endPositionList=document.getEntities().stream()
             .filter(x -> !x.getType().endsWith("-deleted"))
@@ -68,9 +68,11 @@ public class AnnotationConvert {
         List<AnnotationSentenceBratVO> annotationBratVOList=new LinkedList<>();
         for(AnnotationSentence annotation:annotationList){
             JSONObject bratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAnnotationText());
+            JSONObject finalBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getFinalAnnotationText());
             AnnotationSentenceBratVO annotationSentenceBratVO=new AnnotationSentenceBratVO();
             BeanUtils.copyProperties(annotation,annotationSentenceBratVO);
             annotationSentenceBratVO.setBratData(bratJson);
+            annotationSentenceBratVO.setFinalBratData(finalBratJson);
             annotationBratVOList.add(annotationSentenceBratVO);
         }
         return annotationBratVOList;
@@ -81,9 +83,11 @@ public class AnnotationConvert {
      */
     public static AnnotationSentenceBratVO convert2AnnotationBratVO(AnnotationSentence annotation){
         JSONObject bratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAnnotationText());
+        JSONObject finalBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getFinalAnnotationText());
         AnnotationSentenceBratVO annotationSentenceBratVO=new AnnotationSentenceBratVO();
         BeanUtils.copyProperties(annotation,annotationSentenceBratVO);
         annotationSentenceBratVO.setBratData(bratJson);
+        annotationSentenceBratVO.setFinalBratData(finalBratJson);
         return annotationSentenceBratVO;
     }
 
@@ -99,7 +103,7 @@ public class AnnotationConvert {
     public static String addUnitAnnotation(String oldAnnotation,String newType,int newStart,
                                                    int newEnd,String newTerm){
         Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         List<Entity> entityList=document.getEntities();
         int num=entityList.size()>0 ? entityList.stream()
             .map(x->x.getTag().substring(1,x.getTag().length()))

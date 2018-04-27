@@ -11,6 +11,7 @@ public class AnnotationSentence {
     private int id;
     private String originText;
     private String annotationText;
+    private String finalAnnotationText;
     private String state;
 
     private String userModifier;
@@ -22,6 +23,14 @@ public class AnnotationSentence {
 
     private String memo;
 
+
+    public String getFinalAnnotationText() {
+        return finalAnnotationText;
+    }
+
+    public void setFinalAnnotationText(String finalAnnotationText) {
+        this.finalAnnotationText = finalAnnotationText;
+    }
 
     public int getId() {
         return id;

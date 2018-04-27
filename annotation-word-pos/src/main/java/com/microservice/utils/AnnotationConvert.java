@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by cjl on 2018/3/29.
@@ -82,6 +83,33 @@ public class AnnotationConvert {
                 .max(Comparator.comparing(Function.identity())).get().intValue():1;
         num++;
         return "T"+num;
+    }
+
+
+    /**
+     * 判断新增的单位标注文本和已有的单位文本是否有交叉
+     */
+    public static  boolean isCrossAnnotation(String oldAnnotation,String newTerm){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        String [] newTermArr=newTerm.split("");
+        long num=document.getEntities().stream().filter(x->{
+            int count=0;
+            for (int i=0;i<newTermArr.length;i++) {
+                if(x.getTerm().contains(newTermArr[i])){
+                    count++;
+                    break;
+                }
+            }
+            if(count>0) {
+                return true;
+            }else {
+                return false;
+            }
+        }).count();
+        if(num>0)
+            return true;
+        return false;
     }
 
     /**

@@ -35,3 +35,7 @@ create table `user_task`(
 	 primary key(`id`),
 	UNIQUE key `user_task_key` (`user_id`,`task_id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+对annotation_sentence表新增字段final_annotation_text
+ALTER table annotation_sentence add final_annotation_text text not null DEFAULT ''
+

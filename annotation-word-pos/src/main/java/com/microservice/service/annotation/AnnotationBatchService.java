@@ -2,11 +2,18 @@ package com.microservice.service.annotation;
 
 import cn.malgo.common.LogUtil;
 import cn.malgo.core.definition.Entity;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.microservice.apiserver.ApiServerService;
+import com.microservice.apiserver.result.AnnotationResult;
 import com.microservice.dataAccessLayer.entity.AnAtomicTerm;
 import com.microservice.dataAccessLayer.entity.Annotation;
+import com.microservice.dataAccessLayer.entity.Corpus;
 import com.microservice.dataAccessLayer.mapper.AnAtomicTermMapper;
+import com.microservice.dataAccessLayer.mapper.CorpusMapper;
 import com.microservice.enums.AnnotationStateEnum;
+import com.microservice.enums.TermStateEnum;
 import com.microservice.utils.AnnotationConvert;
 import com.microservice.vo.AnnotationPagination;
 import com.microservice.vo.AtomicTermAnnotation;
@@ -17,7 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +39,15 @@ public class AnnotationBatchService extends AnnotationService {
 
     @Autowired
     private AnAtomicTermMapper anAtomicTermMapper;
+
+    @Autowired
+    private ApiServerService apiServerService;
+
+    @Autowired
+    private CorpusMapper corpusMapper;
+
+    @Autowired
+    private AsyAnnotationService asyAnnotationService;
 
     /**
      * 查询标注表的总条数
@@ -53,6 +71,70 @@ public class AnnotationBatchService extends AnnotationService {
         annotationMapper.updateAnnotationSelective(annotation);
     }
 
+
+    /**
+     * 批量自动标注
+     * @param termList
+     */
+    public void autoAnnotationByTermList(List<Corpus> termList) {
+
+        Map<String, String> termMap = new HashMap<>();
+        for (Corpus corpus : termList) {
+            termMap.put(corpus.getId(), corpus.getTerm());
+        }
+        List<AnnotationResult> annotationResultList = apiServerService
+                .batchPhraseTokenize(termList);
+
+        if (annotationResultList != null&&annotationResultList.size()>0) {
+            for (AnnotationResult annotationResult : annotationResultList) {
+                saveTermAnnotation(annotationResult.getId(), termMap.get(annotationResult.getId()),
+                        annotationResult.getAnnotation());
+            }
+        }
+
+    }
+
+    public Page<Corpus> queryOnePageByState(TermStateEnum termStateEnum, int pageNum,
+                                            int pageSize) {
+        Page<Corpus> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        Corpus corpus=new Corpus();
+        corpus.setState(termStateEnum.name());
+        corpusMapper.listCorpusByCondition(corpus);
+        return pageInfo;
+    }
+
+    /**
+     * 过ApiServer批量对原始文本进行预标注
+     */
+    public void batchInitAnnotationOriginText(){
+        int batchCount = 1;
+        int pageSize = 10;
+        int success = 0;
+        Page<Corpus> page = null;
+        try {
+            do {
+                LogUtil.info(logger, MessageFormat.format("开始处理第{0}批次", batchCount));
+                page = queryOnePageByState(TermStateEnum.INIT, 1, pageSize);
+                Future<Boolean> future = asyAnnotationService
+                        .asyncAutoAnnotation(page.getResult());
+                Boolean result = future.get();
+                if (result) {
+                    success = success + page.getResult().size();
+                }
+                LogUtil.info(logger, MessageFormat.format("结束处理第{0}批次", batchCount));
+
+                batchCount++;
+
+            } while (page.getTotal() > pageSize);
+
+        } catch (Exception e) {
+            LogUtil.error(logger, e, "预处理标注失败!terms:" + JSONObject.toJSONString(page.getResult()));
+        }
+    }
+
+    /**
+     * 批量替换单位标注的标签(类型)
+     */
     public void batchReplaceUnitAnnotationType(String typeOld, String typeNew) {
         LogUtil.info(logger, "开始批量替换标注表单位标注中的type类型");
         int pageNum = 1;

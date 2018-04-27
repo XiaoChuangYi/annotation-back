@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/user")
-public class UserAccountController extends BaseController{
+public class UserAccountController{
 
     @Autowired
     private UserAccountService userAccountService;

@@ -69,6 +69,9 @@ public class AnnotationSentenceDynamicSqlProvider {
                 if(annotationSentence.getAnnotationText()!=null){
                     SET("annotation_text=#{annotationText}");
                 }
+                if(annotationSentence.getFinalAnnotationText()!=null)
+                    SET("final_annotation_text=#{finalAnnotationText}");
+
                 if(StringUtils.isNotBlank(annotationSentence.getMemo())){
                     SET("memo=#{memo}");
                 }

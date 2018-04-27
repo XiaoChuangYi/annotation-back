@@ -13,6 +13,26 @@ import java.util.stream.Collectors;
  */
 public class AnnotationDynamicSqlProvider {
 
+
+    public String listAnnotationByStatesAndModifier(Map map){
+        List<String> stateList=(List<String>)map.get("list");
+        String modifier=map.get("modifier").toString();
+        String stateTemp=stateList.stream().map(x->"'"+x.toUpperCase()+"'").collect(Collectors.joining(","));
+        return new SQL(){
+            {
+                SELECT("*");
+                FROM("annotation");
+                WHERE("1=1");
+                if(StringUtils.isNotBlank(stateTemp)&&!"''".equals(stateTemp)){
+                    WHERE("state in ("+stateTemp+")");
+                }
+                if(StringUtils.isNotBlank(modifier))
+                    WHERE("modifier='"+modifier+"' ");
+                ORDER_BY("state desc,gmt_created asc");
+            }
+        }.toString();
+    }
+
     public String queryAnnotationByCondition(Map map){
         Annotation annotation=(Annotation) map.get("annotation");
         String sort=map.get("sort").toString();
@@ -37,6 +57,27 @@ public class AnnotationDynamicSqlProvider {
             }
         }.toString();
     }
+    public String queryAnnotationByStateListUserModifier(Map map){
+        List<String> stateList=(List<String>)map.get("list");
+        String sort=map.get("sort").toString();
+        String modifier=map.get("modifier").toString();
+        String stateTemp=stateList.stream().map(x->"'"+x.toUpperCase()+"'").collect(Collectors.joining(","));
+        return new SQL(){
+            {
+                SELECT("*");
+                FROM("annotation");
+                WHERE("1=1");
+                if(StringUtils.isNotBlank(stateTemp)&&!"''".equals(stateTemp)){
+                    WHERE("state in ("+stateTemp+")");
+                }
+                if(StringUtils.isNotBlank(modifier))
+                    WHERE("modifier='"+modifier+"' ");
+                ORDER_BY(sort);
+            }
+        }.toString();
+    }
+
+
     public String queryAnnotationByStateList(Map map){
         List<String> stateList=(List<String>)map.get("list");
         String sort=map.get("sort").toString();
@@ -86,24 +127,54 @@ public class AnnotationDynamicSqlProvider {
         StringBuilder sb=new StringBuilder();
         sb.append("update annotation set final_annotation case id ");
         for(Annotation annotation:annotationList){
-            sb.append("when " +annotation.getId()+" then "+annotation.getFinalAnnotation());
+            sb.append("when '" +annotation.getId()+"' then "+annotation.getFinalAnnotation());
         }
         sb.append(" end,manual_annotation");
         for(Annotation annotation:annotationList){
-            sb.append("when "+annotation.getId()+" then "+annotation.getManualAnnotation());
+            sb.append("when '"+annotation.getId()+"' then "+annotation.getManualAnnotation());
         }
-        String idTemp=annotationList.stream().map(x->x.getId()).collect(Collectors.joining(","));
+        String idTemp=annotationList.stream().map(x->"'"+x.getId()+"'").collect(Collectors.joining(","));
         sb.append(" end where id in ("+idTemp+")");
         return sb.toString();
     }
     public String batchUpdateAnnotationModifier(Map map){
-        List<Integer> integerList=(List<Integer>)map.get("list");
+        List<String> integerList=(List<String>)map.get("list");
         String modifier=map.get("modifier").toString();
         StringBuilder sb=new StringBuilder();
-        sb.append("update annotation set modifier="+modifier);
-        String idTemp=integerList.stream().map(x->x.toString()).collect(Collectors.joining(","));
+        sb.append("update annotation set modifier='"+modifier+"' ");
+        String idTemp=integerList.stream().map(x->"'"+x.toString()+"'").collect(Collectors.joining(","));
         sb.append("where id in ("+idTemp+")");
         return sb.toString();
+    }
+
+    public String saveAnnotationSelective(final Annotation annotation){
+        return new SQL(){
+            {
+                INSERT_INTO("annotation");
+                if(StringUtils.isNotBlank(annotation.getNewTerms()))
+                    VALUES("new_terms","#{newTerms}");
+                if(StringUtils.isNotBlank(annotation.getModifier()))
+                    VALUES("modifier","#{modifier}");
+                if(StringUtils.isNotBlank(annotation.getMemo()))
+                    VALUES("memo","#{memo}");
+                if(StringUtils.isNotBlank(annotation.getManualAnnotation()))
+                    VALUES("manual_annotation","#{manualAnnotation}");
+                if(StringUtils.isNotBlank(annotation.getAutoAnnotation()))
+                    VALUES("auto_annotation","#{autoAnnotation}");
+                if(StringUtils.isNotBlank(annotation.getFinalAnnotation()))
+                    VALUES("final_annotation","#{finalAnnotation}");
+                if(StringUtils.isNotBlank(annotation.getTerm()))
+                    VALUES("term","#{term}");
+                if(StringUtils.isNotBlank(annotation.getState()))
+                    VALUES("state","#{state}");
+                if(StringUtils.isNotBlank(annotation.getTermId()))
+                    VALUES("term_id","#{termId}");
+                if(annotation.getGmtCreated()!=null)
+                    VALUES("gmt_created","#{gmtCreated}");
+                if(annotation.getGmtModified()!=null)
+                    VALUES("gmt_modified","#{gmtModified}");
+            }
+        }.toString();
     }
 
     public String updateAnnotationSelective(final Annotation annotation){

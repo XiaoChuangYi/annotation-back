@@ -3,12 +3,14 @@ package com.microservice.dataAccessLayer.mapper;
 import com.microservice.dataAccessLayer.dynamicSql.AnnotationDynamicSqlProvider;
 import com.microservice.dataAccessLayer.entity.Annotation;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by cjl on 2018/3/30.
  */
+@Component
 public interface AnnotationMapper {
 
     @SelectProvider(type = AnnotationDynamicSqlProvider.class,method = "queryAnnotationByCondition")
@@ -28,6 +30,24 @@ public interface AnnotationMapper {
     })
     List<Annotation> listAnnotationByCondition(@Param("annotation") Annotation annotation,@Param("sort") String sort);
 
+
+    @SelectProvider(type = AnnotationDynamicSqlProvider.class,method = "listAnnotationByStatesAndModifier")
+    @Results({
+            @Result(id=true,column = "id",property ="id" ),
+            @Result(column = "term_id",property ="termId" ),
+            @Result(column = "term",property ="term" ),
+            @Result(column = "auto_annotation",property ="autoAnnotation" ),
+            @Result(column = "manual_annotation",property ="manualAnnotation" ),
+            @Result(column = "final_annotation",property ="finalAnnotation" ),
+            @Result(column = "new_terms",property ="newTerms" ),
+            @Result(column = "state",property ="state" ),
+            @Result(column = "modifier",property ="modifier" ),
+            @Result(column = "gmt_created",property ="gmtCreated" ),
+            @Result(column = "gmt_modified",property ="gmtModified" ),
+            @Result(column = "memo",property ="memo" )
+    })
+    List<Annotation> listAnnotationByStatesAndModifier(@Param("list") List<String> stateList,@Param("modifier") String modifier);
+
     @SelectProvider(type = AnnotationDynamicSqlProvider.class,method = "queryAnnotationByStateList")
     @Results({
             @Result(id=true,column = "id",property ="id" ),
@@ -44,6 +64,26 @@ public interface AnnotationMapper {
             @Result(column = "memo",property ="memo" )
     })
     List<Annotation> listAnnotationByStateList(@Param("list") List<String> stateList,@Param("sort") String sort);
+
+    @SelectProvider(type = AnnotationDynamicSqlProvider.class,method = "queryAnnotationByStateListUserModifier")
+    @Results({
+            @Result(id=true,column = "id",property ="id" ),
+            @Result(column = "term_id",property ="termId" ),
+            @Result(column = "term",property ="term" ),
+            @Result(column = "auto_annotation",property ="autoAnnotation" ),
+            @Result(column = "manual_annotation",property ="manualAnnotation" ),
+            @Result(column = "final_annotation",property ="finalAnnotation" ),
+            @Result(column = "new_terms",property ="newTerms" ),
+            @Result(column = "state",property ="state" ),
+            @Result(column = "modifier",property ="modifier" ),
+            @Result(column = "gmt_created",property ="gmtCreated" ),
+            @Result(column = "gmt_modified",property ="gmtModified" ),
+            @Result(column = "memo",property ="memo" )
+    })
+    List<Annotation> listAnnotationByStateListUseModifier(@Param("list") List<String> stateList,@Param("modifier") String modifier,@Param("sort") String sort);
+
+
+
 
     @Select("select * from annotation where id=#{id}")
     @Results({
@@ -71,13 +111,17 @@ public interface AnnotationMapper {
     int countAnnotationSizeByState(@Param("state") String state);
 
     @UpdateProvider(type=AnnotationDynamicSqlProvider.class,method = "updateAnnotationSelective")
-    void updateAnnotationSelective(@Param("annotation") Annotation annotation);
+    void updateAnnotationSelective(Annotation annotation);
 
     @UpdateProvider(type=AnnotationDynamicSqlProvider.class,method = "batchUpdateAnnotation")
     void batchUpdateAnnotation(@Param("list") List<Annotation> annotationList);
 
     @UpdateProvider(type=AnnotationDynamicSqlProvider.class,method = "batchUpdateAnnotationModifier")
     void batchUpdateAnnotationModifier(@Param("list") List<String> idList,@Param("modifier") String modifier);
+
+    @InsertProvider(type=AnnotationDynamicSqlProvider.class,method = "saveAnnotationSelective")
+    @Options(useGeneratedKeys = true,keyColumn ="id" )
+    void saveAnnotationSelective(Annotation annotation);
 
 
 }

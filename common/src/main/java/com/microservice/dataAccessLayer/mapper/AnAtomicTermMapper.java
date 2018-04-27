@@ -3,12 +3,14 @@ package com.microservice.dataAccessLayer.mapper;
 import com.microservice.dataAccessLayer.dynamicSql.AnAtomicTermDynamicSqlProvider;
 import com.microservice.dataAccessLayer.entity.AnAtomicTerm;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by cjl on 2018/4/11.
  */
+@Component
 public interface AnAtomicTermMapper {
 
 

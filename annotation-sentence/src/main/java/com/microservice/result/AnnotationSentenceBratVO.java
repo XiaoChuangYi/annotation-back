@@ -26,6 +26,17 @@ public class AnnotationSentenceBratVO {
 
     private JSONObject bratData;
 
+    private JSONObject finalBratData;
+
+
+    public JSONObject getFinalBratData() {
+        return finalBratData;
+    }
+
+    public void setFinalBratData(JSONObject finalBratData) {
+        this.finalBratData = finalBratData;
+    }
+
     public int getId() {
         return id;
     }
