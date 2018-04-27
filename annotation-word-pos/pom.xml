@@ -96,7 +96,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<finalName>annotation-word-pos</finalName>
+		<!--<finalName>annotation-word-pos</finalName>-->
 	</build>
 
 
