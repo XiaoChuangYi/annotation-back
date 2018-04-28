@@ -96,6 +96,14 @@ public class AnnotationConvert {
         return DocumentManipulator.toBratAnnotations(document);
     }
 
+    public static String addSuffixUncomfirmed(String oldAnnotation){
+        Document document=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
+        document.getEntities().stream()
+                .forEach(x->x.setType(x.getType()+"-unconfirmed"));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
+
     /**
      * 判断新增的单位标注文本和已有的单位文本是否有交叉
      */
