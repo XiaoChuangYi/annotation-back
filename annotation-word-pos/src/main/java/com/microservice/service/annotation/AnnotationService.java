@@ -4,8 +4,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.microservice.apiserver.ApiServerService;
 import com.microservice.apiserver.vo.TermTypeVO;
-import com.microservice.dataAccessLayer.entity.Annotation;
-import com.microservice.dataAccessLayer.mapper.AnnotationMapper;
+import com.microservice.dataAccessLayer.entity.AnnotationWordPos;
+import com.microservice.dataAccessLayer.mapper.AnnotationWordPosMapper;
 import com.microservice.dataAccessLayer.mapper.CorpusMapper;
 import com.microservice.enums.AnnotationStateEnum;
 import com.microservice.enums.TermStateEnum;
@@ -25,8 +25,11 @@ import java.util.List;
 @Service
 public class AnnotationService {
 
+//    @Autowired
+//    protected AnnotationMapper annotationMapper;
+
     @Autowired
-    protected AnnotationMapper annotationMapper;
+    protected AnnotationWordPosMapper annotationWordPosMapper;
 
     @Autowired
     private ApiServerService apiServerService;
@@ -46,12 +49,12 @@ public class AnnotationService {
      * @param pageIndex
      * @param pageSize
      */
-    public Page<Annotation> listAnnotationForDistribution(String userModifier,String state,int pageIndex,int pageSize){
-        Page<Annotation> pageInfo = PageHelper.startPage(pageIndex, pageSize);
+    public Page<AnnotationWordPos> listAnnotationForDistribution(String userModifier,String state,int pageIndex,int pageSize){
+        Page<AnnotationWordPos> pageInfo = PageHelper.startPage(pageIndex, pageSize);
         List<String> stateList = new ArrayList<>();
         stateList.add(state);
         String sort="state DESC,gmt_created ASC";
-        annotationMapper.listAnnotationByStateListUseModifier(stateList,userModifier,sort);
+        annotationWordPosMapper.listAnnotationByStateListUseModifier(stateList,userModifier,sort);
         return pageInfo;
     }
 
@@ -60,18 +63,18 @@ public class AnnotationService {
      * @param
      * @return
      */
-    public Page<Annotation> listAnnotationByPagingThroughApiServer(String userId, int pageNum,
+    public Page<AnnotationWordPos> listAnnotationByPagingThroughApiServer(String userId, int pageNum,
                                                                    int pageSize) {
-        Page<Annotation> pageInfo = PageHelper.startPage(pageNum, pageSize);
+        Page<AnnotationWordPos> pageInfo = PageHelper.startPage(pageNum, pageSize);
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.PROCESSING.name());
         stateList.add(AnnotationStateEnum.INIT.name());
         String sort="state DESC,gmt_created ASC";
-        annotationMapper.listAnnotationByStateListUseModifier(stateList, userId,sort);
+        annotationWordPosMapper.listAnnotationByStateListUseModifier(stateList, userId,sort);
         apiServerService.batchPhraseUpdatePosWithNewTerm(pageInfo.getResult());
-        Annotation paramAnnotation=null;
-        for (Annotation currentAnnotation : pageInfo.getResult()) {
-            paramAnnotation=new Annotation();
+        AnnotationWordPos paramAnnotation=null;
+        for (AnnotationWordPos currentAnnotation : pageInfo.getResult()) {
+            paramAnnotation=new AnnotationWordPos();
             paramAnnotation.setId(currentAnnotation.getId());
             paramAnnotation.setFinalAnnotation(currentAnnotation.getFinalAnnotation());
             paramAnnotation.setGmtModified(new Date());
@@ -88,13 +91,13 @@ public class AnnotationService {
      * @param pageIndex
      * @param pageSize
      */
-    public Page<Annotation> listAnnotationByConditionPaging(String annotationState, String modifier,String term, int pageIndex, int pageSize){
-        Page<Annotation> pageInfo= PageHelper.startPage(pageIndex,pageSize);
-        Annotation pAnnotation=new Annotation();
+    public Page<AnnotationWordPos> listAnnotationByConditionPaging(String annotationState, String modifier,String term, int pageIndex, int pageSize){
+        Page<AnnotationWordPos> pageInfo= PageHelper.startPage(pageIndex,pageSize);
+        AnnotationWordPos pAnnotation=new AnnotationWordPos();
         pAnnotation.setModifier(modifier);
         pAnnotation.setState(annotationState);
         pAnnotation.setTerm(term);
-        annotationMapper.listAnnotationByCondition(pAnnotation,"gmt_created desc");
+        annotationWordPosMapper.listAnnotationByCondition(pAnnotation,"gmt_created desc");
         return pageInfo;
     }
 
@@ -104,9 +107,9 @@ public class AnnotationService {
      * @param pageIndex
      * @param pageSize
      */
-    public Page<Annotation> listAnnotationByStatesAndUserModifierPaging(List<String> stateList,String userModifier,int pageIndex,int pageSize){
-        Page<Annotation> pageInfo=PageHelper.startPage(pageIndex,pageSize);
-        annotationMapper.listAnnotationByStatesAndModifier(stateList,userModifier);
+    public Page<AnnotationWordPos> listAnnotationByStatesAndUserModifierPaging(List<String> stateList,String userModifier,int pageIndex,int pageSize){
+        Page<AnnotationWordPos> pageInfo=PageHelper.startPage(pageIndex,pageSize);
+        annotationWordPosMapper.listAnnotationByStatesAndModifier(stateList,userModifier);
         return pageInfo;
     }
 
@@ -117,9 +120,9 @@ public class AnnotationService {
      * @param pageIndex
      * @param pageSize
      */
-    public Page<Annotation> listAnnotationByStatesPaging(List<String> stateList,int pageIndex,int pageSize){
-        Page<Annotation> pageInfo=PageHelper.startPage(pageIndex,pageSize);
-        annotationMapper.listAnnotationByStateList(stateList,"state desc,gmt_created asc");
+    public Page<AnnotationWordPos> listAnnotationByStatesPaging(List<String> stateList,int pageIndex,int pageSize){
+        Page<AnnotationWordPos> pageInfo=PageHelper.startPage(pageIndex,pageSize);
+        annotationWordPosMapper.listAnnotationByStateList(stateList,"state desc,gmt_created asc");
         return pageInfo;
     }
 
@@ -127,16 +130,16 @@ public class AnnotationService {
      * 根据主键ID查询特定的标注记录
      * @param id
      */
-    public Annotation getAnnotationById(String id){
-        return annotationMapper.getAnnotationById(id);
+    public AnnotationWordPos getAnnotationById(String id){
+        return annotationWordPosMapper.getAnnotationById(id);
     }
 
     /**
      * 根据主键ID选择性选取字段，更新annotation
      * @param annotation
      */
-    public void updateAnnotation(Annotation annotation){
-        annotationMapper.updateAnnotationSelective(annotation);
+    public void updateAnnotation(AnnotationWordPos annotation){
+        annotationWordPosMapper.updateAnnotationSelective(annotation);
     }
 
     /**
@@ -145,15 +148,15 @@ public class AnnotationService {
      * @param modifier
      */
     public void batchUpdateAnnotationModifier(List<String> idList,String modifier){
-        annotationMapper.batchUpdateAnnotationModifier(idList,modifier);
+        annotationWordPosMapper.batchUpdateAnnotationModifier(idList,modifier);
     }
 
     /**
      *批量更新标注表的最终和手动标注
      * @param annotationList
      */
-    public void batchUpdateAnnotationFinalAndManual(List<Annotation> annotationList){
-        annotationMapper.batchUpdateAnnotation(annotationList);
+    public void batchUpdateAnnotationFinalAndManual(List<AnnotationWordPos> annotationList){
+        annotationWordPosMapper.batchUpdateAnnotation(annotationList);
     }
 
     /**
@@ -162,7 +165,7 @@ public class AnnotationService {
      * @param anId
      */
     public void finishAnnotation(String anId){
-        Annotation annotationOld = getAnnotationById(anId);
+        AnnotationWordPos annotationOld = getAnnotationById(anId);
 
         //如果存在新词,保存新词到词库
         String newTermsStr = annotationOld.getNewTerms();
@@ -173,11 +176,11 @@ public class AnnotationService {
 
         String finalAnnotation = annotationOld.getFinalAnnotation().replace("-unconfirmed",
                 "");
-        Annotation annotation = new Annotation();
+        AnnotationWordPos annotation = new AnnotationWordPos();
         annotation.setId(anId);
         annotation.setState(AnnotationStateEnum.FINISH.name());
         annotation.setFinalAnnotation(finalAnnotation);
-        annotationMapper.updateAnnotationSelective(annotation);
+        annotationWordPosMapper.updateAnnotationSelective(annotation);
     }
 
     /**
@@ -186,7 +189,7 @@ public class AnnotationService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     protected void saveTermAnnotation(String termId, String term, String autoAnnotation) {
-        Annotation annotation = new Annotation();
+        AnnotationWordPos annotation = new AnnotationWordPos();
         annotation.setTermId(termId);
         annotation.setTerm(term);
         annotation.setGmtModified(new Date());
@@ -194,7 +197,7 @@ public class AnnotationService {
         annotation.setFinalAnnotation(autoAnnotation);
         annotation.setState(AnnotationStateEnum.INIT.name());
 
-        annotationMapper.saveAnnotationSelective(annotation);
+        annotationWordPosMapper.saveAnnotationSelective(annotation);
 
         //todo 这里的枚举值估计会有问题
         corpusMapper.updateCorpusStateById(TermStateEnum.FINISH.name(),termId);
@@ -204,19 +207,19 @@ public class AnnotationService {
     /**
      * 批量分配标注给指定的用户，同时调用算法后台的ApiServer，对文本进行预标注
      */
-    public List<Annotation> designateAnnotationAndInitAnnotation(List<String> idArr,String modifier){
+    public List<AnnotationWordPos> designateAnnotationAndInitAnnotation(List<String> idArr,String modifier){
 //        annotationMapper.batchUpdateAnnotationModifier(idArr,modifier);
-        List<Annotation> annotationList=annotationMapper.listAnnotationByIdArr(idArr);
-        List<Annotation> annotationListThroughApiServer=apiServerService.batchTokenizePos(annotationList);
-        for (Annotation currentAnnotation : annotationListThroughApiServer) {
-            Annotation annotation=new Annotation();
+        List<AnnotationWordPos> annotationList=annotationWordPosMapper.listAnnotationByIdArr(idArr);
+        List<AnnotationWordPos> annotationListThroughApiServer=apiServerService.batchTokenizePos(annotationList);
+        for (AnnotationWordPos currentAnnotation : annotationListThroughApiServer) {
+            AnnotationWordPos annotation=new AnnotationWordPos();
             annotation.setId(currentAnnotation.getId());
             annotation.setState(AnnotationStateEnum.INIT.name());
             annotation.setModifier(modifier);
             annotation.setAutoAnnotation(currentAnnotation.getFinalAnnotation());
             annotation.setFinalAnnotation(currentAnnotation.getFinalAnnotation());
             annotation.setGmtModified(new Date());
-            annotationMapper.updateAnnotationSelective(annotation);
+            annotationWordPosMapper.updateAnnotationSelective(annotation);
 //            updateAnnotation(paramAnnotation);
         }
         return annotationListThroughApiServer;

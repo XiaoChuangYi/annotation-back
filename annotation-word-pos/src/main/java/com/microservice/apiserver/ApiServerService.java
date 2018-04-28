@@ -6,6 +6,7 @@ import com.microservice.apiserver.request.UpdateAnnotationRequest;
 import com.microservice.apiserver.result.AnnotationResult;
 import com.microservice.apiserver.vo.TermTypeVO;
 import com.microservice.dataAccessLayer.entity.Annotation;
+import com.microservice.dataAccessLayer.entity.AnnotationWordPos;
 import com.microservice.dataAccessLayer.entity.Corpus;
 import com.microservice.vo.TermVO;
 import org.apache.commons.lang.StringUtils;
@@ -53,14 +54,14 @@ public class ApiServerService {
      * @param annotationList
      * @return
      */
-    public List<Annotation> batchPhraseUpdatePosWithNewTerm(List<Annotation> annotationList) {
+    public List<AnnotationWordPos> batchPhraseUpdatePosWithNewTerm(List<AnnotationWordPos> annotationList) {
         if(annotationList.isEmpty()){
             return annotationList;
         }
         Map<String, String> finalAnnotationMap = new HashMap<>();
         List<UpdateAnnotationRequest> updateAnnotationRequestList = new ArrayList<>();
 
-        for (Annotation annotation : annotationList) {
+        for (AnnotationWordPos annotation : annotationList) {
             UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
             updateAnnotationRequest.setText(annotation.getTerm());
             updateAnnotationRequest.setId(annotation.getId());
@@ -84,7 +85,7 @@ public class ApiServerService {
                 }
             }
 
-            for(Annotation annotation : annotationList){
+            for(AnnotationWordPos annotation : annotationList){
                 //使用手工标注和新词重新标注后的结果存在
                 String finalAnnotation = finalAnnotationMap.get(annotation.getId());
                 if(StringUtils.isNotBlank(finalAnnotation)){
@@ -117,12 +118,12 @@ public class ApiServerService {
      * 批量火气病历的预标注
      */
 
-    public List<Annotation>  batchTokenizePos(List<Annotation> originAnnotationList){
+    public List<AnnotationWordPos>  batchTokenizePos(List<AnnotationWordPos> originAnnotationList){
         if(originAnnotationList.isEmpty())
             return  originAnnotationList;
 
         List<AnnotationOriginTextRequest> annotationOriginTextRequestList=new ArrayList<>();
-        for (Annotation  annotation:originAnnotationList){
+        for (AnnotationWordPos  annotation:originAnnotationList){
 //            UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
 //            updateAnnotationRequest.setText(annotation.getTerm());
 //            updateAnnotationRequest.setId(annotation.getId());
@@ -145,7 +146,7 @@ public class ApiServerService {
                     finalAnnotationMap.put(annotationResult.getId(),annotationResult.getAnnotation());
                 }
             }
-            for(Annotation annotation : originAnnotationList){
+            for(AnnotationWordPos annotation : originAnnotationList){
                 String finalAnnotation = finalAnnotationMap.get(annotation.getId());
                 if(StringUtils.isNotBlank(finalAnnotation)){
                     annotation.setFinalAnnotation(finalAnnotation);

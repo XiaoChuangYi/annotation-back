@@ -8,7 +8,8 @@ import com.github.pagehelper.PageHelper;
 import com.microservice.apiserver.ApiServerService;
 import com.microservice.apiserver.result.AnnotationResult;
 import com.microservice.dataAccessLayer.entity.AnAtomicTerm;
-import com.microservice.dataAccessLayer.entity.Annotation;
+//import com.microservice.dataAccessLayer.entity.Annotation;
+import com.microservice.dataAccessLayer.entity.AnnotationWordPos;
 import com.microservice.dataAccessLayer.entity.Corpus;
 import com.microservice.dataAccessLayer.mapper.AnAtomicTermMapper;
 import com.microservice.dataAccessLayer.mapper.CorpusMapper;
@@ -53,7 +54,7 @@ public class AnnotationBatchService extends AnnotationService {
      * 查询标注表的总条数
      * */
     private   int  countAnnotationSizeByState(String state){
-        return  annotationMapper.countAnnotationSizeByState(state);
+        return  annotationWordPosMapper.countAnnotationSizeByState(state);
     }
 
     /**
@@ -63,12 +64,12 @@ public class AnnotationBatchService extends AnnotationService {
      */
     private void updateFinalAnnotation(String anId, String finalAnnotation) {
 
-        Annotation annotation = new Annotation();
+        AnnotationWordPos annotation = new AnnotationWordPos();
         annotation.setId(anId);
         annotation.setFinalAnnotation(finalAnnotation);
         annotation.setGmtModified(new Date());
 
-        annotationMapper.updateAnnotationSelective(annotation);
+        annotationWordPosMapper.updateAnnotationSelective(annotation);
     }
 
 
@@ -139,8 +140,8 @@ public class AnnotationBatchService extends AnnotationService {
         LogUtil.info(logger, "开始批量替换标注表单位标注中的type类型");
         int pageNum = 1;
         int pageSize = 1000;
-        Page<Annotation> pageInfo = null;
-        List<Annotation> finalAnnotation=new LinkedList<>();
+        Page<AnnotationWordPos> pageInfo = null;
+        List<AnnotationWordPos> finalAnnotation=new LinkedList<>();
         int total=countAnnotationSizeByState(null);
         int endPageIndex=total/pageSize;
         if(total%pageSize>0){
@@ -150,7 +151,7 @@ public class AnnotationBatchService extends AnnotationService {
             pageInfo=listAnnotationByStatesPaging(null,pageNum,pageSize);
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次，剩余共"+(total-pageSize*pageNum)+"条记录");
-            for (Annotation annotation : pageInfo.getResult()){
+            for (AnnotationWordPos annotation : pageInfo.getResult()){
                 try {
                     annotation.setGmtModified(new Date());
                     List<Entity> manualList=AnnotationConvert.getUnitAnnotationList(annotation.getManualAnnotation());
@@ -182,8 +183,8 @@ public class AnnotationBatchService extends AnnotationService {
     public void batchCombineUnitAnnotation(List<String> idList, List<CombineAtomicTerm> combineAtomicTermList, String newTerm, String newType){
         LogUtil.info(logger, "开始批量替换标注中的原子术语");
         //通过前台筛选的ids查询所有的符合标注的数据
-        List<Annotation> annotationList = annotationMapper.listAnnotationByIdArr(idList);
-        for (Annotation annotation : annotationList){
+        List<AnnotationWordPos> annotationList = annotationWordPosMapper.listAnnotationByIdArr(idList);
+        for (AnnotationWordPos annotation : annotationList){
             try {
                 //部分数字文本带有小数点，因此变换逻辑
                 long count=combineAtomicTermList.stream()
@@ -209,7 +210,7 @@ public class AnnotationBatchService extends AnnotationService {
         LogUtil.info(logger, "开始批量替换标准中的原子术语");
         int pageNum = 1;
         int pageSize = 2000;
-        Page<Annotation> pageInfo = null;
+        Page<AnnotationWordPos> pageInfo = null;
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());
         String originText=atomicTermAnnotationList.stream()
@@ -221,7 +222,7 @@ public class AnnotationBatchService extends AnnotationService {
             pageInfo =listAnnotationByStatesPaging(stateList, pageNum, pageSize);
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            for (Annotation annotation : pageInfo.getResult()) {
+            for (AnnotationWordPos annotation : pageInfo.getResult()) {
                 try {
                     if(AnnotationConvert.getUnitAnnotationList(annotation.getFinalAnnotation()).stream()
                             .filter(x->x.getTerm().equals(originText)).count()>0){
@@ -251,7 +252,7 @@ public class AnnotationBatchService extends AnnotationService {
     public void deleteAtomicTermAndUnitAnnotation(String id,String term,String type){
         anAtomicTermMapper.deleteAnAtomicTermById(id);
         LogUtil.info(logger, "开始批量删除annotation表中符合当前原子术语的标注");
-        Page<Annotation> pageInfo=null;
+        Page<AnnotationWordPos> pageInfo=null;
         int pageNum=1;
         int pageSize=2000;
         do{
@@ -259,7 +260,7 @@ public class AnnotationBatchService extends AnnotationService {
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
-            for (Annotation annotation : pageInfo.getResult()) {
+            for (AnnotationWordPos annotation : pageInfo.getResult()) {
                 try {
 
                     AnnotationConvert.getUnitAnnotationList(annotation.getFinalAnnotation()).stream()
@@ -289,7 +290,7 @@ public class AnnotationBatchService extends AnnotationService {
         LogUtil.info(logger, "开始批量替换标准中的原子术语");
         int pageNum = 1;
         int pageSize = 2000;
-        Page<Annotation> pageInfo = null;
+        Page<AnnotationWordPos> pageInfo = null;
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());
         do {
@@ -299,7 +300,7 @@ public class AnnotationBatchService extends AnnotationService {
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
 
-            for (Annotation annotation : pageInfo.getResult()) {
+            for (AnnotationWordPos annotation : pageInfo.getResult()) {
                 try {
                     List<Entity> entityList=AnnotationConvert.getUnitAnnotationList(annotation.getFinalAnnotation());
                     entityList.stream()
@@ -324,17 +325,17 @@ public class AnnotationBatchService extends AnnotationService {
      * 根据type/term集合查询标术语注表中的标注
      * @param combineAtomicTermList
      */
-    public List<Annotation> listAnnotationByUnitAnnotationArr(List<CombineAtomicTerm> combineAtomicTermList) {
+    public List<AnnotationWordPos> listAnnotationByUnitAnnotationArr(List<CombineAtomicTerm> combineAtomicTermList) {
         int pageNum = 1;
         int pageSize = 2000;
-        List<Annotation> finalAnnotation = new ArrayList<>();
-        Page<Annotation> pageInfo = null;
+        List<AnnotationWordPos> finalAnnotation = new ArrayList<>();
+        Page<AnnotationWordPos> pageInfo = null;
         Set<String> setAtomicTerm=new HashSet<>();
         do {
             pageInfo = listAnnotationByStatesPaging(null, pageNum, pageSize);
             LogUtil.info(logger,
                     "开始处理第" + pageNum + "批次,剩余" + (pageInfo.getPages() - pageNum) + "批次");
-            for (Annotation annotation : pageInfo.getResult()) {
+            for (AnnotationWordPos annotation : pageInfo.getResult()) {
                 try {
                     List<TermAnnotationModel> finalModelList = AnnotationConvert
                             .convertAnnotationModelList(annotation.getFinalAnnotation());
@@ -373,13 +374,13 @@ public class AnnotationBatchService extends AnnotationService {
         int pageSize = 100;
         int currentIndex=cPageNum;//当前标注数据库中遍历的索引值
         int total=countAnnotationSizeByState(AnnotationStateEnum.FINISH.name());
-        List<Annotation> finalAnnotationList = new LinkedList<>();
+        List<AnnotationWordPos> finalAnnotationList = new LinkedList<>();
         List<String> stateList = new ArrayList<>();
         stateList.add(AnnotationStateEnum.FINISH.name());
         outer:do {
             //cPageNum为前端传入的开始查询的startIndex
-            List<Annotation> anAtomicTermList = listAnnotationByStatesPaging(stateList, currentIndex, pageSize);
-            for (Annotation annotation : anAtomicTermList) {
+            List<AnnotationWordPos> anAtomicTermList = listAnnotationByStatesPaging(stateList, currentIndex, pageSize);
+            for (AnnotationWordPos annotation : anAtomicTermList) {
                 try {
                     //最终标注
                     List<TermAnnotationModel> finalModelList = AnnotationConvert
@@ -413,7 +414,7 @@ public class AnnotationBatchService extends AnnotationService {
             System.out.println("当前的currentIndex:"+currentIndex);
         }while(currentIndex<total);
         System.out.println("当前遍历到数据库的索引值："+currentIndex+"<<<<<<<<<<<<<<<<>>>>>>>>>>数据库中总的标注数据："+total);
-        AnnotationPagination annotationPagination=new AnnotationPagination<Annotation>();
+        AnnotationPagination annotationPagination=new AnnotationPagination<AnnotationWordPos>();
         //传给前端两个参数，参数一：遍历Annotation表的的currentIndex,以及根据前端的pageSize大小的返回的集合
         annotationPagination.setLastIndex(currentIndex);
         annotationPagination.setList(finalAnnotationList);

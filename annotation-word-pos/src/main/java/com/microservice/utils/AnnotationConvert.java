@@ -8,7 +8,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microservice.apiserver.vo.TermTypeVO;
-import com.microservice.dataAccessLayer.entity.Annotation;
+//import com.microservice.dataAccessLayer.entity.Annotation;
+import com.microservice.dataAccessLayer.entity.AnnotationWordPos;
 import com.microservice.result.AnnotationBratVO;
 import com.microservice.vo.AtomicTermAnnotation;
 import com.microservice.vo.CombineAtomicTerm;
@@ -45,9 +46,9 @@ public class AnnotationConvert {
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
      */
-    public static List<AnnotationBratVO>  convert2AnnotationBratVOList(List<Annotation> annotationList){
+    public static List<AnnotationBratVO>  convert2AnnotationBratVOList(List<AnnotationWordPos> annotationList){
         List<AnnotationBratVO> annotationBratVOList=new LinkedList<>();
-        for(Annotation annotation:annotationList){
+        for(AnnotationWordPos annotation:annotationList){
             JSONObject bratJson=convertToBratFormat(annotation.getTerm(),annotation.getFinalAnnotation());
             AnnotationBratVO annotationBratVO=new AnnotationBratVO();
             BeanUtils.copyProperties(annotation,annotationBratVO);
@@ -61,7 +62,7 @@ public class AnnotationConvert {
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
      */
-    public static AnnotationBratVO convert2AnnotationBratVO(Annotation annotation){
+    public static AnnotationBratVO convert2AnnotationBratVO(AnnotationWordPos annotation){
             JSONObject bratJson=convertToBratFormat(annotation.getTerm(),annotation.getFinalAnnotation());
             AnnotationBratVO annotationBratVO=new AnnotationBratVO();
             BeanUtils.copyProperties(annotation,annotationBratVO);
@@ -234,7 +235,7 @@ public class AnnotationConvert {
      * @return
      */
     public static String getAnnotationAfterCombineAnnotationByLambda(List<CombineAtomicTerm> combineAtomicTermList,
-                                                                     Annotation annotation,String term,String type){
+                                                                     AnnotationWordPos annotation, String term, String type){
         Document document=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(annotation.getFinalAnnotation(),document);
         int endPosition=0,startPosition=0;

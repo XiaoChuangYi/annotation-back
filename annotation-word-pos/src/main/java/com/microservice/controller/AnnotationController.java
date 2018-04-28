@@ -5,10 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.microservice.apiserver.ApiServerService;
 import com.microservice.apiserver.vo.TermTypeVO;
-import com.microservice.dataAccessLayer.entity.Account;
-import com.microservice.dataAccessLayer.entity.Annotation;
-import com.microservice.dataAccessLayer.entity.AnnotationSentence;
-import com.microservice.dataAccessLayer.entity.UserAccount;
+import com.microservice.dataAccessLayer.entity.*;
 import com.microservice.enums.AnnotationOptionEnum;
 import com.microservice.enums.AnnotationStateEnum;
 import com.microservice.result.AnnotationBratVO;
@@ -54,7 +51,7 @@ public class AnnotationController extends BaseController{
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
         String state=params.getString("state");
         String userModifier=params.getString("userModifier");
-        Page<Annotation> page=annotationService.listAnnotationForDistribution(userModifier,state,pageIndex,pageSize);
+        Page<AnnotationWordPos> page=annotationService.listAnnotationForDistribution(userModifier,state,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList =AnnotationConvert.convert2AnnotationBratVOList(page.getResult());
         PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
         pageVO.setDataList(annotationBratVOList);
@@ -74,7 +71,7 @@ public class AnnotationController extends BaseController{
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
         //分页查询
-        Page<Annotation> page = annotationService.listAnnotationByPagingThroughApiServer(Integer.toString(userAccount.getId()),pageIndex,pageSize);
+        Page<AnnotationWordPos> page = annotationService.listAnnotationByPagingThroughApiServer(Integer.toString(userAccount.getId()),pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList =AnnotationConvert.convert2AnnotationBratVOList(page.getResult());
         PageVO<AnnotationBratVO> pageVO = new PageVO(page, false);
         pageVO.setDataList(annotationBratVOList);
@@ -87,12 +84,12 @@ public class AnnotationController extends BaseController{
      * 分页查询state为['INIT','PROCESSING']，以及特定用户的标注信息。
      */
     @RequestMapping(value = "/queryAnnotationToOperate.do")
-    public ResultVO<PageVO<Annotation>> queryAnnotationToOperate(@RequestBody JSONObject params, @ModelAttribute("userAccount") UserAccount account){
+    public ResultVO<PageVO<AnnotationWordPos>> queryAnnotationToOperate(@RequestBody JSONObject params, @ModelAttribute("userAccount") UserAccount account){
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
         List<String> stateList=JSON.parseArray(JSON.toJSONString(params.get("states")),String.class);
 
-        Page<Annotation> pageInfo =annotationService.listAnnotationByStatesAndUserModifierPaging(stateList,Integer.toString(account.getId())
+        Page<AnnotationWordPos> pageInfo =annotationService.listAnnotationByStatesAndUserModifierPaging(stateList,Integer.toString(account.getId())
                 ,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList= AnnotationConvert.convert2AnnotationBratVOList(pageInfo.getResult());
         PageVO<AnnotationBratVO> pageVO=new PageVO(pageInfo,false);
@@ -104,14 +101,14 @@ public class AnnotationController extends BaseController{
      * 分页查询标注信息，支持term模糊查询，支持标注状态过滤，支持获取指定用户的标注数据
      */
     @RequestMapping(value = "/queryAnnotationDirectly.do")
-    public ResultVO<PageVO<Annotation>> queryAnnotationDirectly(@RequestBody JSONObject params, @ModelAttribute("userAccount") UserAccount account){
+    public ResultVO<PageVO<AnnotationWordPos>> queryAnnotationDirectly(@RequestBody JSONObject params, @ModelAttribute("userAccount") UserAccount account){
         int pageIndex=params.containsKey("pageIndex")?params.getInteger("pageIndex"):1;
         int pageSize=params.containsKey("pageSize")?params.getInteger("pageSize"):10;
         String term=params.getString("term");
         String state=params.getString("state");
         String userModifier=params.getString("modifier");
 
-        Page<Annotation> pageInfo =annotationService.listAnnotationByConditionPaging(state,userModifier
+        Page<AnnotationWordPos> pageInfo =annotationService.listAnnotationByConditionPaging(state,userModifier
                 ,term,pageIndex,pageSize);
         List<AnnotationBratVO> annotationBratVOList= AnnotationConvert.convert2AnnotationBratVOList(pageInfo.getResult());
         PageVO<AnnotationBratVO> pageVO=new PageVO(pageInfo,false);
@@ -126,13 +123,13 @@ public class AnnotationController extends BaseController{
      */
     private AnnotationBratVO updateAnnotationReBratVO(String anId,String finalAnnotation,List<TermTypeVO> newTerms){
         //更新单条标注信息到数据库
-        Annotation paramAnnotation=new Annotation();
+        AnnotationWordPos paramAnnotation=new AnnotationWordPos();
         paramAnnotation.setId(anId);
         paramAnnotation.setFinalAnnotation(finalAnnotation);
         String newTermStr=TermTypeVO.convertToString(newTerms);
         paramAnnotation.setNewTerms(newTermStr);
         annotationService.updateAnnotation(paramAnnotation);
-        Annotation newAnnotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos newAnnotation=annotationService.getAnnotationById(anId);
         AnnotationBratVO annotationBratVO=AnnotationConvert.convert2AnnotationBratVO(newAnnotation);
         return annotationBratVO;
     }
@@ -151,7 +148,7 @@ public class AnnotationController extends BaseController{
         String option=params.getString("option");
 
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该");
 
@@ -181,7 +178,7 @@ public class AnnotationController extends BaseController{
         String oldType=params.getString("oldType");
 
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该");
 
@@ -204,7 +201,7 @@ public class AnnotationController extends BaseController{
         String tag=params.getString("tag");
         String option=params.getString("option");
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该");
 
@@ -235,16 +232,16 @@ public class AnnotationController extends BaseController{
      * @param newTerms
      */
     private AnnotationBratVO updateCurrentAnnotationByApiServer(String anId,String manualAnnotation,List<TermTypeVO> newTerms){
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         annotation.setManualAnnotation(manualAnnotation);
         String newTermStr=TermTypeVO.convertToString(newTerms);
         annotation.setNewTerms(newTermStr);
 
-        List<Annotation> annotationList=new ArrayList<>();
+        List<AnnotationWordPos> annotationList=new ArrayList<>();
         annotationList.add(annotation);
-        List<Annotation> finalAnnotationList=apiServerService.batchPhraseUpdatePosWithNewTerm(annotationList);
+        List<AnnotationWordPos> finalAnnotationList=apiServerService.batchPhraseUpdatePosWithNewTerm(annotationList);
 
-        Annotation paramAnnotation=new Annotation();
+        AnnotationWordPos paramAnnotation=new AnnotationWordPos();
         paramAnnotation.setState(AnnotationStateEnum.PROCESSING.name());
         paramAnnotation.setId(anId);
         paramAnnotation.setNewTerms(newTermStr);
@@ -252,7 +249,7 @@ public class AnnotationController extends BaseController{
         paramAnnotation.setFinalAnnotation(finalAnnotationList.get(0).getFinalAnnotation());
 
         annotationService.updateAnnotation(paramAnnotation);
-        Annotation newAnnotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos newAnnotation=annotationService.getAnnotationById(anId);
         AnnotationBratVO annotationBratVO=AnnotationConvert.convert2AnnotationBratVO(newAnnotation);
         return annotationBratVO;
     }
@@ -271,7 +268,7 @@ public class AnnotationController extends BaseController{
 
 
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该记录！");
 
@@ -313,7 +310,7 @@ public class AnnotationController extends BaseController{
         String tag=params.getString("tag");
         String option=params.getString("option");
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该记录！");
 
@@ -349,7 +346,7 @@ public class AnnotationController extends BaseController{
         String type=params.getString("termType");
 
         //判断当前用户是否可以操作该条标注数据
-        Annotation annotation=annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation=annotationService.getAnnotationById(anId);
         if(account.getRole().equals("标注人员")) {
             if (!annotation.getModifier().equals(Integer.toString(account.getId())))
                 return ResultVO.error("当前用户无权操作该记录！");
@@ -374,7 +371,7 @@ public class AnnotationController extends BaseController{
     @RequestMapping(value = {"/selectAnnotationByTermTypeArr.do"})
     public ResultVO<List<AnnotationBratVO>> selectAnnotationByTermTypeArr(@RequestBody JSONObject params){
         List<CombineAtomicTerm> atomicTermList=params.getJSONArray("combineAtomicTermList").toJavaObject(List.class);
-        List<Annotation> annotationList =annotationBatchService.listAnnotationByUnitAnnotationArr(atomicTermList);
+        List<AnnotationWordPos> annotationList =annotationBatchService.listAnnotationByUnitAnnotationArr(atomicTermList);
         List<AnnotationBratVO> annotationBratVOList = AnnotationConvert.convert2AnnotationBratVOList(annotationList);
         return  ResultVO.success(annotationBratVOList);
     }
@@ -385,14 +382,14 @@ public class AnnotationController extends BaseController{
     @RequestMapping(value = "/finish.do")
     public ResultVO finishAnnotation(@RequestBody JSONObject params,@ModelAttribute("userAccount") UserAccount account) {
         String anId=params.getString("anId");
-        Annotation annotation = annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotation = annotationService.getAnnotationById(anId);
         if(account.getRole().equals("标注人员")) {
             if (!annotation.getModifier().equals(Integer.toString(account.getId()))) {
                 return ResultVO.error("您无权操作当前术语");
             }
         }
         //关系到原子术语库，暂做todo
-        Annotation annotationOld = annotationService.getAnnotationById(anId);
+        AnnotationWordPos annotationOld = annotationService.getAnnotationById(anId);
 
         //检查是否有歧义未处理
         boolean hasAmbiguity = AnnotationChecker
