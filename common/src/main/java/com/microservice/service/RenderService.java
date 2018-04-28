@@ -156,12 +156,15 @@ public class RenderService {
                     JSONObject item = new JSONObject();
                     item.put("name", typeMapper.getTypeByTypeCode(typeCode,taskId).getTypeName());
                     item.put("type", typeCode);
+//                    item.put("bgColor","#FF9500");
+//                    item.put("fgColor","white");
                     item.put("unused", typeHierarchyNode.isUnused());
                     item.put("labels", getTypeAliaArr(typeCode,taskId));//通过type类型到AN_TYPE表里取到对应的别名，添加进去
                     item.put("attributes", new JSONArray());//目前放一个空的json数组
                     item.put("normalizations", new JSONArray());
                     //添加绘图参数
                 Map<String,String> map=getDrawArgument(typeCode,taskId);
+                //添加渲染颜色
                 for(String key:map.keySet()){
                     item.put(key,map.get(key));
                 }
@@ -199,7 +202,8 @@ public class RenderService {
         BratDraw draw=drawMapper.selectDrawByTypeCode(typeCode,taskId);
         List<String> aliaList=new ArrayList<>();
         if(draw!=null){
-            if(!"".equals(draw.getTypeLabel())){
+            if(StringUtils.isNotBlank(draw.getTypeLabel())){
+//            if(!"".equals(draw.getTypeLabel())){
                 String [] typeArr=draw.getTypeLabel().split("\\|");
                 for(String temp:typeArr){
                     aliaList.add(temp);
@@ -215,16 +219,19 @@ public class RenderService {
     private Map<String,String> getDrawArgument(String typeCode,int taskId){
         BratDraw draw=drawMapper.selectDrawByTypeCode(typeCode,taskId);
         Map<String,String> map=new HashMap<>();
-        if(!"".equals(draw.getDrawName())){
-            String [] arguments=draw.getDrawName().split(",");
-            if(arguments.length>0){
-                for(String currentArg:arguments) {
-                    if(!StringUtils.isNotBlank(currentArg)) {
-                        if (currentArg.startsWith("dashArray")) {
-                            String value = currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()).replace("-", ",");
-                            map.put(currentArg.substring(0, currentArg.indexOf(":")), value);
-                        } else {
-                            map.put(currentArg.substring(0, currentArg.indexOf(":")), currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()));
+//        if(!"".equals(draw.getDrawName())){
+        if(draw!=null) {
+            if (StringUtils.isNotBlank(draw.getDrawName())) {
+                String[] arguments = draw.getDrawName().split(",");
+                if (arguments.length > 0) {
+                    for (String currentArg : arguments) {
+                        if (!StringUtils.isNotBlank(currentArg)) {
+                            if (currentArg.startsWith("dashArray")) {
+                                String value = currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()).replace("-", ",");
+                                map.put(currentArg.substring(0, currentArg.indexOf(":")), value);
+                            } else {
+                                map.put(currentArg.substring(0, currentArg.indexOf(":")), currentArg.substring(currentArg.indexOf(":") + 1, currentArg.length()));
+                            }
                         }
                     }
                 }

@@ -267,6 +267,7 @@ public class AnnotationController extends BaseController{
         int endPosition=params.getIntValue("endPosition");
         String annotationType=params.getString("annotationType");
         String option=params.getString("option");
+//        String tag=params.getString("tag");
 
 
         //判断当前用户是否可以操作该条标注数据
@@ -275,9 +276,7 @@ public class AnnotationController extends BaseController{
             return ResultVO.error("当前用户无权操作该记录！");
 
         //判断当前新增的标注文本是否和已有的标注文本有交叉
-        boolean cross=AnnotationConvert.isCrossAnnotation(annotation.getFinalAnnotation(),text);
-        if(cross)
-            return ResultVO.error("新增文本与当前已有标注文本有交叉");
+//            return ResultVO.error("新增文本与当前已有标注文本有交叉");
 
         //获取原有的新词列表
         String oldTermsText = annotation.getNewTerms();
@@ -287,9 +286,19 @@ public class AnnotationController extends BaseController{
                     annotationType);
         }
         List<TermTypeVO> newTerms = TermTypeVO.convertFromString(oldTermsText);
+
+//        boolean cross=AnnotationConvert.isCrossAnnotation(annotation.getFinalAnnotation(),text);
+//        //如果当前新增的标签文本
+        String manualAnnotation=AnnotationConvert.handleCrossAnnotation(annotation.getManualAnnotation(),text,annotationType,startPosition,endPosition);
+//        if(cross){
+//           manualAnnotation=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getManualAnnotation(),"",annotationType,tag);
+//        }else{
+//           manualAnnotation=AnnotationConvert.addUnitAnnotationByLambda(annotation.getManualAnnotation(),
+//                annotationType,startPosition,endPosition,text);
+//
+//        }
+
         //构建新的手工标注
-        String manualAnnotation=AnnotationConvert.addUnitAnnotationByLambda(annotation.getManualAnnotation(),
-                annotationType,startPosition,endPosition,text);
         //调用后台ApiServer，根据当前的手动标注更新到最终标注
         AnnotationBratVO annotationBratVO=updateCurrentAnnotationByApiServer(anId,manualAnnotation,newTerms);
         return ResultVO.success(annotationBratVO);

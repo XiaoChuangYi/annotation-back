@@ -3,12 +3,14 @@ package com.microservice.dataAccessLayer.mapper;
 import com.microservice.dataAccessLayer.dynamicSql.TypeDynamicSqlProvider;
 import com.microservice.dataAccessLayer.entity.Type;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by cjl on 2018/4/2.
  */
+@Component
 public interface TypeMapper {
 
 

@@ -3,12 +3,14 @@ package com.microservice.dataAccessLayer.mapper;
 import com.microservice.dataAccessLayer.dynamicSql.BratDrawDynamicSqlProvider;
 import com.microservice.dataAccessLayer.entity.BratDraw;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by cjl on 2018/4/20.
  */
+@Component
 public interface BratDrawMapper {
     /**
      * draw表关联到an_type表顺便关联出type_code字段

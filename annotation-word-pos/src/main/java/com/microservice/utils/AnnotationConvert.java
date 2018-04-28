@@ -86,6 +86,15 @@ public class AnnotationConvert {
     }
 
 
+    public static String handleCrossAnnotation(String manualAnnotation,String newTerm,String newType,int startPosition,int endPosition){
+        Document document=new Document("",new LinkedList<>());
+        String newTag=getNewTagByLambda(manualAnnotation);
+        DocumentManipulator.parseBratAnnotations(manualAnnotation==null?"":manualAnnotation,document);
+        document.setEntities(document.getEntities().stream().filter(x->!x.getTerm().contains(newTerm)).collect(Collectors.toList()));
+        document.getEntities().add(new Entity(newTag,startPosition,endPosition,newType,newTerm));
+        return DocumentManipulator.toBratAnnotations(document);
+    }
+
     /**
      * 判断新增的单位标注文本和已有的单位文本是否有交叉
      */
@@ -145,9 +154,9 @@ public class AnnotationConvert {
      */
     public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String oldType,String newType,String tag){
         Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         if(document.getEntities().size()>0)
-            document.getEntities().stream().filter(x->x.getTag().equals(tag)&&x.getType().equals(oldType))
+            document.getEntities().stream().filter(x->x.getTag().equals(tag))
                     .forEach(e->e.setType(newType));
         logger.info("更新后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
         return DocumentManipulator.toBratAnnotations(document);

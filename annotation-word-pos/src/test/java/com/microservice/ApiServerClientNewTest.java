@@ -30,9 +30,9 @@ public class ApiServerClientNewTest {
     private ApiServerClient apiServerClient;
 
     @Test
-    @Ignore()
+//    @Ignore()
     public void testDocPosTag() {
-        String result = apiServerClient.getCaseWordPos("胸部CT");
+        String result = apiServerClient.getCaseWordPos("右上肺腺癌");
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>ApiServer<<<<<<<<<<<<<<<<<<<<<<<<<");
         System.out.println(result);
     }

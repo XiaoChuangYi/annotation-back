@@ -82,6 +82,7 @@ public class ApiServerClientFallBack implements FallbackFactory<ApiServerClient>
              */
             @Override
             public String getCaseWordPos(String text) {
+                LogUtil.error(logger, cause, MessageFormat.format("调用分词接口异常,文本内容:{0}", text));
                 return null;
             }
 
@@ -172,6 +173,8 @@ public class ApiServerClientFallBack implements FallbackFactory<ApiServerClient>
              */
             @Override
             public List<AnnotationResult> batchUpdateAnnotationTokenizePos(List<UpdateAnnotationRequest> updateAnnotationRequestList) {
+                LogUtil.error(logger, cause, MessageFormat.format("批量请求附带新词和手工标注的最终标注:{0}",
+                        JSONObject.toJSONString(updateAnnotationRequestList)));
                 return null;
             }
         };
