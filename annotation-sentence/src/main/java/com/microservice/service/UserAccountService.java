@@ -5,6 +5,7 @@ import com.microservice.dataAccessLayer.mapper.UserAccountMapper;
 import com.microservice.utils.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -18,10 +19,14 @@ public class UserAccountService {
     @Autowired
     private UserAccountMapper userAccountMapper;
 
+    @Autowired
+    private AnnotationSentExercisesService annotationSentExercisesService;
+
     public List<UserAccount> listUserAccount(){
         return userAccountMapper.listUserAccount();
     }
 
+    @Transactional
     public void addUserAccount(String accountName ,String password,String role){
         UserAccount userAccount=new UserAccount();
         userAccount.setAccountName(accountName);
@@ -33,6 +38,8 @@ public class UserAccountService {
         userAccount.setGmtCreated(currentDate);
         userAccount.setGmtModified(currentDate);
         userAccountMapper.insertUserAccountSelective(userAccount);
+        if("练习人员".equals(role))
+            annotationSentExercisesService.initUserExercises(userAccount.getId());
     }
 
     public void resetUserAccountPassword(String newPassword,int id){

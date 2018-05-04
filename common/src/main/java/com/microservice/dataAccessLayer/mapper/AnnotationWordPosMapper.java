@@ -1,6 +1,5 @@
 package com.microservice.dataAccessLayer.mapper;
 
-//import com.microservice.dataAccessLayer.dynamicSql.AnnotationDynamicSqlProvider;
 import com.microservice.dataAccessLayer.dynamicSql.AnnotationWordPosDynamicSqlProvider;
 //import com.microservice.dataAccessLayer.entity.Annotation;
 import com.microservice.dataAccessLayer.entity.AnnotationWordPos;

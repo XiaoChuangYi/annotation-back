@@ -1,15 +1,12 @@
 package com.microservice.controller;
 
-import cn.malgo.core.definition.Document;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
-import com.microservice.dataAccessLayer.entity.Account;
-import com.microservice.dataAccessLayer.entity.Annotation;
 import com.microservice.dataAccessLayer.entity.AnnotationSentence;
 import com.microservice.dataAccessLayer.entity.UserAccount;
 import com.microservice.enums.AnnotationSentenceStateEnum;
-import com.microservice.result.AnnotationSentenceBratVO;
+import com.microservice.vo.AnnotationSentenceBratVO;
 import com.microservice.result.PageVO;
 import com.microservice.result.ResultVO;
 import com.microservice.service.AnnotationSentenceService;

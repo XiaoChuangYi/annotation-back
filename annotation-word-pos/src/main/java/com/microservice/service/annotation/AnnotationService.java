@@ -11,7 +11,6 @@ import com.microservice.enums.AnnotationStateEnum;
 import com.microservice.enums.TermStateEnum;
 import com.microservice.service.atomicterm.AnAtomicTermService;
 import com.microservice.utils.AnnotationConvert;
-import com.sun.tools.classfile.Annotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

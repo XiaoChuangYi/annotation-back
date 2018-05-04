@@ -78,7 +78,7 @@ public class UserAccountController {
         return ResultVO.success(userAccountOld);
     }
     /**
-     * 新增用户
+     * 新增用户，新增功能，如果实指派给练习员，则默认新增所有的预标注标准集给特定的用户
      */
     @RequestMapping(value = "/addUserAccount.do")
     public ResultVO addUserAccount(@RequestBody JSONObject jsonParam){

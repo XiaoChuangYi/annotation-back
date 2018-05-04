@@ -3,12 +3,14 @@ package com.microservice.dataAccessLayer.mapper;
 import com.microservice.dataAccessLayer.dynamicSql.UserAccountDynamicSqlProvider;
 import com.microservice.dataAccessLayer.entity.UserAccount;
 import org.apache.ibatis.annotations.*;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Created by cjl on 2018/4/16.
  */
+@Component
 public interface UserAccountMapper {
 
     @Select("select * from user_account")
@@ -54,6 +56,6 @@ public interface UserAccountMapper {
     void updateUserAccountState(@Param("state") String state,@Param("id") int id);
 
     @InsertProvider(type = UserAccountDynamicSqlProvider.class,method="insertUserAccountSelective")
-    @Options(useGeneratedKeys = true,keyProperty = "id")
-    void insertUserAccountSelective(UserAccount userAccount);
+    @Options(useGeneratedKeys = true,keyColumn = "id")
+    int insertUserAccountSelective(UserAccount userAccount);
 }

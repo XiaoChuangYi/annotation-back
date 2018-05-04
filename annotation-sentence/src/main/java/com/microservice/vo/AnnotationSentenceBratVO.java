@@ -1,4 +1,4 @@
-package com.microservice.result;
+package com.microservice.vo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;

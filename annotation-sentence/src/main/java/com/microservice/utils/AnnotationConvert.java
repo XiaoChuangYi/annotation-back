@@ -8,7 +8,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microservice.dataAccessLayer.entity.AnnotationSentence;
-import com.microservice.result.AnnotationSentenceBratVO;
+import com.microservice.dataAccessLayer.entity.AnnotationSentenceExercise;
+import com.microservice.dataAccessLayer.entity.UserExercises;
+import com.microservice.vo.AnnotationSentExerciseBratVO;
+import com.microservice.vo.AnnotationSentenceBratVO;
+import com.microservice.vo.UserExercisesBratVO;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 
@@ -60,6 +64,76 @@ public class AnnotationConvert {
         return jsonObject;
 
     }
+
+    /**
+     *  将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static List<AnnotationSentExerciseBratVO> convert2AnnotationSentBratVOList(List<AnnotationSentenceExercise> annotationSentenceExerciseList){
+        List<AnnotationSentExerciseBratVO> annotationSentExerciseBratVOList=new LinkedList<>();
+
+        for(AnnotationSentenceExercise current:annotationSentenceExerciseList){
+            JSONObject autoBratJson=convertToBratFormat(current.getOriginText(),current.getAutoAnnotation());
+            JSONObject standardBratJson=convertToBratFormat(current.getOriginText(),current.getStandardAnnotation());
+            AnnotationSentExerciseBratVO annotationSentExerciseBratVO=new AnnotationSentExerciseBratVO();
+            BeanUtils.copyProperties(current,annotationSentExerciseBratVO);
+            annotationSentExerciseBratVO.setAutoBratData(autoBratJson);
+            annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+            annotationSentExerciseBratVOList.add(annotationSentExerciseBratVO);
+        }
+        return annotationSentExerciseBratVOList;
+    }
+
+    /**
+     * 将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static AnnotationSentExerciseBratVO convert2AnnotationSentBratVO(AnnotationSentenceExercise annotation){
+        JSONObject autoBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAutoAnnotation());
+        JSONObject standardBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getStandardAnnotation());
+        AnnotationSentExerciseBratVO annotationSentExerciseBratVO=new AnnotationSentExerciseBratVO();
+        BeanUtils.copyProperties(annotation,annotationSentExerciseBratVO);
+        annotationSentExerciseBratVO.setAutoBratData(autoBratJson);
+        annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+        return annotationSentExerciseBratVO;
+    }
+
+    /**
+     *  将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static List<UserExercisesBratVO> convert2UserExercisesBratVOList(List<UserExercises> userExercisesList){
+        List<UserExercisesBratVO> annotationSentExerciseBratVOList=new LinkedList<>();
+
+        for(UserExercises current:userExercisesList){
+            JSONObject practiceBratJson=convertToBratFormat(current.getOriginText(),current.getPracticeAnnotation());
+            JSONObject standardBratJson=convertToBratFormat(current.getOriginText(),current.getStandardAnnotation());
+            UserExercisesBratVO annotationSentExerciseBratVO=new UserExercisesBratVO();
+            BeanUtils.copyProperties(current,annotationSentExerciseBratVO);
+            annotationSentExerciseBratVO.setPracticeBratData(practiceBratJson);
+            annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+            boolean correct=compareAnnotation(current.getPracticeAnnotation(),current.getStandardAnnotation());
+            if(correct)
+                annotationSentExerciseBratVO.setMemo("正确");
+            else
+                annotationSentExerciseBratVO.setMemo("有问题");
+
+            annotationSentExerciseBratVOList.add(annotationSentExerciseBratVO);
+        }
+        return annotationSentExerciseBratVOList;
+    }
+
+
+    /**
+     * 将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static UserExercisesBratVO convert2UserExercisesBratVO(UserExercises annotation){
+        JSONObject practiceBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getPracticeAnnotation());
+        JSONObject standardBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getStandardAnnotation());
+        UserExercisesBratVO annotationSentExerciseBratVO=new UserExercisesBratVO();
+        BeanUtils.copyProperties(annotation,annotationSentExerciseBratVO);
+        annotationSentExerciseBratVO.setPracticeBratData(practiceBratJson);
+        annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+        return annotationSentExerciseBratVO;
+    }
+
 
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
@@ -164,5 +238,22 @@ public class AnnotationConvert {
         DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
         document.getEntities().stream().filter(x -> x.getTag().equals(tag)).forEach(x -> x.setType(type));
         return DocumentManipulator.toBratAnnotations(document);
+    }
+
+    private static boolean compareAnnotation(String sourceAnnotation,String targetAnnotation){
+        Document documentSource=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(sourceAnnotation==null?"":sourceAnnotation,documentSource);
+        Document documentTarget=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(targetAnnotation==null?"":targetAnnotation,documentTarget);
+        if(documentTarget.getEntities().size()>0) {
+            for (Entity entity : documentTarget.getEntities()) {
+                long num = documentSource.getEntities().stream().filter(x -> x.getType().equals(entity.getType()) && x.getStart() == entity.getStart() && x.getEnd() == entity.getEnd()).count();
+                if (num == 0)
+                    return false;
+            }
+        }else{
+            return false;
+        }
+        return true;
     }
 }
