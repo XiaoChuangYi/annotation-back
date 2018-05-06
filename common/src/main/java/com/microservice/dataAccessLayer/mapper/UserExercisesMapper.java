@@ -22,6 +22,7 @@ public interface UserExercisesMapper {
             @Result(column = "standard_annotation",property = "standardAnnotation"),
             @Result(column = "practice_annotation",property = "practiceAnnotation"),
             @Result(column = "state",property = "state"),
+            @Result(column = "account_name",property = "accountName"),
             @Result(column = "user_modifier",property = "userModifier"),
             @Result(column = "gmt_created",property = "gmtCreated"),
             @Result(column = "gmt_modified",property = "gmtModified"),

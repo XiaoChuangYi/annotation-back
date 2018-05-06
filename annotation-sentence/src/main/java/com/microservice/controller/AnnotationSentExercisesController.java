@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by cjl on 2018/5/3.
@@ -39,17 +40,21 @@ public class AnnotationSentExercisesController extends BaseController{
 
 
     /**
-     * 指派界面，error
+     * 指派界面，获取标准习题集
      */
     @RequestMapping(value = "/queryStandardAnnotationToDistribution.do")
-    public ResultVO<PageVO<AnnotationSentExerciseBratVO>> queryStandardAnnotationToDistribution(@RequestBody JSONObject jsonParam,@ModelAttribute("userAccount") UserAccount userAccount){
+    public ResultVO<Map<String,Object>> queryStandardAnnotationToDistribution(@RequestBody JSONObject jsonParam,@ModelAttribute("userAccount") UserAccount userAccount){
         int pageIndex=jsonParam.getIntValue("pageIndex");
         int pageSize=jsonParam.getIntValue("pageSize");
-        Page<AnnotationSentenceExercise> pageInfo =annotationSentExercisesService.listAnnotationSentExercise(pageIndex,pageSize);
-        List<AnnotationSentExerciseBratVO> annotationSentExerciseBratVOList= AnnotationConvert.convert2AnnotationSentBratVOList(pageInfo.getResult());
-        PageVO<AnnotationSentExerciseBratVO> pageVO=new PageVO(pageInfo,false);
-        pageVO.setDataList(annotationSentExerciseBratVOList);
-        return ResultVO.success(pageVO);
+        int userModifier=jsonParam.getIntValue("userModifier");
+        String state=jsonParam.getString("state");
+
+        Map<String,Object> finalMap=annotationSentExercisesService.listAnnotationSentExercise(pageIndex,pageSize,userModifier,state);
+        List<AnnotationSentExerciseBratVO> annotationSentExerciseBratVOList= AnnotationConvert.
+                convert2AnnotationSentBratVOList((List<AnnotationSentenceExercise>)finalMap.get("dataList"));
+        finalMap.replace("dataList",annotationSentExerciseBratVOList);
+
+        return ResultVO.success(finalMap);
     }
 
     /**
@@ -81,7 +86,17 @@ public class AnnotationSentExercisesController extends BaseController{
         return ResultVO.success(pageVO);
     }
 
-
+    @RequestMapping(value = "/queryStandardAnnotation.do")
+    public ResultVO<PageVO<AnnotationSentExerciseBratVO>> queryStandardAnnotation(@RequestBody JSONObject jsonParam){
+        int pageIndex=jsonParam.getIntValue("pageIndex");
+        int pageSize=jsonParam.getIntValue("pageSize");
+        String originText=jsonParam.getString("originText");
+        Page<AnnotationSentenceExercise> pageInfo=annotationSentExercisesService.listAnnotationSentExerciseByPaging(pageIndex,pageSize,originText);
+        List<AnnotationSentExerciseBratVO> annotationSentExerciseBratVOList=AnnotationConvert.convert2AnnotationSentBratVOList(pageInfo.getResult());
+        PageVO<AnnotationSentExerciseBratVO> pageVO=new PageVO(pageInfo,false);
+        pageVO.setDataList(annotationSentExerciseBratVOList);
+        return ResultVO.success(pageVO);
+    }
 
 
     /**
@@ -155,6 +170,63 @@ public class AnnotationSentExercisesController extends BaseController{
     /**
      * 新增标注
      */
+    @RequestMapping(value = "/addStandardAnnotation.do")
+    public ResultVO<AnnotationSentExerciseBratVO> addStandardAnnotation(@RequestBody JSONObject jsonParam){
+        String type=jsonParam.getString("type");
+        String term=jsonParam.getString("term");
+        int anId=jsonParam.getIntValue("id");
+        int startPosition=jsonParam.getIntValue("startPosition");
+        int endPosition=jsonParam.getIntValue("endPosition");
+
+        AnnotationSentenceExercise annotationExercise=annotationSentExercisesService.getAnnotationSentExerciseById(anId);
+
+        String newAnnotationSentence = AnnotationConvert.addUnitAnnotation(annotationExercise.getStandardAnnotation(),
+                type, startPosition, endPosition, term);
+        AnnotationSentExerciseBratVO finalAnnotationExerciseBratVO=updateStandardAnnotation(anId,newAnnotationSentence);
+        return ResultVO.success(finalAnnotationExerciseBratVO);
+    }
+
+
+    /**
+     * 删除标注
+     */
+    @RequestMapping(value = "/deleteStandardAnnotation.do")
+    public ResultVO<AnnotationSentExerciseBratVO> deleteStandardAnnotation(@RequestBody JSONObject jsonParam){
+        int anId=jsonParam.getIntValue("id");
+        String tag=jsonParam.getString("tag");
+
+        //判断当前用户是否可以操作该条标注数据
+        AnnotationSentenceExercise annotationExercise=annotationSentExercisesService.getAnnotationSentExerciseById(anId);
+
+        String newAnnotationSentence= AnnotationConvert.deleteUnitAnnotation(annotationExercise.getStandardAnnotation(), tag);
+        //更新单条标注信息到数据库
+        AnnotationSentExerciseBratVO finalAnnotationSentenceBratVO=updateStandardAnnotation(anId,newAnnotationSentence);
+        return ResultVO.success(finalAnnotationSentenceBratVO);
+    }
+
+
+    /**
+     *  更新标注
+     */
+    @RequestMapping(value = "/updateStandardAnnotation.do")
+    public  ResultVO<AnnotationSentExerciseBratVO> updateStandardAnnotation(@RequestBody JSONObject params){
+        int anId=params.getIntValue("anId");
+        String tag=params.getString("tag");
+        String newType=params.getString("newType");
+
+        //判断当前用户是否可以操作该条标注数据
+        AnnotationSentenceExercise annotationExercise=annotationSentExercisesService.getAnnotationSentExerciseById(anId);
+
+        String finalAnnotation= AnnotationConvert.changeUnitAnnotation(annotationExercise.getStandardAnnotation(), tag, newType);
+        //更新单条标注信息到数据库
+        AnnotationSentExerciseBratVO annotationBratVO=updateStandardAnnotation(anId,finalAnnotation);
+        return ResultVO.success(annotationBratVO);
+    }
+
+
+    /**
+     * 新增标注
+     */
     @RequestMapping(value = "/addUserPracticeAnnotation.do")
     public ResultVO<UserExercisesBratVO> addUserPracticeAnnotation(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
         String type=jsonParam.getString("type");
@@ -224,5 +296,20 @@ public class AnnotationSentExercisesController extends BaseController{
         userExercisesService.updateUserExercisesSelective(paramUserExercises);
         UserExercises userExercises = userExercisesService.getUserExercisesById(anId);
         return AnnotationConvert.convert2UserExercisesBratVO(userExercises);
+    }
+
+    /**
+     * 更新annotation_sentence表的annotation_text字段
+     */
+    private AnnotationSentExerciseBratVO updateStandardAnnotation(int id,String newAnnotationText){
+
+        AnnotationSentenceExercise annotationSentenceExercise=new AnnotationSentenceExercise();
+        annotationSentenceExercise.setId(id);
+        annotationSentenceExercise.setStandardAnnotation(newAnnotationText);
+        annotationSentenceExercise.setGmtModified(new Date());
+
+        annotationSentExercisesService.updateAnnotationSentExerciseSelective(annotationSentenceExercise);
+        AnnotationSentenceExercise finalAnnotationSentenceExercise=annotationSentExercisesService.getAnnotationSentExerciseById(id);
+        return AnnotationConvert.convert2AnnotationSentBratVO(finalAnnotationSentenceExercise);
     }
 }

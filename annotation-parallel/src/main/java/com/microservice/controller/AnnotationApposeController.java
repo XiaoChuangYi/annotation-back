@@ -3,13 +3,13 @@ package com.microservice.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
-import com.microservice.dataAccessLayer.entity.AnnotationParallel;
+import com.microservice.dataAccessLayer.entity.AnnotationAppose;
 import com.microservice.dataAccessLayer.entity.UserAccount;
-import com.microservice.enums.AnnotationParallelStateEnum;
-import com.microservice.result.AnnotationParallelBratVO;
+import com.microservice.enums.AnnotationApposeStateEnum;
+import com.microservice.result.AnnotationApposeBratVO;
 import com.microservice.result.PageVO;
 import com.microservice.result.ResultVO;
-import com.microservice.service.AnnotationParallelService;
+import com.microservice.service.AnnotationApposeService;
 import com.microservice.utils.AnnotationParallelConvert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -25,10 +25,10 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/annotationAppose")
-public class AnnotationParallelController extends BaseController{
+public class AnnotationApposeController extends BaseController{
 
     @Autowired
-    private AnnotationParallelService annotationParallelService;
+    private AnnotationApposeService annotationParallelService;
 
 
 
@@ -36,15 +36,15 @@ public class AnnotationParallelController extends BaseController{
      * 查询句子标注，分页，条件
      */
     @RequestMapping(value = "/queryAnnotationSentence.do")
-    public ResultVO<PageVO<AnnotationParallelBratVO>> queryAnnotationParallel(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
+    public ResultVO<PageVO<AnnotationApposeBratVO>> queryAnnotationParallel(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
         int pageIndex=jsonParam.getIntValue("pageIndex");
         int pageSize=jsonParam.getIntValue("pageSize");
         List<String> stateList= JSON.parseArray(JSON.toJSONString(jsonParam.get("states")),String.class);
 //        String userModifier=jsonParam.getString("userModifier");
 
-        Page<AnnotationParallel> pageInfo= annotationParallelService.queryAnnotationByCondition(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
-        List<AnnotationParallelBratVO> annotationParallelBratVOList = AnnotationParallelConvert.convert2AnnotationBratVOList(pageInfo.getResult());
-        PageVO<AnnotationParallelBratVO> pageVO=new PageVO(pageInfo,false);
+        Page<AnnotationAppose> pageInfo= annotationParallelService.queryAnnotationByCondition(pageIndex,pageSize,stateList,Integer.toString(userAccount.getId()));
+        List<AnnotationApposeBratVO> annotationParallelBratVOList = AnnotationParallelConvert.convert2AnnotationBratVOList(pageInfo.getResult());
+        PageVO<AnnotationApposeBratVO> pageVO=new PageVO(pageInfo,false);
         pageVO.setDataList(annotationParallelBratVOList);
         return ResultVO.success(pageVO);
     }
@@ -54,16 +54,16 @@ public class AnnotationParallelController extends BaseController{
      * 查询句子标注，分页，条件
      */
     @RequestMapping(value = "/queryAnnotationSentence2Distribution.do")
-    public ResultVO<PageVO<AnnotationParallelBratVO>> queryAnnotationParalle2Distribution(@RequestBody JSONObject jsonParam){
+    public ResultVO<PageVO<AnnotationApposeBratVO>> queryAnnotationSentence2Distribution(@RequestBody JSONObject jsonParam){
         int pageIndex=jsonParam.getIntValue("pageIndex");
         int pageSize=jsonParam.getIntValue("pageSize");
 
         List<String> stateList= JSON.parseArray(JSON.toJSONString(jsonParam.get("states")),String.class);
 
         String userModifier=jsonParam.getString("userModifier");
-        Page<AnnotationParallel> pageInfo= annotationParallelService.queryAnnotationByCondition(pageIndex,pageSize,stateList,userModifier);
-        List<AnnotationParallelBratVO> annotationParallelBratVOList = AnnotationParallelConvert.convert2AnnotationBratVOList(pageInfo.getResult());
-        PageVO<AnnotationParallelBratVO> pageVO=new PageVO(pageInfo,false);
+        Page<AnnotationAppose> pageInfo= annotationParallelService.queryAnnotationByCondition(pageIndex,pageSize,stateList,userModifier);
+        List<AnnotationApposeBratVO> annotationParallelBratVOList = AnnotationParallelConvert.convert2AnnotationBratVOList(pageInfo.getResult());
+        PageVO<AnnotationApposeBratVO> pageVO=new PageVO(pageInfo,false);
         pageVO.setDataList(annotationParallelBratVOList);
         return ResultVO.success(pageVO);
     }
@@ -72,21 +72,21 @@ public class AnnotationParallelController extends BaseController{
      * 新增标注
      */
     @RequestMapping(value = "/addAnnotationSentence.do")
-    public ResultVO<AnnotationParallelBratVO> addAnnotationParallel(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
+    public ResultVO<AnnotationApposeBratVO> addAnnotationParallel(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
         String type=jsonParam.getString("type");
         String term=jsonParam.getString("term");
         int anId=jsonParam.getIntValue("id");
         int startPosition=jsonParam.getIntValue("startPosition");
         int endPosition=jsonParam.getIntValue("endPosition");
 
-        AnnotationParallel annotationParallel=annotationParallelService.getAnnotationParallel(anId);
+        AnnotationAppose annotationParallel=annotationParallelService.getAnnotationParallel(anId);
         if(!annotationParallel.getUserModifier().equals(Integer.toString(userAccount.getId()))){
             return ResultVO.error("当前用户无法操作ID为'"+anId+"'的记录");
         }
         String newAnnotationParalle= AnnotationParallelConvert.addUnitAnnotationByLambda(annotationParallel.getAnnotationText(),
                 type,startPosition,endPosition,term);
 
-        AnnotationParallelBratVO finalAnnotationParallelBratVO=updateAnnotationParallelAnnotationText(anId,newAnnotationParalle);
+        AnnotationApposeBratVO finalAnnotationParallelBratVO=updateAnnotationParallelAnnotationText(anId,newAnnotationParalle);
         return ResultVO.success(finalAnnotationParallelBratVO);
     }
 
@@ -94,18 +94,18 @@ public class AnnotationParallelController extends BaseController{
      * 删除标注
      */
     @RequestMapping(value = "/deleteAnnotationSentence.do")
-    public ResultVO<AnnotationParallelBratVO> deleteAnnotationParallel(@RequestBody JSONObject jsonParam,@ModelAttribute("userAccount") UserAccount userAccount){
+    public ResultVO<AnnotationApposeBratVO> deleteAnnotationParallel(@RequestBody JSONObject jsonParam, @ModelAttribute("userAccount") UserAccount userAccount){
         int anId=jsonParam.getIntValue("id");
         String tag=jsonParam.getString("tag");
 
         //判断当前用户是否可以操作该条标注数据
-        AnnotationParallel annotationParallel=annotationParallelService.getAnnotationParallel(anId);
+        AnnotationAppose annotationParallel=annotationParallelService.getAnnotationParallel(anId);
         if(!annotationParallel.getUserModifier().equals(Integer.toString(userAccount.getId())))
             return ResultVO.error("当前用户无权操作该"+anId+"记录");
 
         String newAnnotationParalle= AnnotationParallelConvert.deleteUnitAnnotationByLambda(annotationParallel.getAnnotationText(),tag);
         //更新单条标注信息到数据库
-        AnnotationParallelBratVO finalAnnotationParallelBratVO=updateAnnotationParallelAnnotationText(anId,newAnnotationParalle);
+        AnnotationApposeBratVO finalAnnotationParallelBratVO=updateAnnotationParallelAnnotationText(anId,newAnnotationParalle);
         return ResultVO.success(finalAnnotationParallelBratVO);
     }
 
@@ -113,15 +113,15 @@ public class AnnotationParallelController extends BaseController{
     /**
      * 更新annotation_sentence表的annotation_text字段
      */
-    private AnnotationParallelBratVO updateAnnotationParallelAnnotationText(int anId,String newAnnotationText){
-        AnnotationParallel paramAnnotationParalle=new AnnotationParallel();
+    private AnnotationApposeBratVO updateAnnotationParallelAnnotationText(int anId, String newAnnotationText){
+        AnnotationAppose paramAnnotationParalle=new AnnotationAppose();
         paramAnnotationParalle.setId(anId);
         paramAnnotationParalle.setAnnotationText(newAnnotationText);
 
         paramAnnotationParalle.setGmtModified(new Date());
-        paramAnnotationParalle.setState(AnnotationParallelStateEnum.ANNOTATIONING.getMessage());
+        paramAnnotationParalle.setState(AnnotationApposeStateEnum.ANNOTATIONING.getMessage());
         annotationParallelService.updateAnnotationParallel(paramAnnotationParalle);
-        AnnotationParallel annotationParallel = annotationParallelService.getAnnotationParallel(anId);
+        AnnotationAppose annotationParallel = annotationParallelService.getAnnotationParallel(anId);
         return AnnotationParallelConvert.convert2AnnotationBratVO(annotationParallel);
     }
     /**
@@ -130,9 +130,9 @@ public class AnnotationParallelController extends BaseController{
     @RequestMapping(value = "/commitAnnotationSentence.do")
     public ResultVO commitAnnotationParallel(@RequestBody JSONObject jsonParam){
         int anId=jsonParam.getIntValue("id");
-        AnnotationParallel annotationParalle=new AnnotationParallel();
+        AnnotationAppose annotationParalle=new AnnotationAppose();
         annotationParalle.setId(anId);
-        annotationParalle.setState(AnnotationParallelStateEnum.FINISH.getMessage());
+        annotationParalle.setState(AnnotationApposeStateEnum.FINISH.getMessage());
         annotationParalle.setGmtModified(new Date());
         annotationParallelService.updateAnnotationParallel(annotationParalle);
         return ResultVO.success();

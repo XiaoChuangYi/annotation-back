@@ -25,3 +25,6 @@ CREATE TABLE `user_exercises` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `anId_modified` (`anId`,`user_modifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
+ALTER table annotation_sentence_exercises add gmt_modified timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间';

@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by cjl on 2018/4/16.
  */
-public class AnnotationParallelBratVO {
+public class AnnotationApposeBratVO {
 
     private int     id;
 

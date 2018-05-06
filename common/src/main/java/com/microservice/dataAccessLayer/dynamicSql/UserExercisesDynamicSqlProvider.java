@@ -19,13 +19,14 @@ public class UserExercisesDynamicSqlProvider {
     public String queryUserExercisesAnnotation(final UserExercises userExercises){
         return new SQL(){
             {
-                SELECT("*");
-                FROM("user_exercises");
+                SELECT("ue.*,ua.account_name");
+                FROM("user_exercises ue");
+                INNER_JOIN("user_account ua on ue.user_modifier=ua.id ");
                 WHERE("1=1");
                 if(StringUtils.isNotBlank(userExercises.getState()))
-                    WHERE("state=#{state}");
+                    WHERE("ue.state=#{state}");
                 if(userExercises.getUserModifier()>0)
-                    WHERE("user_modifier=#{userModifier}");
+                    WHERE("ue.user_modifier=#{userModifier}");
             }
         }.toString();
     }
@@ -73,9 +74,9 @@ public class UserExercisesDynamicSqlProvider {
                     SET("memo=#{memo}");
                 if(StringUtils.isNotBlank(userExercises.getOriginText()))
                     SET("origin_text=#{originText}");
-                if(StringUtils.isNotBlank(userExercises.getPracticeAnnotation()))
+                if(userExercises.getPracticeAnnotation()!=null)
                     SET("practice_annotation=#{practiceAnnotation}");
-                if(StringUtils.isNotBlank(userExercises.getStandardAnnotation()))
+                if(userExercises.getStandardAnnotation()!=null)
                     SET("standard_annotation=#{standardAnnotation}");
                 if(StringUtils.isNotBlank(userExercises.getState()))
                     SET("state=#{state}");

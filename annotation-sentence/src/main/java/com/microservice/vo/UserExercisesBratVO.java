@@ -27,10 +27,20 @@ public class UserExercisesBratVO {
 
     private String   memo;
 
+    private String accountName;
+
     private JSONObject practiceBratData;
 
     private JSONObject standardBratData;
 
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
 
     public int getId() {
         return id;

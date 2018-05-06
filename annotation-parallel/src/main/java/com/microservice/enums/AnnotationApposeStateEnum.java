@@ -3,7 +3,7 @@ package com.microservice.enums;
 /**
  * Created by cjl on 2018/4/16.
  */
-public enum AnnotationParallelStateEnum {
+public enum AnnotationApposeStateEnum {
 
     UN_DISTRIBUTION("未分配"),
 
@@ -18,7 +18,7 @@ public enum AnnotationParallelStateEnum {
 
     private String message;
 
-    AnnotationParallelStateEnum(String message) {
+    AnnotationApposeStateEnum(String message) {
         this.message = message;
     }
 

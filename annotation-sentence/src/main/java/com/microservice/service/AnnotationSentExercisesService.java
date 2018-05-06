@@ -9,12 +9,11 @@ import com.microservice.dataAccessLayer.mapper.UserExercisesMapper;
 import com.microservice.enums.AnnotationSentExercisesStateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by cjl on 2018/5/3.
@@ -29,14 +28,54 @@ public class AnnotationSentExercisesService {
     @Autowired
     private UserExercisesMapper userExercisesMapper;
 
+
+
+    /**
+     * 查询标准习题集
+     */
+    public Page<AnnotationSentenceExercise> listAnnotationSentExerciseByPaging(int pageIndex,int pageSize,String originText){
+        Page<AnnotationSentenceExercise> pageInfo=PageHelper.startPage(pageIndex,pageSize);
+        AnnotationSentenceExercise annotationSentenceExercise=new AnnotationSentenceExercise();
+        annotationSentenceExercise.setOriginText(originText);
+        annotationSentenceExerciseMapper.listAnnotationSentExerciseByCondition(annotationSentenceExercise);
+        return pageInfo;
+    }
+
     /**
      * 查询标准练习数据
      */
-    public Page<AnnotationSentenceExercise> listAnnotationSentExercise(int pageIndex,int pageSize){
-        Page<AnnotationSentenceExercise> pageInfo= PageHelper.startPage(pageIndex,pageSize);
-        annotationSentenceExerciseMapper.listAnnotationSentExerciseByCondition(new AnnotationSentenceExercise());
-        return pageInfo;
+    public Map<String,Object> listAnnotationSentExercise(int pageIndex, int pageSize, int userModifier, String state){
+        List<AnnotationSentenceExercise> annotationSentenceExerciseList =annotationSentenceExerciseMapper.listAnnotationSentExerciseAll();
+        UserExercises paramUserExercises=new UserExercises();
+        paramUserExercises.setState(state);
+        paramUserExercises.setUserModifier(userModifier);
+        List<UserExercises> userExercisesList=userExercisesMapper.queryUserExercisesAnnotation(paramUserExercises);
+        for(UserExercises current:userExercisesList){
+            annotationSentenceExerciseList.stream().filter(x->x.getId()==current.getAnId())
+                    .forEach(k->{
+                        k.setMemo("匹配");
+                        k.setState(current.getState());
+                    });
+        }
+        int fromIndex=(pageIndex-1)*pageSize;
+        int toIndex=pageIndex*pageSize;
+
+        Map finalMap=new HashMap<>();
+        if(annotationSentenceExerciseList.size()>=fromIndex&&annotationSentenceExerciseList.size()<toIndex)
+            finalMap.put("dataList",annotationSentenceExerciseList.subList(fromIndex,annotationSentenceExerciseList.size()));
+        if(annotationSentenceExerciseList.size()<fromIndex)
+            finalMap.put("dataList",annotationSentenceExerciseList);
+        if(annotationSentenceExerciseList.size()>toIndex)
+            finalMap.put("dataList",annotationSentenceExerciseList.subList(fromIndex,toIndex));
+
+        finalMap.put("total",annotationSentenceExerciseList.size());
+        return finalMap;
     }
+
+    public void updateAnnotationSentExerciseSelective(AnnotationSentenceExercise annotationSentenceExercise){
+            annotationSentenceExerciseMapper.updateAnnotationSentExercises(annotationSentenceExercise);
+    }
+
 
     /**
      * 根据id查询annotation
@@ -66,7 +105,6 @@ public class AnnotationSentExercisesService {
         String idTemp=userExercisesList.stream().map(x->"'"+x.getAnId()+"'").collect(Collectors.joining(","));
         List<AnnotationSentenceExercise> annotationSentenceExerciseList =annotationSentenceExerciseMapper.listAnnotationSentExerciseByIdArr(idTemp);
         userExercisesList=convert2UserExercises(annotationSentenceExerciseList,AnnotationSentExercisesStateEnum.INIT.name(),userModifier);
-        //该方法可能有坑
         userExercisesMapper.batchUpdateUserExerciseUser(userExercisesList);
 
     }
@@ -75,10 +113,21 @@ public class AnnotationSentExercisesService {
      * 指派标准标注数据，如果根据当前用户查询不到其所指派的数据，则新增所有标注数据到user_exercises表,否则批量更新对应的
      */
     public void designateAnnotationSentExercises(List<Integer> anIdArr,int userModifier,String state){
-            String idTemp=anIdArr.stream().map(x->x.toString()).collect(Collectors.joining(","));
-            List<AnnotationSentenceExercise> annotationSentenceExerciseList =annotationSentenceExerciseMapper.listAnnotationSentExerciseByIdArr(idTemp);
-            List<UserExercises> userExercisesList=convert2UserExercises(annotationSentenceExerciseList,state,userModifier);
-            userExercisesMapper.batchUpdateUserExerciseUser(userExercisesList);
+        String idTemp=anIdArr.stream().map(x->x.toString()).collect(Collectors.joining(","));
+        List<UserExercises> userExercisesList=userExercisesMapper.listUserExercisesByUserModifier(userModifier);
+        List<AnnotationSentenceExercise> annotationSentenceExerciseList =annotationSentenceExerciseMapper.listAnnotationSentExerciseByIdArr(idTemp);
+
+        Iterator<AnnotationSentenceExercise> iterator=annotationSentenceExerciseList.iterator();
+        while (iterator.hasNext()) {
+            AnnotationSentenceExercise annotationSentenceExercise=iterator.next();
+            for(int k=0;k<userExercisesList.size();k++){
+                if (userExercisesList.get(k).getAnId() == annotationSentenceExercise.getId())
+                    iterator.remove();
+            }
+        }
+
+        List<UserExercises> finalUserExercisesList=convert2UserExercises(annotationSentenceExerciseList,state,userModifier);
+        userExercisesMapper.batchAddUserExercises(finalUserExercisesList);
     }
 
 

@@ -1,7 +1,6 @@
 package com.microservice.dataAccessLayer.dynamicSql;
 
-import com.microservice.dataAccessLayer.entity.AnnotationParallel;
-import com.microservice.dataAccessLayer.entity.AnnotationSentence;
+import com.microservice.dataAccessLayer.entity.AnnotationAppose;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.SQL;
 
@@ -12,16 +11,16 @@ import java.util.stream.Collectors;
 /**
  * Created by cjl on 2018/4/16.
  */
-public class AnnotationParallelDynamicSqlProvider {
+public class AnnotationApposeDynamicSqlProvider {
 
     public String queryAnnotationParallelSelective(Map map){
-        AnnotationParallel annotationParallel=(AnnotationParallel)map.get("annotationParallel");
+        AnnotationAppose annotationParallel=(AnnotationAppose)map.get("annotationParallel");
         List<String> stateList=(List<String>)map.get("stateList");
         String stateStr=stateList.stream().map(x->"'"+x.toString()+"'").collect(Collectors.joining(","));
         return new SQL(){
             {
                 SELECT("*");
-                FROM("annotation_parallel");
+                FROM("annotation_appose");
                 WHERE("1=1");
                 //如果当前的用户是admin,仅仅做state过滤
                 if(!annotationParallel.getUserModifier().equals("1")) {
@@ -36,10 +35,10 @@ public class AnnotationParallelDynamicSqlProvider {
         }.toString();
     }
 
-    public String updateAnnotationParallelSelective(final AnnotationParallel annotationParallel){
+    public String updateAnnotationParallelSelective(final AnnotationAppose annotationParallel){
         return new SQL(){
             {
-                UPDATE("annotation_parallel");
+                UPDATE("annotation_appose");
                 if(StringUtils.isNotBlank(annotationParallel.getState())){
                     SET("state=#{state}");
                 }
@@ -70,7 +69,7 @@ public class AnnotationParallelDynamicSqlProvider {
         String idStr=idArr.stream().map(x->x.toString())
                 .collect(Collectors.joining(","));
         StringBuilder sb=new StringBuilder();
-        sb.append("update annotation_parallel set user_modifier="+userModifier);
+        sb.append("update annotation_appose set user_modifier="+userModifier);
         sb.append(" ,state='"+state+"' ");
         sb.append(" where id in ("+idStr+")");
         return sb.toString();
@@ -82,7 +81,7 @@ public class AnnotationParallelDynamicSqlProvider {
         String idStr=idArr.stream().map(x->x.toString())
                 .collect(Collectors.joining(","));
         StringBuilder sb=new StringBuilder();
-        sb.append("update annotation_parallel set state='"+state+"'");
+        sb.append("update annotation_appose set state='"+state+"'");
         sb.append(" where id in ("+idStr+")");
         return sb.toString();
     }

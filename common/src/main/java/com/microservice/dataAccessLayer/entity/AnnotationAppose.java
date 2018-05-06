@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by cjl on 2018/4/16.
  */
-public class AnnotationParallel {
+public class AnnotationAppose {
     private int id;
     private String originText;
     private String annotationText;

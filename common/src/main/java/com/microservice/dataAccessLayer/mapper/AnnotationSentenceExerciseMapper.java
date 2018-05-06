@@ -20,6 +20,7 @@ public interface AnnotationSentenceExerciseMapper {
             @Result(column = "standard_annotation",property = "standardAnnotation"),
             @Result(column = "auto_annotation",property = "autoAnnotation"),
             @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
             @Result(column = "memo",property = "memo")
     })
     List<AnnotationSentenceExercise> listAnnotationSentExerciseByCondition(AnnotationSentenceExercise annotationSentExercise);
@@ -32,6 +33,7 @@ public interface AnnotationSentenceExerciseMapper {
             @Result(column = "standard_annotation",property = "standardAnnotation"),
             @Result(column = "auto_annotation",property = "autoAnnotation"),
             @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
             @Result(column = "memo",property = "memo")
     })
     List<AnnotationSentenceExercise> listAnnotationSentExerciseAll();
@@ -44,6 +46,7 @@ public interface AnnotationSentenceExerciseMapper {
             @Result(column = "standard_annotation",property = "standardAnnotation"),
             @Result(column = "auto_annotation",property = "autoAnnotation"),
             @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
             @Result(column = "memo",property = "memo")
     })
     List<AnnotationSentenceExercise> listAnnotationSentExerciseByIdArr(@Param("idArrTemp") String idArrTemp);
@@ -56,10 +59,13 @@ public interface AnnotationSentenceExerciseMapper {
             @Result(column = "standard_annotation",property = "standardAnnotation"),
             @Result(column = "auto_annotation",property = "autoAnnotation"),
             @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
             @Result(column = "memo",property = "memo")
     })
     AnnotationSentenceExercise  getAnnotationSentExerciseById(@Param("id") int id);
 
 
+    @UpdateProvider(type = AnnotationSentenceExerciseDynamicSqlProvider.class,method = "updateAnnotationSentExercises")
+    void updateAnnotationSentExercises(AnnotationSentenceExercise annotationSentenceExercise);
 
 }

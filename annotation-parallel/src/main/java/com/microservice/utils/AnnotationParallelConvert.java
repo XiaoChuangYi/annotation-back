@@ -7,8 +7,8 @@ import cn.malgo.core.definition.utils.DocumentManipulator;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.microservice.dataAccessLayer.entity.AnnotationParallel;
-import com.microservice.result.AnnotationParallelBratVO;
+import com.microservice.dataAccessLayer.entity.AnnotationAppose;
+import com.microservice.result.AnnotationApposeBratVO;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 
@@ -65,11 +65,11 @@ public class AnnotationParallelConvert {
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
      */
-    public static List<AnnotationParallelBratVO> convert2AnnotationBratVOList(List<AnnotationParallel> annotationList){
-        List<AnnotationParallelBratVO> annotationBratVOList=new LinkedList<>();
-        for(AnnotationParallel annotation:annotationList){
+    public static List<AnnotationApposeBratVO> convert2AnnotationBratVOList(List<AnnotationAppose> annotationList){
+        List<AnnotationApposeBratVO> annotationBratVOList=new LinkedList<>();
+        for(AnnotationAppose annotation:annotationList){
             JSONObject bratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAnnotationText());
-            AnnotationParallelBratVO annotationParallelBratVO=new AnnotationParallelBratVO();
+            AnnotationApposeBratVO annotationParallelBratVO=new AnnotationApposeBratVO();
             BeanUtils.copyProperties(annotation,annotationParallelBratVO);
             annotationParallelBratVO.setBratData(bratJson);
             annotationBratVOList.add(annotationParallelBratVO);
@@ -80,9 +80,9 @@ public class AnnotationParallelConvert {
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
      */
-    public static AnnotationParallelBratVO convert2AnnotationBratVO(AnnotationParallel annotation){
+    public static AnnotationApposeBratVO convert2AnnotationBratVO(AnnotationAppose annotation){
         JSONObject bratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAnnotationText());
-        AnnotationParallelBratVO annotationParallelBratVO=new AnnotationParallelBratVO();
+        AnnotationApposeBratVO annotationParallelBratVO=new AnnotationApposeBratVO();
         BeanUtils.copyProperties(annotation,annotationParallelBratVO);
         annotationParallelBratVO.setBratData(bratJson);
         return annotationParallelBratVO;

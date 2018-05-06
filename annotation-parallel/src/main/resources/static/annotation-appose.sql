@@ -2,7 +2,8 @@ drop table if EXISTS `annotation_appose`;
 create table `annotation_appose`(
 	`id` int UNSIGNED not null auto_increment,
 	`origin_text` text  comment '原始文本',
-	`annotation_text` text comment '标注内容',
+	`annotation_text` text  NOT  NULL  DEFAULT '' comment '标注内容',
+  `final_annotation_text` text NOT  NULL  DEFAULT '' comment '最终标注',
 	`state` varchar(64) DEFAULT '未分配' comment '标注状态',
 	`user_modifier` varchar(32) DEFAULT '' comment '用户id',
 	`gmt_created` timestamp not null Default CURRENT_TIMESTAMP comment '创建时间',

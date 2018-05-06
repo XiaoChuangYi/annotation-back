@@ -11,7 +11,6 @@ import java.util.Date;
 public class AnnotationSentExerciseBratVO {
     private int     id;
 
-    private String     state;
 
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
@@ -23,6 +22,8 @@ public class AnnotationSentExerciseBratVO {
     private int      userModifier;
 
     private String   memo;
+
+    private String state;
 
     private JSONObject autoBratData;
 
@@ -36,6 +37,7 @@ public class AnnotationSentExerciseBratVO {
     public void setId(int id) {
         this.id = id;
     }
+
 
     public String getState() {
         return state;
