@@ -24,6 +24,16 @@ public class UserExercisesService {
     @Autowired
     private  AnnotationSentenceExerciseMapper annotationSentenceExerciseMapper;
 
+    //关联习题集标准答案
+    public Page<UserExercises> listUserExercisesAssociatePaging(int pageIndex,int pageSize,int userModifier,String state){
+        Page<UserExercises> pageInfo= PageHelper.startPage(pageIndex,pageSize);
+        UserExercises paramUserExercises=new UserExercises();
+        paramUserExercises.setState(state);
+        paramUserExercises.setUserModifier(userModifier);
+        userExercisesMapper.queryUserExercisesAssociateAnnotation(paramUserExercises);
+        return pageInfo;
+    }
+
     public Page<UserExercises> listUserExercisesPaging(int pageIndex,int pageSize,int userModifier,String state){
         Page<UserExercises> pageInfo= PageHelper.startPage(pageIndex,pageSize);
         UserExercises paramUserExercises=new UserExercises();

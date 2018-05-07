@@ -240,14 +240,25 @@ public class AnnotationConvert {
         return DocumentManipulator.toBratAnnotations(document);
     }
 
+    /**
+     * @param sourceAnnotation practiceAnnotation
+     * @param targetAnnotation standardAnnotation
+     *
+     **/
     private static boolean compareAnnotation(String sourceAnnotation,String targetAnnotation){
         Document documentSource=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(sourceAnnotation==null?"":sourceAnnotation,documentSource);
         Document documentTarget=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(targetAnnotation==null?"":targetAnnotation,documentTarget);
+        if(documentTarget.getEntities().size()!=documentSource.getEntities().size())
+            return false;
         if(documentTarget.getEntities().size()>0) {
             for (Entity entity : documentTarget.getEntities()) {
-                long num = documentSource.getEntities().stream().filter(x -> x.getType().equals(entity.getType()) && x.getStart() == entity.getStart() && x.getEnd() == entity.getEnd()).count();
+                //练习人员未标注，也直接返回false
+                if(documentSource.getEntities().size()==0)
+                    return false;
+                //练习人员的标注与标准答案作比较，没有匹配到的，则有不一样的标注
+                long num = documentSource.getEntities().stream().filter(x -> x.getType().equals(entity.getType()) && x.getStart() == entity.getStart() && x.getEnd() == entity.getEnd()&&x.getTerm().equals(entity.getTerm())).count();
                 if (num == 0)
                     return false;
             }

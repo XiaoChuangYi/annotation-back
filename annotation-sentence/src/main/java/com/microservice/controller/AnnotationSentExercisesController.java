@@ -66,7 +66,7 @@ public class AnnotationSentExercisesController extends BaseController{
         int pageSize=jsonParam.getIntValue("pageSize");
         int userModifier=jsonParam.getIntValue("userModifier");
         String state=jsonParam.getString("state");
-        Page<UserExercises> pageInfo =userExercisesService.listUserExercisesPaging(pageIndex,pageSize,userModifier,state);
+        Page<UserExercises> pageInfo =userExercisesService.listUserExercisesAssociatePaging(pageIndex,pageSize,userModifier,state);
         List<UserExercisesBratVO> userExercisesBratVOList= AnnotationConvert.convert2UserExercisesBratVOList(pageInfo.getResult());
         PageVO<UserExercisesBratVO> pageVO=new PageVO(pageInfo,false);
         pageVO.setDataList(userExercisesBratVOList);

@@ -14,7 +14,21 @@ import java.util.stream.Collectors;
  */
 public class UserExercisesDynamicSqlProvider {
 
-
+    public String queryUserExercisesAssociateAnnotation(final UserExercises userExercises){
+        return new SQL(){
+            {
+                SELECT("ue.id,ue.origin_text,ue.practice_annotation,ue.state,ue.user_modifier,ue.gmt_created,ue.gmt_modified,ue.memo,ue.anId,ua.account_name,asent.standard_annotation");
+                FROM("user_exercises ue ");
+                INNER_JOIN("user_account ua on ue.user_modifier=ua.id ");
+                INNER_JOIN("annotation_sentence_exercises asent on ue.anId=asent.id ");
+                WHERE("1=1");
+                if(StringUtils.isNotBlank(userExercises.getState()))
+                    WHERE("ue.state=#{state}");
+                if(userExercises.getUserModifier()>0)
+                    WHERE("ue.user_modifier=#{userModifier}");
+            }
+        }.toString();
+    }
 
     public String queryUserExercisesAnnotation(final UserExercises userExercises){
         return new SQL(){

@@ -32,6 +32,23 @@ public interface UserExercisesMapper {
     List<UserExercises> queryUserExercisesAnnotation(UserExercises userExercises);
 
 
+    @SelectProvider(type=UserExercisesDynamicSqlProvider.class,method = "queryUserExercisesAssociateAnnotation")
+    @Results({
+            @Result(id=true,column ="id" ,property = "id"),
+            @Result(column ="origin_text" ,property = "originText"),
+            @Result(column = "standard_annotation",property = "standardAnnotation"),
+            @Result(column = "practice_annotation",property = "practiceAnnotation"),
+            @Result(column = "state",property = "state"),
+            @Result(column = "account_name",property = "accountName"),
+            @Result(column = "user_modifier",property = "userModifier"),
+            @Result(column = "gmt_created",property = "gmtCreated"),
+            @Result(column = "gmt_modified",property = "gmtModified"),
+            @Result(column = "memo",property = "memo"),
+            @Result(column = "anId",property = "anId")
+    })
+    List<UserExercises> queryUserExercisesAssociateAnnotation(UserExercises userExercises);
+
+
 
     @Select("select * from user_exercises where user_modifier=#{userModifier}")
     @Results({
