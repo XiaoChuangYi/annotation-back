@@ -11,8 +11,6 @@ import java.util.Date;
 public class AnnotationSentExerciseBratVO {
     private int     id;
 
-
-
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date gmtCreated;
 

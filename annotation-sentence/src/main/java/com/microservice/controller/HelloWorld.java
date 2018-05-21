@@ -1,5 +1,8 @@
 package com.microservice.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.microservice.result.ResultVO;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,8 +12,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/")
 public class HelloWorld {
+
     @RequestMapping("/hello-world")
-    public String hellowolrd(){
+    public String helloWorld(){
         return "Hello World!";
     }
+
+
+    @RequestMapping(value = "/test-exception")
+    public ResultVO testException(@RequestBody JSONObject jsonParam){
+        String test=jsonParam.getString("test");
+        System.out.println(">>>test:"+test);
+        return ResultVO.success();
+    }
+
 }

@@ -14,6 +14,7 @@ import com.microservice.service.UserExercisesService;
 import com.microservice.utils.AnnotationConvert;
 import com.microservice.vo.AnnotationSentExerciseBratVO;
 import com.microservice.vo.UserExercisesBratVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,7 +59,7 @@ public class AnnotationSentExercisesController extends BaseController{
     }
 
     /**
-     * 指派界面，根据用户Id过滤查询练习员
+     * 根据用户Id过滤查询练习员习题标注
      */
     @RequestMapping(value = "/queryPracticeAnnotationToDistribution.do")
     public ResultVO<PageVO<UserExercisesBratVO>> queryPracticeAnnotationToDistribution(@RequestBody JSONObject jsonParam,@ModelAttribute("userAccount") UserAccount userAccount){
@@ -178,10 +179,12 @@ public class AnnotationSentExercisesController extends BaseController{
         int startPosition=jsonParam.getIntValue("startPosition");
         int endPosition=jsonParam.getIntValue("endPosition");
 
+        if(StringUtils.isBlank(term))
+            return ResultVO.error("选中文本内容为空，无法新增！");
         AnnotationSentenceExercise annotationExercise=annotationSentExercisesService.getAnnotationSentExerciseById(anId);
 
         String newAnnotationSentence = AnnotationConvert.addUnitAnnotation(annotationExercise.getStandardAnnotation(),
-                type, startPosition, endPosition, term);
+                type, startPosition, endPosition, term.trim());
         AnnotationSentExerciseBratVO finalAnnotationExerciseBratVO=updateStandardAnnotation(anId,newAnnotationSentence);
         return ResultVO.success(finalAnnotationExerciseBratVO);
     }
@@ -234,7 +237,8 @@ public class AnnotationSentExercisesController extends BaseController{
         int anId=jsonParam.getIntValue("id");
         int startPosition=jsonParam.getIntValue("startPosition");
         int endPosition=jsonParam.getIntValue("endPosition");
-
+        if(StringUtils.isBlank(term))
+            return ResultVO.error("选中文本内容为空，无法新增！");
         UserExercises annotationExercise=userExercisesService.getUserExercisesById(anId);
         if (annotationExercise.getUserModifier()!=userAccount.getId()) {
             return ResultVO.error("当前用户无法操作ID为'" + anId + "'记录!");

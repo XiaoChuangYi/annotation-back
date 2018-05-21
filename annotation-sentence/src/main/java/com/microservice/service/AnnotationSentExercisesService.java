@@ -9,11 +9,9 @@ import com.microservice.dataAccessLayer.mapper.UserExercisesMapper;
 import com.microservice.enums.AnnotationSentExercisesStateEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Created by cjl on 2018/5/3.
@@ -101,7 +99,6 @@ public class AnnotationSentExercisesService {
 
     public void resetUserExercisesByUserModifier(int userModifier){
         List<UserExercises> userExercisesList=userExercisesMapper.listUserExercisesByUserModifier(userModifier);
-//        List<Integer> anIdList=userExercisesList.stream().map(x->x.getAnId()).collect(Collectors.toList());
         String idTemp=userExercisesList.stream().map(x->"'"+x.getAnId()+"'").collect(Collectors.joining(","));
         List<AnnotationSentenceExercise> annotationSentenceExerciseList =annotationSentenceExerciseMapper.listAnnotationSentExerciseByIdArr(idTemp);
         userExercisesList=convert2UserExercises(annotationSentenceExerciseList,AnnotationSentExercisesStateEnum.INIT.name(),userModifier);
