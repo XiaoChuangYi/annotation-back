@@ -99,6 +99,7 @@ public class AnnotationWordPosExerciseService {
     */
    public void designateAnnotationWordExercise(List<Integer> anIdArr,int userModifier,String state){
       String idTemp=anIdArr.stream().map(x->x.toString()).collect(Collectors.joining(","));
+
       List<UserWordExercise> userExercisesList=userWordExerciseMapper.listUserWordExerciseByUserModifier(userModifier);
       List<AnnotationWordPosExercise> annotationSentenceExerciseList =annotationWordPosExerciseMapper.listAnnotationWordExerciseByIdArr(idTemp);
 
@@ -110,7 +111,6 @@ public class AnnotationWordPosExerciseService {
                iterator.remove();
          }
       }
-//      List<UserWordExercise> finalUserExercisesList=convert2UserExercises(annotationSentenceExerciseList,state,userModifier);
       Date currentDate=new Date();
       List<UserWordExercise> finalUserExercisesList=IntStream.range(0,annotationSentenceExerciseList.size())
               .mapToObj(i->new UserWordExercise(annotationSentenceExerciseList.get(i).getOriginText(),
@@ -128,23 +128,22 @@ public class AnnotationWordPosExerciseService {
 
    public void resetUserExercisesByUserModifier(int userModifier){
       List<UserWordExercise> userExercisesList=userWordExerciseMapper.listUserWordExerciseByUserModifier(userModifier);
-      String idTemp=userExercisesList.stream().map(x->"'"+x.getAnId()+"'").collect(Collectors.joining(","));
-      List<AnnotationWordPosExercise> annotationSentenceExerciseList =annotationWordPosExerciseMapper.listAnnotationWordExerciseByIdArr(idTemp);
-//      userExercisesList=convert2UserExercises(annotationSentenceExerciseList, AnnotationWordPosExerciseStateEnum.INIT.name(),userModifier);
-      Date currentDate=new Date();
-      userExercisesList=IntStream.range(0,annotationSentenceExerciseList.size())
-              .mapToObj(i->new UserWordExercise(annotationSentenceExerciseList.get(i).getOriginText(),
-                      annotationSentenceExerciseList.get(i).getAutoAnnotation(),
-                      AnnotationWordPosExerciseStateEnum.INIT.name(),
-                      userModifier,
-                      currentDate,
-                      currentDate,
-                      annotationSentenceExerciseList.get(i).getId()
-              ))
-              .collect(Collectors.toList());
-      if(userExercisesList.size()>0)
+      if(userExercisesList.size()>0) {
+         String idTemp = userExercisesList.stream().map(x -> "'" + x.getAnId() + "'").collect(Collectors.joining(","));
+         List<AnnotationWordPosExercise> annotationSentenceExerciseList = annotationWordPosExerciseMapper.listAnnotationWordExerciseByIdArr(idTemp);
+         Date currentDate = new Date();
+         userExercisesList = IntStream.range(0, annotationSentenceExerciseList.size())
+                 .mapToObj(i -> new UserWordExercise(annotationSentenceExerciseList.get(i).getOriginText(),
+                         annotationSentenceExerciseList.get(i).getAutoAnnotation(),
+                         AnnotationWordPosExerciseStateEnum.INIT.name(),
+                         userModifier,
+                         currentDate,
+                         currentDate,
+                         annotationSentenceExerciseList.get(i).getId()
+                 ))
+                 .collect(Collectors.toList());
          userWordExerciseMapper.batchUpdateUserWordExerciseUser(userExercisesList);
-
+      }
    }
 
    private List<UserWordExercise> convert2UserExercises(List<AnnotationWordPosExercise> annotationSentenceExerciseList,String state,int userModifier){
