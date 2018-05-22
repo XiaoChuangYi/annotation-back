@@ -1,6 +1,7 @@
 package com.microservice.utils;
 
 import cn.malgo.common.LogUtil;
+import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Document;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.utils.DocumentManipulator;
@@ -8,20 +9,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microservice.apiserver.vo.TermTypeVO;
-//import com.microservice.dataAccessLayer.entity.Annotation;
-import com.microservice.dataAccessLayer.entity.AnnotationWordPos;
+import com.microservice.dataAccessLayer.entity.*;
 import com.microservice.result.AnnotationBratVO;
-import com.microservice.vo.AtomicTermAnnotation;
-import com.microservice.vo.CombineAtomicTerm;
-import com.microservice.vo.TermAnnotationModel;
+import com.microservice.vo.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -40,8 +35,13 @@ public class AnnotationConvert {
      */
     public static JSONObject convertToBratFormat(String originTerm,String annotationData){
         Document document=new Document(originTerm,null);
-        DocumentManipulator.parseBratAnnotations(annotationData,document);
-        return DocumentManipulator.toBratAjaxFormat(document);
+        DocumentManipulator.parseBratAnnotations(annotationData==null?"":annotationData,document);
+        JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
+//        jsonObject.put("relations", IntStream.range(0,document.getEntities().size())
+//                .mapToObj(i->Arrays.asList("R"+(i+1),"relation",
+//                        Arrays.asList(Arrays.asList("source","T"+(i+1)),Arrays.asList("target","T"+(i+2)))))
+//                .collect(Collectors.toList()));
+        return jsonObject;
     }
     /**
      * 将标注数据部分字段转换成前端可以渲染的数据格式
@@ -69,6 +69,104 @@ public class AnnotationConvert {
             annotationBratVO.setBratData(bratJson);
             annotationBratVO.setNewTerms(JSONArray.parseArray(annotation.getNewTerms()));
             return annotationBratVO;
+    }
+
+    /**
+     * 将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static UserWordExerciseBratVO convert2UserExercisesBratVO(UserWordExercise annotation){
+        JSONObject practiceBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getPracticeAnnotation());
+        JSONObject standardBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getStandardAnnotation());
+        UserWordExerciseBratVO annotationSentExerciseBratVO=new UserWordExerciseBratVO();
+        BeanUtils.copyProperties(annotation,annotationSentExerciseBratVO);
+        annotationSentExerciseBratVO.setPracticeBratData(practiceBratJson);
+        annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+        return annotationSentExerciseBratVO;
+    }
+
+
+
+    /**
+     * 将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static AnnotationWordPosExerciseBratVO convert2StandardAnnotationWordBratVO(AnnotationWordPosExercise annotation){
+        JSONObject autoBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getAutoAnnotation());
+        JSONObject standardBratJson=convertToBratFormat(annotation.getOriginText(),annotation.getStandardAnnotation());
+        AnnotationWordPosExerciseBratVO annotationSentExerciseBratVO=new AnnotationWordPosExerciseBratVO();
+        BeanUtils.copyProperties(annotation,annotationSentExerciseBratVO);
+        annotationSentExerciseBratVO.setAutoBratData(autoBratJson);
+        annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+        return annotationSentExerciseBratVO;
+    }
+
+    /**
+     *  将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static List<AnnotationWordPosExerciseBratVO>convert2StandardAnnotationWordBratVOList(List<AnnotationWordPosExercise> annotationSentenceExerciseList){
+        List<AnnotationWordPosExerciseBratVO> annotationSentExerciseBratVOList=new LinkedList<>();
+
+        for(AnnotationWordPosExercise current:annotationSentenceExerciseList){
+            JSONObject autoBratJson=convertToBratFormat(current.getOriginText(),current.getAutoAnnotation());
+            JSONObject standardBratJson=convertToBratFormat(current.getOriginText(),current.getStandardAnnotation());
+            AnnotationWordPosExerciseBratVO annotationSentExerciseBratVO=new AnnotationWordPosExerciseBratVO();
+            BeanUtils.copyProperties(current,annotationSentExerciseBratVO);
+            annotationSentExerciseBratVO.setAutoBratData(autoBratJson);
+            annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+            annotationSentExerciseBratVOList.add(annotationSentExerciseBratVO);
+        }
+        return annotationSentExerciseBratVOList;
+    }
+
+    /**
+     *  将标注数据部分字段转换成前端可以渲染的数据格式
+     */
+    public static List<UserWordExerciseBratVO> convert2UserWordExerciseBratVOList(List<UserWordExercise> userExercisesList){
+        List<UserWordExerciseBratVO> annotationSentExerciseBratVOList=new LinkedList<>();
+
+        for(UserWordExercise current:userExercisesList){
+            JSONObject practiceBratJson=convertToBratFormat(current.getOriginText(),current.getPracticeAnnotation());
+            JSONObject standardBratJson=convertToBratFormat(current.getOriginText(),current.getStandardAnnotation());
+            UserWordExerciseBratVO annotationSentExerciseBratVO=new UserWordExerciseBratVO();
+            BeanUtils.copyProperties(current,annotationSentExerciseBratVO);
+            annotationSentExerciseBratVO.setPracticeBratData(practiceBratJson);
+            annotationSentExerciseBratVO.setStandardBratData(standardBratJson);
+            boolean correct=compareAnnotation(current.getPracticeAnnotation(),current.getStandardAnnotation());
+            if(correct)
+                annotationSentExerciseBratVO.setMemo("正确");
+            else
+                annotationSentExerciseBratVO.setMemo("有问题");
+
+            annotationSentExerciseBratVOList.add(annotationSentExerciseBratVO);
+        }
+        return annotationSentExerciseBratVOList;
+    }
+
+    /**
+     * @param sourceAnnotation practiceAnnotation
+     * @param targetAnnotation standardAnnotation
+     *
+     **/
+    private static boolean compareAnnotation(String sourceAnnotation,String targetAnnotation){
+        Document documentSource=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(sourceAnnotation==null?"":sourceAnnotation,documentSource);
+        Document documentTarget=new Document("",new LinkedList<>());
+        DocumentManipulator.parseBratAnnotations(targetAnnotation==null?"":targetAnnotation,documentTarget);
+        if(documentTarget.getEntities().size()!=documentSource.getEntities().size())
+            return false;
+        if(documentTarget.getEntities().size()>0) {
+            for (Entity entity : documentTarget.getEntities()) {
+                //练习人员未标注，也直接返回false
+                if(documentSource.getEntities().size()==0)
+                    return false;
+                //练习人员的标注与标准答案作比较，没有匹配到的，则有不一样的标注
+                long num = documentSource.getEntities().stream().filter(x -> x.getType().equals(entity.getType()) && x.getStart() == entity.getStart() && x.getEnd() == entity.getEnd()&&x.getTerm().equals(entity.getTerm())).count();
+                if (num == 0)
+                    return false;
+            }
+        }else{
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -157,11 +255,10 @@ public class AnnotationConvert {
     /**
      * 通过lambda实现，更新原先标注中指定的单位标注类型
      * @param oldAnnotation
-     * @param  oldType
      * @param newType
      * @param tag
      */
-    public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String oldType,String newType,String tag){
+    public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String newType,String tag){
         Document document=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         if(document.getEntities().size()>0)

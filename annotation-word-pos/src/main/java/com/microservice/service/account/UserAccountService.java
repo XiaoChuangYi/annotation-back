@@ -2,9 +2,11 @@ package com.microservice.service.account;
 
 import com.microservice.dataAccessLayer.entity.UserAccount;
 import com.microservice.dataAccessLayer.mapper.UserAccountMapper;
+import com.microservice.service.exercise.AnnotationWordPosExerciseService;
 import com.microservice.utils.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -18,10 +20,14 @@ public class UserAccountService {
     @Autowired
     private UserAccountMapper userAccountMapper;
 
+    @Autowired
+    private AnnotationWordPosExerciseService annotationWordPosExerciseService;
+
     public List<UserAccount> listUserAccount(){
         return userAccountMapper.listUserAccount();
     }
 
+    @Transactional
     public void addUserAccount(String accountName ,String password,String role){
         UserAccount userAccount=new UserAccount();
         userAccount.setAccountName(accountName);
@@ -33,6 +39,8 @@ public class UserAccountService {
         userAccount.setGmtCreated(currentDate);
         userAccount.setGmtModified(currentDate);
         userAccountMapper.insertUserAccountSelective(userAccount);
+        if("练习人员".equals(role))
+            annotationWordPosExerciseService.initUserExercises(userAccount.getId());
     }
 
     public void resetUserAccountPassword(String newPassword,int id){

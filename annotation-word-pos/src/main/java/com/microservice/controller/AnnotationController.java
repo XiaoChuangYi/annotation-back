@@ -182,7 +182,7 @@ public class AnnotationController extends BaseController{
         if(!annotation.getModifier().equals(Integer.toString(account.getId())))
             return ResultVO.error("当前用户无权操作该");
 
-        String finalAnnotation=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getFinalAnnotation(),oldType,newType,tag);
+        String finalAnnotation=AnnotationConvert.updateUnitAnnotationTypeByLambda(annotation.getFinalAnnotation(),newType,tag);
 
         //获取原有的新词列表
         String newTermsText = annotation.getNewTerms();
