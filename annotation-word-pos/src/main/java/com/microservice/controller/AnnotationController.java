@@ -15,6 +15,7 @@ import com.microservice.service.annotation.AnnotationBatchService;
 import com.microservice.service.annotation.AnnotationService;
 import com.microservice.utils.AnnotationChecker;
 import com.microservice.utils.AnnotationConvert;
+import com.microservice.utils.AnnotationRelevantConvert;
 import com.microservice.vo.CombineAtomicTerm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -130,7 +131,8 @@ public class AnnotationController extends BaseController{
         paramAnnotation.setNewTerms(newTermStr);
         annotationService.updateAnnotation(paramAnnotation);
         AnnotationWordPos newAnnotation=annotationService.getAnnotationById(anId);
-        AnnotationBratVO annotationBratVO=AnnotationConvert.convert2AnnotationBratVO(newAnnotation);
+//        AnnotationBratVO annotationBratVO=AnnotationConvert.convert2AnnotationBratVO(newAnnotation);
+        AnnotationBratVO annotationBratVO= AnnotationRelevantConvert.convert2AnnotationBratVO(newAnnotation);
         return annotationBratVO;
     }
 

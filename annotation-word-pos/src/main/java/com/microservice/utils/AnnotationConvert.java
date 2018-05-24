@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.microservice.apiserver.vo.TermTypeVO;
 import com.microservice.dataAccessLayer.entity.*;
+import com.microservice.dto.AnnoDocument;
 import com.microservice.result.AnnotationBratVO;
 import com.microservice.vo.*;
 import org.apache.commons.lang.StringUtils;
@@ -37,10 +38,24 @@ public class AnnotationConvert {
         Document document=new Document(originTerm,null);
         DocumentManipulator.parseBratAnnotations(annotationData==null?"":annotationData,document);
         JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
+
 //        jsonObject.put("relations", IntStream.range(0,document.getEntities().size())
 //                .mapToObj(i->Arrays.asList("R"+(i+1),"relation",
 //                        Arrays.asList(Arrays.asList("source","T"+(i+1)),Arrays.asList("target","T"+(i+2)))))
 //                .collect(Collectors.toList()));
+
+//        jsonObject.put("triggers",Arrays.asList(Arrays.asList("T4","CF",Arrays.asList(Arrays.asList(9,11)))
+//                ,Arrays.asList("T5","RelationEvent",Arrays.asList(Arrays.asList(7,9)))));
+//        jsonObject.put("events",Arrays.asList(Arrays.asList("E1","T4",Arrays.asList(Arrays.asList("left","T4"),Arrays.asList("right","T2"))),Arrays.asList("E2","T4",Arrays.asList(Arrays.asList("left","T4"),Arrays.asList("right","T2")))));
+//        jsonObject.put("triggers",IntStream.range(0,document.getEntities().size())
+//                    .mapToObj(i->Arrays.asList(document.getEntities().get(i).getTag(),"RelationEvent",
+//                            Arrays.asList(Arrays.asList(document.getEntities().get(i).getStart()
+//                                    ,document.getEntities().get(i).getEnd())))));
+//        jsonObject.put("events",IntStream.range(0,document.getEntities().size())
+//                    .mapToObj(i->Arrays.asList("E"+(i+1),"T"+(i+1),
+//                            Arrays.asList(Arrays.asList("left","T"+(i+1)),
+//                                    Arrays.asList("right","T"+(i+2)))))
+//                                      .collect(Collectors.toList()));
         return jsonObject;
     }
     /**
@@ -179,7 +194,7 @@ public class AnnotationConvert {
         int num=entityList.size()>0?entityList.stream()
                 .map(x->x.getTag().substring(1,x.getTag().length()))
                 .map(s -> Integer.valueOf(s))
-                .max(Comparator.comparing(Function.identity())).get().intValue():1;
+                .max(Comparator.comparing(Function.identity())).get().intValue():0;
         num++;
         return "T"+num;
     }
@@ -269,18 +284,31 @@ public class AnnotationConvert {
     }
 
     /**
-     *根据tag删除标注中指定的单位标注
+     * 根据tag删除标注中指定的单位标注
+     * 添加relation或者event/trigger关系后，删除单位标签，附带删除与该标签相关的关系(relation)or(event/trigger)
      * @param tag
      * @param oldAnnotation
      */
     public static String deleteUnitAnnotationByLambda(String oldAnnotation,String tag){
-        Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
-        document.setEntities(document.getEntities().stream()
+//        Document document=new Document("",new LinkedList<>());
+//        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+//        document.setEntities(document.getEntities().stream()
+//                .filter(x->!x.getTag().equals(tag))
+//                .collect(Collectors.toList()));
+//        logger.info("删除后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+//        return DocumentManipulator.toBratAnnotations(document);
+        AnnoDocument annoDocument=new AnnoDocument();
+        AnnotationRelevantConvert.parseBratAnnotation(oldAnnotation,annoDocument);
+        //先删除指定的标签
+        annoDocument.setEntities(annoDocument.getEntities().stream()
                 .filter(x->!x.getTag().equals(tag))
                 .collect(Collectors.toList()));
-        logger.info("删除后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
-        return DocumentManipulator.toBratAnnotations(document);
+        //再删除与该标签相关联relation
+        annoDocument.setRelationEntities(annoDocument.getRelationEntities().stream()
+                .filter(x->!x.getTargetTag().equals(tag))
+                .filter(x->!x.getSourceTag().equals(tag))
+                .collect(Collectors.toList()));
+        return AnnotationRelevantConvert.toBratAnnotations(annoDocument);
     }
 
     /**

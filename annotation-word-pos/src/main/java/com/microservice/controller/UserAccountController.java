@@ -68,10 +68,11 @@ public class UserAccountController{
 
         //添加session
         HttpSession httpSession=request.getSession();
+        httpSession.setMaxInactiveInterval(0);
         httpSession.setAttribute("userAccount",userAccountOld);
 
         Cookie cookie=new Cookie("userId",userAccountOld.getId()+userAccountOld.getAccountName());
-        cookie.setMaxAge(1*60*60);
+        cookie.setMaxAge(1*60*60*60);
         cookie.setPath("/");
         response.addCookie(cookie);
 
@@ -85,6 +86,12 @@ public class UserAccountController{
         String accountName=jsonParam.getString("accountName");
         String password=jsonParam.getString("password");
         String role=jsonParam.getString("role");
+        if(StringUtils.isNotBlank(accountName)&&"admin".equals(accountName))
+            return ResultVO.error("无效的用户新增！");
+        UserAccount account=userAccountService.getUserAccountByAccountName(accountName);
+        if(account!=null)
+            return ResultVO.error("新增用户名重复！");
+
         userAccountService.addUserAccount(accountName,password,role);
         return ResultVO.success("成功添加新用户！");
     }
