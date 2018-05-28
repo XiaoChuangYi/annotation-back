@@ -1,5 +1,6 @@
 package com.microservice.utils;
 
+import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.utils.EntityManipulator;
 import com.alibaba.fastjson.JSONArray;
@@ -22,14 +23,13 @@ import java.util.stream.IntStream;
 public class AnnotationRelevantConvert {
 
 
-
     /**
      * 批量将标注数据部分字段装换成前端可以渲染的数据格式
      */
-    public static List<AnnotationBratVO> convert2AnnotationBratVOList(List<AnnotationWordPos> annotationWordPosList){
-        List<AnnotationBratVO> annotationBratVOList=new LinkedList<>();
-        if(annotationWordPosList.size()>0) {
-            for (AnnotationWordPos annotation:annotationWordPosList){
+    public static List<AnnotationBratVO> convert2AnnotationBratVOList(List<AnnotationWordPos> annotationWordPosList) {
+        List<AnnotationBratVO> annotationBratVOList = new LinkedList<>();
+        if (annotationWordPosList.size() > 0) {
+            for (AnnotationWordPos annotation : annotationWordPosList) {
                 JSONObject bratJson = toConvertAnnotation2BratFormat(annotation.getTerm(), annotation.getFinalAnnotation());
                 AnnotationBratVO annotationBratVO = new AnnotationBratVO();
                 BeanUtils.copyProperties(annotation, annotationBratVO);
@@ -60,6 +60,9 @@ public class AnnotationRelevantConvert {
         AnnoDocument annoDocument = new AnnoDocument(text);
         parseBratAnnotation(annotation, annoDocument);
         JSONObject finalJsonObj = toBratAjaxFormat(annoDocument);
+        finalJsonObj.put(BratConst.TOKEN_OFFSET, IntStream.range(0, annoDocument.getText().length())
+                .mapToObj(i -> Arrays.asList(i, i+1))
+                .collect(Collectors.toList()));
         return finalJsonObj;
     }
 
@@ -154,22 +157,28 @@ public class AnnotationRelevantConvert {
         parseBratAnnotation(oldAnnotation, annoDocument);
         Map<String, List<RelationEntity>> map = annoDocument.getRelationEntities().stream()
                 .collect(Collectors.groupingBy(RelationEntity::getSourceTag));
-        for (Map.Entry<String, List<RelationEntity>> entry : map.entrySet()) {
-            Map<String, List<RelationEntity>> innerMap = entry.getValue().stream().collect(Collectors.groupingBy(RelationEntity::getTargetTag));
-            Iterator iterator = innerMap.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, List<RelationEntity>> innerRelationMap = (Map.Entry) iterator.next();
-                if(innerRelationMap.getValue().stream().filter(x->x.getType().equals(newType)).count()>0)
-                    return oldAnnotation;
-            }
-
-        }
         annoDocument.getRelationEntities().stream().forEach(x -> {
             if (x.getTag().equals(rTag)) {
                 x.setType(newType);
             }
         });
+
+        if(annoDocument.getRelationEntities().size()>1&&checkRelationRepetition(annoDocument.getRelationEntities()))
+            return oldAnnotation;
         return toBratAnnotations(annoDocument);
+    }
+    private static boolean checkRelationRepetition(List<RelationEntity> relationEntityList){
+        long count = IntStream.range(0, relationEntityList.size())
+                .filter(i ->
+                        relationEntityList.stream()
+                                .anyMatch(x -> x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
+                                        && x.getTargetTag().equals(relationEntityList.get(i).getTargetTag())
+                                        && x.getType().equals(relationEntityList.get(i).getType()))
+
+                ).count();
+        if(count>0)
+            return true;
+        return false;
     }
 
     /**
@@ -178,31 +187,6 @@ public class AnnotationRelevantConvert {
     public static String updateRelationTag(String oldAnnotation, String rTag, String sourceTag, String targetTag) {
         AnnoDocument annoDocument = new AnnoDocument();
         parseBratAnnotation(oldAnnotation, annoDocument);
-        //加个判断，如果更新后的relation标签和之前的重复了，则不更新
-        if (StringUtils.isNotBlank(sourceTag)) {
-            Map<String, List<RelationEntity>> map = annoDocument.getRelationEntities().stream().collect(Collectors.groupingBy(RelationEntity::getTarget));
-            for (Map.Entry<String, List<RelationEntity>> entry : map.entrySet()) {
-                Map<String, List<RelationEntity>> innerMap = entry.getValue().stream().collect(Collectors.groupingBy(RelationEntity::getType));
-                Iterator it = innerMap.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, List<RelationEntity>> innerRelationMap = (Map.Entry) it.next();
-                    if (innerRelationMap.getValue().stream().filter(x -> x.getSourceTag().equals(sourceTag)).count() > 0)
-                        return oldAnnotation;
-                }
-            }
-        }
-        if (StringUtils.isNotBlank(targetTag)) {
-            Map<String, List<RelationEntity>> map = annoDocument.getRelationEntities().stream().collect(Collectors.groupingBy(RelationEntity::getSource));
-            for (Map.Entry<String, List<RelationEntity>> entry : map.entrySet()) {
-                Map<String, List<RelationEntity>> innerMap = entry.getValue().stream().collect(Collectors.groupingBy(RelationEntity::getType));
-                Iterator it = innerMap.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, List<RelationEntity>> innerRelationMap = (Map.Entry) it.next();
-                    if (innerRelationMap.getValue().stream().filter(x -> x.getTargetTag().equals(targetTag)).count() > 0)
-                        return oldAnnotation;
-                }
-            }
-        }
         annoDocument.getRelationEntities().stream().forEach(x -> {
             if (x.getTag().equals(rTag)) {
                 if (StringUtils.isNotBlank(sourceTag))
@@ -211,6 +195,8 @@ public class AnnotationRelevantConvert {
                     x.setTargetTag(targetTag);
             }
         });
+        if(annoDocument.getRelationEntities().size()>1&&checkRelationRepetition(annoDocument.getRelationEntities()))
+            return oldAnnotation;
         return toBratAnnotations(annoDocument);
     }
 

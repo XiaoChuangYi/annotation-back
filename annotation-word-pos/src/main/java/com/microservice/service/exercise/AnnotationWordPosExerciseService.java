@@ -9,6 +9,7 @@ import com.microservice.dataAccessLayer.entity.UserWordExercise;
 import com.microservice.dataAccessLayer.mapper.AnnotationWordPosExerciseMapper;
 import com.microservice.dataAccessLayer.mapper.UserWordExerciseMapper;
 import com.microservice.enums.AnnotationWordPosExerciseStateEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,18 +73,22 @@ public class AnnotationWordPosExerciseService {
         paramUserExercises.setUserModifier(userModifier);
         List<UserWordExercise> userExercisesList = userWordExerciseMapper.queryUserWordExerciseAnnotation(paramUserExercises);
 
-        List<AnnotationWordPosExercise> finalAnnotationList = new LinkedList<>();
+        List<AnnotationWordPosExercise> finalAnnotationList;
         for (UserWordExercise current : userExercisesList) {
             annotationSentenceExerciseList.stream().filter(x -> x.getId() == current.getAnId())
                     .forEach(k -> {
                         k.setMemo("匹配");
                         k.setState(current.getState());
                     });
-            finalAnnotationList.addAll(annotationSentenceExerciseList.stream().filter(x -> x.getId() == current.getAnId()).collect(Collectors.toList()));
+//            finalAnnotationList.addAll(annotationSentenceExerciseList.stream().filter(x -> x.getId() == current.getAnId()).collect(Collectors.toList()));
+        }
+        if(StringUtils.isNotBlank(state)) {
+            finalAnnotationList = annotationSentenceExerciseList.stream().filter(x -> state.equals(x.getState())).collect(Collectors.toList());
+        }else {
+            finalAnnotationList=annotationSentenceExerciseList;
         }
         int fromIndex = (pageIndex - 1) * pageSize;
         int toIndex = pageIndex * pageSize;
-
         Map finalMap = new HashMap<>();
         if (finalAnnotationList.size() >= fromIndex && finalAnnotationList.size() < toIndex)
             finalMap.put("dataList", finalAnnotationList.subList(fromIndex, finalAnnotationList.size()));

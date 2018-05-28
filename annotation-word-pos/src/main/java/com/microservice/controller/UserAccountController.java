@@ -72,7 +72,7 @@ public class UserAccountController{
         httpSession.setAttribute("userAccount",userAccountOld);
 
         Cookie cookie=new Cookie("userId",userAccountOld.getId()+userAccountOld.getAccountName());
-        cookie.setMaxAge(1*60*60*60);
+        cookie.setMaxAge(1*60*60);
         cookie.setPath("/");
         response.addCookie(cookie);
 

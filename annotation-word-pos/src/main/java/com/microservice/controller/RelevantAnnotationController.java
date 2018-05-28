@@ -80,8 +80,6 @@ public class RelevantAnnotationController {
             return ResultVO.error(check);
         AnnotationWordPos annotationWordPos = annotationService.getAnnotationById(relationUpdate.getAnId());
         String finalAnnotation = AnnotationRelevantConvert.updateRelationAnnotation(annotationWordPos.getFinalAnnotation(), relationUpdate.getrTag(), relationUpdate.getRelation());
-        if (annotationWordPos.getFinalAnnotation().equals(finalAnnotation))
-            return ResultVO.error("关系重复，无法更新关系！");
         AnnotationBratVO annotationBratVO = updateAnnotationReBratVO(relationUpdate.getAnId(), finalAnnotation);
         return ResultVO.success(annotationBratVO);
     }
@@ -96,8 +94,6 @@ public class RelevantAnnotationController {
             return ResultVO.error(check);
         AnnotationWordPos annotationWordPos = annotationService.getAnnotationById(relationTagUpdate.getAnId());
         String finalAnnotation = AnnotationRelevantConvert.updateRelationTag(annotationWordPos.getFinalAnnotation(), relationTagUpdate.getrTag(), relationTagUpdate.getSourceTag(), relationTagUpdate.getTargetTag());
-        if (annotationWordPos.getFinalAnnotation().equals(finalAnnotation))
-            return ResultVO.error("关系重复，无法更新关系！");
         AnnotationBratVO annotationBratVO = updateAnnotationReBratVO(relationTagUpdate.getAnId(), finalAnnotation);
         return ResultVO.success(annotationBratVO);
     }

@@ -255,15 +255,25 @@ public class AnnotationConvert {
     public static String addUnitAnnotationByLambda(String oldAnnotation,String newType,int newStart,
                                                    int newEnd,String newTerm){
         String newTag=getNewTagByLambda(oldAnnotation);
-        Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
-        if(document.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
+//        Document document=new Document("",new LinkedList<>());
+//        DocumentManipulator.parseBratAnnotations(oldAnnotation,document);
+//        if(document.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
+//                &&x.getStart()==newStart&&x.getEnd()==newEnd)
+//                .count()>0){
+//            return oldAnnotation;
+//        }else{
+//            document.getEntities().add(new Entity(newTag,newStart,newEnd,newType,newTerm));
+//            return DocumentManipulator.toBratAnnotations(document);
+//        }
+        AnnoDocument annoDocument=new AnnoDocument();
+        AnnotationRelevantConvert.parseBratAnnotation(oldAnnotation,annoDocument);
+        if(annoDocument.getEntities().stream().filter(x->x.getTerm().equals(newTerm)&&x.getType().equals(newType)
                 &&x.getStart()==newStart&&x.getEnd()==newEnd)
                 .count()>0){
             return oldAnnotation;
         }else{
-            document.getEntities().add(new Entity(newTag,newStart,newEnd,newType,newTerm));
-            return DocumentManipulator.toBratAnnotations(document);
+            annoDocument.getEntities().add(new Entity(newTag,newStart,newEnd,newType,newTerm));
+            return AnnotationRelevantConvert.toBratAnnotations(annoDocument);
         }
     }
 
@@ -274,13 +284,19 @@ public class AnnotationConvert {
      * @param tag
      */
     public static String updateUnitAnnotationTypeByLambda(String oldAnnotation,String newType,String tag){
-        Document document=new Document("",new LinkedList<>());
-        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
-        if(document.getEntities().size()>0)
-            document.getEntities().stream().filter(x->x.getTag().equals(tag))
-                    .forEach(e->e.setType(newType));
-        logger.info("更新后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
-        return DocumentManipulator.toBratAnnotations(document);
+//        Document document=new Document("",new LinkedList<>());
+//        DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
+//        if(document.getEntities().size()>0)
+//            document.getEntities().stream().filter(x->x.getTag().equals(tag))
+//                    .forEach(e->e.setType(newType));
+//        logger.info("更新后的标注："+JSONArray.parseArray(JSON.toJSONString(document.getEntities())));
+//        return DocumentManipulator.toBratAnnotations(document);
+        AnnoDocument annoDocument=new AnnoDocument();
+        AnnotationRelevantConvert.parseBratAnnotation(oldAnnotation==null?"":oldAnnotation,annoDocument);
+        if(annoDocument.getEntities().size()>0)
+            annoDocument.getEntities().stream().filter(x->x.getTag().equals(tag))
+                        .forEach(e->e.setType(newType));
+        return AnnotationRelevantConvert.toBratAnnotations(annoDocument);
     }
 
     /**
