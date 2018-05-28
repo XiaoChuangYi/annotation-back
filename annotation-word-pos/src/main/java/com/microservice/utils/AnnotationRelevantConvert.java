@@ -247,27 +247,27 @@ public class AnnotationRelevantConvert {
                     new Entity((String) null, i, i + 1, (String) null, (String) null)
             ).collect(Collectors.toList());
         }
-        List<Integer> starts = (List) ((Set) tokens.stream().flatMap((e) ->
-                Arrays.asList(new Integer[]{Integer.valueOf(e.getStart()), Integer.valueOf(e.getEnd())}).stream()
-        ).collect(Collectors.toSet())).stream().sorted().collect(Collectors.toList());
-        List<Integer> ends = starts.stream().collect(Collectors.toList());
-        starts.remove(starts.size() - 1);
-        if (starts.size() != 0 && ((Integer) starts.get(0)).intValue() <= 0) {
-            ends.remove(0);
-        } else {
-            starts.add(0, Integer.valueOf(0));
-        }
+//        List<Integer> starts = (List) ((Set) tokens.stream().flatMap((e) ->
+//                Arrays.asList(new Integer[]{Integer.valueOf(e.getStart()), Integer.valueOf(e.getEnd())}).stream()
+//        ).collect(Collectors.toSet())).stream().sorted().collect(Collectors.toList());
+//        List<Integer> ends = starts.stream().collect(Collectors.toList());
+//        starts.remove(starts.size() - 1);
+//        if (starts.size() != 0 && ((Integer) starts.get(0)).intValue() <= 0) {
+//            ends.remove(0);
+//        } else {
+//            starts.add(0, Integer.valueOf(0));
+//        }
+//
+//        if (ends.size() == 0 || ((Integer) ends.get(ends.size() - 1)).intValue() < text.length()) {
+//            ends.add(Integer.valueOf(text.length()));
+//        }
 
-        if (ends.size() == 0 || ((Integer) ends.get(ends.size() - 1)).intValue() < text.length()) {
-            ends.add(Integer.valueOf(text.length()));
-        }
-
-        List<List<Integer>> tokenOffsets = IntStream.range(0, starts.size()).mapToObj((i) ->
-                Arrays.asList(new Integer[]{(Integer) starts.get(i), (Integer) ends.get(i)})
-        ).collect(Collectors.toList());
-        bratJson.put("token_offsets", tokenOffsets.stream().sorted(Comparator.comparing((e) ->
-                (Integer) e.get(0)
-        )).collect(Collectors.toList()));
+//        List<List<Integer>> tokenOffsets = IntStream.range(0, starts.size()).mapToObj((i) ->
+//                Arrays.asList(new Integer[]{(Integer) starts.get(i), (Integer) ends.get(i)})
+//        ).collect(Collectors.toList());
+//        bratJson.put("token_offsets", tokenOffsets.stream().sorted(Comparator.comparing((e) ->
+//                (Integer) e.get(0)
+//        )).collect(Collectors.toList()));
         List<Entity> entities = doc.getEntities().stream().filter((e) ->
                 !e.getType().equals("Sentence")
         ).collect(Collectors.toList());
