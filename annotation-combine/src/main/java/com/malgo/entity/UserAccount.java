@@ -1,5 +1,6 @@
 package com.malgo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,7 +22,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Entity
 public class UserAccount {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
   private String accountName;
   private String password;
@@ -30,9 +31,11 @@ public class UserAccount {
 
   @CreatedDate
   @Column(name = "gmt_created", updatable = false, nullable = false)
+  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
   private Date gmtCreated;
 
   @LastModifiedDate
   @Column(name = "gmt_modified", nullable = false)
+  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
   private Date gmtModified;
 }

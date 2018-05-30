@@ -2,7 +2,10 @@ package com.malgo.service;
 
 
 import com.malgo.entity.UserAccount;
+import com.malgo.request.LoginRequest;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 
 /**
@@ -19,5 +22,7 @@ public interface UserAccountService {
    * 直接查询所有用户
    */
   List<UserAccount> listUserAccount();
+
+  UserAccount login(LoginRequest loginRequest,HttpServletRequest servletRequest,HttpServletResponse servletResponse);
 
 }

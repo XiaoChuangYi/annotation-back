@@ -1,6 +1,5 @@
 package com.malgo.base;
 
-import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
@@ -16,27 +15,27 @@ import org.springframework.stereotype.Component;
  * Created by cjl on 2018/5/30.
  */
 @Component
-public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest,PageVO<UserAccount>> {
+public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest, PageVO<UserAccount>> {
 
-  private final UserAccountRepository userAccountRepository;
 
   private final UserAccountService userAccountService;
 
   @Autowired
-  public ListUserAccountBiz(UserAccountRepository userAccountRepository,
-      UserAccountService userAccountService){
-    this.userAccountRepository=userAccountRepository;
-    this.userAccountService=userAccountService;
+  public ListUserAccountBiz(
+      UserAccountService userAccountService) {
+    this.userAccountService = userAccountService;
   }
 
   @Override
   protected void validateRequest(ListUserAccountRequest listUserAccountRequest)
       throws InvalidInputException {
-    if(!listUserAccountRequest.isAll()) {
-      if (listUserAccountRequest.getPageIndex() < 1)
+    if (!listUserAccountRequest.isAll()) {
+      if (listUserAccountRequest.getPageIndex() < 1) {
         throw new InvalidInputException("invalid-pageIndex", "pageIndex应该大于等于1");
-      if (listUserAccountRequest.getPageSize() <= 0)
+      }
+      if (listUserAccountRequest.getPageSize() <= 0) {
         throw new InvalidInputException("invalid-pageSize", "pageSize应该大于等于1");
+      }
     }
   }
 
@@ -48,17 +47,18 @@ public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest,PageVO<Us
 
   @Override
   protected PageVO<UserAccount> doBiz(ListUserAccountRequest listUserAccountRequest) {
-    PageVO pageVO=new PageVO();
-    if(listUserAccountRequest.isAll()){
-      List<UserAccount> userAccountList=userAccountService.listUserAccount();
+    PageVO pageVO = new PageVO();
+    if (listUserAccountRequest.isAll()) {
+      List<UserAccount> userAccountList = userAccountService.listUserAccount();
       pageVO.setTotal(userAccountList.size());
       pageVO.setDataList(userAccountList);
-    }else {
-      Page page=userAccountService.listUserAccountPaging(listUserAccountRequest.getPageIndex()-1,
-          listUserAccountRequest.getPageSize());
+    } else {
+      Page page = userAccountService
+          .listUserAccountPaging(listUserAccountRequest.getPageIndex() - 1,
+              listUserAccountRequest.getPageSize());
       pageVO.setTotal(page.getTotalElements());
       pageVO.setDataList(page.getContent());
     }
-      return pageVO;
+    return pageVO;
   }
 }
