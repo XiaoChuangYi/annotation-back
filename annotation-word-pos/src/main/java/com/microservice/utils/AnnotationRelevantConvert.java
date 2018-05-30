@@ -155,8 +155,6 @@ public class AnnotationRelevantConvert {
     public static String updateRelationAnnotation(String oldAnnotation, String rTag, String newType) {
         AnnoDocument annoDocument = new AnnoDocument();
         parseBratAnnotation(oldAnnotation, annoDocument);
-        Map<String, List<RelationEntity>> map = annoDocument.getRelationEntities().stream()
-                .collect(Collectors.groupingBy(RelationEntity::getSourceTag));
         annoDocument.getRelationEntities().stream().forEach(x -> {
             if (x.getTag().equals(rTag)) {
                 x.setType(newType);
@@ -171,7 +169,7 @@ public class AnnotationRelevantConvert {
         long count = IntStream.range(0, relationEntityList.size())
                 .filter(i ->
                         relationEntityList.stream()
-                                .anyMatch(x -> x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
+                                .anyMatch(x ->!x.getTag().equals(relationEntityList.get(i).getTag())&&x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
                                         && x.getTargetTag().equals(relationEntityList.get(i).getTargetTag())
                                         && x.getType().equals(relationEntityList.get(i).getType()))
 

@@ -189,13 +189,13 @@ public class AnnotationWordPosDynamicSqlProvider {
                 if(StringUtils.isNotBlank(annotation.getState())){
                     SET("state=#{state}");
                 }
-                if(StringUtils.isNotBlank(annotation.getAutoAnnotation())){
+                if(annotation.getAutoAnnotation()!=null){
                     SET("auto_annotation=#{autoAnnotation}");
                 }
-                if(StringUtils.isNotBlank(annotation.getFinalAnnotation())){
+                if(annotation.getFinalAnnotation()!=null){
                     SET("final_annotation=#{finalAnnotation}");
                 }
-                if(StringUtils.isNotBlank(annotation.getManualAnnotation())){
+                if(annotation.getManualAnnotation()!=null){
                     SET("manual_annotation=#{manualAnnotation}");
                 }
                 if(StringUtils.isNotBlank(annotation.getMemo())){

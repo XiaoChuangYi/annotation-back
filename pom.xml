@@ -35,6 +35,7 @@
 		<module>zuul</module>
 		<module>annotation-negation</module>
 		<module>annotation-parallel</module>
+		<module>annotation-combine</module>
 	</modules>
 
 	<dependencies>

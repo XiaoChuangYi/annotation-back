@@ -29,4 +29,9 @@ public class AppApplicationTests {
 		System.out.println(">>>>>>>>>>>>>>>>>>anAtomicTermList："+ JSON.toJSONString(anAtomicTermList));
 	}
 
+	@Test
+	public void test() {
+		System.out.println(">>>>>>>>>>>>>>>>>>anAtomicTermList：");
+	}
+
 }

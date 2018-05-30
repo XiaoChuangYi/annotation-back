@@ -115,7 +115,7 @@ public class ApiServerService {
 
     /**
      * 由annotation表的原始文本通过ApiServer批量获取预标注
-     * 批量火气病历的预标注
+     * 批量获取病历的预标注
      */
 
     public List<AnnotationWordPos>  batchTokenizePos(List<AnnotationWordPos> originAnnotationList){
@@ -124,13 +124,6 @@ public class ApiServerService {
 
         List<AnnotationOriginTextRequest> annotationOriginTextRequestList=new ArrayList<>();
         for (AnnotationWordPos  annotation:originAnnotationList){
-//            UpdateAnnotationRequest updateAnnotationRequest = new UpdateAnnotationRequest();
-//            updateAnnotationRequest.setText(annotation.getTerm());
-//            updateAnnotationRequest.setId(annotation.getId());
-//            updateAnnotationRequest.setAutoAnnotation(annotation.getAutoAnnotation()==null?"":annotation.getAutoAnnotation());
-//            List<TermTypeVO> termTypeVOList = TermTypeVO.convertFromString(annotation.getNewTerms());
-//            updateAnnotationRequest.setNewTerms(termTypeVOList);
-//            updateAnnotationRequest.setManualAnnotation(annotation.getManualAnnotation());
             AnnotationOriginTextRequest annotationOriginTextRequest=new AnnotationOriginTextRequest();
             annotationOriginTextRequest.setId(annotation.getId());
             annotationOriginTextRequest.setText(annotation.getTerm());

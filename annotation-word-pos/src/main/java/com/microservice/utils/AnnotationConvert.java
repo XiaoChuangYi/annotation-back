@@ -213,7 +213,11 @@ public class AnnotationConvert {
         Document document=new Document("",new LinkedList<>());
         DocumentManipulator.parseBratAnnotations(oldAnnotation==null?"":oldAnnotation,document);
         document.getEntities().stream()
-                .forEach(x->x.setType(x.getType()+"-unconfirmed"));
+                .forEach(x-> {
+                    if (!x.getType().endsWith("-unconfirmed"))
+                        x.setType(x.getType() + "-unconfirmed");
+                    }
+                );
         return DocumentManipulator.toBratAnnotations(document);
     }
 
