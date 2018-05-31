@@ -40,7 +40,7 @@ public interface ApiServerClient {
     /**
      * 根据单个原始文本，获取算法后台对应的标注
      */
-    @RequestMapping(method = RequestMethod.GET ,value = "api/rule-tokenize-pos")
+    @RequestMapping(method = RequestMethod.GET ,value = "/api/rule-tokenize-pos")
     String ruleTokenizePos(@RequestParam("text") String text);
 
     /**

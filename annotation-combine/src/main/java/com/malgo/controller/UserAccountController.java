@@ -47,8 +47,8 @@ public class UserAccountController {
     this.setUserStateBiz=setUserStateBiz;
   }
 
-  @RequestMapping(value = "/user/login",method = RequestMethod.GET)
-  public Response login(LoginRequest loginRequest,HttpServletRequest servletRequest,HttpServletResponse servletResponse){
+  @RequestMapping(value = "/user/login",method = RequestMethod.POST)
+  public Response login(@RequestBody LoginRequest loginRequest,HttpServletRequest servletRequest,HttpServletResponse servletResponse){
     return new Response(userAccountService.login(loginRequest,servletRequest,servletResponse));
   }
 
