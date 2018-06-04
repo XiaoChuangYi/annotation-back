@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
@@ -37,13 +37,16 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
     if (StringUtils.isBlank(addUserAccountRequest.getRole())) {
       throw new InvalidInputException("invalid-role", "用户角色不能为空");
     }
+    if(addUserAccountRequest.getRoleId()==1){
+      throw new InvalidInputException("invalid-role", "用户角色不能为管理员");
+    }
     if ("管理员".equals(addUserAccountRequest.getRole())) {
       throw new InvalidInputException("invalid-role", "用户角色不能为管理员");
     }
   }
 
   @Override
-  protected void authorize(String authToken, AddUserAccountRequest addUserAccountRequest)
+  protected void authorize(int userId, int role, AddUserAccountRequest addUserAccountRequest)
       throws BusinessRuleException {
 
   }
@@ -56,6 +59,7 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
     UserAccount userAccount = new UserAccount();
     userAccount.setAccountName(addUserAccountRequest.getAccountName());
     userAccount.setPassword(addUserAccountRequest.getPassword());
+    userAccount.setRoleId(addUserAccountRequest.getRoleId());
     userAccount.setRole(addUserAccountRequest.getRole());
     userAccount.setState("enable");
     try {

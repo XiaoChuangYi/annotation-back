@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.AutoAnnotationRequest;
+import com.malgo.dto.UpdateAnnotationAlgorithm;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.exception.AlgorithmServiceException;
 import com.malgo.service.AlgorithmApiService;
@@ -32,8 +33,10 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
     this.annotationCombineRepository = annotationCombineRepository;
     this.algorithmApiClient = algorithmApiClient;
   }
+
   @Value("${pro.serverApiUrl}")
   private String algorithmUrl;
+
   @Override
   public List<AutoAnnotation> listAutoAnnotationThroughAlgorithm(int anId) {
     Optional<AnnotationCombine> optional = annotationCombineRepository.findById(anId);
@@ -43,14 +46,15 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
       autoAnnotationRequest.setId(optional.get().getId());
       autoAnnotationRequest.setText(optional.get().getTerm());
       try {
-        log.info("调用算法接口：{}的请求参数：{}",algorithmUrl+"/api/batch-mr-tokenize",
+        log.info("调用算法接口：{}的请求参数：{}", algorithmUrl + "/api/batch-mr-tokenize-pos",
             JSON.toJSONString(Arrays.asList(autoAnnotationRequest)));
         autoAnnotationList = algorithmApiClient
             .listCasePrepareAnnotation(Arrays.asList(autoAnnotationRequest));
-        log.info("调用算法接口：{}的返回结果：{}", algorithmUrl+"/api/batch-mr-tokenize",
+        log.info("调用算法接口：{}的返回结果：{}", algorithmUrl + "/api/batch-mr-tokenize-pos",
             JSON.toJSONString(autoAnnotationList));
       } catch (Exception ex) {
-        log.error("调用算法接口：{}失败，错误原因：{}", algorithmUrl+"/api/batch-mr-tokenize", ex.getLocalizedMessage());
+        log.error("调用算法接口：{}失败，错误原因：{}", algorithmUrl + "/api/batch-mr-tokenize-pos",
+            ex.getLocalizedMessage());
         throw new AlgorithmServiceException("call-algorithm-api-failed", "调用算法后台预标注接口失败");
       }
       return autoAnnotationList;
@@ -58,4 +62,27 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
       return null;
     }
   }
+
+  @Override
+  public List<AutoAnnotation> listRecombineAnnotationThroughAlgorithm(
+      UpdateAnnotationAlgorithm updateAnnotationAlgorithm) {
+    List<AutoAnnotation> autoAnnotationList;
+    try {
+      List<UpdateAnnotationAlgorithm> updateAnnotationAlgorithmList = Arrays
+          .asList(updateAnnotationAlgorithm);
+      log.info("调用算法接口：{}的请求参数：{}", algorithmUrl + "/api/batch-update-tokenize-pos",
+          JSON.toJSONString(updateAnnotationAlgorithmList));
+      autoAnnotationList = algorithmApiClient
+          .batchUpdateAnnotationTokenizePos(updateAnnotationAlgorithmList);
+      log.info("调用算法接口：{}的返回结果：{}", algorithmUrl + "/api/batch-update-tokenize-pos",
+          JSON.toJSONString(autoAnnotationList));
+    } catch (Exception ex) {
+      log.error("调用算法接口：{}失败，错误原因：{}", algorithmUrl + "/api/batch-update-tokenize-pos",
+          ex.getLocalizedMessage());
+      throw new AlgorithmServiceException("call-algorithm-api-failed", "调用算法后台预标注接口失败");
+    }
+    return autoAnnotationList;
+  }
+
+
 }

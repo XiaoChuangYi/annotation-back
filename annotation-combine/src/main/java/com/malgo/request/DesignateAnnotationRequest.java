@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class DesignateAnnotationRequest {
   private int userId;
   private List<Integer> idList;
+  private int task;//0为任务标注，1为练习标注
 }

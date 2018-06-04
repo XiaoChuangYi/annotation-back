@@ -2,6 +2,7 @@ package com.malgo.service;
 
 
 import com.malgo.entity.UserAccount;
+import com.malgo.request.LogOutRequest;
 import com.malgo.request.LoginRequest;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -24,5 +25,7 @@ public interface UserAccountService {
   List<UserAccount> listUserAccount();
 
   UserAccount login(LoginRequest loginRequest,HttpServletRequest servletRequest,HttpServletResponse servletResponse);
+
+  UserAccount logOut(LogOutRequest logOutRequest,HttpServletRequest servletRequest,HttpServletResponse servletResponse);
 
 }

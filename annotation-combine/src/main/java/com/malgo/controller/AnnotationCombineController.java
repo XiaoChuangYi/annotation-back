@@ -1,9 +1,11 @@
 package com.malgo.controller;
 
-import com.malgo.base.DesignateAnnotationBiz;
-import com.malgo.base.GetAnnotationSummaryBiz;
-import com.malgo.base.ListAnnotationBiz;
-import com.malgo.base.RandomDesignateAnnotationBiz;
+import com.malgo.biz.CountAnnotationBiz;
+import com.malgo.biz.DesignateAnnotationBiz;
+import com.malgo.biz.GetAnnotationSummaryBiz;
+import com.malgo.biz.ListAnnotationBiz;
+import com.malgo.biz.RandomDesignateAnnotationBiz;
+import com.malgo.request.CountAnnotationRequest;
 import com.malgo.request.DesignateAnnotationRequest;
 import com.malgo.request.ListAnnotationCombineRequest;
 import com.malgo.request.RandomDesignateAnnotationRequest;
@@ -28,16 +30,19 @@ public class AnnotationCombineController {
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
   private final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz;
+  private final CountAnnotationBiz countAnnotationBiz;
 
 
   public AnnotationCombineController(ListAnnotationBiz listAnnotationBiz,
       DesignateAnnotationBiz designateAnnotationBiz,
       GetAnnotationSummaryBiz getAnnotationSummaryBiz,
-      RandomDesignateAnnotationBiz randomDesignateAnnotationBiz){
+      RandomDesignateAnnotationBiz randomDesignateAnnotationBiz,
+      CountAnnotationBiz countAnnotationBiz){
     this.listAnnotationBiz=listAnnotationBiz;
     this.designateAnnotationBiz=designateAnnotationBiz;
     this.getAnnotationSummaryBiz=getAnnotationSummaryBiz;
     this.randomDesignateAnnotationBiz=randomDesignateAnnotationBiz;
+    this.countAnnotationBiz=countAnnotationBiz;
   }
 
   /**
@@ -45,7 +50,7 @@ public class AnnotationCombineController {
    */
   @RequestMapping(value = "/list-annotation",method = RequestMethod.GET)
   public Response<PageVO<AnnotationCombineBratVO>> listAnnotationCombine(ListAnnotationCombineRequest annotationCombineQuery){
-      return new Response(listAnnotationBiz.process(annotationCombineQuery,null));
+      return new Response(listAnnotationBiz.process(annotationCombineQuery,0,0));
   }
 
   /**
@@ -53,7 +58,7 @@ public class AnnotationCombineController {
    */
   @RequestMapping(value = "/designate-task-annotation",method = RequestMethod.POST)
   public Response designateTaskAnnotation(@RequestBody DesignateAnnotationRequest designateAnnotationRequest){
-    return new Response(designateAnnotationBiz.process(designateAnnotationRequest,null));
+    return new Response(designateAnnotationBiz.process(designateAnnotationRequest,0,0));
   }
 
   /**
@@ -61,7 +66,7 @@ public class AnnotationCombineController {
    */
   @RequestMapping(value = "/random-designate-task-annotation",method =RequestMethod.POST)
   public Response randomDesignateTaskAnnotation(@RequestBody RandomDesignateAnnotationRequest randomDesignateAnnotationRequest){
-    return new Response(randomDesignateAnnotationBiz.process(randomDesignateAnnotationRequest,null));
+    return new Response(randomDesignateAnnotationBiz.process(randomDesignateAnnotationRequest,0,0));
   }
 
   /**
@@ -69,7 +74,15 @@ public class AnnotationCombineController {
    */
   @RequestMapping(value = "get-annotation-summary",method = RequestMethod.GET)
   public Response getAnnotationSummary(){
-    return new Response(getAnnotationSummaryBiz.process(null,null));
+    return new Response(getAnnotationSummaryBiz.process(null,0,0));
+  }
+
+  /**
+   * 根据标注类型，返回指定标注类型的未分配的总条数
+   */
+  @RequestMapping(value = "count-undistributed-annotation",method = RequestMethod.GET)
+  public Response countUnDistributedAnnotation(CountAnnotationRequest countAnnotationRequest){
+    return new Response(countAnnotationBiz.process(countAnnotationRequest,0,0));
   }
 
 }

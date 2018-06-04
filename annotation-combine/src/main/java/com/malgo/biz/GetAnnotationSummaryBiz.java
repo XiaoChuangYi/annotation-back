@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AnnotationSummary;
@@ -30,7 +30,7 @@ public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSumm
   }
 
   @Override
-  protected void authorize(String authToken, Object o) throws BusinessRuleException {
+  protected void authorize(int userId, int role, Object o) throws BusinessRuleException {
 
   }
 

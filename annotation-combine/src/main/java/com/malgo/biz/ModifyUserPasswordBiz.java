@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
@@ -27,15 +27,17 @@ public class ModifyUserPasswordBiz extends BaseBiz<ModifyPasswordRequest,UserAcc
   @Override
   protected void validateRequest(ModifyPasswordRequest modifyPasswordRequest)
       throws InvalidInputException {
-      if(modifyPasswordRequest.getUserId()<=0)
-        throw new InvalidInputException("invalid-userId","无效的用户Id");
-      if(StringUtils.isBlank(modifyPasswordRequest.getPassword()))
-        throw new InvalidInputException("invalid-password","密码为空");
+      if(modifyPasswordRequest.getUserId()<=0) {
+        throw new InvalidInputException("invalid-userId", "无效的用户Id");
+      }
+      if(StringUtils.isBlank(modifyPasswordRequest.getPassword())) {
+        throw new InvalidInputException("invalid-password", "密码为空");
+      }
 
   }
 
   @Override
-  protected void authorize(String authToken, ModifyPasswordRequest modifyPasswordRequest)
+  protected void authorize(int userId, int role, ModifyPasswordRequest modifyPasswordRequest)
       throws BusinessRuleException {
 
   }

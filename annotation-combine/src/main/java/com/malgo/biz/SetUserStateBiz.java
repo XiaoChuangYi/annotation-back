@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
@@ -20,33 +20,36 @@ public class SetUserStateBiz extends BaseBiz<SetUserStateRequest, UserAccount> {
   private final UserAccountRepository userAccountRepository;
 
   @Autowired
-  public SetUserStateBiz(UserAccountRepository userAccountRepository){
-    this.userAccountRepository=userAccountRepository;
+  public SetUserStateBiz(UserAccountRepository userAccountRepository) {
+    this.userAccountRepository = userAccountRepository;
   }
 
   @Override
   protected void validateRequest(SetUserStateRequest setUserStateRequest)
       throws InvalidInputException {
-    if (setUserStateRequest.getUserId() <= 0)
+    if (setUserStateRequest.getUserId() <= 0) {
       throw new InvalidInputException("invalid-userId", "无效的userId");
+    }
 
-    if(StringUtils.isBlank(setUserStateRequest.getCurrentState()))
-      throw new InvalidInputException("invalid-currentState","currentState参数为空");
+    if (StringUtils.isBlank(setUserStateRequest.getCurrentState())) {
+      throw new InvalidInputException("invalid-currentState", "currentState参数为空");
+    }
   }
 
   @Override
-  protected void authorize(String authToken, SetUserStateRequest setUserStateRequest)
+  protected void authorize(int userId, int role, SetUserStateRequest setUserStateRequest)
       throws BusinessRuleException {
 
   }
 
   @Override
   protected UserAccount doBiz(SetUserStateRequest setUserStateRequest) {
-    Optional<UserAccount> optional=userAccountRepository.findById(setUserStateRequest.getUserId());
-    if(optional.isPresent()){
+    Optional<UserAccount> optional = userAccountRepository
+        .findById(setUserStateRequest.getUserId());
+    if (optional.isPresent()) {
       optional.get().setState(setUserStateRequest.getCurrentState());
       return userAccountRepository.save(optional.get());
-    }else {
+    } else {
       return optional.get();
     }
   }

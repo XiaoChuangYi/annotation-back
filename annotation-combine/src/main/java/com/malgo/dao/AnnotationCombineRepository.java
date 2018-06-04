@@ -20,4 +20,8 @@ public interface AnnotationCombineRepository extends JpaRepository<AnnotationCom
   @Query(value = "select ac.state,count(ac.id) as num from annotation_combine ac where ac.is_task=0  group by ac.state",nativeQuery = true)
   List<AnnotationSummary> findByStateGroup();
 
+  Integer countAllByAnnotationTypeInAndStateEquals(List<Integer> annotationTypes,String state);
+
+  Integer countAllByStateIn(String state);
+
 }

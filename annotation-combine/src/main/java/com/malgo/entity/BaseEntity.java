@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString
 @JSONType(ignores = {"createdTime", "modifiedTime"})
 public abstract class BaseEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private int id;
@@ -43,20 +44,31 @@ public abstract class BaseEntity {
   @Column(name = "gmt_modified", nullable = false)
   private Date gmtModified;
 
+  @Setter
+  @Getter
   private String term;
 
   @Setter
+  @Getter
   private String state;
 
   @Setter
+  @Getter
   private int assignee;
 
   @Setter
+  @Getter
   private int creator;
 
   @Setter
+  @Getter
   private int reviewer;
 
   @Setter
+  @Getter
   private double deleteToken;
+
+  @Setter
+  @Getter
+  private int annotationType;
 }

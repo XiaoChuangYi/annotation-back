@@ -15,4 +15,5 @@ public class RandomDesignateAnnotationRequest {
   private List<Integer> userIdList;
   private List<Integer> annotationTypes;
   private int num;
+  private int task;
 }

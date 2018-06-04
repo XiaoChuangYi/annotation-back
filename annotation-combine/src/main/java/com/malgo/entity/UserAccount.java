@@ -28,6 +28,7 @@ public class UserAccount {
   private String password;
   private String role;
   private String state;
+  private int roleId;
 
   @CreatedDate
   @Column(name = "gmt_created", updatable = false, nullable = false)

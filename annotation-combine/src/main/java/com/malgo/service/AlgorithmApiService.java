@@ -1,6 +1,7 @@
 package com.malgo.service;
 
 import com.malgo.dto.AutoAnnotation;
+import com.malgo.dto.UpdateAnnotationAlgorithm;
 import java.util.List;
 
 /**
@@ -8,4 +9,6 @@ import java.util.List;
  */
 public interface AlgorithmApiService {
   List<AutoAnnotation> listAutoAnnotationThroughAlgorithm(int anId);
+
+  List<AutoAnnotation> listRecombineAnnotationThroughAlgorithm(UpdateAnnotationAlgorithm updateAnnotationAlgorithm);
 }

@@ -58,7 +58,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
   }
 
   /**
-   * 条件查询标注习题集
+   * 条件查询标注任务
    */
   @Override
   public Page<AnnotationCombine> listAnnotationCombine(
@@ -75,7 +75,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
   @Override
   public void designateAnnotationCombine(DesignateAnnotationRequest designateAnnotationRequest) {
     List<AnnotationCombine> annotationCombineList = annotationCombineRepository
-        .findAllByIdInAndIsTaskEquals(designateAnnotationRequest.getIdList(),0);
+        .findAllByIdInAndIsTaskEquals(designateAnnotationRequest.getIdList(),designateAnnotationRequest.getTask());
     annotationCombineList.stream().forEach(
         annotationCombine -> {
           annotationCombine.setAssignee(designateAnnotationRequest.getUserId());
@@ -94,7 +94,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
     List<AnnotationCombine> annotationCombineList = annotationCombineRepository
         .findAllByAnnotationTypeInAndStateEqualsAndIsTaskEquals(randomDesignateAnnotationRequest.getAnnotationTypes(),
             AnnotationCombineStateEnum.unDistributed.name()
-            ,PageRequest.of(0,randomDesignateAnnotationRequest.getNum()),0);
+            ,PageRequest.of(0,randomDesignateAnnotationRequest.getNum()),randomDesignateAnnotationRequest.getTask());
 
     //第二步(假)随机更新对应的标注的assignee
     List<Integer> userIdList=randomDesignateAnnotationRequest.getUserIdList();

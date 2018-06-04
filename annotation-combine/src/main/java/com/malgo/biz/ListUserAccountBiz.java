@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.entity.UserAccount;
 import com.malgo.exception.BusinessRuleException;
@@ -40,7 +40,7 @@ public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest, PageVO<U
   }
 
   @Override
-  protected void authorize(String authToken, ListUserAccountRequest listUserAccountRequest)
+  protected void authorize(int userId, int role, ListUserAccountRequest listUserAccountRequest)
       throws BusinessRuleException {
 
   }

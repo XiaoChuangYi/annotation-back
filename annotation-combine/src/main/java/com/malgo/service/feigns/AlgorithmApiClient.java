@@ -1,6 +1,8 @@
 package com.malgo.service.feigns;
 
 import com.malgo.dto.AutoAnnotation;
+import com.malgo.dto.AutoAnnotationRequest;
+import com.malgo.dto.UpdateAnnotationAlgorithm;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
@@ -19,13 +21,13 @@ public interface AlgorithmApiClient {
    * 批量病历预标注
    */
   @RequestMapping(method = RequestMethod.POST,value = "/api/batch-mr-tokenize-pos")
-  List<AutoAnnotation> listCasePrepareAnnotation(@RequestBody List<Object> annotationOriginTextRequestList);
+  List<AutoAnnotation> listCasePrepareAnnotation(@RequestBody List<AutoAnnotationRequest> annotationOriginTextRequestList);
 
 
   /**
    * 批量更新分词和词性标注
    */
   @RequestMapping(method = RequestMethod.POST,value = "/api/batch-update-tokenize-pos")
-  List<Object> batchUpdateAnnotationTokenizePos(@RequestBody List<Object> updateAnnotationRequestList);
+  List<AutoAnnotation> batchUpdateAnnotationTokenizePos(@RequestBody List<UpdateAnnotationAlgorithm> updateAnnotationRequestList);
 
 }

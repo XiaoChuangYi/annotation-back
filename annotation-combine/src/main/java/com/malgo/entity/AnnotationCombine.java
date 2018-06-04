@@ -21,7 +21,6 @@ public class AnnotationCombine extends BaseEntity{
     private String manualAnnotation;
     private String reviewedAnnotation;
     private String state;
-    private int annotationType;
     private int isTask;
 
 }

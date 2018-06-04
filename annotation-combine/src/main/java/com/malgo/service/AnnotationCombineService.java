@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 public interface AnnotationCombineService {
 
   /**
-   * 条件查询标注习题集
+   * 条件查询任务标注
    */
   Page listAnnotationCombine(ListAnnotationCombineRequest listAnnotationCombineRequest);
 

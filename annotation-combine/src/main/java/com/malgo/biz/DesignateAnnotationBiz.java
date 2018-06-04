@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InternalServiceException;
@@ -33,8 +33,8 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest,S
   }
 
   @Override
-  protected void authorize(String authToken, DesignateAnnotationRequest designateAnnotationRequest)
-      throws BusinessRuleException {
+  protected void authorize(int userId, int role,
+      DesignateAnnotationRequest designateAnnotationRequest) throws BusinessRuleException {
 
   }
 

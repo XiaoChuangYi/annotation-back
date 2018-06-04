@@ -19,6 +19,6 @@ public class BusinessRuleException extends MalgoServiceException {
   @Override
   public HttpStatus getStatus() {
     //待定，抛出这个错误在业务逻辑层感觉不合理
-    return HttpStatus.BAD_REQUEST;
+    return HttpStatus.NO_CONTENT;
   }
 }

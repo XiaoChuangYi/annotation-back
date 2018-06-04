@@ -1,4 +1,4 @@
-package com.malgo.base;
+package com.malgo.biz;
 
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
@@ -30,16 +30,21 @@ public class ListAnnotationBiz extends
   @Override
   protected void validateRequest(ListAnnotationCombineRequest listAnnotationCombineRequest)
       throws InvalidInputException {
-    if(listAnnotationCombineRequest.getPageIndex()<1)
+    if(listAnnotationCombineRequest==null){
+      throw new InvalidInputException("invalid-request","无效的请求");
+    }
+    if(listAnnotationCombineRequest.getPageIndex()<1) {
       throw new InvalidInputException("invalid-pageIndex", "pageIndex应该大于等于1");
-    if(listAnnotationCombineRequest.getPageSize()<=0)
+    }
+    if(listAnnotationCombineRequest.getPageSize()<=0) {
       throw new InvalidInputException("invalid-pageSize", "pageSize应该大于等于1");
+    }
 
   }
 
   @Override
-  protected void authorize(String authToken, ListAnnotationCombineRequest listAnnotationCombineRequest)
-      throws BusinessRuleException {
+  protected void authorize(int userId, int role,
+      ListAnnotationCombineRequest listAnnotationCombineRequest) throws BusinessRuleException {
 
   }
 

@@ -11,4 +11,9 @@ public class AnnotationCombineApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AnnotationCombineApplication.class, args);
 	}
+
+//	@Bean
+//	public AddAnnotationAlgorithmBiz<WorSerIm> wordAddAlgorithmBiz() {
+//		return new Al
+//	}
 }

@@ -62,12 +62,12 @@ public class UserAccountController {
       return ResultVO.error("账户不存在！");
     }
 
-    if (!MD5Util.checkPassword(password, userAccountOld.getPassword())) {
-      return ResultVO.error("密码输入错误！");
-    }
+//    if (!MD5Util.checkPassword(password, userAccountOld.getPassword())) {
+//      return ResultVO.error("密码输入错误！");
+//    }
 
-//        if(!password.equals(userAccountOld.getPassword()))
-//            return ResultVO.error("密码输入错误！");
+        if(!password.equals(userAccountOld.getPassword()))
+            return ResultVO.error("密码输入错误！");
 
     if (userAccountOld.getState().equals("disable")) {
       return ResultVO.error("当前用户被冻结，请联系管理员！");

@@ -4,6 +4,7 @@ import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
+import com.malgo.request.LogOutRequest;
 import com.malgo.request.LoginRequest;
 import com.malgo.service.UserAccountService;
 import java.util.List;
@@ -28,6 +29,7 @@ public class UserAccountServiceImpl implements UserAccountService {
   public UserAccountServiceImpl(UserAccountRepository userAccountRepository) {
     this.userAccountRepository = userAccountRepository;
   }
+
   /**
    * 分页查询用户
    */
@@ -35,6 +37,7 @@ public class UserAccountServiceImpl implements UserAccountService {
   public Page<UserAccount> listUserAccountPaging(int pageIndex, int pageSize) {
     return userAccountRepository.findAll(PageRequest.of(pageIndex, pageSize));
   }
+
   /**
    * 直接查询所有用户
    */
@@ -53,9 +56,10 @@ public class UserAccountServiceImpl implements UserAccountService {
       throw new InvalidInputException("invalid-password", "用户密码为空");
     }
 
-    UserAccount param = userAccountRepository.findByAccountNameAndPassword(loginRequest.getAccountName()
-        ,loginRequest.getPassword());
-    if (param==null) {
+    UserAccount param = userAccountRepository
+        .findByAccountNameAndPassword(loginRequest.getAccountName()
+            , loginRequest.getPassword());
+    if (param == null) {
       throw new BusinessRuleException("no-current-account", "当前账户不存在，请联系管理员");
     }
     if ("disable".equals(param.getState())) {
@@ -69,5 +73,18 @@ public class UserAccountServiceImpl implements UserAccountService {
     cookie.setPath("/");
     servletResponse.addCookie(cookie);
     return param;
+  }
+
+  @Override
+  public UserAccount logOut(LogOutRequest logOutRequest, HttpServletRequest servletRequest,
+      HttpServletResponse servletResponse) {
+    HttpSession httpSession = servletRequest.getSession();
+    UserAccount account = (UserAccount) httpSession.getAttribute("userAccount");
+    if (account != null&&account.getId()==logOutRequest.getUserId()) {
+      httpSession.setAttribute("userAccount",null);
+    }else {
+      throw new BusinessRuleException("current-user-not-login","当前用户并未登录");
+    }
+    return account;
   }
 }
