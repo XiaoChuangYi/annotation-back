@@ -42,7 +42,7 @@ public class RelationOperateServiceFinalImpl implements RelationOperateService {
     if(optional.isPresent()){
       AnnotationCombine annotationCombine=optional.get();
       String annotation=AnnotationConvert.updateRelationAnnotation(annotationCombine.getFinalAnnotation(),
-          updateRelationRequest.getRTag(),updateRelationRequest.getRelation());
+          updateRelationRequest.getReTag(),updateRelationRequest.getRelation());
       return annotation;
     }
     return "";
@@ -54,7 +54,7 @@ public class RelationOperateServiceFinalImpl implements RelationOperateService {
     if(optional.isPresent()){
       AnnotationCombine annotationCombine=optional.get();
       String annotation=AnnotationConvert.deleteRelationsAnnotation(annotationCombine.getFinalAnnotation(),
-          deleteRelationRequest.getRTag());
+          deleteRelationRequest.getReTag());
       return annotation;
     }
     return "";

@@ -35,7 +35,7 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
     if(optional.isPresent()){
       AnnotationCombine annotationCombine=optional.get();
       String newAnnotation=AnnotationConvert.addEntitiesAnnotation(annotationCombine.getFinalAnnotation()
-          ,addAnnotationRequest.getAnnotationType(),addAnnotationRequest.getStartPosition()
+          ,addAnnotationRequest.getType(),addAnnotationRequest.getStartPosition()
           ,addAnnotationRequest.getEndPosition(),addAnnotationRequest.getTerm()
           );
       return newAnnotation;

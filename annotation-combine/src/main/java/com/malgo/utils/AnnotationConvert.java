@@ -37,31 +37,31 @@ public class AnnotationConvert {
   /**
    * 查询，将字符串形式的格式转换成前端可以渲染的jsonObject
    */
-  public static JSONObject convertAnnotation2BratFormat(String text, String annotation) {
+  public static JSONObject convertAnnotation2BratFormat(String text, String annotation,int annotationType) {
     AnnotationDocument annotationDocument = new AnnotationDocument(text);
     AnnotationDocumentManipulator
         .parseBratAnnotation(annotation == null ? "" : annotation, annotationDocument);
     JSONObject finalJsonObj = AnnotationDocumentManipulator.toBratAjaxFormat(annotationDocument);
-    List<Integer> endPositionList = annotationDocument.getEntities().stream()
-        .filter(x -> !x.getType().endsWith("-deleted"))
-        .map(x -> x.getEnd()).sorted().collect(Collectors.toList());
+    if(annotationType==1) {//分句
+      List<Integer> endPositionList = annotationDocument.getEntities().stream()
+          .filter(x -> !x.getType().endsWith("-deleted"))
+          .map(x -> x.getEnd()).sorted().collect(Collectors.toList());
+      List<Integer> startPositionList = endPositionList.stream().collect(Collectors.toList());
+      if (endPositionList.size() == 0
+          || endPositionList.get(endPositionList.size() - 1) < annotationDocument.getText()
+          .length()) {
+        endPositionList.add(annotationDocument.getText().length());
+      } else {
+        startPositionList.remove(startPositionList.size() - 1);
+      }
+      if (startPositionList.size() == 0 || startPositionList.get(0) != 0) {
 
-    List<Integer> startPositionList = endPositionList.stream().collect(Collectors.toList());
-    if (endPositionList.size() == 0
-        || endPositionList.get(endPositionList.size() - 1) < annotationDocument.getText()
-        .length()) {
-      endPositionList.add(annotationDocument.getText().length());
-    } else {
-      startPositionList.remove(startPositionList.size() - 1);
+        startPositionList.add(0, 0);
+      }
+      finalJsonObj.put(BratConst.SENTENCE_OFFSET, IntStream.range(0, endPositionList.size())
+          .mapToObj(i -> Arrays.asList(startPositionList.get(i), endPositionList.get(i)))
+          .collect(Collectors.toList()));
     }
-    if (startPositionList.size() == 0 || startPositionList.get(0) != 0) {
-
-      startPositionList.add(0, 0);
-    }
-    //todo,其它标注任务在展示时或许会有问题？？！
-    finalJsonObj.put(BratConst.SENTENCE_OFFSET, IntStream.range(0, endPositionList.size())
-        .mapToObj(i -> Arrays.asList(startPositionList.get(i), endPositionList.get(i)))
-        .collect(Collectors.toList()));
     return finalJsonObj;
   }
 
@@ -72,7 +72,7 @@ public class AnnotationConvert {
   public static ExerciseAnnotationBratVO convert2ExerciseAnnotationBratVO(
       UserExercise userExercise) {
     JSONObject bratJson = convertAnnotation2BratFormat(userExercise.getTerm(),
-        userExercise.getUserAnnotation());
+        userExercise.getUserAnnotation(),userExercise.getAnnotationType());
     ExerciseAnnotationBratVO exerciseAnnotationBratVO = new ExerciseAnnotationBratVO();
     BeanUtils.copyProperties(userExercise, exerciseAnnotationBratVO);
     exerciseAnnotationBratVO.setFinalJson(bratJson);
@@ -85,9 +85,9 @@ public class AnnotationConvert {
   public static AnnotationCombineBratVO convert2AnnotationCombineBratVO(
       AnnotationCombine annotationCombine) {
     JSONObject finalBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
-        annotationCombine.getFinalAnnotation());
+        annotationCombine.getFinalAnnotation(),annotationCombine.getAnnotationType());
     JSONObject reviewedBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
-        annotationCombine.getReviewedAnnotation());
+        annotationCombine.getReviewedAnnotation(),annotationCombine.getAnnotationType());
     AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
     BeanUtils.copyProperties(annotationCombine, annotationCombineBratVO);
     annotationCombineBratVO.setFinalAnnotation(finalBratJson);
@@ -104,9 +104,9 @@ public class AnnotationConvert {
     if (annotationCombineList.size() > 0) {
       for (AnnotationCombine annotation : annotationCombineList) {
         JSONObject finalBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
-            annotation.getFinalAnnotation());
+            annotation.getFinalAnnotation(),annotation.getAnnotationType());
         JSONObject reviewedBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
-            annotation.getReviewedAnnotation());
+            annotation.getReviewedAnnotation(),annotation.getAnnotationType());
         AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
         BeanUtils.copyProperties(annotation, annotationCombineBratVO);
         annotationCombineBratVO.setFinalAnnotation(finalBratJson);
@@ -152,7 +152,8 @@ public class AnnotationConvert {
    */
   public static String getRelationNewTag(String oldAnnotation) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     List<RelationEntity> relationEntityList = annotationDocument.getRelationEntities();
     int num = relationEntityList.size() > 0 ? relationEntityList.stream()
         .map(x -> x.getTag().substring(1, x.getTag().length()))
@@ -164,7 +165,8 @@ public class AnnotationConvert {
 
   public static String getEntityNewTag(String oldAnnotation) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     List<Entity> entityList = annotationDocument.getEntities();
     int num = entityList.size() > 0 ? entityList.stream()
         .map(x -> x.getTag().substring(1, x.getTag().length()))
@@ -198,7 +200,8 @@ public class AnnotationConvert {
       int endPosition, String term) {
     String newTag = getEntityNewTag(oldAnnotation);
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     if (annotationDocument.getEntities().stream()
         .filter(x -> x.getTerm().equals(term) && x.getType().equals(type)
             && x.getStart() == startPosition && x.getEnd() == endPosition)
@@ -217,16 +220,25 @@ public class AnnotationConvert {
   public static String deleteEntitiesAnnotation(String oldAnnotation, String tag) {
 
     AnnotationDocument annoDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annoDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annoDocument);
     //先删除指定的标签
-    annoDocument.setEntities(annoDocument.getEntities().stream()
+    List<Entity> entityList=annoDocument.getEntities().stream()
         .filter(x -> !x.getTag().equals(tag))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
+    IntStream.range(0,entityList.size()).forEach(i->
+        entityList.get(i).setTag("T"+(i+1))
+    );
+    annoDocument.setEntities(entityList);
     //再删除与该标签相关联relation
-    annoDocument.setRelationEntities(annoDocument.getRelationEntities().stream()
+    List<RelationEntity> relationEntityList=annoDocument.getRelationEntities().stream()
         .filter(x -> !x.getTargetTag().equals(tag))
         .filter(x -> !x.getSourceTag().equals(tag))
-        .collect(Collectors.toList()));
+        .collect(Collectors.toList());
+    IntStream.range(0,relationEntityList.size()).forEach(i->
+        relationEntityList.get(i).setTag("R"+(i+1))
+    );
+    annoDocument.setRelationEntities(relationEntityList);
     //todo,后期加入events/triggers，同时删除events关联相关标签的关系
     return AnnotationDocumentManipulator.toBratAnnotations(annoDocument);
   }
@@ -236,7 +248,8 @@ public class AnnotationConvert {
    */
   public static String updateEntitiesAnnotation(String oldAnnotation, String tag, String newType) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     annotationDocument.getEntities().stream()
         .forEach(x -> {
           if (x.getTag().equals(tag)) {
@@ -253,7 +266,8 @@ public class AnnotationConvert {
       String targetTag, String type) {
     String maxTag = getRelationNewTag(oldAnnotation);
     AnnotationDocument annoDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annoDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annoDocument);
     if (annoDocument.getRelationEntities().stream()
         .filter(x -> x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag) && x
             .getType().equals(type))
@@ -271,9 +285,15 @@ public class AnnotationConvert {
    */
   public static String deleteRelationsAnnotation(String oldAnnotation, String rTag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
-    annotationDocument.setRelationEntities(annotationDocument.getRelationEntities().stream()
-        .filter(x -> x.getTag().equals(rTag)).collect(Collectors.toList()));
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    List<RelationEntity> relationEntityList=annotationDocument.getRelationEntities().stream()
+        .filter(x -> !x.getTag().equals(rTag))
+        .collect(Collectors.toList());
+    IntStream.range(0,relationEntityList.size()).forEach(i->
+      relationEntityList.get(i).setTag("R"+(i+1))
+    );
+    annotationDocument.setRelationEntities(relationEntityList);
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
@@ -282,7 +302,8 @@ public class AnnotationConvert {
    */
   public static String updateRelationAnnotation(String oldAnnotation, String rTag, String type) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     annotationDocument.getRelationEntities().stream().forEach(x -> {
       if (x.getTag().equals(rTag)) {
         x.setType(type);
@@ -300,7 +321,8 @@ public class AnnotationConvert {
     long count = IntStream.range(0, relationEntityList.size())
         .filter(i ->
             relationEntityList.stream()
-                .anyMatch(x -> x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
+                .anyMatch(x -> !x.getTag().equals(relationEntityList.get(i).getTag())
+                    &&x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
                     && x.getTargetTag().equals(relationEntityList.get(i).getTargetTag())
                     && x.getType().equals(relationEntityList.get(i).getType()))
 
@@ -318,7 +340,8 @@ public class AnnotationConvert {
   public static String updateRelationTag(String oldAnnotation, String rTag, String sourceTag,
       String targetTag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(oldAnnotation, annotationDocument);
+    AnnotationDocumentManipulator
+        .parseBratAnnotation(oldAnnotation == null ? oldAnnotation : "", annotationDocument);
     //加个判断，如果更新后的relation标签和之前的重复了，则不更新
     annotationDocument.getRelationEntities().stream().forEach(x -> {
       if (x.getTag().equals(rTag)) {

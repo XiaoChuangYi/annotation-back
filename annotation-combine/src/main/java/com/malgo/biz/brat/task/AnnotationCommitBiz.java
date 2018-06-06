@@ -15,7 +15,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.CommitAnnotationRequest;
 import com.malgo.service.AlgorithmApiService;
 import com.malgo.utils.AnnotationConvert;
-import java.util.Arrays;
+import com.malgo.utils.OpLoggerUtil;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +34,8 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AlgorithmApiService algorithmApiService;
   private final AtomicTermRepository atomicTermRepository;
+  private int globalRole;
+  private int globalUserId;
 
   @Autowired
   public AnnotationCommitBiz(AlgorithmApiService algorithmApiService,
@@ -55,20 +57,27 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       throw new InvalidInputException("invalid-id", "无效的id");
     }
     if (StringUtils.isBlank(commitAnnotationRequest.getAutoAnnotation())) {
-      throw new InvalidInputException("invalid-autoAnnotation", "参数autoAnnotation无效！");
+      throw new InvalidInputException("invalid-auto-annotation", "参数autoAnnotation为空");
     }
-
   }
 
   @Override
   protected void authorize(int userId, int role, CommitAnnotationRequest commitAnnotationRequest)
       throws BusinessRuleException {
-    if(role>2) {
+    globalRole = role;
+    globalUserId = userId;
+    if (role > 2) {
       Optional<AnnotationCombine> optional = annotationCombineRepository
           .findById(commitAnnotationRequest.getId());
       if (optional.isPresent()) {
-        if (userId != optional.get().getAssignee()) {
+        AnnotationCombine annotationCombine = optional.get();
+        if (userId != annotationCombine.getAssignee()) {
           throw new BusinessRuleException("no-permission-commit-current-record", "当前用户没有权限提交该条记录");
+        }
+        if (annotationCombine.getAnnotationType() == 0) {
+          if (StringUtils.isBlank(commitAnnotationRequest.getAutoAnnotation())) {
+            throw new InvalidInputException("invalid-autoAnnotation", "参数autoAnnotation为空！");
+          }
         }
       }
     }
@@ -80,36 +89,52 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         .findById(commitAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String manualAnnotation = annotationCombine.getManualAnnotation();
-      List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(manualAnnotation);
-      List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
-      Iterator<Entity> iterator = entities.iterator();
-      while (iterator.hasNext()) {
-        Entity current = iterator.next();
-        if (atomicTermList.stream()
-            .filter(atomicTerm -> current.getType().equals(atomicTerm.getAnnotationType())
-                && current.getTerm().equals(atomicTerm.getTerm())).count() > 0) {
-          iterator.remove();
+      if (annotationCombine.getAnnotationType() == 0) {//分词标注提交
+        String manualAnnotation = annotationCombine.getManualAnnotation();
+        List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(manualAnnotation);
+        List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
+        Iterator<Entity> iterator = entities.iterator();
+        while (iterator.hasNext()) {
+          Entity current = iterator.next();
+          if (atomicTermList.stream()
+              .filter(atomicTerm -> current.getType().equals(atomicTerm.getAnnotationType())
+                  && current.getTerm().equals(atomicTerm.getTerm())).count() > 0) {
+            iterator.remove();
+          }
         }
+        //todo,当然还有其它的过滤规则
+        UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
+        updateAnnotationAlgorithm.setId(commitAnnotationRequest.getId());
+        updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());
+        updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
+        updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
+        if (entities.size() > 0) {
+          List<NewTerm> newTermList = IntStream.range(0, entities.size())
+              .mapToObj((int i) -> new NewTerm(entities.get(i).getTerm(), entities.get(i).getType())
+              ).collect(Collectors.toList());
+          updateAnnotationAlgorithm.setNewTerms(newTermList);
+          List<AtomicTerm> atomicTerms = IntStream.range(0, entities.size())
+              .mapToObj(
+                  (int i) -> new AtomicTerm(entities.get(i).getTerm(), entities.get(i).getType(),
+                      commitAnnotationRequest.getId())
+              ).collect(Collectors.toList());
+          atomicTermRepository.saveAll(atomicTerms);
+        }
+        List<AutoAnnotation> autoAnnotationList = algorithmApiService
+            .listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+        annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
+        annotationCombine.setFinalAnnotation(autoAnnotationList.get(0).getAnnotation());
+        annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
+        annotationCombineRepository.save(annotationCombine);
+      } else {
+        //分句，关联提交
+        annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
+        annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
+        annotationCombineRepository.save(annotationCombine);
       }
-      //todo,当然还有其它的过滤规则
-      UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
-      updateAnnotationAlgorithm.setId(commitAnnotationRequest.getId());
-      updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());
-      updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
-      updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
-      if (entities.size() > 0) {
-        List<NewTerm> newTermList = IntStream.range(0, entities.size())
-            .mapToObj((int i) -> new NewTerm(entities.get(i).getTerm(), entities.get(i).getType())
-            ).collect(Collectors.toList());
-        updateAnnotationAlgorithm.setNewTerms(newTermList);
-      }
-      List<AutoAnnotation> autoAnnotationList = algorithmApiService
-          .listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
-      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-      annotationCombine.setFinalAnnotation(autoAnnotationList.get(0).getAnnotation());
-      annotationCombineRepository.save(annotationCombine);
+      OpLoggerUtil.info(globalUserId, globalRole, "commit-annotation", "success");
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "commit-annotation", "无对应id记录");
     return null;
   }
 }

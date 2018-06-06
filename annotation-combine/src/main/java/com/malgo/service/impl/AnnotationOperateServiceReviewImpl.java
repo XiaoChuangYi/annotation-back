@@ -32,7 +32,7 @@ public class AnnotationOperateServiceReviewImpl implements AnnotationOperateServ
     if(optional.isPresent()){
       AnnotationCombine annotationCombine=optional.get();
       String newAnnotation= AnnotationConvert.addEntitiesAnnotation(annotationCombine.getReviewedAnnotation()
-          ,addAnnotationRequest.getAnnotationType(),addAnnotationRequest.getStartPosition()
+          ,addAnnotationRequest.getType(),addAnnotationRequest.getStartPosition()
           ,addAnnotationRequest.getEndPosition(),addAnnotationRequest.getTerm()
       );
       return newAnnotation;

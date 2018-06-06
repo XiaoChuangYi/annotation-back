@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeleteRelationRequest {
     private int id;
-    private String rTag;
+    private String reTag;
 }

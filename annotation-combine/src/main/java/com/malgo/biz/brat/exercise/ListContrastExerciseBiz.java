@@ -45,8 +45,14 @@ public class ListContrastExerciseBiz extends
     if (listExerciseContrastRequest == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
+    if (listExerciseContrastRequest.getPageIndex() < 1) {
+      throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
+    }
+    if (listExerciseContrastRequest.getPageSize() <= 0) {
+      throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
+    }
     if (listExerciseContrastRequest.getUserId() <= 0) {
-      throw new InvalidInputException("invalid-userId", "无效的userId");
+      throw new InvalidInputException("invalid-user-id", "无效的userId");
     }
   }
 
@@ -59,14 +65,19 @@ public class ListContrastExerciseBiz extends
   @Override
   protected PageVO<ExerciseAnnotationContrastBratVO> doBiz(
       ListExerciseContrastRequest listExerciseContrastRequest) {
+
+    listExerciseContrastRequest.setPageIndex(listExerciseContrastRequest.getPageIndex()-1);
+
     Page<UserExercise> page = userExerciseRepository
-        .findAllByAssigneeEquals(listExerciseContrastRequest.getUserId(),
+        .findUserExercisesByAssigneeEquals(listExerciseContrastRequest.getUserId(),
             PageRequest.of(listExerciseContrastRequest.getPageIndex(),
                 listExerciseContrastRequest.getPageSize()));
+
     List<UserExercise> userExerciseList = page.getContent();
     List<Integer> anIdList = userExerciseList.stream()
         .map(userExercise -> userExercise.getAnnotationId())
         .collect(Collectors.toList());
+
     List<AnnotationCombine> annotationCombineList = annotationCombineRepository
         .findAllByIdInAndIsTaskEquals(anIdList, 1);
     Map<Integer, String> map = new HashMap<>();
@@ -75,16 +86,19 @@ public class ListContrastExerciseBiz extends
         map.put(annotationCombineList.get(i).getId(),
             annotationCombineList.get(i).getReviewedAnnotation())
     );
+
     List<ExerciseAnnotationContrastBratVO> exerciseAnnotationContrastBratVOList = new LinkedList<>();
     for (UserExercise current : userExerciseList) {
       ExerciseAnnotationContrastBratVO exerciseAnnotationContrastBratVO = new ExerciseAnnotationContrastBratVO();
       BeanUtils.copyProperties(current, exerciseAnnotationContrastBratVO);
       JSONObject userJson = AnnotationConvert
-          .convertAnnotation2BratFormat(current.getTerm(), current.getUserAnnotation());
+          .convertAnnotation2BratFormat(current.getTerm(), current.getUserAnnotation(),
+              current.getAnnotationType());
       exerciseAnnotationContrastBratVO.setUserAnnotation(userJson);
 
       JSONObject standardJson = AnnotationConvert
-          .convertAnnotation2BratFormat(current.getTerm(), map.get(current.getAnnotationId()));
+          .convertAnnotation2BratFormat(current.getTerm(), map.get(current.getAnnotationId()),
+              current.getAnnotationType());
       exerciseAnnotationContrastBratVO.setStandardAnnotation(standardJson);
 
       boolean result = AnnotationConvert

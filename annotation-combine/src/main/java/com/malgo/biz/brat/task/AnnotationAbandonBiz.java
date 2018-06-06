@@ -7,6 +7,7 @@ import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
+import com.malgo.utils.OpLoggerUtil;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Component;
 public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public AnnotationAbandonBiz(AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
@@ -37,13 +40,16 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
   @Override
   protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {
       Optional<AnnotationCombine> optional = annotationCombineRepository
           .findById(annotationStateRequest.getId());
       if (optional.isPresent()) {
         AnnotationCombine annotationCombine = optional.get();
-        if(userId!=annotationCombine.getAssignee())
-          throw new BusinessRuleException("no-permission-handle-current-record","当前用户没有权限操作该条记录！");
+        if (userId != annotationCombine.getAssignee()) {
+          throw new BusinessRuleException("no-permission-handle-current-record", "当前用户没有权限操作该条记录！");
+        }
         if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation)
             || annotationCombine.getState()
             .equals(AnnotationCombineStateEnum.annotationProcessing)) {
@@ -62,6 +68,7 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.abandon.name());
       annotationCombineRepository.save(annotationCombine);
+      OpLoggerUtil.info(globalUserId, globalRole, "abandon-annotation", "success");
     }
     return null;
   }

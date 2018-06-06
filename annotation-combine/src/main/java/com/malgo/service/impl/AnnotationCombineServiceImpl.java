@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 import javax.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +43,14 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
           predicates.add(criteriaBuilder.equal(root.get("isTask"),0));
+          if(param.getIdList()!=null&&param.getIdList().size()>0){
+            predicates.add(
+                criteriaBuilder.in(root.get("id")).value(param.getIdList()));
+          }
+          if(StringUtils.isNotBlank(param.getTerm())){
+            predicates.add(
+                criteriaBuilder.like(root.get("term"),"%"+param.getTerm()+"%"));
+          }
           if (param.getAnnotationTypes() != null && param.getAnnotationTypes().size() > 0) {
             predicates.add(
                 criteriaBuilder.in(root.get("annotationType")).value(param.getAnnotationTypes()));

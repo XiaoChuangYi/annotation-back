@@ -1,6 +1,7 @@
 package com.malgo.dao;
 
 import com.malgo.dto.AnnotationExercise;
+import com.malgo.dto.AnnotationSummary;
 import com.malgo.entity.UserExercise;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -18,8 +19,11 @@ public interface UserExerciseRepository extends JpaRepository<UserExercise, Inte
   @Query(value = "SELECT count(id) as num,annotation_id from user_exercise GROUP BY annotation_id",nativeQuery = true)
   List<AnnotationExercise> findByAnnotationId();
 
+  @Query(value = "SELECT count(id) as num,state from user_exercise WHERE 1=1 AND assignee=1? GROUP BY state",nativeQuery = true)
+  List<AnnotationSummary> findByAssigneeAndStateGroup(int assignee);
+
   List<UserExercise> findAllByAssigneeEquals(int assignee);
 
-  Page<UserExercise> findAllByAssigneeEquals(int assignee,Pageable pageable);
+  Page<UserExercise> findUserExercisesByAssigneeEquals(int assignee,Pageable pageable);
 
 }

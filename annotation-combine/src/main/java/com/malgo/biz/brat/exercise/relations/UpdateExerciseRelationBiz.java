@@ -42,7 +42,7 @@ public class UpdateExerciseRelationBiz extends BaseBiz<UpdateRelationRequest,Exe
     if (updateRelationRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }
-    if (StringUtils.isBlank(updateRelationRequest.getRTag())) {
+    if (StringUtils.isBlank(updateRelationRequest.getReTag())) {
       throw new InvalidInputException("invalid-rTag", "参数rTag为空");
     }
     if (StringUtils.isBlank(updateRelationRequest.getRelation())) {

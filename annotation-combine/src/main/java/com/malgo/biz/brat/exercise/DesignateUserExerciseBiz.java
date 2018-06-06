@@ -38,7 +38,10 @@ public class DesignateUserExerciseBiz extends BaseBiz<DesignateAnnotationRequest
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
     if (designateAnnotationRequest.getUserId() <= 0) {
-      throw new InvalidInputException("invalid-userId", "无效的userId");
+      throw new InvalidInputException("invalid-user-id", "无效的userId");
+    }
+    if(designateAnnotationRequest.getIdList()==null&&designateAnnotationRequest.getIdList().size()==0){
+      throw new InvalidInputException("invalid-id-list","idList为空");
     }
   }
 
@@ -70,6 +73,7 @@ public class DesignateUserExerciseBiz extends BaseBiz<DesignateAnnotationRequest
     IntStream.range(0, annotationCombineList.size()).forEach((int i) -> {
           final UserExercise current = new UserExercise();
           current.setState(AnnotationCombineStateEnum.unDistributed.name());
+          current.setTerm(annotationCombineList.get(i).getTerm());
           current.setUserAnnotation(annotationCombineList.get(i).getFinalAnnotation());
           current.setAnnotationId(annotationCombineList.get(i).getId());
           current.setAssignee(designateAnnotationRequest.getUserId());

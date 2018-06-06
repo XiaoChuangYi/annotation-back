@@ -41,30 +41,30 @@ public class ListExerciseAnnotationBiz extends
   @Override
   protected void validateRequest(ListExerciseAnnotationRequest listExerciseAnnotationRequest)
       throws InvalidInputException {
-      if(listExerciseAnnotationRequest==null){
-        throw new InvalidInputException("invalid-request","无效的请求");
-      }
-      if(listExerciseAnnotationRequest.getPageIndex()<1) {
-        throw new InvalidInputException("invalid-pageIndex", "pageIndex应该大于等于1");
-      }
-      if(listExerciseAnnotationRequest.getPageSize()<=0) {
-        throw new InvalidInputException("invalid-pageSize", "pageSize应该大于等于1");
-      }
+    if (listExerciseAnnotationRequest == null) {
+      throw new InvalidInputException("invalid-request", "无效的请求");
+    }
+    if (listExerciseAnnotationRequest.getPageIndex() < 1) {
+      throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
+    }
+    if (listExerciseAnnotationRequest.getPageSize() <= 0) {
+      throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于1");
+    }
   }
 
   @Override
   protected void authorize(int userId, int role,
       ListExerciseAnnotationRequest listExerciseAnnotationRequest) throws BusinessRuleException {
-
   }
 
   @Override
   protected PageVO<ExerciseAnnotationBratVO> doBiz(
       ListExerciseAnnotationRequest listExerciseAnnotationRequest) {
-    listExerciseAnnotationRequest.setPageIndex(listExerciseAnnotationRequest.getPageIndex()-1);
+    listExerciseAnnotationRequest.setPageIndex(listExerciseAnnotationRequest.getPageIndex() - 1);
     Page page = exerciseAnnotationService
         .listStandardExerciseAnnotation(listExerciseAnnotationRequest);
     if (page.getContent().size() > 0) {
+      //查询出所有的标准答案
       List<AnnotationCombine> annotationCombineList = page.getContent();
       List<ExerciseAnnotationBratVO> exerciseAnnotationBratVOList = new LinkedList<>();
       for (AnnotationCombine annotationCombine : annotationCombineList) {
@@ -72,7 +72,7 @@ public class ListExerciseAnnotationBiz extends
         BeanUtils.copyProperties(annotationCombine, exerciseAnnotationBratVO);
         JSONObject finalJson = AnnotationConvert
             .convertAnnotation2BratFormat(annotationCombine.getTerm(),
-                annotationCombine.getFinalAnnotation());
+                annotationCombine.getFinalAnnotation(), annotationCombine.getAnnotationType());
         exerciseAnnotationBratVO.setFinalJson(finalJson);
         exerciseAnnotationBratVOList.add(exerciseAnnotationBratVO);
       }
@@ -84,9 +84,11 @@ public class ListExerciseAnnotationBiz extends
         for (AnnotationExercise current : annotationExerciseList) {
           map.put(current.getAnnotationId(), current.getNum());
         }
-        exerciseAnnotationBratVOList.stream().forEach(exerciseAnnotationBratVO ->
-            exerciseAnnotationBratVO.setNum(map.get(exerciseAnnotationBratVO.getId()))
-        );
+        if (map.entrySet().size() > 0) {
+          exerciseAnnotationBratVOList.stream().forEach(exerciseAnnotationBratVO ->
+              exerciseAnnotationBratVO.setNum(map.get(exerciseAnnotationBratVO.getId()))
+          );
+        }
       }
       if (listExerciseAnnotationRequest.getUserId() > 0) {
         List<UserExercise> userExerciseList = userExerciseRepository
@@ -96,8 +98,8 @@ public class ListExerciseAnnotationBiz extends
               if (userExerciseList.stream().filter(
                   userExercise -> userExercise.getAnnotationId() == exerciseAnnotationBratVO.getId())
                   .count() > 0) {
-                  exerciseAnnotationBratVO.setDesignate(true);
-              }else {
+                exerciseAnnotationBratVO.setDesignate(true);
+              } else {
                 exerciseAnnotationBratVO.setDesignate(false);
               }
             }

@@ -31,7 +31,7 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
       UserExercise userExercise = optional.get();
       String newAnnotation = AnnotationConvert
           .addEntitiesAnnotation(userExercise.getUserAnnotation()
-              , addAnnotationRequest.getAnnotationType(), addAnnotationRequest.getStartPosition()
+              , addAnnotationRequest.getType(), addAnnotationRequest.getStartPosition()
               , addAnnotationRequest.getEndPosition(), addAnnotationRequest.getTerm()
           );
       return newAnnotation;

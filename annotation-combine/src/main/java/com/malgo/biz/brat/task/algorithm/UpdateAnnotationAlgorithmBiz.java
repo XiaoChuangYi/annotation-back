@@ -10,6 +10,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.UpdateAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,8 @@ public class UpdateAnnotationAlgorithmBiz extends
 
   private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public UpdateAnnotationAlgorithmBiz(
       @Qualifier("algorithm") AnnotationOperateService algorithmAnnotationOperateService,
@@ -48,16 +51,18 @@ public class UpdateAnnotationAlgorithmBiz extends
       throw new InvalidInputException("invalid-tag", "参数tag不能为空");
     }
     if (StringUtils.isBlank(updateAnnotationRequest.getNewType())) {
-      throw new InvalidInputException("invalid-newType", "参数newType不能为空");
+      throw new InvalidInputException("invalid-new-type", "参数newType不能为空");
     }
     if (StringUtils.isBlank(updateAnnotationRequest.getAutoAnnotation())) {
-      throw new InvalidInputException("invalid-autoAnnotation", "autoAnnotation参数为空");
+      throw new InvalidInputException("invalid-auto-annotation", "autoAnnotation参数为空");
     }
   }
 
   @Override
   protected void authorize(int userId, int role, UpdateAnnotationRequest updateAnnotationRequest)
       throws BusinessRuleException {
+    globalUserId = userId;
+    globalRole = role;
     if (role > 2) {
       Optional<AnnotationCombine> optional = annotationCombineRepository
           .findById(updateAnnotationRequest.getId());
@@ -82,8 +87,12 @@ public class UpdateAnnotationAlgorithmBiz extends
           .updateAnnotation(updateAnnotationRequest);
       annotationCombine.setFinalAnnotation(annotation);
       log.info("过算法后台，标注人员更新标注输出结果：{}", annotation);
-      return AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+      AnnotationCombineBratVO annotationCombineBratVO = AnnotationConvert
+          .convert2AnnotationCombineBratVO(annotationCombine);
+      OpLoggerUtil.info(globalUserId, globalRole, "update-annotation-algorithm", "success");
+      return annotationCombineBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "update-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

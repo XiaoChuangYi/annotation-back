@@ -36,12 +36,12 @@ public abstract class BaseEntity {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private int id;
 
-  @CreatedDate
   @Column(name = "gmt_created", updatable = false, nullable = false)
+  @CreatedDate
   private Date gmtCreated;
 
-  @LastModifiedDate
   @Column(name = "gmt_modified", nullable = false)
+  @LastModifiedDate
   private Date gmtModified;
 
   @Setter

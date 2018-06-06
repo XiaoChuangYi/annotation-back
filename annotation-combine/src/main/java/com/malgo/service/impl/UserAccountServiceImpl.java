@@ -81,7 +81,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     HttpSession httpSession = servletRequest.getSession();
     UserAccount account = (UserAccount) httpSession.getAttribute("userAccount");
     if (account != null&&account.getId()==logOutRequest.getUserId()) {
-      httpSession.setAttribute("userAccount",null);
+      httpSession.invalidate();
     }else {
       throw new BusinessRuleException("current-user-not-login","当前用户并未登录");
     }

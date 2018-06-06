@@ -30,11 +30,11 @@ public class RandomDesignateAnnotationBiz extends
 
     if (!(randomDesignateAnnotationRequest.getAnnotationTypes() != null
         && randomDesignateAnnotationRequest.getAnnotationTypes().size() > 0)) {
-      throw new InvalidInputException("invalid-annotationTypes", "标注类型集合为空");
+      throw new InvalidInputException("invalid-annotation-types", "标注类型集合为空");
     }
     if (!(randomDesignateAnnotationRequest.getUserIdList() != null
         && randomDesignateAnnotationRequest.getUserIdList().size() > 0)) {
-      throw new InvalidInputException("invalid-userIdList", "用户Id集合为空");
+      throw new InvalidInputException("invalid-user-id-list", "用户Id集合为空");
     }
     if (randomDesignateAnnotationRequest.getNum() <= 0) {
       throw new InvalidInputException("invalid-num", "指派数量num参数小于等于了0");

@@ -25,7 +25,7 @@ public class CountAnnotationBiz extends BaseBiz<CountAnnotationRequest,Integer> 
   protected void validateRequest(CountAnnotationRequest countAnnotationRequest)
       throws InvalidInputException {
     if(countAnnotationRequest.getAnnotationTypes()==null) {
-      throw new InvalidInputException("invalid-annotationTypes", "参数annotationTypes当前值无效");
+      throw new InvalidInputException("invalid-annotation-types", "参数annotationTypes当前值无效");
     }
   }
 

@@ -2,6 +2,7 @@ package com.malgo.biz.brat.task;
 
 import com.malgo.biz.BaseBiz;
 import com.malgo.dto.AutoAnnotation;
+import com.malgo.exception.AlgorithmServiceException;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.service.AlgorithmApiService;
@@ -43,10 +44,10 @@ public class GetAutoAnnotationBiz extends BaseBiz<Integer, String> {
       if (autoAnnotation != null) {
         return autoAnnotation.getAnnotation();
       } else {
-        return "";
+        throw new AlgorithmServiceException("algorithm-response-error","调用算法后台病历分词预标注接口，返回异常null");
       }
     } else {
-      return "";
+      throw new AlgorithmServiceException("algorithm-response-error","调用算法后台病历分词预标注接口，返回异常null");
     }
   }
 }

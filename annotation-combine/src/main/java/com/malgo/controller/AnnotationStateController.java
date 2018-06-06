@@ -9,6 +9,7 @@ import com.malgo.request.brat.CommitAnnotationRequest;
 import com.malgo.result.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +38,7 @@ public class AnnotationStateController extends BaseController {
    * 标注人员提交
    */
   @RequestMapping(value = "commit-annotation", method = RequestMethod.POST)
-  public Response commitAnnotation(CommitAnnotationRequest commitAnnotationRequest,
+  public Response commitAnnotation(@RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute("userAccount")
           UserAccount userAccount) {
     return new Response(annotationCommitBiz
@@ -48,7 +49,7 @@ public class AnnotationStateController extends BaseController {
    * 标注人员放弃
    */
   @RequestMapping(value = "abandon-annotation", method = RequestMethod.POST)
-  public Response abandonAnnotation(AnnotationStateRequest annotationStateRequest,
+  public Response abandonAnnotation(@RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute("userAccount")
           UserAccount userAccount) {
     return new Response(annotationAbandonBiz
@@ -59,7 +60,7 @@ public class AnnotationStateController extends BaseController {
    * 审核人员审核
    */
   @RequestMapping(value = "examine-annotation", method = RequestMethod.POST)
-  public Response examineAnnotation(AnnotationStateRequest annotationStateRequest,
+  public Response examineAnnotation(@RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute("userAccount")
           UserAccount userAccount) {
     return new Response(annotationExamineBiz

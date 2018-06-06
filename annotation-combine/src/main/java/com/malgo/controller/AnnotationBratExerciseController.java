@@ -16,7 +16,9 @@ import com.malgo.request.brat.UpdateRelationRequest;
 import com.malgo.result.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -51,8 +53,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 新增标注
    */
-  @RequestMapping(value = "add-annotation")
-  public Response addAnnotation(AddAnnotationRequest addAnnotationRequest,
+  @RequestMapping(value = "add-annotation" ,method = RequestMethod.POST)
+  public Response addAnnotation(@RequestBody AddAnnotationRequest addAnnotationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(addUserExerciseBiz
         .process(addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -61,8 +63,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 删除标注
    */
-  @RequestMapping(value = "delete-annotation")
-  public Response deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest,
+  @RequestMapping(value = "delete-annotation",method = RequestMethod.POST)
+  public Response deleteAnnotation(@RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(deleteUserExerciseBiz
         .process(deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -71,8 +73,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 更新标注
    */
-  @RequestMapping(value = "update-annotation")
-  public Response updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest,
+  @RequestMapping(value = "update-annotation",method = RequestMethod.POST)
+  public Response updateAnnotation(@RequestBody UpdateAnnotationRequest updateAnnotationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(updateUserExerciseBiz
         .process(updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -81,8 +83,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 新增关系
    */
-  @RequestMapping(value = "add-relation")
-  public Response addRelation(AddRelationRequest addRelationRequest,
+  @RequestMapping(value = "add-relation",method = RequestMethod.POST)
+  public Response addRelation(@RequestBody AddRelationRequest addRelationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(addExerciseRelationBiz
         .process(addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -91,8 +93,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 删除关系
    */
-  @RequestMapping(value = "delete-relation")
-  public Response deleteRelation(DeleteRelationRequest deleteRelationRequest,
+  @RequestMapping(value = "delete-relation",method = RequestMethod.POST)
+  public Response deleteRelation(@RequestBody DeleteRelationRequest deleteRelationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(deleteExerciseRelationBiz
         .process(deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -101,8 +103,8 @@ public class AnnotationBratExerciseController extends BaseController {
   /**
    * 更新标注
    */
-  @RequestMapping(value = "update-relation")
-  public Response updateRelation(UpdateRelationRequest updateRelationRequest,
+  @RequestMapping(value = "update-relation",method = RequestMethod.POST)
+  public Response updateRelation(@RequestBody UpdateRelationRequest updateRelationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(updateExerciseRelationBiz
         .process(updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));

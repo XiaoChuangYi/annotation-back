@@ -23,13 +23,10 @@ import org.springframework.stereotype.Service;
 public class ExerciseAnnotationServiceImpl implements ExerciseAnnotationService {
 
   private final AnnotationCombineRepository annotationCombineRepository;
-  private final UserExerciseRepository userExerciseRepository;
 
   @Autowired
-  public ExerciseAnnotationServiceImpl(AnnotationCombineRepository annotationCombineRepository,
-      UserExerciseRepository userExerciseRepository) {
+  public ExerciseAnnotationServiceImpl(AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
-    this.userExerciseRepository = userExerciseRepository;
   }
 
 

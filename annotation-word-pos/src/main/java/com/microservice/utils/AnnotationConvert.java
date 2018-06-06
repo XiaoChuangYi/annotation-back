@@ -38,6 +38,9 @@ public class AnnotationConvert {
         Document document=new Document(originTerm,null);
         DocumentManipulator.parseBratAnnotations(annotationData==null?"":annotationData,document);
         JSONObject jsonObject=DocumentManipulator.toBratAjaxFormat(document);
+        jsonObject.put(BratConst.TOKEN_OFFSET, IntStream.range(0, originTerm.length())
+            .mapToObj(i -> Arrays.asList(i, i + 1))
+            .collect(Collectors.toList()));
 
 //        jsonObject.put("relations", IntStream.range(0,document.getEntities().size())
 //                .mapToObj(i->Arrays.asList("R"+(i+1),"relation",

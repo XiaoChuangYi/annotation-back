@@ -10,6 +10,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,8 @@ public class AddAnnotationAlgorithmBiz extends
 
   private final AnnotationOperateService annotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public AddAnnotationAlgorithmBiz(
       @Qualifier("algorithm") AnnotationOperateService annotationOperateService,
@@ -47,17 +50,17 @@ public class AddAnnotationAlgorithmBiz extends
     if (StringUtils.isBlank(addAnnotationRequest.getTerm())) {
       throw new InvalidInputException("invalid-term", "term参数为空");
     }
-    if (StringUtils.isBlank(addAnnotationRequest.getAnnotationType())) {
-      throw new InvalidInputException("invalid-annotationType", "annotationType参数为空");
+    if (StringUtils.isBlank(addAnnotationRequest.getType())) {
+      throw new InvalidInputException("invalid-type", "type参数为空");
     }
     if (StringUtils.isBlank(addAnnotationRequest.getAutoAnnotation())) {
-      throw new InvalidInputException("invalid-autoAnnotation", "autoAnnotation参数为空");
+      throw new InvalidInputException("invalid-auto-annotation", "autoAnnotation参数为空");
     }
     if (addAnnotationRequest.getStartPosition() < 0) {
-      throw new InvalidInputException("invalid-startPosition", "无效的startPosition");
+      throw new InvalidInputException("invalid-start-position", "无效的startPosition");
     }
     if (addAnnotationRequest.getEndPosition() <= 0) {
-      throw new InvalidInputException("invalid-endPosition", "无效的endPosition");
+      throw new InvalidInputException("invalid-end-position", "无效的endPosition");
     }
 
   }
@@ -65,12 +68,14 @@ public class AddAnnotationAlgorithmBiz extends
   @Override
   protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
       throws BusinessRuleException {
+    globalUserId = userId;
+    globalRole = role;
     if (role > 2) {
       Optional<AnnotationCombine> optional = annotationCombineRepository
           .findById(addAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (optional.get().getAssignee() != userId) {
-          throw new BusinessRuleException("no-authorize-current-record", "您无权操作当前记录!");
+          throw new BusinessRuleException("no-authorize-handle-current-record", "您无权操作当前记录!");
         }
       }
     }
@@ -89,9 +94,13 @@ public class AddAnnotationAlgorithmBiz extends
         String annotation = annotationOperateService.addAnnotation(addAnnotationRequest);
         log.info("过算法后台，标注人员新增标注输出结果：{}", annotation);
         annotationCombine.setFinalAnnotation(annotation);
-        return AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+        AnnotationCombineBratVO annotationCombineBratVO = AnnotationConvert
+            .convert2AnnotationCombineBratVO(annotationCombine);
+        OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm", "success");
+        return annotationCombineBratVO;
       }
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

@@ -75,7 +75,7 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
     String manualAnnotation = annotationCombine.getManualAnnotation();
     manualAnnotation = AnnotationConvert
         .handleCrossAnnotation(manualAnnotation, addAnnotationRequest.getTerm(),
-            addAnnotationRequest.getAnnotationType()
+            addAnnotationRequest.getType()
             , addAnnotationRequest.getStartPosition(), addAnnotationRequest.getEndPosition());
     String annotation = handleAnnotationCombine(addAnnotationRequest.getId(),
         annotationCombine, manualAnnotation, addAnnotationRequest.getAutoAnnotation());

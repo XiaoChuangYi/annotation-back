@@ -30,16 +30,15 @@ public class ListAnnotationBiz extends
   @Override
   protected void validateRequest(ListAnnotationCombineRequest listAnnotationCombineRequest)
       throws InvalidInputException {
-    if(listAnnotationCombineRequest==null){
-      throw new InvalidInputException("invalid-request","无效的请求");
+    if (listAnnotationCombineRequest == null) {
+      throw new InvalidInputException("invalid-request", "无效的请求");
     }
-    if(listAnnotationCombineRequest.getPageIndex()<1) {
-      throw new InvalidInputException("invalid-pageIndex", "pageIndex应该大于等于1");
+    if (listAnnotationCombineRequest.getPageIndex() < 1) {
+      throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
     }
-    if(listAnnotationCombineRequest.getPageSize()<=0) {
-      throw new InvalidInputException("invalid-pageSize", "pageSize应该大于等于1");
+    if (listAnnotationCombineRequest.getPageSize() <= 0) {
+      throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
     }
-
   }
 
   @Override
@@ -49,12 +48,13 @@ public class ListAnnotationBiz extends
   }
 
   @Override
-  protected PageVO<AnnotationCombineBratVO> doBiz(ListAnnotationCombineRequest annotationCombineQuery) {
-    annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex()-1);
+  protected PageVO<AnnotationCombineBratVO> doBiz(
+      ListAnnotationCombineRequest annotationCombineQuery) {
+    annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
     Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);
     List<AnnotationCombineBratVO> annotationCombineBratVOList = AnnotationConvert
         .convert2AnnotationCombineBratVOList(page.getContent());
-    PageVO pageVO=new PageVO(page,false);
+    PageVO pageVO = new PageVO(page, false);
     pageVO.setDataList(annotationCombineBratVOList);
     return pageVO;
   }

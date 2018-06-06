@@ -9,6 +9,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteRelationRequest;
 import com.malgo.service.RelationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class DeleteExerciseRelationBiz extends
 
   private final RelationOperateService exerciseRelationOperateService;
   private final UserExerciseRepository userExerciseRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public DeleteExerciseRelationBiz(
       @Qualifier("exercise-relation") RelationOperateService exerciseRelationOperateService,
@@ -43,7 +46,7 @@ public class DeleteExerciseRelationBiz extends
     if (deleteRelationRequest.getId() <= 0) {
       throw new InvalidInputException("valid-id", "无效的id");
     }
-    if (StringUtils.isBlank(deleteRelationRequest.getRTag())) {
+    if (StringUtils.isBlank(deleteRelationRequest.getReTag())) {
       throw new InvalidInputException("valid-rTag", "参数rTag为空");
     }
   }
@@ -51,6 +54,8 @@ public class DeleteExerciseRelationBiz extends
   @Override
   protected void authorize(int userId, int role, DeleteRelationRequest deleteRelationRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {
       Optional<UserExercise> optional = userExerciseRepository
           .findById(deleteRelationRequest.getId());
@@ -68,14 +73,16 @@ public class DeleteExerciseRelationBiz extends
     Optional<UserExercise> optional = userExerciseRepository
         .findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {
-      log.info("习题删除关系请求参数：{}",deleteRelationRequest);
+      log.info("习题删除关系请求参数：{}", deleteRelationRequest);
       UserExercise userExercise = optional.get();
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       String annotation = exerciseRelationOperateService.deleteRelation(deleteRelationRequest);
-      log.info("习题删除关系返回结果：{}",annotation);
+      log.info("习题删除关系返回结果：{}", annotation);
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      return AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
+          .convert2ExerciseAnnotationBratVO(userExercise);
+      return exerciseAnnotationBratVO;
     }
     return null;
   }

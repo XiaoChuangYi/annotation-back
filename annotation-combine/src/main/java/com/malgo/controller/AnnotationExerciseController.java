@@ -74,7 +74,7 @@ public class AnnotationExerciseController extends BaseController {
    * 练习人员提交标注
    */
   @RequestMapping(value = "commit-user-exercise", method = RequestMethod.POST)
-  public Response commitUserExercise(CommitAnnotationRequest commitAnnotationRequest,
+  public Response commitUserExercise(@RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(commitExerciseAnnotationBiz
         .process(commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -84,7 +84,7 @@ public class AnnotationExerciseController extends BaseController {
    * 练习题指派
    */
   @RequestMapping(value = "designate-exercise", method = RequestMethod.POST)
-  public Response designateExercise(DesignateAnnotationRequest designateAnnotationRequest,
+  public Response designateExercise(@RequestBody DesignateAnnotationRequest designateAnnotationRequest,
       @ModelAttribute("userAccount") UserAccount userAccount) {
     return new Response(designateUserExerciseBiz
         .process(designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));

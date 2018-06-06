@@ -10,6 +10,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ public class DeleteAnnotationAlgorithmBiz extends
 
   private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public DeleteAnnotationAlgorithmBiz(
       @Qualifier("algorithm") AnnotationOperateService algorithmAnnotationOperateService,
@@ -49,7 +52,7 @@ public class DeleteAnnotationAlgorithmBiz extends
       throw new InvalidInputException("invalid-id", "无效的tag参数");
     }
     if (StringUtils.isBlank(deleteAnnotationRequest.getAutoAnnotation())) {
-      throw new InvalidInputException("invalid-autoAnnotation", "autoAnnotation参数为空");
+      throw new InvalidInputException("invalid-auto-annotation", "autoAnnotation参数为空");
     }
 
   }
@@ -57,12 +60,14 @@ public class DeleteAnnotationAlgorithmBiz extends
   @Override
   protected void authorize(int userId, int role, DeleteAnnotationRequest deleteAnnotationRequest)
       throws BusinessRuleException {
+    globalUserId = userId;
+    globalRole = role;
     if (role > 2) {
       Optional<AnnotationCombine> optional = annotationCombineRepository
           .findById(deleteAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (userId == optional.get().getAssignee()) {
-          throw new BusinessRuleException("no-authorize-current-record", "您无权操作当前记录!");
+          throw new BusinessRuleException("no-authorize-handle-current-record", "您无权操作当前记录!");
         }
       }
     }
@@ -81,8 +86,12 @@ public class DeleteAnnotationAlgorithmBiz extends
           .deleteAnnotation(deleteAnnotationRequest);
       log.info("过算法后台，标注人员删除标注输出结果：{}", annotation);
       annotationCombine.setFinalAnnotation(annotation);
-      return AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+      AnnotationCombineBratVO annotationCombineBratVO = AnnotationConvert
+          .convert2AnnotationCombineBratVO(annotationCombine);
+      OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "success");
+      return annotationCombineBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

@@ -5,6 +5,7 @@ import com.malgo.exception.InternalServiceException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.DesignateAnnotationRequest;
 import com.malgo.service.AnnotationCombineService;
+import com.malgo.utils.OpLoggerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest,String> {
 
   private final AnnotationCombineService annotationCombineService;
+  private int globalRole;
+  private int globalUserId;
 
   @Autowired
   public DesignateAnnotationBiz(AnnotationCombineService annotationCombineService){
@@ -25,9 +28,9 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest,S
   protected void validateRequest(DesignateAnnotationRequest designateAnnotationRequest)
       throws InvalidInputException {
     if(designateAnnotationRequest.getIdList().size()==0)
-      throw new InvalidInputException("invalid-idList","idList集合为空");
+      throw new InvalidInputException("invalid-id-list","idList集合为空");
     if(designateAnnotationRequest.getUserId()<=0){
-      throw new InvalidInputException("invalid-userId","userId参数不正确");
+      throw new InvalidInputException("invalid-user-id","userId参数不正确");
     }
 
   }
@@ -35,14 +38,17 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest,S
   @Override
   protected void authorize(int userId, int role,
       DesignateAnnotationRequest designateAnnotationRequest) throws BusinessRuleException {
-
+    globalRole = role;
+    globalUserId = userId;
   }
 
   @Override
   protected String doBiz(DesignateAnnotationRequest designateAnnotationRequest) {
     try {
       annotationCombineService.designateAnnotationCombine(designateAnnotationRequest);
+      OpLoggerUtil.info(globalUserId, globalRole, "designate-annotation", "success");
     }catch (Exception ex){
+      OpLoggerUtil.info(globalUserId, globalRole, "designate-annotation", ex.getMessage());
       throw new InternalServiceException("batch-designate-failed",ex.getMessage());
     }
     return "";

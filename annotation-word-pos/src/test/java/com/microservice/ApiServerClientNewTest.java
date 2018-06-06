@@ -30,7 +30,7 @@ public class ApiServerClientNewTest {
     private ApiServerClient apiServerClient;
 
     @Test
-//    @Ignore()
+    @Ignore()
     public void testDocPosTag() {
         String result = apiServerClient.getCaseWordPos("右上肺腺癌");
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>ApiServer<<<<<<<<<<<<<<<<<<<<<<<<<");
@@ -65,7 +65,7 @@ public class ApiServerClientNewTest {
     }
 
     @Test
-    @Ignore()
+//    @Ignore()
     public void testPhraseTokenize() {
         String result = apiServerClient.phraseTokenize("胸部CT");
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>ApiServer<<<<<<<<<<<<<<<<<<<<<<<<<");

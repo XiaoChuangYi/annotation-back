@@ -31,10 +31,10 @@ public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest, PageVO<U
       throws InvalidInputException {
     if (!listUserAccountRequest.isAll()) {
       if (listUserAccountRequest.getPageIndex() < 1) {
-        throw new InvalidInputException("invalid-pageIndex", "pageIndex应该大于等于1");
+        throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
       }
       if (listUserAccountRequest.getPageSize() <= 0) {
-        throw new InvalidInputException("invalid-pageSize", "pageSize应该大于等于1");
+        throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于1");
       }
     }
   }

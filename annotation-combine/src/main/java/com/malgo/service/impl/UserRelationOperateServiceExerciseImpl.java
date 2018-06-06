@@ -41,7 +41,7 @@ public class UserRelationOperateServiceExerciseImpl implements RelationOperateSe
     Optional<UserExercise> optional =userExerciseRepository.findById(updateRelationRequest.getId());
     if(optional.isPresent()){
       UserExercise userExercise=optional.get();
-      String annotation=AnnotationConvert.updateRelationAnnotation(userExercise.getUserAnnotation(),updateRelationRequest.getRTag(),
+      String annotation=AnnotationConvert.updateRelationAnnotation(userExercise.getUserAnnotation(),updateRelationRequest.getReTag(),
           updateRelationRequest.getRelation());
       return annotation;
     }
@@ -53,7 +53,7 @@ public class UserRelationOperateServiceExerciseImpl implements RelationOperateSe
     Optional<UserExercise> optional =userExerciseRepository.findById(deleteRelationRequest.getId());
     if(optional.isPresent()) {
       UserExercise userExercise = optional.get();
-      String annotation=AnnotationConvert.deleteRelationsAnnotation(userExercise.getUserAnnotation(),deleteRelationRequest.getRTag());
+      String annotation=AnnotationConvert.deleteRelationsAnnotation(userExercise.getUserAnnotation(),deleteRelationRequest.getReTag());
       return annotation;
     }
     return "";

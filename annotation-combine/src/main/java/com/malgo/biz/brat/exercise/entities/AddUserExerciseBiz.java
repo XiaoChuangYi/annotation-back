@@ -9,6 +9,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
 
   private final AnnotationOperateService exerciseAnnotationOperateService;
   private final UserExerciseRepository userExerciseRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public AddUserExerciseBiz(
       @Qualifier("exercise-entity") AnnotationOperateService exerciseAnnotationOperateService,
@@ -45,14 +48,14 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
     if (StringUtils.isBlank(addAnnotationRequest.getTerm())) {
       throw new InvalidInputException("invalid-term", "term参数为空");
     }
-    if (StringUtils.isBlank(addAnnotationRequest.getAnnotationType())) {
-      throw new InvalidInputException("invalid-annotationType", "annotationType参数为空");
+    if (StringUtils.isBlank(addAnnotationRequest.getType())) {
+      throw new InvalidInputException("invalid-annotation-type", "annotationType参数为空");
     }
     if (addAnnotationRequest.getStartPosition() < 0) {
-      throw new InvalidInputException("invalid-startPosition", "无效的startPosition");
+      throw new InvalidInputException("invalid-start-position", "无效的startPosition");
     }
     if (addAnnotationRequest.getEndPosition() <= 0) {
-      throw new InvalidInputException("invalid-endPosition", "无效的endPosition");
+      throw new InvalidInputException("invalid-end-position", "无效的endPosition");
     }
 
   }
@@ -60,6 +63,8 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
   @Override
   protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<UserExercise> optional = userExerciseRepository
           .findById(addAnnotationRequest.getId());
@@ -76,15 +81,19 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
     //练习人员
     Optional<UserExercise> optional = userExerciseRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("习题新增标注请求参数：{}",addAnnotationRequest);
+      log.info("习题新增标注请求参数：{}", addAnnotationRequest);
       UserExercise userExercise = optional.get();
       String annotation = exerciseAnnotationOperateService.addAnnotation(addAnnotationRequest);
-      log.info("习题新增标注返回结果：{}",annotation);
+      log.info("习题新增标注返回结果：{}", annotation);
       userExercise.setUserAnnotation(annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      userExercise=userExerciseRepository.save(userExercise);
-      return AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
+      userExercise = userExerciseRepository.save(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
+          .convert2ExerciseAnnotationBratVO(userExercise);
+      OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-annotation", "success");
+      return exerciseAnnotationBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-annotation", "无对应id记录");
     return null;
   }
 }

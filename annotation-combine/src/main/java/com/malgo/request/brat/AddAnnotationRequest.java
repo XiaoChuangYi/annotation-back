@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class AddAnnotationRequest {
     private int id;
     private String term;
-    private String annotationType;
+    private String type;
     private int startPosition;
     private int endPosition;
     private String autoAnnotation;

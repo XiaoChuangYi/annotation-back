@@ -11,8 +11,8 @@ import lombok.Data;
 public class RelationEntity {
     private String tag;
     private String type;
-    private String source;
-    private String target;
     private String sourceTag;
     private String targetTag;
+    private String source;
+    private String target;
 }

@@ -3,16 +3,21 @@ package com.malgo.controller;
 import com.malgo.biz.CountAnnotationBiz;
 import com.malgo.biz.DesignateAnnotationBiz;
 import com.malgo.biz.GetAnnotationSummaryBiz;
+import com.malgo.biz.GetAnnotationSummaryByAssigneeBiz;
 import com.malgo.biz.ListAnnotationBiz;
 import com.malgo.biz.RandomDesignateAnnotationBiz;
+import com.malgo.biz.brat.ListAnTypeBiz;
+import com.malgo.entity.UserAccount;
 import com.malgo.request.CountAnnotationRequest;
 import com.malgo.request.DesignateAnnotationRequest;
 import com.malgo.request.ListAnnotationCombineRequest;
 import com.malgo.request.RandomDesignateAnnotationRequest;
+import com.malgo.request.SetUserStateRequest;
 import com.malgo.result.PageVO;
 import com.malgo.result.Response;
 import com.malgo.vo.AnnotationCombineBratVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,25 +29,31 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class AnnotationCombineController {
+public class AnnotationCombineController extends BaseController{
 
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
+  private final GetAnnotationSummaryByAssigneeBiz getAnnotationSummaryByAssigneeBiz;
   private final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz;
   private final CountAnnotationBiz countAnnotationBiz;
+  private final ListAnTypeBiz listAnTypeBiz;
 
 
   public AnnotationCombineController(ListAnnotationBiz listAnnotationBiz,
       DesignateAnnotationBiz designateAnnotationBiz,
       GetAnnotationSummaryBiz getAnnotationSummaryBiz,
+      GetAnnotationSummaryByAssigneeBiz getAnnotationSummaryByAssigneeBiz,
       RandomDesignateAnnotationBiz randomDesignateAnnotationBiz,
-      CountAnnotationBiz countAnnotationBiz){
+      CountAnnotationBiz countAnnotationBiz,
+      ListAnTypeBiz listAnTypeBiz){
     this.listAnnotationBiz=listAnnotationBiz;
     this.designateAnnotationBiz=designateAnnotationBiz;
     this.getAnnotationSummaryBiz=getAnnotationSummaryBiz;
     this.randomDesignateAnnotationBiz=randomDesignateAnnotationBiz;
     this.countAnnotationBiz=countAnnotationBiz;
+    this.listAnTypeBiz=listAnTypeBiz;
+    this.getAnnotationSummaryByAssigneeBiz=getAnnotationSummaryByAssigneeBiz;
   }
 
   /**
@@ -57,8 +68,9 @@ public class AnnotationCombineController {
    * 根据Annotation的idList，以及用户id，批量指派给特定的用户
    */
   @RequestMapping(value = "/designate-task-annotation",method = RequestMethod.POST)
-  public Response designateTaskAnnotation(@RequestBody DesignateAnnotationRequest designateAnnotationRequest){
-    return new Response(designateAnnotationBiz.process(designateAnnotationRequest,0,0));
+  public Response designateTaskAnnotation(@RequestBody DesignateAnnotationRequest designateAnnotationRequest,
+      @ModelAttribute("userAccount") UserAccount userAccount){
+    return new Response(designateAnnotationBiz.process(designateAnnotationRequest,userAccount.getId(),userAccount.getRoleId()));
   }
 
   /**
@@ -85,4 +97,19 @@ public class AnnotationCombineController {
     return new Response(countAnnotationBiz.process(countAnnotationRequest,0,0));
   }
 
+  /**
+   * 查询分词标注类型列表
+   */
+  @RequestMapping(value = "list-type",method = RequestMethod.GET)
+  public Response listType(){
+    return new Response(listAnTypeBiz.process(null,0,0));
+  }
+
+  /**
+   * 根据被指派人userId,查询其标注的各种状态
+   */
+  @RequestMapping(value = "get-annotation-summary-by-assignee",method = RequestMethod.GET)
+  public Response getAnnotationSummaryByAssignee(SetUserStateRequest setUserStateRequest,@ModelAttribute("userAccount") UserAccount userAccount){
+    return new Response(getAnnotationSummaryByAssigneeBiz.process(setUserStateRequest,userAccount.getId(),userAccount.getRoleId()));
+  }
 }

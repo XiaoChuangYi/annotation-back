@@ -9,6 +9,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.UpdateAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class UpdateUserExerciseBiz extends
 
   private final AnnotationOperateService exerciseAnnotationOperateService;
   private final UserExerciseRepository userExerciseRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public UpdateUserExerciseBiz(
       @Qualifier("exercise-entity") AnnotationOperateService exerciseAnnotationOperateService,
@@ -54,6 +57,8 @@ public class UpdateUserExerciseBiz extends
   @Override
   protected void authorize(int userId, int role, UpdateAnnotationRequest updateAnnotationRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<UserExercise> optional = userExerciseRepository
           .findById(updateAnnotationRequest.getId());
@@ -70,16 +75,20 @@ public class UpdateUserExerciseBiz extends
     Optional<UserExercise> optional = userExerciseRepository
         .findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("习题更新标注请求参数：{}",updateAnnotationRequest);
+      log.info("习题更新标注请求参数：{}", updateAnnotationRequest);
       UserExercise userExercise = optional.get();
       String annotation = exerciseAnnotationOperateService
           .updateAnnotation(updateAnnotationRequest);
-      log.info("习题更新标注返回结果：{}",annotation);
+      log.info("习题更新标注返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      return AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
+          .convert2ExerciseAnnotationBratVO(userExercise);
+      OpLoggerUtil.info(globalUserId, globalRole, "update-exercise-annotation", "success");
+      return exerciseAnnotationBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "update-exercise-annotation", "无对应id记录");
     return null;
   }
 }

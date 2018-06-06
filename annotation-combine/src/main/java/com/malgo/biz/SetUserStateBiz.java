@@ -28,11 +28,11 @@ public class SetUserStateBiz extends BaseBiz<SetUserStateRequest, UserAccount> {
   protected void validateRequest(SetUserStateRequest setUserStateRequest)
       throws InvalidInputException {
     if (setUserStateRequest.getUserId() <= 0) {
-      throw new InvalidInputException("invalid-userId", "无效的userId");
+      throw new InvalidInputException("invalid-user-id", "无效的userId");
     }
 
     if (StringUtils.isBlank(setUserStateRequest.getCurrentState())) {
-      throw new InvalidInputException("invalid-currentState", "currentState参数为空");
+      throw new InvalidInputException("invalid-current-state", "currentState参数为空");
     }
   }
 

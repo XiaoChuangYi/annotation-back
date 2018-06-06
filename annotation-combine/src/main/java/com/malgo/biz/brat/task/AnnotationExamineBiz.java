@@ -8,6 +8,7 @@ import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public AnnotationExamineBiz(AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
@@ -37,6 +40,8 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
   @Override
   protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {
       throw new BusinessRuleException("no-privilege-handle-current-record", "当前用户无权限进行该操作!");
     }
@@ -62,6 +67,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       }
       annotationCombineRepository.save(annotationCombine);
+      OpLoggerUtil.info(globalUserId, globalRole, "examine-annotation", "success");
     }
     return null;
   }

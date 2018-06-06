@@ -28,7 +28,7 @@ public class ModifyUserPasswordBiz extends BaseBiz<ModifyPasswordRequest,UserAcc
   protected void validateRequest(ModifyPasswordRequest modifyPasswordRequest)
       throws InvalidInputException {
       if(modifyPasswordRequest.getUserId()<=0) {
-        throw new InvalidInputException("invalid-userId", "无效的用户Id");
+        throw new InvalidInputException("invalid-user-id", "无效的用户Id");
       }
       if(StringUtils.isBlank(modifyPasswordRequest.getPassword())) {
         throw new InvalidInputException("invalid-password", "密码为空");

@@ -9,6 +9,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddRelationRequest;
 import com.malgo.service.RelationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, Exercise
 
   private final RelationOperateService exerciseRelationOperateService;
   private final UserExerciseRepository userExerciseRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public AddExerciseRelationBiz(
       @Qualifier("exercise-relation") RelationOperateService exerciseRelationOperateService,
@@ -46,16 +49,18 @@ public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, Exercise
       throw new InvalidInputException("invalid-relation", "参数relation为空");
     }
     if (StringUtils.isBlank(addRelationRequest.getSourceTag())) {
-      throw new InvalidInputException("invalid-sourceTag", "参数sourceTag为空");
+      throw new InvalidInputException("invalid-source-tag", "参数sourceTag为空");
     }
     if (StringUtils.isBlank(addRelationRequest.getTargetTag())) {
-      throw new InvalidInputException("invalid-targetTag", "参数targetTag为空");
+      throw new InvalidInputException("invalid-target-tag", "参数targetTag为空");
     }
   }
 
   @Override
   protected void authorize(int userId, int role, AddRelationRequest addRelationRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {
       Optional<UserExercise> optional = userExerciseRepository.findById(addRelationRequest.getId());
       if (optional.isPresent()) {
@@ -70,15 +75,19 @@ public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, Exercise
   protected ExerciseAnnotationBratVO doBiz(AddRelationRequest addRelationRequest) {
     Optional<UserExercise> optional = userExerciseRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
-      log.info("习题新增关系请求参数：{}",addRelationRequest);
+      log.info("习题新增关系请求参数：{}", addRelationRequest);
       UserExercise userExercise = optional.get();
       String annotation = exerciseRelationOperateService.addRelation(addRelationRequest);
-      log.info("习题新增关系返回结果：{}",annotation);
+      log.info("习题新增关系返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      return AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
+          .convert2ExerciseAnnotationBratVO(userExercise);
+      OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-relation", "success");
+      return exerciseAnnotationBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-relation", "无对应id记录");
     return null;
   }
 }

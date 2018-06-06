@@ -9,6 +9,7 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
+import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ public class DeleteUserExerciseBiz extends
 
   private final AnnotationOperateService exerciseAnnotationOperateService;
   private final UserExerciseRepository userExerciseRepository;
+  private int globalRole;
+  private int globalUserId;
 
   public DeleteUserExerciseBiz(
       @Qualifier("exercise-entity") AnnotationOperateService exerciseAnnotationOperateService,
@@ -51,6 +54,8 @@ public class DeleteUserExerciseBiz extends
   @Override
   protected void authorize(int userId, int role, DeleteAnnotationRequest deleteAnnotationRequest)
       throws BusinessRuleException {
+    globalRole = role;
+    globalUserId = userId;
     if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<UserExercise> optional = userExerciseRepository
           .findById(deleteAnnotationRequest.getId());
@@ -67,15 +72,20 @@ public class DeleteUserExerciseBiz extends
     Optional<UserExercise> optional = userExerciseRepository
         .findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("习题删除标注请求参数：{}",deleteAnnotationRequest);
+      log.info("习题删除标注请求参数：{}", deleteAnnotationRequest);
       UserExercise userExercise = new UserExercise();
-      String annotation = exerciseAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
-      log.info("习题删除标注返回结果：{}",annotation);
+      String annotation = exerciseAnnotationOperateService
+          .deleteAnnotation(deleteAnnotationRequest);
+      log.info("习题删除标注返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      return AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
+          .convert2ExerciseAnnotationBratVO(userExercise);
+      OpLoggerUtil.info(globalUserId, globalRole, "delete-exercise-annotation", "success");
+      return exerciseAnnotationBratVO;
     }
+    OpLoggerUtil.info(globalUserId, globalRole, "delete-exercise-annotation", "无对应id记录");
     return null;
   }
 }

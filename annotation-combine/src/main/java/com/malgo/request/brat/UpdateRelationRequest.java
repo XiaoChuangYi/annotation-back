@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateRelationRequest {
     private int id;
-    private String rTag;
+    private String reTag;
     private String relation;
 }

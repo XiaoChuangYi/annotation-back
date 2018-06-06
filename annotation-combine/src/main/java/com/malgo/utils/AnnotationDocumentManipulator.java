@@ -100,6 +100,7 @@ public class AnnotationDocumentManipulator {
                 !e.getType().equals("Sentence")
         ).collect(Collectors.toList()));
         if (tokens.size() == 0) {
+
             tokens = IntStream.range(0, text.length()).filter((i) ->
                     text.substring(i, i + 1).equals("\n")
             ).mapToObj((i) ->

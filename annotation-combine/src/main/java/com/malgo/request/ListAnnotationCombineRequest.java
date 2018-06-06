@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ListAnnotationCombineRequest {
 
+  private List<Integer> idList;
+  private String term;
   private int pageIndex;
   private int pageSize;
   private List<String> states;
