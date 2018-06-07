@@ -1,189 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.microservice</groupId>
-	<artifactId>annotation</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <artifactId>annotation-service</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-	<name>annotation</name>
-	<description>Demo project for Spring Boot</description>
+    <name>annotation-service</name>
+    <description>Annotation Backend service</description>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.0.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+    <parent>
+        <groupId>cn.malgo</groupId>
+        <artifactId>java-service-parent</artifactId>
+        <version>1.1.0</version>
+    </parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<!--<spring-cloud.version>Finchley.M7</spring-cloud.version>-->
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <spring-cloud.version>Finchley.M8</spring-cloud.version>
+        <malgo.base-definition.version>2.1.0-SNAPSHOT</malgo.base-definition.version>
+        <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
+    </properties>
 
-	<modules>
-		<module>annotation-word-pos</module>
-		<module>annotation-sentence</module>
-		<module>common</module>
-		<module>annotation-config</module>
-		<module>other-service</module>
-		<module>eureka</module>
-		<module>zuul</module>
-		<module>annotation-negation</module>
-		<module>annotation-parallel</module>
-		<module>annotation-combine</module>
-	</modules>
+    <dependencies>
+        <dependency>
+            <groupId>cn.malgo.core</groupId>
+            <artifactId>base-definition</artifactId>
+            <version>${malgo.base-definition.version}</version>
+        </dependency>
 
-	<dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-			<version>3.14</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.5</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-hystrix</artifactId>
+            <version>1.3.1.RELEASE</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>1.2.31</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+    </dependencies>
 
-		<!-- malgo 依赖 end-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-openfeign</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-		<!--springCloud的相关maven引用-->
-		<!--<dependency>-->
-		<!--<groupId>org.springframework.cloud</groupId>-->
-		<!--<artifactId>spring-cloud-commons</artifactId>-->
-		<!--</dependency>-->
-		<!--<dependency>-->
-		<!--<groupId>org.springframework.cloud</groupId>-->
-		<!--<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>-->
-		<!--</dependency>-->
-		<!--springCloud的相关maven引用-->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.3.6</version>
+                <configuration>
+                    <repository>${docker.image.prefix}/${project.artifactId}</repository>
+                    <tag>${project.version}</tag>
+                    <buildArgs>
+                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                    </buildArgs>
+                </configuration>
 
-		<dependency>
-			<groupId>com.github.pagehelper</groupId>
-			<artifactId>pagehelper</artifactId>
-			<version>4.2.1</version>
-		</dependency>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mybatis.spring.boot</groupId>
-			<artifactId>mybatis-spring-boot-starter</artifactId>
-			<version>1.3.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<!--<dependencyManagement>-->
-	<!--<dependencies>-->
-	<!--<dependency>-->
-	<!--<groupId>org.springframework.cloud</groupId>-->
-	<!--<artifactId>spring-cloud-dependencies</artifactId>-->
-	<!--<version>${spring-cloud.version}</version>-->
-	<!--<type>pom</type>-->
-	<!--<scope>import</scope>-->
-	<!--</dependency>-->
-	<!--</dependencies>-->
-	<!--</dependencyManagement>-->
-
-	<!--<build>-->
-	<!--<plugins>-->
-	<!--<plugin>-->
-	<!--<groupId>org.springframework.boot</groupId>-->
-	<!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-	<!--<configuration>-->
-	<!--<mainClass>com.microservice.ConfigDataApplication</mainClass>-->
-	<!--<layout>ZIP</layout>-->
-	<!--</configuration>-->
-	<!--<executions>-->
-	<!--<execution>-->
-	<!--<goals>-->
-	<!--<goal>repackage</goal>&lt;!&ndash;可以把依赖的包都打包到生成的Jar包中&ndash;&gt;-->
-	<!--</goals>-->
-	<!--</execution>-->
-	<!--</executions>-->
-	<!--</plugin>-->
-	<!--</plugins>-->
-	<!--</build>-->
-
-	<distributionManagement>
-		<!-- 		<repository>
-                    <id>nexus-releases</id>
-                    <name>Nexus Release Repository</name>
-                    <url>http://116.62.160.143:8081/nexus/content/repositories/releases/</url>
-                </repository> -->
-		<snapshotRepository>
-			<id>annotation-snapshots</id>
-			<name>Nexus Snapshot Repository</name>
-			<url>http://116.62.185.185:8081/repository/annotation-snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>http://116.62.185.185:8081/repository/maven-central/</url>
-			<layout>default</layout>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>common-snapshots</id>
-			<url>http://116.62.185.185:8081/repository/common-snapshots/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
