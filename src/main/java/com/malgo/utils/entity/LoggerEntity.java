@@ -16,4 +16,5 @@ public class LoggerEntity {
   private int roleId;
   private String action;
   private String result;
+  private String  time;
 }
