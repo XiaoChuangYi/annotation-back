@@ -2,9 +2,11 @@ package com.malgo.utils;
 
 import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.entity.UserExercise;
+import com.malgo.exception.BratParseException;
 import com.malgo.utils.entity.AnnotationDocument;
 import com.malgo.utils.entity.RelationEntity;
 import com.malgo.vo.AnnotationCombineBratVO;
@@ -37,12 +39,13 @@ public class AnnotationConvert {
   /**
    * 查询，将字符串形式的格式转换成前端可以渲染的jsonObject
    */
-  public static JSONObject convertAnnotation2BratFormat(String text, String annotation,int annotationType) {
+  public static JSONObject convertAnnotation2BratFormat(String text, String annotation,
+      int annotationType) {
     AnnotationDocument annotationDocument = new AnnotationDocument(text);
     AnnotationDocumentManipulator
         .parseBratAnnotation(annotation == null ? "" : annotation, annotationDocument);
     JSONObject finalJsonObj = AnnotationDocumentManipulator.toBratAjaxFormat(annotationDocument);
-    if(annotationType==1) {//分句
+    if (annotationType == 1) {//分句
       List<Integer> endPositionList = annotationDocument.getEntities().stream()
           .filter(x -> !x.getType().endsWith("-deleted"))
           .map(x -> x.getEnd()).sorted().collect(Collectors.toList());
@@ -71,8 +74,16 @@ public class AnnotationConvert {
    */
   public static ExerciseAnnotationBratVO convert2ExerciseAnnotationBratVO(
       UserExercise userExercise) {
-    JSONObject bratJson = convertAnnotation2BratFormat(userExercise.getTerm(),
-        userExercise.getUserAnnotation(),userExercise.getAnnotationType());
+    JSONObject bratJson;
+    try {
+      bratJson = convertAnnotation2BratFormat(userExercise.getTerm(),
+          userExercise.getUserAnnotation(), userExercise.getAnnotationType());
+    } catch (Exception ex) {
+      log.info("Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}", userExercise.getId()
+          , userExercise.getTerm(), userExercise.getUserAnnotation(),
+          ex.getMessage());
+      throw new BratParseException("brat-parse-error", "异常标注id：" + userExercise.getId());
+    }
     ExerciseAnnotationBratVO exerciseAnnotationBratVO = new ExerciseAnnotationBratVO();
     BeanUtils.copyProperties(userExercise, exerciseAnnotationBratVO);
     exerciseAnnotationBratVO.setFinalJson(bratJson);
@@ -84,10 +95,19 @@ public class AnnotationConvert {
    */
   public static AnnotationCombineBratVO convert2AnnotationCombineBratVO(
       AnnotationCombine annotationCombine) {
-    JSONObject finalBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
-        annotationCombine.getFinalAnnotation(),annotationCombine.getAnnotationType());
-    JSONObject reviewedBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
-        annotationCombine.getReviewedAnnotation(),annotationCombine.getAnnotationType());
+    JSONObject finalBratJson, reviewedBratJson;
+    try {
+      finalBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
+          annotationCombine.getFinalAnnotation(), annotationCombine.getAnnotationType());
+      reviewedBratJson = convertAnnotation2BratFormat(annotationCombine.getTerm(),
+          annotationCombine.getReviewedAnnotation(), annotationCombine.getAnnotationType());
+    } catch (Exception ex) {
+      log.info("Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}", annotationCombine.getId(),
+          annotationCombine.getTerm(),
+          annotationCombine.getFinalAnnotation() + "--" + annotationCombine.getReviewedAnnotation(),
+          ex.getMessage());
+      throw new BratParseException("brat-parse-error", "异常标注id：" + annotationCombine.getId());
+    }
     AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
     BeanUtils.copyProperties(annotationCombine, annotationCombineBratVO);
     annotationCombineBratVO.setFinalAnnotation(finalBratJson);
@@ -103,10 +123,19 @@ public class AnnotationConvert {
     List<AnnotationCombineBratVO> annotationBratVOList = new LinkedList<>();
     if (annotationCombineList.size() > 0) {
       for (AnnotationCombine annotation : annotationCombineList) {
-        JSONObject finalBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
-            annotation.getFinalAnnotation(),annotation.getAnnotationType());
-        JSONObject reviewedBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
-            annotation.getReviewedAnnotation(),annotation.getAnnotationType());
+        JSONObject finalBratJson, reviewedBratJson;
+        try {
+          reviewedBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
+              annotation.getReviewedAnnotation(), annotation.getAnnotationType());
+          finalBratJson = convertAnnotation2BratFormat(annotation.getTerm(),
+              annotation.getFinalAnnotation(), annotation.getAnnotationType());
+        } catch (Exception ex) {
+          log.info("Brat装换异常,异常标注id：{},对应的文本：{},标注的数据：{},异常信息内容：{}", annotation.getId(),
+              annotation.getTerm(),
+              annotation.getFinalAnnotation() + "--" + annotation.getReviewedAnnotation(),
+              ex.getMessage());
+          throw new BratParseException("brat-parse-error", "异常标注id：" + annotation.getId());
+        }
         AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
         BeanUtils.copyProperties(annotation, annotationCombineBratVO);
         annotationCombineBratVO.setFinalAnnotation(finalBratJson);
@@ -223,20 +252,20 @@ public class AnnotationConvert {
     AnnotationDocumentManipulator
         .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annoDocument);
     //先删除指定的标签
-    List<Entity> entityList=annoDocument.getEntities().stream()
+    List<Entity> entityList = annoDocument.getEntities().stream()
         .filter(x -> !x.getTag().equals(tag))
         .collect(Collectors.toList());
-    IntStream.range(0,entityList.size()).forEach(i->
-        entityList.get(i).setTag("T"+(i+1))
+    IntStream.range(0, entityList.size()).forEach(i ->
+        entityList.get(i).setTag("T" + (i + 1))
     );
     annoDocument.setEntities(entityList);
     //再删除与该标签相关联relation
-    List<RelationEntity> relationEntityList=annoDocument.getRelationEntities().stream()
+    List<RelationEntity> relationEntityList = annoDocument.getRelationEntities().stream()
         .filter(x -> !x.getTargetTag().equals(tag))
         .filter(x -> !x.getSourceTag().equals(tag))
         .collect(Collectors.toList());
-    IntStream.range(0,relationEntityList.size()).forEach(i->
-        relationEntityList.get(i).setTag("R"+(i+1))
+    IntStream.range(0, relationEntityList.size()).forEach(i ->
+        relationEntityList.get(i).setTag("R" + (i + 1))
     );
     annoDocument.setRelationEntities(relationEntityList);
     //todo,后期加入events/triggers，同时删除events关联相关标签的关系
@@ -287,11 +316,11 @@ public class AnnotationConvert {
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator
         .parseBratAnnotation(oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
-    List<RelationEntity> relationEntityList=annotationDocument.getRelationEntities().stream()
+    List<RelationEntity> relationEntityList = annotationDocument.getRelationEntities().stream()
         .filter(x -> !x.getTag().equals(rTag))
         .collect(Collectors.toList());
-    IntStream.range(0,relationEntityList.size()).forEach(i->
-      relationEntityList.get(i).setTag("R"+(i+1))
+    IntStream.range(0, relationEntityList.size()).forEach(i ->
+        relationEntityList.get(i).setTag("R" + (i + 1))
     );
     annotationDocument.setRelationEntities(relationEntityList);
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
@@ -322,7 +351,7 @@ public class AnnotationConvert {
         .filter(i ->
             relationEntityList.stream()
                 .anyMatch(x -> !x.getTag().equals(relationEntityList.get(i).getTag())
-                    &&x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
+                    && x.getSourceTag().equals(relationEntityList.get(i).getSourceTag())
                     && x.getTargetTag().equals(relationEntityList.get(i).getTargetTag())
                     && x.getType().equals(relationEntityList.get(i).getType()))
 
