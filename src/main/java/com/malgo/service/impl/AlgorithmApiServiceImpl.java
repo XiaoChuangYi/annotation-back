@@ -94,7 +94,7 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
           "调用算法接口：{}失败，错误原因：{}",
           algorithmUrl + "/api/batch-update-tokenize-pos",
           ex.getLocalizedMessage());
-      throw new AlgorithmServiceException("call-algorithm-api-failed", "调用算法后台预标注接口失败");
+      throw new AlgorithmServiceException("call-algorithm-api-failed", ex.getLocalizedMessage());
     }
     return autoAnnotationList;
   }
