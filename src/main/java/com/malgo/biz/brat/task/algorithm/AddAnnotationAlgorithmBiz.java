@@ -18,13 +18,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Component
 @Slf4j
-public class AddAnnotationAlgorithmBiz extends
-    BaseBiz<AddAnnotationRequest, AnnotationCombineBratVO> {
+public class AddAnnotationAlgorithmBiz
+    extends BaseBiz<AddAnnotationRequest, AnnotationCombineBratVO> {
 
   private final AnnotationOperateService annotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
@@ -62,7 +60,6 @@ public class AddAnnotationAlgorithmBiz extends
     if (addAnnotationRequest.getEndPosition() <= 0) {
       throw new InvalidInputException("invalid-end-position", "无效的endPosition");
     }
-
   }
 
   @Override
@@ -71,8 +68,8 @@ public class AddAnnotationAlgorithmBiz extends
     globalUserId = userId;
     globalRole = role;
     if (role > 2) {
-      Optional<AnnotationCombine> optional = annotationCombineRepository
-          .findById(addAnnotationRequest.getId());
+      Optional<AnnotationCombine> optional =
+          annotationCombineRepository.findById(addAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (optional.get().getAssignee() != userId) {
           throw new BusinessRuleException("no-authorize-handle-current-record", "您无权操作当前记录!");
@@ -83,24 +80,25 @@ public class AddAnnotationAlgorithmBiz extends
 
   @Override
   protected AnnotationCombineBratVO doBiz(AddAnnotationRequest addAnnotationRequest) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository
-        .findById(addAnnotationRequest.getId());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("过算法后台，标注人员新增标注输入参数：{}", JSON.toJSONString(addAnnotationRequest));
+      //      log.info("过算法后台，标注人员新增标注输入参数：{}", JSON.toJSONString(addAnnotationRequest));
       AnnotationCombine annotationCombine = optional.get();
       if (annotationCombine.getAnnotationType() == 0) {
         annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
         annotationCombine = annotationCombineRepository.save(annotationCombine);
         String annotation = annotationOperateService.addAnnotation(addAnnotationRequest);
-        log.info("过算法后台，标注人员新增标注输出结果：{}", annotation);
+        //        log.info("过算法后台，标注人员新增标注输出结果：{}", annotation);
         annotationCombine.setFinalAnnotation(annotation);
-        AnnotationCombineBratVO annotationCombineBratVO = AnnotationConvert
-            .convert2AnnotationCombineBratVO(annotationCombine);
-        OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm", "success");
+        AnnotationCombineBratVO annotationCombineBratVO =
+            AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+        //        OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm",
+        // "success");
         return annotationCombineBratVO;
       }
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm", "无对应id记录");
+    //    OpLoggerUtil.info(globalUserId, globalRole, "add-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

@@ -12,15 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/5/30.
- */
+/** Created by cjl on 2018/5/30. */
 @Component
-public class ListAnnotationBiz extends
-    BaseBiz<ListAnnotationCombineRequest, PageVO<AnnotationCombineBratVO>> {
+public class ListAnnotationBiz
+    extends BaseBiz<ListAnnotationCombineRequest, PageVO<AnnotationCombineBratVO>> {
 
   private final AnnotationCombineService annotationCombineService;
-
+  private int globalUserId;
+  private int globalRoleId;
 
   @Autowired
   public ListAnnotationBiz(AnnotationCombineService annotationCombineService) {
@@ -42,18 +41,23 @@ public class ListAnnotationBiz extends
   }
 
   @Override
-  protected void authorize(int userId, int role,
-      ListAnnotationCombineRequest listAnnotationCombineRequest) throws BusinessRuleException {
-
+  protected void authorize(
+      int userId, int role, ListAnnotationCombineRequest listAnnotationCombineRequest)
+      throws BusinessRuleException {
+    globalUserId = userId;
+    globalRoleId = role;
   }
 
   @Override
   protected PageVO<AnnotationCombineBratVO> doBiz(
       ListAnnotationCombineRequest annotationCombineQuery) {
     annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
+    if (globalRoleId > 2) {
+      annotationCombineQuery.setUserId(globalUserId);
+    }
     Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);
-    List<AnnotationCombineBratVO> annotationCombineBratVOList = AnnotationConvert
-        .convert2AnnotationCombineBratVOList(page.getContent());
+    List<AnnotationCombineBratVO> annotationCombineBratVOList =
+        AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent());
     PageVO pageVO = new PageVO(page, false);
     pageVO.setDataList(annotationCombineBratVOList);
     return pageVO;

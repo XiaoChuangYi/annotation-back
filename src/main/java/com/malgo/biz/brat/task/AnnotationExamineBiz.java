@@ -12,9 +12,7 @@ import com.malgo.utils.OpLoggerUtil;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/3.
- */
+/** Created by cjl on 2018/6/3. */
 @Component
 public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
@@ -49,17 +47,17 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
 
   @Override
   protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository
-        .findById(annotationStateRequest.getId());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-        boolean changed = AnnotationConvert
-            .compareAnnotation(annotationCombine.getFinalAnnotation(),
-                annotationCombine.getReviewedAnnotation());
-        if (changed) {//相同
+        boolean changed =
+            AnnotationConvert.compareAnnotation(
+                annotationCombine.getFinalAnnotation(), annotationCombine.getReviewedAnnotation());
+        if (changed) { // 相同
           annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
-        } else {//不同
+        } else { // 不同
           annotationCombine.setState(AnnotationCombineStateEnum.errorPass.name());
         }
       }
@@ -67,7 +65,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       }
       annotationCombineRepository.save(annotationCombine);
-      OpLoggerUtil.info(globalUserId, globalRole, "examine-annotation", "success");
+      //      OpLoggerUtil.info(globalUserId, globalRole, "examine-annotation", "success");
     }
     return null;
   }

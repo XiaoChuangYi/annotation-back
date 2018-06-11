@@ -7,9 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Created by cjl on 2018/5/29.
- */
+/** Created by cjl on 2018/5/29. */
 @Entity
 @Table(name = "annotation_combine")
 @Data
@@ -17,14 +15,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AnnotationCombine extends BaseEntity {
 
-
-  @Column(name = "final_annotation", nullable = false)
+  @Column(name = "final_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String finalAnnotation;
-  @Column(name = "manual_annotation", nullable = false)
+
+  @Column(name = "manual_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String manualAnnotation;
-  @Column(name = "reviewed_annotation", nullable = false)
+
+  @Column(name = "reviewed_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String reviewedAnnotation;
+
   private String state;
   private int isTask;
-
 }

@@ -18,9 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/1.
- */
+/** Created by cjl on 2018/6/1. */
 @Component
 @Slf4j
 public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCombineBratVO> {
@@ -31,16 +29,13 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   private int globalRole;
   private int globalUserId;
 
-
   public AddAnnotationBiz(
       @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
       @Qualifier("local-review") AnnotationOperateService reviewAnnotationOperateService,
-      AnnotationCombineRepository annotationCombineRepository
-  ) {
+      AnnotationCombineRepository annotationCombineRepository) {
     this.finalAnnotationOperateService = finalAnnotationOperateService;
     this.reviewAnnotationOperateService = reviewAnnotationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
-
   }
 
   @Override
@@ -53,7 +48,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
       throw new InvalidInputException("invalid-term", "term参数为空");
     }
     if (StringUtils.isBlank(addAnnotationRequest.getType())) {
-      throw new InvalidInputException("invalid-annotation-type", "annotationType参数为空");
+      throw new InvalidInputException("invalid-annotation-type", "type参数为空");
     }
     if (addAnnotationRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
@@ -71,9 +66,9 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
       throws BusinessRuleException {
     globalRole = role;
     globalUserId = userId;
-    if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
-      Optional<AnnotationCombine> optional = annotationCombineRepository
-          .findById(addAnnotationRequest.getId());
+    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+      Optional<AnnotationCombine> optional =
+          annotationCombineRepository.findById(addAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (optional.get().getAssignee() != userId) {
           throw new BusinessRuleException("no-authorize-handle-current-record", "当前人员无权操作当前记录");
@@ -84,40 +79,41 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
 
   @Override
   protected AnnotationCombineBratVO doBiz(AddAnnotationRequest addAnnotationRequest) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository
-        .findById(addAnnotationRequest.getId());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("新增标注输入参数：{}", JSON.toJSONString(addAnnotationRequest));
+      //      log.info("新增标注输入参数：{}", JSON.toJSONString(addAnnotationRequest));
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (globalRole > 0 && globalRole < 3) {//管理员或者是审核人员级别
+      if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
         String annotation = reviewAnnotationOperateService.addAnnotation(addAnnotationRequest);
-        log.info("管理审核人员新增标注输出结果：{}", annotation);
+        //        log.info("管理审核人员新增标注输出结果：{}", annotation);
         annotationCombine.setReviewedAnnotation(annotation);
         annotationCombine = annotationCombineRepository.save(annotationCombine);
-        annotationCombineBratVO = AnnotationConvert
-            .convert2AnnotationCombineBratVO(annotationCombine);
-        OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "success");
+        annotationCombineBratVO =
+            AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+        //        OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "success");
         return annotationCombineBratVO;
       }
-      if (globalRole >= 3) {//标注人员
-        if (annotationCombine.getAnnotationType() != 0) {//当前标注类型为分句/关联标注
+      if (globalRole >= 3) { // 标注人员
+        if (annotationCombine.getAnnotationType() != 0) { // 当前标注类型为分句/关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest);
-          log.info("标注人员新增标注输出结果：{}", annotation);
+          //          log.info("标注人员新增标注输出结果：{}", annotation);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
-          annotationCombineBratVO = AnnotationConvert
-              .convert2AnnotationCombineBratVO(annotationCombine);
-          OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "success");
+          annotationCombineBratVO =
+              AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+          //          OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "success");
           return annotationCombineBratVO;
         } else {
-          OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "当前角色操作，标注类型不匹配");
+          //          OpLoggerUtil.info(globalUserId, globalRole, "add-annotation",
+          // "当前角色操作，标注类型不匹配");
           throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
         }
       }
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "无对应id记录");
+    //    OpLoggerUtil.info(globalUserId, globalRole, "add-annotation", "无对应id记录");
     return null;
   }
 }

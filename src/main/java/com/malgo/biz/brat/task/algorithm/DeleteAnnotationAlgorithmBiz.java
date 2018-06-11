@@ -18,14 +18,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Component
 @Slf4j
-public class DeleteAnnotationAlgorithmBiz extends
-    BaseBiz<DeleteAnnotationRequest, AnnotationCombineBratVO> {
-
+public class DeleteAnnotationAlgorithmBiz
+    extends BaseBiz<DeleteAnnotationRequest, AnnotationCombineBratVO> {
 
   private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
@@ -54,7 +51,6 @@ public class DeleteAnnotationAlgorithmBiz extends
     if (StringUtils.isBlank(deleteAnnotationRequest.getAutoAnnotation())) {
       throw new InvalidInputException("invalid-auto-annotation", "autoAnnotation参数为空");
     }
-
   }
 
   @Override
@@ -63,11 +59,11 @@ public class DeleteAnnotationAlgorithmBiz extends
     globalUserId = userId;
     globalRole = role;
     if (role > 2) {
-      Optional<AnnotationCombine> optional = annotationCombineRepository
-          .findById(deleteAnnotationRequest.getId());
+      Optional<AnnotationCombine> optional =
+          annotationCombineRepository.findById(deleteAnnotationRequest.getId());
       if (optional.isPresent()) {
-        if (userId == optional.get().getAssignee()) {
-          throw new BusinessRuleException("no-authorize-handle-current-record", "您无权操作当前记录!");
+        if (userId != optional.get().getAssignee()) {
+          throw new BusinessRuleException("no-authorize-handle-current-record", "您无权操作当前记录");
         }
       }
     }
@@ -75,23 +71,23 @@ public class DeleteAnnotationAlgorithmBiz extends
 
   @Override
   protected AnnotationCombineBratVO doBiz(DeleteAnnotationRequest deleteAnnotationRequest) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository
-        .findById(deleteAnnotationRequest.getId());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
-      log.info("过算法后台，标注人员删除标注输入参数：{}", JSON.toJSONString(deleteAnnotationRequest));
+      //      log.info("过算法后台，标注人员删除标注输入参数：{}", JSON.toJSONString(deleteAnnotationRequest));
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       annotationCombine = annotationCombineRepository.save(annotationCombine);
-      String annotation = algorithmAnnotationOperateService
-          .deleteAnnotation(deleteAnnotationRequest);
-      log.info("过算法后台，标注人员删除标注输出结果：{}", annotation);
+      String annotation =
+          algorithmAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
+      //      log.info("过算法后台，标注人员删除标注输出结果：{}", annotation);
       annotationCombine.setFinalAnnotation(annotation);
-      AnnotationCombineBratVO annotationCombineBratVO = AnnotationConvert
-          .convert2AnnotationCombineBratVO(annotationCombine);
-      OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "success");
+      AnnotationCombineBratVO annotationCombineBratVO =
+          AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+      //      OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "success");
       return annotationCombineBratVO;
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "无对应id记录");
+    //    OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

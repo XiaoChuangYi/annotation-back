@@ -18,10 +18,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/**
- * Created by cjl on 2018/5/29.
- */
-
+/** Created by cjl on 2018/5/29. */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,29 +42,18 @@ public abstract class BaseEntity {
 
   @Setter
   @Getter
+  @Column(name = "term", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String term;
 
-  @Setter
-  @Getter
-  private String state;
+  @Setter @Getter private String state;
 
-  @Setter
-  @Getter
-  private int assignee;
+  @Setter @Getter private int assignee;
 
-  @Setter
-  @Getter
-  private int creator;
+  @Setter @Getter private int creator;
 
-  @Setter
-  @Getter
-  private int reviewer;
+  @Setter @Getter private int reviewer;
 
-  @Setter
-  @Getter
-  private double deleteToken;
+  @Setter @Getter private double deleteToken;
 
-  @Setter
-  @Getter
-  private int annotationType;
+  @Setter @Getter private int annotationType;
 }

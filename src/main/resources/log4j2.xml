@@ -53,7 +53,7 @@
         <logger name="org.thymeleaf" level="warn"/>
 
         <Logger name="OpLog" level="info">
-            <AppenderRef ref="Console"/>
+            <!--<AppenderRef ref="Console"/>-->
             <AppenderRef ref="OpLog"/>
         </Logger>
 

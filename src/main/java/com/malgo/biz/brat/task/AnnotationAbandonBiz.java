@@ -11,9 +11,7 @@ import com.malgo.utils.OpLoggerUtil;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/3.
- */
+/** Created by cjl on 2018/6/3. */
 @Component
 public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
@@ -34,7 +32,6 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
     if (annotationStateRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }
-
   }
 
   @Override
@@ -43,16 +40,17 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
     globalRole = role;
     globalUserId = userId;
     if (role > 2) {
-      Optional<AnnotationCombine> optional = annotationCombineRepository
-          .findById(annotationStateRequest.getId());
+      Optional<AnnotationCombine> optional =
+          annotationCombineRepository.findById(annotationStateRequest.getId());
       if (optional.isPresent()) {
         AnnotationCombine annotationCombine = optional.get();
         if (userId != annotationCombine.getAssignee()) {
           throw new BusinessRuleException("no-permission-handle-current-record", "当前用户没有权限操作该条记录！");
         }
-        if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation)
-            || annotationCombine.getState()
-            .equals(AnnotationCombineStateEnum.annotationProcessing)) {
+        if (!annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())
+            || !annotationCombine
+                .getState()
+                .equals(AnnotationCombineStateEnum.annotationProcessing.name())) {
         } else {
           throw new BusinessRuleException("current-annotation-state-error", "当前记录无法直接设定为'放弃'状态！");
         }
@@ -62,13 +60,13 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
 
   @Override
   protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository
-        .findById(annotationStateRequest.getId());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.abandon.name());
       annotationCombineRepository.save(annotationCombine);
-      OpLoggerUtil.info(globalUserId, globalRole, "abandon-annotation", "success");
+      //      OpLoggerUtil.info(globalUserId, globalRole, "abandon-annotation", "success");
     }
     return null;
   }
