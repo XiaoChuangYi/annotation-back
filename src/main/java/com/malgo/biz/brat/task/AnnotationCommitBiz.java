@@ -32,8 +32,6 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AlgorithmApiService algorithmApiService;
   private final AtomicTermRepository atomicTermRepository;
-  private int globalRole;
-  private int globalUserId;
 
   @Autowired
   public AnnotationCommitBiz(
@@ -59,8 +57,6 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
   @Override
   protected void authorize(int userId, int role, CommitAnnotationRequest commitAnnotationRequest)
       throws BusinessRuleException {
-    globalRole = role;
-    globalUserId = userId;
     if (role > 2) {
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(commitAnnotationRequest.getId());
@@ -128,6 +124,9 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         }
         List<AutoAnnotation> autoAnnotationList =
             algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+        if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
+          throw new BusinessRuleException("null-response", "调用算法后台数据返回null");
+        }
         annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
         annotationCombine.setFinalAnnotation(autoAnnotationList.get(0).getAnnotation());
         annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
@@ -138,9 +137,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
         annotationCombineRepository.save(annotationCombine);
       }
-      //      OpLoggerUtil.info(globalUserId, globalRole, "commit-annotation", "success");
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "commit-annotation", "无对应id记录");
     return null;
   }
 }

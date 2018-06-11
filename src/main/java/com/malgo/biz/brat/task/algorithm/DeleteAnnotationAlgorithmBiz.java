@@ -1,6 +1,5 @@
 package com.malgo.biz.brat.task.algorithm;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
@@ -10,7 +9,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -74,20 +72,16 @@ public class DeleteAnnotationAlgorithmBiz
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
-      //      log.info("过算法后台，标注人员删除标注输入参数：{}", JSON.toJSONString(deleteAnnotationRequest));
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       annotationCombine = annotationCombineRepository.save(annotationCombine);
       String annotation =
           algorithmAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
-      //      log.info("过算法后台，标注人员删除标注输出结果：{}", annotation);
       annotationCombine.setFinalAnnotation(annotation);
       AnnotationCombineBratVO annotationCombineBratVO =
           AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-      //      OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "success");
       return annotationCombineBratVO;
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation-algorithm", "无对应id记录");
     return null;
   }
 }

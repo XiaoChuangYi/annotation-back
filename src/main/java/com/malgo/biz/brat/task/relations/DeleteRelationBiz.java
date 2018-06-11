@@ -1,6 +1,5 @@
 package com.malgo.biz.brat.task.relations;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
@@ -10,7 +9,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteRelationRequest;
 import com.malgo.service.RelationOperateService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,6 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
   private final RelationOperateService finalRelationOperateService;
   private final RelationOperateService reviewRelationOperateService;
   private int globalRole;
-  private int globalUserId;
 
   public DeleteRelationBiz(
       @Qualifier("final") RelationOperateService finalRelationOperateService,
@@ -56,7 +53,6 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
   protected void authorize(int userId, int role, DeleteRelationRequest deleteRelationRequest)
       throws BusinessRuleException {
     globalRole = role;
-    globalUserId = userId;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(deleteRelationRequest.getId());
@@ -73,18 +69,15 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {
-      //      log.info("删除关系输入参数：{}", JSON.toJSONString(deleteRelationRequest));
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
       if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
           String annotation = reviewRelationOperateService.deleteRelation(deleteRelationRequest);
-          //          log.info("管理审核人员删除关系输出结果：{}", annotation);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          //          OpLoggerUtil.info(globalUserId, globalRole, "delete-relation", "success");
           return annotationCombineBratVO;
         }
       }
@@ -97,16 +90,13 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          //          OpLoggerUtil.info(globalUserId, globalRole, "delete-relation", "success");
           return annotationCombineBratVO;
         } else {
-          //          OpLoggerUtil.info(globalUserId, globalRole, "delete-relation",
           // "当前角色操作，标注类型不匹配");
           throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
         }
       }
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "delete-relation", "无对应id记录");
     return null;
   }
 }

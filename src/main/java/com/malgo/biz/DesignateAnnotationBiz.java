@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, String> {
 
   private final AnnotationCombineService annotationCombineService;
-  private int globalRole;
-  private int globalUserId;
 
   @Autowired
   public DesignateAnnotationBiz(AnnotationCombineService annotationCombineService) {
@@ -35,18 +33,13 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, 
   @Override
   protected void authorize(
       int userId, int role, DesignateAnnotationRequest designateAnnotationRequest)
-      throws BusinessRuleException {
-    globalRole = role;
-    globalUserId = userId;
-  }
+      throws BusinessRuleException {}
 
   @Override
   protected String doBiz(DesignateAnnotationRequest designateAnnotationRequest) {
     try {
       annotationCombineService.designateAnnotationCombine(designateAnnotationRequest);
-      OpLoggerUtil.info(globalUserId, globalRole, "designate-annotation", "success");
     } catch (Exception ex) {
-      //      OpLoggerUtil.info(globalUserId, globalRole, "designate-annotation", ex.getMessage());
       throw new InternalServiceException("batch-designate-failed", ex.getMessage());
     }
     return "";

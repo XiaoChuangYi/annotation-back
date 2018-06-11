@@ -53,7 +53,7 @@ public abstract class BaseEntity {
 
   @Setter @Getter private int reviewer;
 
-  @Setter @Getter private double deleteToken;
+  @Setter @Getter private long deleteToken;
 
   @Setter @Getter private int annotationType;
 }

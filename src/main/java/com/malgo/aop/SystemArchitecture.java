@@ -85,6 +85,8 @@ public class SystemArchitecture {
           "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；返回结果：{}；",
           className,
           methodSignature.getName(),
+          Integer.valueOf(args[1].toString()),
+          Integer.valueOf(args[2].toString()),
           JSON.toJSONString(retValue));
     } else {
       log.info(

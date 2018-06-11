@@ -51,11 +51,12 @@ public class UserAccountServiceImpl implements UserAccountService {
       throw new InvalidInputException("invalid-password", "用户密码为空");
     }
 
-    UserAccount param =
-        userAccountRepository.findByAccountNameAndPassword(
-            loginRequest.getAccountName(), loginRequest.getPassword());
+    UserAccount param = userAccountRepository.findByAccountName(loginRequest.getAccountName());
     if (param == null) {
       throw new BusinessRuleException("no-current-account", "当前账户不存在，请联系管理员");
+    }
+    if (!param.getPassword().equals(loginRequest.getPassword())) {
+      throw new BusinessRuleException("password-error", "密码输入错误");
     }
     if ("disable".equals(param.getState())) {
       throw new BusinessRuleException("account-disabled", "当前账户被冻结，请联系管理员");

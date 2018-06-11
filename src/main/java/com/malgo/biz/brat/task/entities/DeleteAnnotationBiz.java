@@ -1,6 +1,5 @@
 package com.malgo.biz.brat.task.entities;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
@@ -10,7 +9,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,6 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
   private final AnnotationOperateService reviewAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private int globalRole;
-  private int globalUserId;
 
   public DeleteAnnotationBiz(
       @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
@@ -56,7 +53,6 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
   protected void authorize(int userId, int role, DeleteAnnotationRequest deleteAnnotationRequest)
       throws BusinessRuleException {
     globalRole = role;
-    globalUserId = userId;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(deleteAnnotationRequest.getId());
@@ -75,16 +71,13 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      //      log.info("删除标注输入参数：{}", JSON.toJSONString(deleteAnnotationRequest));
       if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
         String annotation =
             reviewAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
-        //        log.info("管理审核人员删除标注输出结果：{}", annotation);
         annotationCombine.setReviewedAnnotation(annotation);
         annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-        //        OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation", "success");
         return annotationCombineBratVO;
       }
       if (globalRole >= 3) { // 标注人员
@@ -92,21 +85,17 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation =
               finalAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
-          //          log.info("标注人员删除标注输出结果：{}", annotation);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          //          OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation", "success");
           return annotationCombineBratVO;
         } else {
-          //          OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation",
           // "当前角色操作，标注类型不匹配");
           throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
         }
       }
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "delete-annotation", "无对应id记录");
     return null;
   }
 }

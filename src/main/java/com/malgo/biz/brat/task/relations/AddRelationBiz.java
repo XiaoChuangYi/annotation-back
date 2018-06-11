@@ -1,6 +1,5 @@
 package com.malgo.biz.brat.task.relations;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
@@ -85,11 +84,9 @@ public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombin
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      //      log.info("新增关系输入参数：{}", JSON.toJSONString(addRelationRequest));
       if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
           String annotation = reviewRelationOperateService.addRelation(addRelationRequest);
-          //          log.info("管理审核人员新增关系输出结果：{}", annotation);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
@@ -102,20 +99,16 @@ public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombin
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation = finalRelationOperateService.addRelation(addRelationRequest);
-          //          log.info("标注人员新增关系输出结果：{}", annotation);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          //          OpLoggerUtil.info(globalUserId, globalRole, "add-relation", "success");
           return annotationCombineBratVO;
         } else {
-          //          OpLoggerUtil.info(globalUserId, globalRole, "add-relation", "当前角色操作，标注类型不匹配");
           throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
         }
       }
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "add-relation", "无对应id记录");
     return null;
   }
 }

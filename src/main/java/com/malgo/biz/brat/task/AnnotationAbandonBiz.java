@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
-  private int globalRole;
-  private int globalUserId;
 
   public AnnotationAbandonBiz(AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
@@ -37,8 +35,6 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
   @Override
   protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
       throws BusinessRuleException {
-    globalRole = role;
-    globalUserId = userId;
     if (role > 2) {
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(annotationStateRequest.getId());
@@ -65,8 +61,8 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.abandon.name());
+      annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
       annotationCombineRepository.save(annotationCombine);
-      //      OpLoggerUtil.info(globalUserId, globalRole, "abandon-annotation", "success");
     }
     return null;
   }

@@ -1,6 +1,5 @@
 package com.malgo.biz.brat.task.algorithm;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
@@ -10,7 +9,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.UpdateAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +24,6 @@ public class UpdateAnnotationAlgorithmBiz
 
   private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
-  private int globalRole;
-  private int globalUserId;
 
   public UpdateAnnotationAlgorithmBiz(
       @Qualifier("algorithm") AnnotationOperateService algorithmAnnotationOperateService,
@@ -59,8 +55,6 @@ public class UpdateAnnotationAlgorithmBiz
   @Override
   protected void authorize(int userId, int role, UpdateAnnotationRequest updateAnnotationRequest)
       throws BusinessRuleException {
-    globalUserId = userId;
-    globalRole = role;
     if (role > 2) {
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(updateAnnotationRequest.getId());
@@ -78,19 +72,15 @@ public class UpdateAnnotationAlgorithmBiz
         annotationCombineRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      //      log.info("过算法后台，标注人员更新标注输入参数：{}", JSON.toJSONString(updateAnnotationRequest));
       annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       annotationCombine = annotationCombineRepository.save(annotationCombine);
       String annotation =
           algorithmAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
       annotationCombine.setFinalAnnotation(annotation);
-      //      log.info("过算法后台，标注人员更新标注输出结果：{}", annotation);
       AnnotationCombineBratVO annotationCombineBratVO =
           AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-      //      OpLoggerUtil.info(globalUserId, globalRole, "update-annotation-algorithm", "success");
       return annotationCombineBratVO;
     }
-    //    OpLoggerUtil.info(globalUserId, globalRole, "update-annotation-algorithm", "无对应id记录");
     return null;
   }
 }
