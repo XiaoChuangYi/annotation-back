@@ -16,6 +16,7 @@ import com.malgo.request.brat.CommitAnnotationRequest;
 import com.malgo.service.AlgorithmApiService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.utils.OpLoggerUtil;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -121,6 +122,8 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
                               commitAnnotationRequest.getId()))
                   .collect(Collectors.toList());
           atomicTermRepository.saveAll(atomicTerms);
+        } else {
+          updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
         }
         List<AutoAnnotation> autoAnnotationList =
             algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);

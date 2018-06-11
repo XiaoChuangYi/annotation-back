@@ -10,7 +10,6 @@ import com.malgo.request.brat.AddAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.vo.AnnotationCombineBratVO;
-import java.util.Collections;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
