@@ -91,7 +91,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
           .forEach(
               annotationCombine ->
                   annotationCombine.setUserName(
-                      userMap.getOrDefault(annotationCombine.getId(), "")));
+                      userMap.getOrDefault(annotationCombine.getAssignee(), "")));
     }
     return page;
   }

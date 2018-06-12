@@ -1,6 +1,5 @@
 package com.malgo.aop;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.exception.MalgoServiceException;
 import com.malgo.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
