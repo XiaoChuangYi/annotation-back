@@ -405,9 +405,15 @@ public class AnnotationConvert {
             .getRelationEntities()
             .stream()
             .filter(
-                x -> x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag)
-                //                    && x.getType().equals(type)
-                )
+                x -> {
+                  if (x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag)) {
+                    return true;
+                  }
+                  if (x.getSourceTag().equals(targetTag) && x.getTargetTag().equals(sourceTag)) {
+                    return true;
+                  }
+                  return false;
+                })
             .count()
         > 0) {
       return oldAnnotation;
