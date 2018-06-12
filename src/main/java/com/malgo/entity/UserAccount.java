@@ -7,23 +7,24 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-/**
- * Created by cjl on 2018/5/30.
- */
+/** Created by cjl on 2018/5/30. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "user_account")
 public class UserAccount {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
+
   private String accountName;
   private String password;
   private String role;

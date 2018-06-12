@@ -8,6 +8,7 @@ import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
+import com.malgo.service.AnnotationRelationService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
@@ -24,15 +25,19 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   private final AnnotationOperateService finalAnnotationOperateService;
   private final AnnotationOperateService reviewAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRelationService annotationRelationService;
+
   private int globalRole;
 
   public AddAnnotationBiz(
       @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
       @Qualifier("local-review") AnnotationOperateService reviewAnnotationOperateService,
-      AnnotationCombineRepository annotationCombineRepository) {
+      AnnotationCombineRepository annotationCombineRepository,
+      AnnotationRelationService annotationRelationService) {
     this.finalAnnotationOperateService = finalAnnotationOperateService;
     this.reviewAnnotationOperateService = reviewAnnotationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
+    this.annotationRelationService = annotationRelationService;
   }
 
   @Override
@@ -81,7 +86,12 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
       if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
-        String annotation = reviewAnnotationOperateService.addAnnotation(addAnnotationRequest);
+        String annotation;
+        if (annotationCombine.getAnnotationType() == 1) { // 分句
+          annotation = reviewAnnotationOperateService.addAnnotation(addAnnotationRequest);
+        } else {
+          annotation = annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
+        }
         annotationCombine.setReviewedAnnotation(annotation);
         annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
@@ -90,8 +100,13 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
       }
       if (globalRole >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() != 0) { // 当前标注类型为分句/关联标注
+          String annotation;
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          String annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest);
+          if (annotationCombine.getAnnotationType() == 2) { // 关联
+            annotation = annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
+          } else { // 分句
+            annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest);
+          }
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =

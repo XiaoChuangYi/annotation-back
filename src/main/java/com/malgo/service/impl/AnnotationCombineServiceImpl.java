@@ -1,6 +1,8 @@
 package com.malgo.service.impl;
 
 import com.malgo.dao.AnnotationCombineRepository;
+import com.malgo.dao.UserAccountRepository;
+import com.malgo.entity.UserAccount;
 import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.request.DesignateAnnotationRequest;
 import com.malgo.request.ListAnnotationCombineRequest;
@@ -9,6 +11,8 @@ import com.malgo.request.RandomDesignateAnnotationRequest;
 import com.malgo.service.AnnotationCombineService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +30,14 @@ import org.springframework.stereotype.Service;
 public class AnnotationCombineServiceImpl implements AnnotationCombineService {
 
   private final AnnotationCombineRepository annotationCombineRepository;
+  private final UserAccountRepository userAccountRepository;
 
   @Autowired
-  public AnnotationCombineServiceImpl(AnnotationCombineRepository annotationCombineRepository) {
+  public AnnotationCombineServiceImpl(
+      AnnotationCombineRepository annotationCombineRepository,
+      UserAccountRepository userAccountRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
+    this.userAccountRepository = userAccountRepository;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -63,13 +71,29 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
   @Override
   public Page<AnnotationCombine> listAnnotationCombine(
       ListAnnotationCombineRequest listAnnotationCombineRequest) {
-    return annotationCombineRepository.findAll(
-        queryAnnotationCombineCondition(listAnnotationCombineRequest),
-        PageRequest.of(
-            listAnnotationCombineRequest.getPageIndex(),
-            listAnnotationCombineRequest.getPageSize(),
-            Direction.ASC,
-            "id"));
+    Page<AnnotationCombine> page =
+        annotationCombineRepository.findAll(
+            queryAnnotationCombineCondition(listAnnotationCombineRequest),
+            PageRequest.of(
+                listAnnotationCombineRequest.getPageIndex(),
+                listAnnotationCombineRequest.getPageSize(),
+                Direction.ASC,
+                "id"));
+    Map<Integer, String> userMap;
+    if (page.getTotalElements() > 0) {
+      userMap =
+          userAccountRepository
+              .findAll()
+              .stream()
+              .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+      page.getContent()
+          .stream()
+          .forEach(
+              annotationCombine ->
+                  annotationCombine.setUserName(
+                      userMap.getOrDefault(annotationCombine.getId(), "")));
+    }
+    return page;
   }
 
   /** 批量指派标注数据给特定用户 */
@@ -84,6 +108,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
             annotationCombine -> {
               annotationCombine.setAssignee(designateAnnotationRequest.getUserId());
               annotationCombine.setState(AnnotationCombineStateEnum.preAnnotation.name());
+              annotationCombine.setReviewedAnnotation("");
             });
     annotationCombineRepository.saveAll(annotationCombineList);
   }
@@ -110,6 +135,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
               annotationCombineList
                   .get(i)
                   .setState(AnnotationCombineStateEnum.preAnnotation.name());
+              annotationCombineList.get(i).setReviewedAnnotation("");
             });
     annotationCombineRepository.saveAll(annotationCombineList);
   }

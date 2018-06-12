@@ -265,11 +265,31 @@ public class AnnotationConvert {
         annotationDocument
             .getEntities()
             .stream()
-            .filter(x -> !x.getTerm().contains(newTerm))
+            .filter(
+                x -> {
+                  if (!x.getTerm().equals(newTerm)) { // 如果词不相等，则做过滤判断
+                    return !x.getTerm().contains(newTerm);
+                  } else { // 如果词相等，不过滤
+                    return true;
+                  }
+                })
             .collect(Collectors.toList()));
     annotationDocument
         .getEntities()
         .add(new Entity(newTag, startPosition, endPosition, newType, newTerm));
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+  }
+
+  /** relation界面新增entities */
+  public static String addRelationEntitiesAnnotation(
+      String oldAnnotation, String type, int startPosition, int endPosition, String term) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    String newTag = getEntityNewTag(oldAnnotation);
+    annotationDocument
+        .getEntities()
+        .add(new Entity(newTag, startPosition, endPosition, type, term));
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
@@ -293,11 +313,38 @@ public class AnnotationConvert {
         > 0) {
       return oldAnnotation;
     } else {
-      annotationDocument
-          .getEntities()
-          .add(new Entity(newTag, startPosition, endPosition, type, term));
-      return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+      if (annotationDocument
+              .getEntities()
+              .stream()
+              .filter(
+                  x ->
+                      x.getTerm().equals(term)
+                          && x.getStart() == startPosition
+                          && x.getEnd() == endPosition
+                          && x.getType().equals("Sentence-end-unconfirmed")
+                          && "Sentence-end".equals(type))
+              .count()
+          > 0) {
+        annotationDocument
+            .getEntities()
+            .stream()
+            .forEach(
+                x -> {
+                  if (x.getTerm().equals(term)
+                      && x.getStart() == startPosition
+                      && x.getEnd() == endPosition
+                      && x.getType().equals("Sentence-end-unconfirmed")
+                      && type.equals("Sentence-end")) {
+                    x.setType("Sentence-end");
+                  }
+                });
+      } else {
+        annotationDocument
+            .getEntities()
+            .add(new Entity(newTag, startPosition, endPosition, type, term));
+      }
     }
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
   /** 删除entities数组中的标注，同时删除relations，(events/triggers待定) */
@@ -358,10 +405,9 @@ public class AnnotationConvert {
             .getRelationEntities()
             .stream()
             .filter(
-                x ->
-                    x.getSourceTag().equals(sourceTag)
-                        && x.getTargetTag().equals(targetTag)
-                        && x.getType().equals(type))
+                x -> x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag)
+                //                    && x.getType().equals(type)
+                )
             .count()
         > 0) {
       return oldAnnotation;

@@ -15,7 +15,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.CommitAnnotationRequest;
 import com.malgo.service.AlgorithmApiService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;

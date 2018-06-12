@@ -30,7 +30,14 @@ public class SystemArchitecture {
    * A join point is in the service layer if the method is defined in a type in the
    * com.xyz.someapp.service package or any sub-package under that.
    */
+  @Pointcut("!execution(* com.malgo.biz.*.List*.*(..))")
+  public void notBusinessLayer() {}
+
   @Pointcut("within(com.malgo.biz..*)")
+  //  @Pointcut("execution(* com.malgo.biz.*.*(..)) ")
+  public void inBusinessLayer() {}
+
+  @Pointcut("notBusinessLayer()&&inBusinessLayer()")
   public void businessLayer() {}
 
   /**

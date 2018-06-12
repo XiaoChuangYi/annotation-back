@@ -8,12 +8,14 @@ import com.malgo.service.AnnotationCombineService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 /** Created by cjl on 2018/5/30. */
 @Component
+@Slf4j
 public class ListAnnotationBiz
     extends BaseBiz<ListAnnotationCombineRequest, PageVO<AnnotationCombineBratVO>> {
 

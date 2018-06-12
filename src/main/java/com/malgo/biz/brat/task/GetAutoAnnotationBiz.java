@@ -50,14 +50,17 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         annotationCombineRepository.findById(getAutoAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      annotationCombine.setManualAnnotation("");
       List<AutoAnnotation> autoAnnotationList =
           algorithmApiService.listAutoAnnotationThroughAlgorithm(getAutoAnnotationRequest.getId());
       if (autoAnnotationList != null && autoAnnotationList.size() > 0) {
         AutoAnnotation autoAnnotation = autoAnnotationList.get(0);
         if (autoAnnotation != null) {
+          annotationCombineRepository.save(annotationCombine);
           autoAnnotation.setAnnotation(
               AnnotationConvert.addUncomfirmed(autoAnnotation.getAnnotation()));
           annotationCombine.setFinalAnnotation(autoAnnotation.getAnnotation());
+
           AnnotationCombineBratVO annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           AlgorithmAnnotationVO algorithmAnnotationVO = new AlgorithmAnnotationVO();
