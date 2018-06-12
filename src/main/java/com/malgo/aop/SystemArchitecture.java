@@ -30,14 +30,10 @@ public class SystemArchitecture {
    * A join point is in the service layer if the method is defined in a type in the
    * com.xyz.someapp.service package or any sub-package under that.
    */
-  @Pointcut("!execution(* com.malgo.biz.*.List*.*(..))")
-  public void notBusinessLayer() {}
-
   @Pointcut("within(com.malgo.biz..*)")
-  //  @Pointcut("execution(* com.malgo.biz.*.*(..)) ")
   public void inBusinessLayer() {}
 
-  @Pointcut("notBusinessLayer()&&inBusinessLayer()")
+  @Pointcut("inBusinessLayer()")
   public void businessLayer() {}
 
   /**
@@ -55,16 +51,21 @@ public class SystemArchitecture {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     Object[] args = joinPoint.getArgs();
     if (args.length == 3) { // businessLayer
-      log.info(
-          "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；请求参数：{}；",
-          className,
-          methodSignature.getName(),
-          Integer.valueOf(args[1].toString()),
-          Integer.valueOf(args[2].toString()),
-          JSON.toJSONString(args));
+      String[] methodArr = className.split("\\.");
+      if (!methodArr[methodArr.length - 1].startsWith("List")
+          && !methodArr[methodArr.length - 1].startsWith("Get")) {
+        log.info(
+            "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；请求参数：{}；",
+            className,
+            methodSignature.getName(),
+            Integer.valueOf(args[1].toString()),
+            Integer.valueOf(args[2].toString()),
+            args);
+      }
     } else {
-      log.info(
-          "类名：{}；方法名：{}；请求参数：{}；", className, methodSignature.getName(), JSON.toJSONString(args));
+      if (!methodSignature.getName().startsWith("list")) {
+        log.info("类名：{}；方法名：{}；请求参数：{}；", className, methodSignature.getName(), args);
+      }
     }
   }
 
@@ -88,19 +89,20 @@ public class SystemArchitecture {
             methodArr[methodArr.length - 1].replace("Biz", ""),
             "success");
       }
-      log.info(
-          "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；返回结果：{}；",
-          className,
-          methodSignature.getName(),
-          Integer.valueOf(args[1].toString()),
-          Integer.valueOf(args[2].toString()),
-          JSON.toJSONString(retValue));
+      if (!methodArr[methodArr.length - 1].startsWith("List")
+          && !methodArr[methodArr.length - 1].startsWith("Get")) {
+        log.info(
+            "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；返回结果：{}；",
+            className,
+            methodSignature.getName(),
+            Integer.valueOf(args[1].toString()),
+            Integer.valueOf(args[2].toString()),
+            retValue);
+      }
     } else {
-      log.info(
-          "类名：{}；方法名：{}；返回结果：{}；",
-          className,
-          methodSignature.getName(),
-          JSON.toJSONString(retValue));
+      if (!methodSignature.getName().startsWith("list")) {
+        log.info("类名：{}；方法名：{}；返回结果：{}；", className, methodSignature.getName(), retValue);
+      }
     }
   }
 

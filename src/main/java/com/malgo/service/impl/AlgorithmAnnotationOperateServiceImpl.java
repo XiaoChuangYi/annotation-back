@@ -1,6 +1,5 @@
 package com.malgo.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
@@ -59,7 +58,7 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
     updateAnnotationAlgorithm.setAutoAnnotation(autoAnnotation);
     updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
     updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
-    log.info("过算法后台，最终输入参数：{}", JSON.toJSONString(updateAnnotationAlgorithm));
+    log.info("过算法后台，最终输入参数：{}", updateAnnotationAlgorithm);
     List<AutoAnnotation> finalAnnotationList =
         algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
     if (finalAnnotationList != null

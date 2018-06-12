@@ -1,6 +1,5 @@
 package com.malgo.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.AutoAnnotationRequest;
@@ -49,13 +48,11 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
         log.info(
             "调用算法接口：{}的请求参数：{}",
             algorithmUrl + "/api/batch-mr-tokenize-pos",
-            JSON.toJSONString(Arrays.asList(autoAnnotationRequest)));
+            Arrays.asList(autoAnnotationRequest));
         autoAnnotationList =
             algorithmApiClient.listCasePrepareAnnotation(Arrays.asList(autoAnnotationRequest));
         log.info(
-            "调用算法接口：{}的返回结果：{}",
-            algorithmUrl + "/api/batch-mr-tokenize-pos",
-            JSON.toJSONString(autoAnnotationList));
+            "调用算法接口：{}的返回结果：{}", algorithmUrl + "/api/batch-mr-tokenize-pos", autoAnnotationList);
       } catch (Exception ex) {
         log.error(
             "调用算法接口：{}失败，错误原因：{}",
@@ -79,13 +76,11 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
       log.info(
           "调用算法接口：{}的请求参数：{}",
           algorithmUrl + "/api/batch-update-tokenize-pos",
-          JSON.toJSONString(updateAnnotationAlgorithmList));
+          updateAnnotationAlgorithmList);
       autoAnnotationList =
           algorithmApiClient.batchUpdateAnnotationTokenizePos(updateAnnotationAlgorithmList);
       log.info(
-          "调用算法接口：{}的返回结果：{}",
-          algorithmUrl + "/api/batch-update-tokenize-pos",
-          JSON.toJSONString(autoAnnotationList));
+          "调用算法接口：{}的返回结果：{}", algorithmUrl + "/api/batch-update-tokenize-pos", autoAnnotationList);
       if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
         throw new BusinessRuleException("null-response", "算法后台返回结果为null");
       }
