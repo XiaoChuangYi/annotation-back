@@ -56,7 +56,7 @@ public class AnnotationDocumentManipulator {
             .filter((s) -> s.startsWith("T"))
             .map(
                 (s) -> {
-                  final String[] tabs = s.split("\\s");
+                  final String[] tabs = s.split("\\s", 5);
 
                   if (tabs.length != 5 && tabs.length != 4) {
                     log.warn(

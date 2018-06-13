@@ -112,6 +112,30 @@ public class AnnotationDocumentManipulatorTest {
         },
         new RelationEntity[0],
       },
+      new Object[] {
+        "眉恶性黑色素瘤(恶性) (M87200/3)",
+        "T6\tBody-structure\t0\t1\t眉\n"
+            + "T3\tQualifier\t1\t3\t恶性\n"
+            + "T2\tSubstance\t3\t6\t黑色素\n"
+            + "T5\tDisease\t6\t7\t瘤\n"
+            + "T7\tToken\t7\t8\t(\n"
+            + "T4\tQualifier\t8\t10\t恶性\n"
+            + "T8\tToken\t10\t13\t) (\n"
+            + "T1\tUnknown\t13\t21\tM87200/3\n"
+            + "T9\tToken\t21\t22\t)",
+        new Entity[] {
+          new Entity("T6", 0, 1, "Body-structure", "眉"),
+          new Entity("T3", 1, 3, "Qualifier", "恶性"),
+          new Entity("T2", 3, 6, "Substance", "黑色素"),
+          new Entity("T5", 6, 7, "Disease", "瘤"),
+          new Entity("T7", 7, 8, "Token", "("),
+          new Entity("T4", 8, 10, "Qualifier", "恶性"),
+          new Entity("T8", 10, 13, "Token", ") ("),
+          new Entity("T1", 13, 21, "Unknown", "M87200/3"),
+          new Entity("T9", 21, 22, "Token", ")"),
+        },
+        new RelationEntity[0],
+      },
     };
   }
 
