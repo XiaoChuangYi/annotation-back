@@ -70,9 +70,16 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
   }
 
   @Override
-  public String addAnnotation(AddAnnotationRequest addAnnotationRequest) {
+  public String addAnnotation(AddAnnotationRequest addAnnotationRequest, int roleId) {
     AnnotationCombine annotationCombine = getAnnotationCombine(addAnnotationRequest.getId());
     String manualAnnotation = annotationCombine.getManualAnnotation();
+    String autoAnnotation = "";
+    if (roleId > 0 && roleId < 3) { // 审核人员，管理人员
+      autoAnnotation = annotationCombine.getFinalAnnotation();
+    }
+    if (roleId > 2) { // 标注人员
+      autoAnnotation = addAnnotationRequest.getAutoAnnotation();
+    }
     manualAnnotation =
         AnnotationConvert.handleCrossAnnotation(
             manualAnnotation,
@@ -82,10 +89,7 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
             addAnnotationRequest.getEndPosition());
     String annotation =
         handleAnnotationCombine(
-            addAnnotationRequest.getId(),
-            annotationCombine,
-            manualAnnotation,
-            addAnnotationRequest.getAutoAnnotation());
+            addAnnotationRequest.getId(), annotationCombine, manualAnnotation, autoAnnotation);
     return annotation;
   }
 

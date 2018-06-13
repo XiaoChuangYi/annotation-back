@@ -25,6 +25,8 @@ public class AddAnnotationAlgorithmBiz
   private final AnnotationOperateService annotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
 
+  private int globalRole;
+
   public AddAnnotationAlgorithmBiz(
       @Qualifier("algorithm") AnnotationOperateService annotationOperateService,
       AnnotationCombineRepository annotationCombineRepository) {
@@ -61,6 +63,7 @@ public class AddAnnotationAlgorithmBiz
   @Override
   protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
       throws BusinessRuleException {
+    globalRole = role;
     if (role > 2) {
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(addAnnotationRequest.getId());
@@ -81,7 +84,8 @@ public class AddAnnotationAlgorithmBiz
       if (annotationCombine.getAnnotationType() == 0) {
         annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
         annotationCombine = annotationCombineRepository.save(annotationCombine);
-        String annotation = annotationOperateService.addAnnotation(addAnnotationRequest);
+        String annotation =
+            annotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
         annotationCombine.setFinalAnnotation(annotation);
         AnnotationCombineBratVO annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);

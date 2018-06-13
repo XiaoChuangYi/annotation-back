@@ -75,7 +75,7 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
         String annotation =
             reviewAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
         annotationCombine.setReviewedAnnotation(annotation);
-        annotationCombine = annotationCombineRepository.save(annotationCombine);
+        //        annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
@@ -83,10 +83,10 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
       if (globalRole >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() != 0) { // 分句，关联
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+          annotationCombine = annotationCombineRepository.save(annotationCombine);
           String annotation =
               finalAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
           annotationCombine.setFinalAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;

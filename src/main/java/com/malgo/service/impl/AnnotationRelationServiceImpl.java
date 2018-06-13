@@ -28,25 +28,25 @@ public class AnnotationRelationServiceImpl implements AnnotationRelationService 
         annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String newAnnotation = "";
-      if (roleId > 2) {
-        newAnnotation =
-            AnnotationConvert.addRelationEntitiesAnnotation(
-                annotationCombine.getFinalAnnotation(),
-                addAnnotationRequest.getType(),
-                addAnnotationRequest.getStartPosition(),
-                addAnnotationRequest.getEndPosition(),
-                addAnnotationRequest.getTerm());
-      }
-      if (roleId > 0 && roleId <= 2) {
-        newAnnotation =
-            AnnotationConvert.addRelationEntitiesAnnotation(
-                annotationCombine.getReviewedAnnotation(),
-                addAnnotationRequest.getType(),
-                addAnnotationRequest.getStartPosition(),
-                addAnnotationRequest.getEndPosition(),
-                addAnnotationRequest.getTerm());
-      }
+      String newAnnotation;
+      //      if (roleId > 2) {
+      //        newAnnotation =
+      //            AnnotationConvert.addRelationEntitiesAnnotation(
+      //                annotationCombine.getManualAnnotation(),
+      //                addAnnotationRequest.getType(),
+      //                addAnnotationRequest.getStartPosition(),
+      //                addAnnotationRequest.getEndPosition(),
+      //                addAnnotationRequest.getTerm());
+      //      }
+      //      if (roleId > 0 && roleId <= 2) {
+      newAnnotation =
+          AnnotationConvert.addRelationEntitiesAnnotation(
+              annotationCombine.getManualAnnotation(),
+              addAnnotationRequest.getType(),
+              addAnnotationRequest.getStartPosition(),
+              addAnnotationRequest.getEndPosition(),
+              addAnnotationRequest.getTerm());
+      //      }
       return newAnnotation;
     }
     return "";

@@ -17,9 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/4.
- */
+/** Created by cjl on 2018/6/4. */
 @Component
 @Slf4j
 public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAnnotationBratVO> {
@@ -57,7 +55,6 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
     if (addAnnotationRequest.getEndPosition() <= 0) {
       throw new InvalidInputException("invalid-end-position", "无效的endPosition");
     }
-
   }
 
   @Override
@@ -65,9 +62,9 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
       throws BusinessRuleException {
     globalRole = role;
     globalUserId = userId;
-    if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
-      Optional<UserExercise> optional = userExerciseRepository
-          .findById(addAnnotationRequest.getId());
+    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+      Optional<UserExercise> optional =
+          userExerciseRepository.findById(addAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (optional.get().getAssignee() != userId) {
           throw new BusinessRuleException("no-authorize-handle-current-record", "当前人员无权操作当前记录");
@@ -78,18 +75,19 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
 
   @Override
   protected ExerciseAnnotationBratVO doBiz(AddAnnotationRequest addAnnotationRequest) {
-    //练习人员
+    // 练习人员
     Optional<UserExercise> optional = userExerciseRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       log.info("习题新增标注请求参数：{}", addAnnotationRequest);
       UserExercise userExercise = optional.get();
-      String annotation = exerciseAnnotationOperateService.addAnnotation(addAnnotationRequest);
+      String annotation =
+          exerciseAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
       log.info("习题新增标注返回结果：{}", annotation);
       userExercise.setUserAnnotation(annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise = userExerciseRepository.save(userExercise);
-      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
-          .convert2ExerciseAnnotationBratVO(userExercise);
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO =
+          AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
       OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-annotation", "success");
       return exerciseAnnotationBratVO;
     }

@@ -24,6 +24,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
 
   private final AnnotationOperateService finalAnnotationOperateService;
   private final AnnotationOperateService reviewAnnotationOperateService;
+  private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationRelationService annotationRelationService;
 
@@ -32,12 +33,14 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   public AddAnnotationBiz(
       @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
       @Qualifier("local-review") AnnotationOperateService reviewAnnotationOperateService,
+      @Qualifier("algorithm") AnnotationOperateService algorithmAnnotationOperateService,
       AnnotationCombineRepository annotationCombineRepository,
       AnnotationRelationService annotationRelationService) {
     this.finalAnnotationOperateService = finalAnnotationOperateService;
     this.reviewAnnotationOperateService = reviewAnnotationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.annotationRelationService = annotationRelationService;
+    this.algorithmAnnotationOperateService = algorithmAnnotationOperateService;
   }
 
   @Override
@@ -86,36 +89,42 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
       if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
-        String annotation;
+        String annotation = "";
+        if (annotationCombine.getAnnotationType() == 0) { // 分词过算法
+          annotation =
+              algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
+        }
         if (annotationCombine.getAnnotationType() == 1) { // 分句
-          annotation = reviewAnnotationOperateService.addAnnotation(addAnnotationRequest);
-        } else {
+          annotation =
+              reviewAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
+        }
+        if (annotationCombine.getAnnotationType() == 2) { // 关联
           annotation = annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
         }
         annotationCombine.setReviewedAnnotation(annotation);
-        annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
       }
       if (globalRole >= 3) { // 标注人员
-        if (annotationCombine.getAnnotationType() != 0) { // 当前标注类型为分句/关联标注
-          String annotation;
+
+          String annotation= "";
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          if (annotationCombine.getAnnotationType() == 2) { // 关联
-            annotation = annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
-          } else { // 分句
-            annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest);
+        annotationCombine = annotationCombineRepository.save(annotationCombine);  if (annotationCombine.getAnnotationType() == 0) { // 分词
+            annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
+          } if (annotationCombine.getAnnotationType() == 1) { // 分句
+            annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
           }
-          annotationCombine.setFinalAnnotation(annotation);
-          //          annotationCombine = annotationCombineRepository.save(annotationCombine);
+          if (annotationCombine.getAnnotationType() == 2) { // 关联annotation= annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
+        }
+          //annotationCombine .setFinalAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;
         } else {
           // "当前角色操作，标注类型不匹配");
           throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
-        }
+
       }
     }
     return null;

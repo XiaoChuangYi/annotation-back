@@ -11,9 +11,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Service("exercise-entity")
 public class UserAnnotationOperateServiceImpl implements AnnotationOperateService {
 
@@ -25,15 +23,17 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
   }
 
   @Override
-  public String addAnnotation(AddAnnotationRequest addAnnotationRequest) {
+  public String addAnnotation(AddAnnotationRequest addAnnotationRequest, int roleId) {
     Optional<UserExercise> optional = userExerciseRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       UserExercise userExercise = optional.get();
-      String newAnnotation = AnnotationConvert
-          .addEntitiesAnnotation(userExercise.getUserAnnotation()
-              , addAnnotationRequest.getType(), addAnnotationRequest.getStartPosition()
-              , addAnnotationRequest.getEndPosition(), addAnnotationRequest.getTerm()
-          );
+      String newAnnotation =
+          AnnotationConvert.addEntitiesAnnotation(
+              userExercise.getUserAnnotation(),
+              addAnnotationRequest.getType(),
+              addAnnotationRequest.getStartPosition(),
+              addAnnotationRequest.getEndPosition(),
+              addAnnotationRequest.getTerm());
       return newAnnotation;
     }
     return "";
@@ -41,13 +41,13 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
 
   @Override
   public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
-    Optional<UserExercise> optional = userExerciseRepository
-        .findById(deleteAnnotationRequest.getId());
+    Optional<UserExercise> optional =
+        userExerciseRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
       UserExercise userExercise = optional.get();
-      String newAnnotation = AnnotationConvert
-          .deleteEntitiesAnnotation(userExercise.getUserAnnotation(),
-              deleteAnnotationRequest.getTag());
+      String newAnnotation =
+          AnnotationConvert.deleteEntitiesAnnotation(
+              userExercise.getUserAnnotation(), deleteAnnotationRequest.getTag());
       return newAnnotation;
     }
     return "";
@@ -55,20 +55,20 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
 
   @Override
   public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
-    Optional<UserExercise> optional = userExerciseRepository
-        .findById(updateAnnotationRequest.getId());
+    Optional<UserExercise> optional =
+        userExerciseRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
       UserExercise userExercise = optional.get();
-      String newAnnotation = AnnotationConvert
-          .updateEntitiesAnnotation(userExercise.getUserAnnotation(),
-              updateAnnotationRequest.getTag(), updateAnnotationRequest.getNewType());
+      String newAnnotation =
+          AnnotationConvert.updateEntitiesAnnotation(
+              userExercise.getUserAnnotation(),
+              updateAnnotationRequest.getTag(),
+              updateAnnotationRequest.getNewType());
       return newAnnotation;
     }
     return "";
   }
 
   @Override
-  public void test() {
-
-  }
+  public void test() {}
 }

@@ -26,14 +26,14 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
   }
 
   @Override
-  public String addAnnotation(AddAnnotationRequest addAnnotationRequest) {
+  public String addAnnotation(AddAnnotationRequest addAnnotationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       String newAnnotation =
           AnnotationConvert.addEntitiesAnnotation(
-              annotationCombine.getFinalAnnotation(),
+              annotationCombine.getManualAnnotation(),
               addAnnotationRequest.getType(),
               addAnnotationRequest.getStartPosition(),
               addAnnotationRequest.getEndPosition(),
@@ -51,7 +51,7 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
       AnnotationCombine annotationCombine = optional.get();
       String newAnnotation =
           AnnotationConvert.deleteEntitiesAnnotation(
-              annotationCombine.getFinalAnnotation(), deleteAnnotationRequest.getTag());
+              annotationCombine.getManualAnnotation(), deleteAnnotationRequest.getTag());
       return newAnnotation;
     }
     return "";
@@ -65,7 +65,7 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
       AnnotationCombine annotationCombine = optional.get();
       String newAnnotation =
           AnnotationConvert.updateEntitiesAnnotation(
-              annotationCombine.getFinalAnnotation(),
+              annotationCombine.getManualAnnotation(),
               updateAnnotationRequest.getTag(),
               updateAnnotationRequest.getNewType());
       return newAnnotation;

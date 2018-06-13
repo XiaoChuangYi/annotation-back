@@ -78,7 +78,7 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
         String annotation =
             reviewAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
         annotationCombine.setReviewedAnnotation(annotation);
-        annotationCombine = annotationCombineRepository.save(annotationCombine);
+        //        annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
@@ -86,10 +86,10 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
       if (globalRole >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() != 0) {
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+          annotationCombine = annotationCombineRepository.save(annotationCombine);
           String annotation =
               finalAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
           annotationCombine.setFinalAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;

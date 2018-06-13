@@ -2,13 +2,18 @@ package com.malgo.biz.brat.task;
 
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
+import com.malgo.dto.AutoAnnotation;
+import com.malgo.dto.UpdateAnnotationAlgorithm;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
+import com.malgo.service.AlgorithmApiService;
+import com.malgo.service.ExtractAddAtomicTermService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.utils.OpLoggerUtil;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +22,16 @@ import org.springframework.stereotype.Component;
 public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
+  private final ExtractAddAtomicTermService extractAddAtomicTermService;
+  private final AlgorithmApiService algorithmApiService;
 
-  public AnnotationExamineBiz(AnnotationCombineRepository annotationCombineRepository) {
+  public AnnotationExamineBiz(
+      AnnotationCombineRepository annotationCombineRepository,
+      ExtractAddAtomicTermService extractAddAtomicTermService,
+      AlgorithmApiService algorithmApiService) {
     this.annotationCombineRepository = annotationCombineRepository;
+    this.extractAddAtomicTermService = extractAddAtomicTermService;
+    this.algorithmApiService = algorithmApiService;
   }
 
   @Override
@@ -59,6 +71,21 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       }
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
+      }
+      if (annotationCombine.getAnnotationType() == 0) { // 分词，入库
+        UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
+            extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
+        updateAnnotationAlgorithm.setAutoAnnotation(annotationCombine.getFinalAnnotation());
+        List<AutoAnnotation> autoAnnotationList =
+            algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+        if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
+          throw new BusinessRuleException("null-response", "调用算法后台数据返回null");
+        }
+        annotationCombine.setReviewedAnnotation(autoAnnotationList.get(0).getAnnotation());
+      }
+      if (annotationCombine.getAnnotationType() == 1
+          || annotationCombine.getAnnotationType() == 2) {
+        annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
       }
       annotationCombineRepository.save(annotationCombine);
     }
