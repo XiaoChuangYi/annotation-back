@@ -56,6 +56,28 @@ public class AnnotationDocumentManipulatorTest {
                                 new RelationEntity("R1", "relation1", "T1", "T2", "source", "target")
                         }
 
+                },
+                new Object[] {
+                        "",
+                        "T0\tSentence-end-deleted 7 8\t。\n" +
+                                "T1\tSentence-end-unconfirmed 22 23\t。\n" +
+                                "T2\tSentence-end-unconfirmed 46 47\t。\n" +
+                                "T3\tSentence-end-unconfirmed 62 63\t。\n" +
+                                "T4\tSentence-end-unconfirmed 79 80\t。\n" +
+                                "T5\tSentence-end-unconfirmed 121 122\t。\n" +
+                                "T6\tSentence-end-unconfirmed 140 141\t。\n" +
+                                "T7\tSentence-end-unconfirmed 167 168\t。",
+                        new Entity[] {
+                                new Entity("T0", 7, 8, "Sentence-end-deleted", "。"),
+                                new Entity("T1", 22, 23, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T2", 46, 47, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T3", 62, 63, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T4", 79, 80, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T5", 121, 122, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T6", 140, 141, "Sentence-end-unconfirmed", "。"),
+                                new Entity("T7", 167, 168, "Sentence-end-unconfirmed", "。"),
+                        },
+                        new RelationEntity[0],
                 }
         };
     }
