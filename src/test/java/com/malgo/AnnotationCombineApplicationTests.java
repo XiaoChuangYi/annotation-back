@@ -20,7 +20,6 @@ import java.util.List;
 @Slf4j
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
   @Autowired private AnnotationCombineService annotationCombineService;
-
   @Autowired private AnnotationCombineRepository annotationCombineRepository;
 
   @Test(enabled = false)
@@ -36,7 +35,7 @@ public class AnnotationCombineApplicationTests extends AbstractTestNGSpringConte
     log.info(">>>>>>>>data:" + JSON.toJSONString(page));
   }
 
-  @Test
+  @Test(enabled = false)
   public void testGroup() {
     List<AnnotationSummary> annotationSummaries = annotationCombineRepository.findByStateGroup();
     for (AnnotationSummary current : annotationSummaries) {
