@@ -1,6 +1,7 @@
 package com.malgo.utils.entity;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import cn.malgo.core.definition.Entity;
@@ -12,6 +13,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class AnnotationDocument {
     private String text;
     private List<RelationEntity> relationEntities;

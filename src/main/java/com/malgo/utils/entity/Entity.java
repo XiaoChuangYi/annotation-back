@@ -2,15 +2,14 @@ package com.malgo.utils.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
-/**
- * Created by cjl on 2018/5/24.
- */
 @Data
+@EqualsAndHashCode
 @AllArgsConstructor
-public class Entity implements Serializable{
+public class Entity implements Serializable {
     private String tag;
     private int start;
     private int end;
