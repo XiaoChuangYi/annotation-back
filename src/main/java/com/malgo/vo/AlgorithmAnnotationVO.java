@@ -1,11 +1,13 @@
 package com.malgo.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/6/8. */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AlgorithmAnnotationVO {
-
   private String autoAnnotation;
   private AnnotationCombineBratVO annotationCombineBratVO;
 }

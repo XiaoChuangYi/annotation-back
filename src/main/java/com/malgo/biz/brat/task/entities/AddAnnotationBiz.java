@@ -108,7 +108,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
             annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest);
           }
           annotationCombine.setFinalAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
+          //          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;
