@@ -54,13 +54,13 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getWordAnnotationVO(int role, AnnotationCombine annotation) {
-    annotation.setManualAnnotation("");
     final List<AutoAnnotation> autoAnnotationList =
         algorithmApiService.listAutoAnnotationThroughAlgorithm(annotation.getId());
     if (autoAnnotationList != null
         && autoAnnotationList.size() == 1
         && autoAnnotationList.get(0) != null) {
-      annotationCombineRepository.save(annotation);
+      annotation.setManualAnnotation("");
+      annotation = annotationCombineRepository.save(annotation);
 
       final AutoAnnotation autoAnnotation = autoAnnotationList.get(0);
       autoAnnotation.setAnnotation(
@@ -77,6 +77,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getSentenceAnnotationVO(int role, AnnotationCombine annotation) {
+    annotation.setManualAnnotation(annotation.getFinalAnnotation());
+    annotation = annotationCombineRepository.save(annotation);
+
     // TODO 过后端自己的分句算法
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(),
@@ -84,7 +87,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getRelationAnnotationVO(int role, AnnotationCombine annotation) {
+    annotation.setManualAnnotation("");
     annotation.setFinalAnnotation("");
+    annotation = annotationCombineRepository.save(annotation);
 
     // TODO 过算法的关联算法
     return new AlgorithmAnnotationVO(
@@ -99,7 +104,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         annotationCombineRepository.findById(getAutoAnnotationRequest.getId());
 
     if (optional.isPresent()) {
-      final AnnotationCombine annotation = optional.get();
+      AnnotationCombine annotation = optional.get();
       if (role == 1
           && !StringUtils.equalsAny(
               annotation.getState(),
@@ -126,6 +131,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       }
 
       if (role == 1) {
+        annotation.setManualAnnotation(annotation.getReviewedAnnotation());
+        annotation = annotationCombineRepository.save(annotation);
+
         // 管理员永远返回已审核结果
         return new AlgorithmAnnotationVO(
             annotation.getReviewedAnnotation(),
@@ -135,6 +143,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       if (role == 2
           && StringUtils.equals(
               annotation.getState(), AnnotationCombineStateEnum.preExamine.name())) {
+        annotation.setManualAnnotation(annotation.getFinalAnnotation());
+        annotation = annotationCombineRepository.save(annotation);
+
         // 审核人员，而且已经被标注过，直接返回最后的标注结果
         return new AlgorithmAnnotationVO(
             annotation.getFinalAnnotation(),
