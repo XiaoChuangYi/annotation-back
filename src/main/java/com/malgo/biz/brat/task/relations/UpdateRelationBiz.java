@@ -24,7 +24,6 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
   private final AnnotationCombineRepository annotationCombineRepository;
   private final RelationOperateService finalRelationOperateService;
   private final RelationOperateService reviewRelationOperateService;
-  private int globalRole;
 
   public UpdateRelationBiz(
       @Qualifier("final") RelationOperateService finalRelationOperateService,
@@ -55,7 +54,6 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
   @Override
   protected void authorize(int userId, int role, UpdateRelationRequest updateRelationRequest)
       throws BusinessRuleException {
-    globalRole = role;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(updateRelationRequest.getId());
@@ -68,28 +66,27 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
   }
 
   @Override
-  protected AnnotationCombineBratVO doBiz(UpdateRelationRequest updateRelationRequest) {
+  protected AnnotationCombineBratVO doBiz(
+      int userId, int role, UpdateRelationRequest updateRelationRequest) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
+      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
-          String annotation = reviewRelationOperateService.updateRelation(updateRelationRequest);
+          String annotation = finalRelationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;
         }
       }
-      if (globalRole >= 3) { // 标注人员
+      if (role >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation = finalRelationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setFinalAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;

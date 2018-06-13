@@ -21,10 +21,10 @@ import com.malgo.request.brat.UpdateRelationRequest;
 import com.malgo.result.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Created by cjl on 2018/5/31. */
@@ -69,24 +69,29 @@ public class AnnotationBratController extends BaseController {
 
   /** 获取算法服务的预标注结果 */
   @RequestMapping(value = "/get-auto-annotation", method = RequestMethod.GET)
-  public Response getAutoAnnotation(GetAutoAnnotationRequest getAutoAnnotationRequest) {
-    return new Response(getAutoAnnotationBiz.process(getAutoAnnotationRequest, 0, 0));
+  public Response getAutoAnnotation(
+      @RequestParam("id") int id,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        getAutoAnnotationBiz.process(
+            new GetAutoAnnotationRequest(id), userAccount.getId(), userAccount.getRoleId()));
   }
 
   /** 新增标注,经过算法服务处理 */
   @RequestMapping(value = "/add-annotation-algorithm", method = RequestMethod.POST)
   public Response addAnnotationAlgorithm(
       @RequestBody AddAnnotationRequest addAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         addAnnotationAlgorithmBiz.process(
             addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** 新增标注,经过算法服务处理 */
   @RequestMapping(value = "/update-annotation-algorithm", method = RequestMethod.POST)
   public Response updateAnnotationAlgorithm(
       @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         updateAnnotationAlgorithmBiz.process(
             updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -94,9 +99,9 @@ public class AnnotationBratController extends BaseController {
 
   /** 标注entities处理，新增标注的接口，不过算法api */
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
-  public Response addReviewAnnotation(
+  public Response addAnnotation(
       @RequestBody AddAnnotationRequest addAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         addAnnotationBiz.process(
             addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -104,9 +109,9 @@ public class AnnotationBratController extends BaseController {
 
   /** entities处理，更新标注 ，不过算法api */
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
-  public Response updateReviewAnnotation(
+  public Response updateAnnotation(
       @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         updateAnnotationBiz.process(
             updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -114,9 +119,9 @@ public class AnnotationBratController extends BaseController {
 
   /** entities处理，删除标注，不过算法api */
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
-  public Response deleteReviewAnnotation(
+  public Response deleteAnnotation(
       @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         deleteAnnotationBiz.process(
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -126,16 +131,17 @@ public class AnnotationBratController extends BaseController {
   @RequestMapping(value = "/delete-annotation-algorithm", method = RequestMethod.POST)
   public Response deleteAnnotationAlgorithm(
       @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         deleteAnnotationAlgorithmBiz.process(
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** 普通人员，新增关联标注 */
   @RequestMapping(value = "add-relation", method = RequestMethod.POST)
   public Response addRelation(
       @RequestBody AddRelationRequest addRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         addRelationBiz.process(addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -144,7 +150,7 @@ public class AnnotationBratController extends BaseController {
   @RequestMapping(value = "/delete-relation", method = RequestMethod.POST)
   public Response deleteRelation(
       @RequestBody DeleteRelationRequest deleteRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         deleteRelationBiz.process(
             deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -154,7 +160,7 @@ public class AnnotationBratController extends BaseController {
   @RequestMapping(value = "/update-relation", method = RequestMethod.POST)
   public Response updateRelation(
       @RequestBody UpdateRelationRequest updateRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         updateRelationBiz.process(
             updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));

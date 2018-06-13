@@ -19,9 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Created by cjl on 2018/6/3.
- */
+/** Created by cjl on 2018/6/3. */
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
@@ -33,7 +31,8 @@ public class AnnotationExerciseController extends BaseController {
   private final CommitExerciseAnnotationBiz commitExerciseAnnotationBiz;
   private final DesignateUserExerciseBiz designateUserExerciseBiz;
 
-  public AnnotationExerciseController(ListExerciseAnnotationBiz listExerciseAnnotationBiz,
+  public AnnotationExerciseController(
+      ListExerciseAnnotationBiz listExerciseAnnotationBiz,
       ResetUserExerciseBiz resetUserExerciseBiz,
       ListContrastExerciseBiz listContrastExerciseBiz,
       CommitExerciseAnnotationBiz commitExerciseAnnotationBiz,
@@ -45,48 +44,42 @@ public class AnnotationExerciseController extends BaseController {
     this.designateUserExerciseBiz = designateUserExerciseBiz;
   }
 
-  /**
-   * 查询标注答案
-   */
+  /** 查询标注答案 */
   @RequestMapping(value = "list-standard-exercise", method = RequestMethod.GET)
   public Response listStandardExercise(
       ListExerciseAnnotationRequest listExerciseAnnotationRequest) {
     return new Response(listExerciseAnnotationBiz.process(listExerciseAnnotationRequest, 0, 0));
   }
 
-  /**
-   * 用户习题重置
-   */
+  /** 用户习题重置 */
   @RequestMapping(value = "user-exercise-reset", method = RequestMethod.POST)
   public Response userExerciseReset(@RequestBody UserResetRequest resetRequest) {
     return new Response(resetUserExerciseBiz.process(resetRequest, 0, 0));
   }
 
-  /**
-   * 习题集结果对照
-   */
+  /** 习题集结果对照 */
   @RequestMapping(value = "list-contrast-exercise", method = RequestMethod.GET)
   public Response listContrastExercise(ListExerciseContrastRequest listExerciseContrastRequest) {
     return new Response(listContrastExerciseBiz.process(listExerciseContrastRequest, 0, 0));
   }
 
-  /**
-   * 练习人员提交标注
-   */
+  /** 练习人员提交标注 */
   @RequestMapping(value = "commit-user-exercise", method = RequestMethod.POST)
-  public Response commitUserExercise(@RequestBody CommitAnnotationRequest commitAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(commitExerciseAnnotationBiz
-        .process(commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+  public Response commitUserExercise(
+      @RequestBody CommitAnnotationRequest commitAnnotationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        commitExerciseAnnotationBiz.process(
+            commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 练习题指派
-   */
+  /** 练习题指派 */
   @RequestMapping(value = "designate-exercise", method = RequestMethod.POST)
-  public Response designateExercise(@RequestBody DesignateAnnotationRequest designateAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(designateUserExerciseBiz
-        .process(designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+  public Response designateExercise(
+      @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        designateUserExerciseBiz.process(
+            designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 }

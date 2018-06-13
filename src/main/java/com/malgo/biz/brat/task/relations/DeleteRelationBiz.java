@@ -65,29 +65,27 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
   }
 
   @Override
-  protected AnnotationCombineBratVO doBiz(DeleteRelationRequest deleteRelationRequest) {
+  protected AnnotationCombineBratVO doBiz(
+      int userId, int role, DeleteRelationRequest deleteRelationRequest) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
+      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
-          String annotation = reviewRelationOperateService.deleteRelation(deleteRelationRequest);
+          String annotation = finalRelationOperateService.deleteRelation(deleteRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;
         }
       }
-      if (globalRole >= 3) { // 标注人员
+      if (role >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation = finalRelationOperateService.deleteRelation(deleteRelationRequest);
-          //          log.info("标注人员删除关系输出结果：{}", annotation);
           annotationCombine.setFinalAnnotation(annotation);
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
           return annotationCombineBratVO;

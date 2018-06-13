@@ -38,6 +38,8 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
               addAnnotationRequest.getStartPosition(),
               addAnnotationRequest.getEndPosition(),
               addAnnotationRequest.getTerm());
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";
@@ -52,6 +54,8 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
       String newAnnotation =
           AnnotationConvert.deleteEntitiesAnnotation(
               annotationCombine.getManualAnnotation(), deleteAnnotationRequest.getTag());
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";
@@ -68,6 +72,8 @@ public class AnnotationOperateServiceFinalImpl implements AnnotationOperateServi
               annotationCombine.getManualAnnotation(),
               updateAnnotationRequest.getTag(),
               updateAnnotationRequest.getNewType());
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";

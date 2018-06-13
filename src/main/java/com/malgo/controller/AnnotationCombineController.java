@@ -58,7 +58,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationCombineBratVO>> listAnnotationCombine(
       ListAnnotationCombineRequest annotationCombineQuery,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         listAnnotationBiz.process(
             annotationCombineQuery, userAccount.getId(), userAccount.getRoleId()));
@@ -68,7 +68,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "/designate-task-annotation", method = RequestMethod.POST)
   public Response designateTaskAnnotation(
       @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         designateAnnotationBiz.process(
             designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -104,7 +104,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "get-annotation-summary-by-assignee", method = RequestMethod.GET)
   public Response getAnnotationSummaryByAssignee(
       SetUserStateRequest setUserStateRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
     return new Response(
         getAnnotationSummaryByAssigneeBiz.process(
             setUserStateRequest, userAccount.getId(), userAccount.getRoleId()));

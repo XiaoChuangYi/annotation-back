@@ -38,6 +38,8 @@ public class AnnotationOperateServiceReviewImpl implements AnnotationOperateServ
               addAnnotationRequest.getStartPosition(),
               addAnnotationRequest.getEndPosition(),
               addAnnotationRequest.getTerm());
+      annotationCombine.setManualAnnotation(newAnnotation);
+
       return newAnnotation;
     }
     return "";

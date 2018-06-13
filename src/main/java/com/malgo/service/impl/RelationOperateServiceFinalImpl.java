@@ -11,26 +11,31 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Service("final")
 public class RelationOperateServiceFinalImpl implements RelationOperateService {
 
   private final AnnotationCombineRepository annotationCombineRepository;
 
   @Autowired
-  public RelationOperateServiceFinalImpl(AnnotationCombineRepository annotationCombineRepository){
-    this.annotationCombineRepository=annotationCombineRepository;
+  public RelationOperateServiceFinalImpl(AnnotationCombineRepository annotationCombineRepository) {
+    this.annotationCombineRepository = annotationCombineRepository;
   }
 
   @Override
   public String addRelation(AddRelationRequest addRelationRequest) {
-    Optional<AnnotationCombine> optional =annotationCombineRepository.findById(addRelationRequest.getId());
-    if(optional.isPresent()){
-      AnnotationCombine annotationCombine=optional.get();
-      String annotation=AnnotationConvert.addRelationsAnnotation(annotationCombine.getFinalAnnotation(),
-          addRelationRequest.getSourceTag(),addRelationRequest.getTargetTag(),addRelationRequest.getRelation());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(addRelationRequest.getId());
+    if (optional.isPresent()) {
+      AnnotationCombine annotationCombine = optional.get();
+      String annotation =
+          AnnotationConvert.addRelationsAnnotation(
+              annotationCombine.getManualAnnotation(),
+              addRelationRequest.getSourceTag(),
+              addRelationRequest.getTargetTag(),
+              addRelationRequest.getRelation());
+      annotationCombine.setManualAnnotation(annotation);
+      annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
     return "";
@@ -38,11 +43,17 @@ public class RelationOperateServiceFinalImpl implements RelationOperateService {
 
   @Override
   public String updateRelation(UpdateRelationRequest updateRelationRequest) {
-    Optional<AnnotationCombine> optional =annotationCombineRepository.findById(updateRelationRequest.getId());
-    if(optional.isPresent()){
-      AnnotationCombine annotationCombine=optional.get();
-      String annotation=AnnotationConvert.updateRelationAnnotation(annotationCombine.getFinalAnnotation(),
-          updateRelationRequest.getReTag(),updateRelationRequest.getRelation());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(updateRelationRequest.getId());
+    if (optional.isPresent()) {
+      AnnotationCombine annotationCombine = optional.get();
+      String annotation =
+          AnnotationConvert.updateRelationAnnotation(
+              annotationCombine.getManualAnnotation(),
+              updateRelationRequest.getReTag(),
+              updateRelationRequest.getRelation());
+      annotationCombine.setManualAnnotation(annotation);
+      annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
     return "";
@@ -50,11 +61,15 @@ public class RelationOperateServiceFinalImpl implements RelationOperateService {
 
   @Override
   public String deleteRelation(DeleteRelationRequest deleteRelationRequest) {
-    Optional<AnnotationCombine> optional=annotationCombineRepository.findById(deleteRelationRequest.getId());
-    if(optional.isPresent()){
-      AnnotationCombine annotationCombine=optional.get();
-      String annotation=AnnotationConvert.deleteRelationsAnnotation(annotationCombine.getFinalAnnotation(),
-          deleteRelationRequest.getReTag());
+    Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(deleteRelationRequest.getId());
+    if (optional.isPresent()) {
+      AnnotationCombine annotationCombine = optional.get();
+      String annotation =
+          AnnotationConvert.deleteRelationsAnnotation(
+              annotationCombine.getManualAnnotation(), deleteRelationRequest.getReTag());
+      annotationCombine.setManualAnnotation(annotation);
+      annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
     return "";

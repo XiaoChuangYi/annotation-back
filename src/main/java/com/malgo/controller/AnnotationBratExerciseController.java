@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Created by cjl on 2018/6/4.
- */
+/** Created by cjl on 2018/6/4. */
 @RestController
 @Slf4j
 @RequestMapping(value = "/api/v2/exercise")
@@ -36,7 +34,8 @@ public class AnnotationBratExerciseController extends BaseController {
   private final UpdateExerciseRelationBiz updateExerciseRelationBiz;
   private final UpdateUserExerciseBiz updateUserExerciseBiz;
 
-  public AnnotationBratExerciseController(AddExerciseRelationBiz addExerciseRelationBiz,
+  public AnnotationBratExerciseController(
+      AddExerciseRelationBiz addExerciseRelationBiz,
       AddUserExerciseBiz addUserExerciseBiz,
       DeleteExerciseRelationBiz deleteExerciseRelationBiz,
       DeleteUserExerciseBiz deleteUserExerciseBiz,
@@ -50,64 +49,63 @@ public class AnnotationBratExerciseController extends BaseController {
     this.updateUserExerciseBiz = updateUserExerciseBiz;
   }
 
-  /**
-   * 新增标注
-   */
-  @RequestMapping(value = "add-annotation" ,method = RequestMethod.POST)
-  public Response addAnnotation(@RequestBody AddAnnotationRequest addAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(addUserExerciseBiz
-        .process(addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 新增标注 */
+  @RequestMapping(value = "add-annotation", method = RequestMethod.POST)
+  public Response addAnnotation(
+      @RequestBody AddAnnotationRequest addAnnotationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        addUserExerciseBiz.process(
+            addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 删除标注
-   */
-  @RequestMapping(value = "delete-annotation",method = RequestMethod.POST)
-  public Response deleteAnnotation(@RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(deleteUserExerciseBiz
-        .process(deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 删除标注 */
+  @RequestMapping(value = "delete-annotation", method = RequestMethod.POST)
+  public Response deleteAnnotation(
+      @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        deleteUserExerciseBiz.process(
+            deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 更新标注
-   */
-  @RequestMapping(value = "update-annotation",method = RequestMethod.POST)
-  public Response updateAnnotation(@RequestBody UpdateAnnotationRequest updateAnnotationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(updateUserExerciseBiz
-        .process(updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 更新标注 */
+  @RequestMapping(value = "update-annotation", method = RequestMethod.POST)
+  public Response updateAnnotation(
+      @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        updateUserExerciseBiz.process(
+            updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 新增关系
-   */
-  @RequestMapping(value = "add-relation",method = RequestMethod.POST)
-  public Response addRelation(@RequestBody AddRelationRequest addRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(addExerciseRelationBiz
-        .process(addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 新增关系 */
+  @RequestMapping(value = "add-relation", method = RequestMethod.POST)
+  public Response addRelation(
+      @RequestBody AddRelationRequest addRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        addExerciseRelationBiz.process(
+            addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 删除关系
-   */
-  @RequestMapping(value = "delete-relation",method = RequestMethod.POST)
-  public Response deleteRelation(@RequestBody DeleteRelationRequest deleteRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(deleteExerciseRelationBiz
-        .process(deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 删除关系 */
+  @RequestMapping(value = "delete-relation", method = RequestMethod.POST)
+  public Response deleteRelation(
+      @RequestBody DeleteRelationRequest deleteRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        deleteExerciseRelationBiz.process(
+            deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
-  /**
-   * 更新标注
-   */
-  @RequestMapping(value = "update-relation",method = RequestMethod.POST)
-  public Response updateRelation(@RequestBody UpdateRelationRequest updateRelationRequest,
-      @ModelAttribute("userAccount") UserAccount userAccount) {
-    return new Response(updateExerciseRelationBiz
-        .process(updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+  /** 更新标注 */
+  @RequestMapping(value = "update-relation", method = RequestMethod.POST)
+  public Response updateRelation(
+      @RequestBody UpdateRelationRequest updateRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response(
+        updateExerciseRelationBiz.process(
+            updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-
 }

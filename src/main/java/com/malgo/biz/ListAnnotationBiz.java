@@ -20,8 +20,6 @@ public class ListAnnotationBiz
     extends BaseBiz<ListAnnotationCombineRequest, PageVO<AnnotationCombineBratVO>> {
 
   private final AnnotationCombineService annotationCombineService;
-  private int globalUserId;
-  private int globalRoleId;
 
   @Autowired
   public ListAnnotationBiz(AnnotationCombineService annotationCombineService) {
@@ -45,17 +43,14 @@ public class ListAnnotationBiz
   @Override
   protected void authorize(
       int userId, int role, ListAnnotationCombineRequest listAnnotationCombineRequest)
-      throws BusinessRuleException {
-    globalUserId = userId;
-    globalRoleId = role;
-  }
+      throws BusinessRuleException {}
 
   @Override
   protected PageVO<AnnotationCombineBratVO> doBiz(
-      ListAnnotationCombineRequest annotationCombineQuery) {
+      int userId, int role, ListAnnotationCombineRequest annotationCombineQuery) {
     annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
-    if (globalRoleId > 2) {
-      annotationCombineQuery.setUserId(globalUserId);
+    if (role > 2) {
+      annotationCombineQuery.setUserId(userId);
     }
     Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);
     List<AnnotationCombineBratVO> annotationCombineBratVOList =

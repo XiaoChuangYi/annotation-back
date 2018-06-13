@@ -29,16 +29,6 @@ public class AnnotationRelationServiceImpl implements AnnotationRelationService 
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       String newAnnotation;
-      //      if (roleId > 2) {
-      //        newAnnotation =
-      //            AnnotationConvert.addRelationEntitiesAnnotation(
-      //                annotationCombine.getManualAnnotation(),
-      //                addAnnotationRequest.getType(),
-      //                addAnnotationRequest.getStartPosition(),
-      //                addAnnotationRequest.getEndPosition(),
-      //                addAnnotationRequest.getTerm());
-      //      }
-      //      if (roleId > 0 && roleId <= 2) {
       newAnnotation =
           AnnotationConvert.addRelationEntitiesAnnotation(
               annotationCombine.getManualAnnotation(),
@@ -46,7 +36,8 @@ public class AnnotationRelationServiceImpl implements AnnotationRelationService 
               addAnnotationRequest.getStartPosition(),
               addAnnotationRequest.getEndPosition(),
               addAnnotationRequest.getTerm());
-      //      }
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";

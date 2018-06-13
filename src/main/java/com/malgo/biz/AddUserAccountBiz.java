@@ -18,8 +18,6 @@ import org.springframework.stereotype.Component;
 public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccount> {
 
   private final UserAccountRepository userAccountRepository;
-  private int globalUserId;
-  private int globalRole;
 
   @Autowired
   public AddUserAccountBiz(UserAccountRepository userAccountRepository) {
@@ -48,15 +46,11 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
 
   @Override
   protected void authorize(int userId, int role, AddUserAccountRequest addUserAccountRequest)
-      throws BusinessRuleException {
-    globalRole = role;
-    globalUserId = userId;
-  }
+      throws BusinessRuleException {}
 
   @Override
   protected UserAccount doBiz(AddUserAccountRequest addUserAccountRequest) {
     if (userAccountRepository.findByAccountName(addUserAccountRequest.getAccountName()) != null) {
-      //      OpLoggerUtil.info(globalUserId,globalRole,"add-user-account","用户账号重复");
       throw new BusinessRuleException("repetition accountName", "用户账号重复");
     }
     UserAccount userAccount = new UserAccount();
@@ -67,10 +61,8 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
     userAccount.setState("enable");
     try {
       userAccount = userAccountRepository.save(userAccount);
-      //      OpLoggerUtil.info(globalUserId,globalRole,"add-user-account","success");
     } catch (Exception ex) {
       log.error(ex.getMessage());
-      //      OpLoggerUtil.info(globalUserId,globalRole,"add-user-account","新增用户失败");
       throw new InternalServiceException("dao layer error", "新增用户失败", ex.getCause());
     }
     return userAccount;

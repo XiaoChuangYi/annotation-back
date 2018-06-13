@@ -82,49 +82,49 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   }
 
   @Override
-  protected AnnotationCombineBratVO doBiz(AddAnnotationRequest addAnnotationRequest) {
+  protected AnnotationCombineBratVO doBiz(
+      int userId, int role, AddAnnotationRequest addAnnotationRequest) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (globalRole > 0 && globalRole < 3) { // 管理员或者是审核人员级别
+      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         String annotation = "";
         if (annotationCombine.getAnnotationType() == 0) { // 分词过算法
-          annotation =
-              algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
+          annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 1) { // 分句
-          annotation =
-              reviewAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
+          annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 2) { // 关联
-          annotation = annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
+          annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);
         }
         annotationCombine.setReviewedAnnotation(annotation);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
       }
-      if (globalRole >= 3) { // 标注人员
-
-          String annotation= "";
-          annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-        annotationCombine = annotationCombineRepository.save(annotationCombine);  if (annotationCombine.getAnnotationType() == 0) { // 分词
-            annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
-          } if (annotationCombine.getAnnotationType() == 1) { // 分句
-            annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, globalRole);
-          }
-          if (annotationCombine.getAnnotationType() == 2) { // 关联annotation= annotationRelationService.addAnnotation(addAnnotationRequest, globalRole);
+      if (role >= 3) { // 标注人员
+        String annotation = "";
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+        annotationCombine = annotationCombineRepository.save(annotationCombine);
+        if (annotationCombine.getAnnotationType() == 0) { // 分词
+          annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
-          //annotationCombine .setFinalAnnotation(annotation);
-          annotationCombineBratVO =
-              AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          return annotationCombineBratVO;
-        } else {
-          // "当前角色操作，标注类型不匹配");
-          throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
-
+        if (annotationCombine.getAnnotationType() == 1) { // 分句
+          annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
+        }
+        if (annotationCombine.getAnnotationType() == 2) { // 关联
+          annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);
+        }
+        annotationCombine.setFinalAnnotation(annotation);
+        annotationCombineBratVO =
+            AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+        return annotationCombineBratVO;
+      } else {
+        // "当前角色操作，标注类型不匹配");
+        throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
       }
     }
     return null;
