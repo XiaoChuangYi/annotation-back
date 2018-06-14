@@ -6,6 +6,7 @@ import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.CommitAnnotationRequest;
@@ -57,7 +58,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         if (userId != annotationCombine.getAssignee()) {
           throw new BusinessRuleException("no-permission-commit-current-record", "当前用户没有权限提交该条记录");
         }
-        if (annotationCombine.getAnnotationType() == 0) {
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) {
           if (StringUtils.isBlank(commitAnnotationRequest.getAutoAnnotation())) {
             throw new InvalidInputException("invalid-autoAnnotation", "参数autoAnnotation为空！");
           }
@@ -72,54 +73,8 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         annotationCombineRepository.findById(commitAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      if (annotationCombine.getAnnotationType() == 0) { // 分词标注提交
-        //        String manualAnnotation = annotationCombine.getManualAnnotation();
-        //        List<Entity> entities =
-        // AnnotationConvert.getEntitiesFromAnnotation(manualAnnotation);
-        //        List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
-        //        Iterator<Entity> iterator = entities.iterator();
-        //        while (iterator.hasNext()) {
-        //          Entity current = iterator.next();
-        //          if (atomicTermList
-        //                  .stream()
-        //                  .filter(
-        //                      atomicTerm ->
-        //                          current.getType().equals(atomicTerm.getAnnotationType())
-        //                              && current.getTerm().equals(atomicTerm.getTerm()))
-        //                  .count()
-        //              > 0) {
-        //            iterator.remove();
-        //          }
-        //        }
-        //        // todo,当然还有其它的过滤规则
-        //        UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new
-        // UpdateAnnotationAlgorithm();
-        //        updateAnnotationAlgorithm.setId(commitAnnotationRequest.getId());
-        //
-        // updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());
-        //        updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
-        //        updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
-        //        if (entities.size() > 0) {
-        //          List<NewTerm> newTermList =
-        //              IntStream.range(0, entities.size())
-        //                  .mapToObj(
-        //                      (int i) -> new NewTerm(entities.get(i).getTerm(),
-        // entities.get(i).getType()))
-        //                  .collect(Collectors.toList());
-        //          updateAnnotationAlgorithm.setNewTerms(newTermList);
-        //          List<AtomicTerm> atomicTerms =
-        //              IntStream.range(0, entities.size())
-        //                  .mapToObj(
-        //                      (int i) ->
-        //                          new AtomicTerm(
-        //                              entities.get(i).getTerm(),
-        //                              entities.get(i).getType(),
-        //                              commitAnnotationRequest.getId()))
-        //                  .collect(Collectors.toList());
-        //          atomicTermRepository.saveAll(atomicTerms);
-        //        } else {
-        //          updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
-        //        }
+      if (annotationCombine.getAnnotationType()
+          == AnnotationTypeEnum.wordPos.getValue()) { // 分词标注提交
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
             extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
         updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());

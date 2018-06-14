@@ -4,6 +4,7 @@ import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
@@ -34,7 +35,7 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
   @Override
   protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
       throws BusinessRuleException {
-    if (role > 2) {
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(annotationStateRequest.getId());
       if (optional.isPresent()) {

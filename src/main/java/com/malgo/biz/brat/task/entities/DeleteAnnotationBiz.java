@@ -4,6 +4,8 @@ import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.DeleteAnnotationRequest;
@@ -48,7 +50,7 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
   @Override
   protected void authorize(int userId, int role, DeleteAnnotationRequest deleteAnnotationRequest)
       throws BusinessRuleException {
-    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(deleteAnnotationRequest.getId());
       if (optional.isPresent()) {
@@ -67,7 +69,7 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
+      if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
         String annotation = localAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
         annotationCombine.setReviewedAnnotation(annotation);
         annotationCombineBratVO =
@@ -75,7 +77,8 @@ public class DeleteAnnotationBiz extends BaseBiz<DeleteAnnotationRequest, Annota
         return annotationCombineBratVO;
       }
       if (role >= 3) { // 标注人员
-        if (annotationCombine.getAnnotationType() != 0) { // 分句，关联
+        if (annotationCombine.getAnnotationType()
+            != AnnotationTypeEnum.wordPos.getValue()) { // 分句，关联
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           String annotation =

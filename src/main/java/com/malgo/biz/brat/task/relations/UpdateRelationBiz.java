@@ -4,6 +4,8 @@ import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.UpdateRelationRequest;
@@ -16,9 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/1.
- */
+/** Created by cjl on 2018/6/1. */
 @Component
 @Slf4j
 public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, AnnotationCombineBratVO> {
@@ -53,7 +53,7 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
   @Override
   protected void authorize(int userId, int role, UpdateRelationRequest updateRelationRequest)
       throws BusinessRuleException {
-    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(updateRelationRequest.getId());
       if (optional.isPresent()) {
@@ -72,8 +72,8 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
-        if (annotationCombine.getAnnotationType() == 2) {
+      if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
           String annotation = relationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombineBratVO =
@@ -81,8 +81,9 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
           return annotationCombineBratVO;
         }
       }
-      if (role >= 3) { // 标注人员
-        if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
+      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()) { // 标注人员
+        if (annotationCombine.getAnnotationType()
+            == AnnotationTypeEnum.relation.getValue()) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           String annotation = relationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setFinalAnnotation(annotation);

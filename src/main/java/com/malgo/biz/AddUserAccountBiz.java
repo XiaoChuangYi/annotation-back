@@ -2,6 +2,7 @@ package com.malgo.biz;
 
 import com.malgo.dao.UserAccountRepository;
 import com.malgo.entity.UserAccount;
+import com.malgo.enums.AnnotationRoleStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InternalServiceException;
 import com.malgo.exception.InvalidInputException;
@@ -35,7 +36,7 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
     if (StringUtils.isBlank(addUserAccountRequest.getRole())) {
       throw new InvalidInputException("invalid-role", "用户角色不能为空");
     }
-    if (addUserAccountRequest.getRoleId() == 1) {
+    if (addUserAccountRequest.getRoleId() == AnnotationRoleStateEnum.admin.getRole()) {
       throw new InvalidInputException("invalid-role", "用户角色不能为管理员");
     }
     if ("管理员".equals(addUserAccountRequest.getRole())) {

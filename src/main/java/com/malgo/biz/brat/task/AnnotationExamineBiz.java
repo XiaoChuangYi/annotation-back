@@ -6,6 +6,8 @@ import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
@@ -47,7 +49,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
   @Override
   protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
       throws BusinessRuleException {
-    if (role > 2) {
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
       throw new BusinessRuleException("no-privilege-handle-current-record", "当前用户无权限进行该操作!");
     }
   }
@@ -71,7 +73,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       }
-      if (annotationCombine.getAnnotationType() == 0) { // 分词，入库
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
             extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
         updateAnnotationAlgorithm.setAutoAnnotation(annotationCombine.getFinalAnnotation());
@@ -82,8 +84,8 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
         }
         annotationCombine.setReviewedAnnotation(autoAnnotationList.get(0).getAnnotation());
       }
-      if (annotationCombine.getAnnotationType() == 1
-          || annotationCombine.getAnnotationType() == 2) {
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()
+          || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
         annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
       }
       annotationCombineRepository.save(annotationCombine);

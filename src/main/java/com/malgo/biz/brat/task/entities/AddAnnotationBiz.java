@@ -4,6 +4,8 @@ import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddAnnotationRequest;
@@ -64,7 +66,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   @Override
   protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
       throws BusinessRuleException {
-    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(addAnnotationRequest.getId());
       if (optional.isPresent()) {
@@ -83,15 +85,16 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
-      if (role > 0 && role < 3) { // 管理员或者是审核人员级别
+      if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
         String annotation = "";
-        if (annotationCombine.getAnnotationType() == 0) { // 分词过算法
+        if (annotationCombine.getAnnotationType()
+            == AnnotationTypeEnum.wordPos.getValue()) { // 分词过算法
           annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
-        if (annotationCombine.getAnnotationType() == 1) { // 分句
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()) { // 分句
           annotation = localAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
-        if (annotationCombine.getAnnotationType() == 2) { // 关联
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) { // 关联
           annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);
         }
         annotationCombine.setReviewedAnnotation(annotation);
@@ -99,17 +102,17 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
       }
-      if (role >= 3) { // 标注人员
+      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()) { // 标注人员
         String annotation = "";
         annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
         annotationCombine = annotationCombineRepository.save(annotationCombine);
-        if (annotationCombine.getAnnotationType() == 0) { // 分词
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词
           annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
-        if (annotationCombine.getAnnotationType() == 1) { // 分句
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()) { // 分句
           annotation = localAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
-        if (annotationCombine.getAnnotationType() == 2) { // 关联
+        if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) { // 关联
           annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);
         }
         annotationCombine.setFinalAnnotation(annotation);

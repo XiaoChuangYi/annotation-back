@@ -1,5 +1,6 @@
 package com.malgo.biz;
 
+import com.malgo.enums.AnnotationRoleStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.ListAnnotationCombineRequest;
@@ -49,7 +50,7 @@ public class ListAnnotationBiz
   protected PageVO<AnnotationCombineBratVO> doBiz(
       int userId, int role, ListAnnotationCombineRequest annotationCombineQuery) {
     annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
-    if (role > 2) {
+    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
       annotationCombineQuery.setUserId(userId);
     }
     Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);

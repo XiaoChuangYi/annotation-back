@@ -5,6 +5,8 @@ import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.enums.AnnotationCombineStateEnum;
+import com.malgo.enums.AnnotationRoleStateEnum;
+import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.AlgorithmServiceException;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InternalServiceException;
@@ -105,7 +107,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
 
     if (optional.isPresent()) {
       AnnotationCombine annotation = optional.get();
-      if (role == 1
+      if (role == AnnotationRoleStateEnum.admin.getRole()
           && !StringUtils.equalsAny(
               annotation.getState(),
               AnnotationCombineStateEnum.errorPass.name(),
@@ -114,7 +116,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被管理员继续标注");
       }
 
-      if (role == 2
+      if (role == AnnotationRoleStateEnum.auditor.getRole()
           && !StringUtils.equalsAny(
               annotation.getState(),
               AnnotationCombineStateEnum.preExamine.name(),
@@ -122,7 +124,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被审核人员继续标注");
       }
 
-      if (role >= 3
+      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()
           && !StringUtils.equalsAny(
               annotation.getState(),
               AnnotationCombineStateEnum.preAnnotation.name(),
@@ -130,7 +132,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被标注人员继续标注");
       }
 
-      if (role == 1) {
+      if (role == AnnotationRoleStateEnum.admin.getRole()) {
         annotation.setManualAnnotation(annotation.getReviewedAnnotation());
         annotation = annotationCombineRepository.save(annotation);
 
@@ -140,7 +142,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
             AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
       }
 
-      if (role == 2
+      if (role == AnnotationRoleStateEnum.auditor.getRole()
           && StringUtils.equals(
               annotation.getState(), AnnotationCombineStateEnum.preExamine.name())) {
         annotation.setManualAnnotation(annotation.getFinalAnnotation());
@@ -151,16 +153,15 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
             annotation.getFinalAnnotation(),
             AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
       }
-
-      switch (annotation.getAnnotationType()) {
-        case 0:
+      switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType())) {
+        case wordPos:
           // 分词
           return getWordAnnotationVO(role, annotation);
 
-        case 1:
+        case sentence:
           return getSentenceAnnotationVO(role, annotation);
 
-        case 2:
+        case relation:
           return getRelationAnnotationVO(role, annotation);
       }
     }
