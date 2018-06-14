@@ -2,8 +2,6 @@ package com.malgo.utils;
 
 import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
-import cn.malgo.core.definition.utils.DocumentManipulator;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.malgo.entity.AnnotationCombine;
 import com.malgo.entity.UserExercise;
@@ -16,7 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -267,11 +268,15 @@ public class AnnotationConvert {
             .stream()
             .filter(
                 x -> {
-                  if (!x.getTerm().equals(newTerm)) { // 如果词不相等，则做过滤判断
-                    return !x.getTerm().contains(newTerm);
-                  } else { // 如果词相等，不过滤
+                  if (StringUtils.equals(x.getTerm(), newTerm)) {
                     return true;
                   }
+
+                  if (x.getTerm().contains(newTerm)) {
+                    return false;
+                  }
+
+                  return x.getEnd() <= startPosition || x.getStart() >= endPosition;
                 })
             .collect(Collectors.toList()));
     annotationDocument
