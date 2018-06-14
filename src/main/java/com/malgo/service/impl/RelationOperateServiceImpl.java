@@ -12,13 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Created by cjl on 2018/5/31. */
-@Service("final")
-public class RelationOperateServiceFinalImpl implements RelationOperateService {
+@Service("task-relation")
+public class RelationOperateServiceImpl implements RelationOperateService {
 
   private final AnnotationCombineRepository annotationCombineRepository;
 
   @Autowired
-  public RelationOperateServiceFinalImpl(AnnotationCombineRepository annotationCombineRepository) {
+  public RelationOperateServiceImpl(AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
   }
 

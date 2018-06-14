@@ -9,7 +9,6 @@ import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.AddRelationRequest;
 import com.malgo.service.RelationOperateService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import com.malgo.vo.AnnotationCombineBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -17,22 +16,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/1. */
+/**
+ * Created by cjl on 2018/6/1.
+ */
 @Component
 @Slf4j
 public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombineBratVO> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
-  private final RelationOperateService finalRelationOperateService;
-  private final RelationOperateService reviewRelationOperateService;
-  private int globalUserId;
+  private final RelationOperateService relationOperateService;
 
   public AddRelationBiz(
-      @Qualifier("final") RelationOperateService finalRelationOperateService,
-      @Qualifier("review") RelationOperateService reviewRelationOperateService,
+      @Qualifier("task-relation") RelationOperateService relationOperateService,
       AnnotationCombineRepository annotationCombineRepository) {
-    this.finalRelationOperateService = finalRelationOperateService;
-    this.reviewRelationOperateService = reviewRelationOperateService;
+    this.relationOperateService = relationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
   }
 
@@ -59,7 +56,6 @@ public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombin
   @Override
   protected void authorize(int userId, int role, AddRelationRequest addRelationRequest)
       throws BusinessRuleException {
-    globalUserId = userId;
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
@@ -85,7 +81,7 @@ public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombin
       AnnotationCombineBratVO annotationCombineBratVO;
       if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
-          String annotation = finalRelationOperateService.addRelation(addRelationRequest);
+          String annotation = relationOperateService.addRelation(addRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
@@ -95,7 +91,7 @@ public class AddRelationBiz extends BaseBiz<AddRelationRequest, AnnotationCombin
       if (role >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          String annotation = finalRelationOperateService.addRelation(addRelationRequest);
+          String annotation = relationOperateService.addRelation(addRelationRequest);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);

@@ -16,21 +16,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/1. */
+/**
+ * Created by cjl on 2018/6/1.
+ */
 @Component
 @Slf4j
 public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, AnnotationCombineBratVO> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
-  private final RelationOperateService finalRelationOperateService;
-  private final RelationOperateService reviewRelationOperateService;
+  private final RelationOperateService relationOperateService;
 
   public UpdateRelationBiz(
-      @Qualifier("final") RelationOperateService finalRelationOperateService,
-      @Qualifier("review") RelationOperateService reviewRelationOperateService,
+      @Qualifier("task-relation") RelationOperateService relationOperateService,
       AnnotationCombineRepository annotationCombineRepository) {
-    this.finalRelationOperateService = finalRelationOperateService;
-    this.reviewRelationOperateService = reviewRelationOperateService;
+    this.relationOperateService = relationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
   }
 
@@ -75,7 +74,7 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
       AnnotationCombineBratVO annotationCombineBratVO;
       if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
-          String annotation = finalRelationOperateService.updateRelation(updateRelationRequest);
+          String annotation = relationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
@@ -85,7 +84,7 @@ public class UpdateRelationBiz extends BaseBiz<UpdateRelationRequest, Annotation
       if (role >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          String annotation = finalRelationOperateService.updateRelation(updateRelationRequest);
+          String annotation = relationOperateService.updateRelation(updateRelationRequest);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);

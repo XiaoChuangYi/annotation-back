@@ -9,6 +9,4 @@ public interface UserAccountRepository
     extends JpaRepository<UserAccount, Integer>, JpaSpecificationExecutor {
 
   UserAccount findByAccountName(String accountName);
-
-  UserAccount findByAccountNameAndPassword(String accountName, String password);
 }

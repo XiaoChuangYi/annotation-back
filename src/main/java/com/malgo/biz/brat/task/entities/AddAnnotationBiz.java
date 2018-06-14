@@ -22,22 +22,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCombineBratVO> {
 
-  private final AnnotationOperateService finalAnnotationOperateService;
-  private final AnnotationOperateService reviewAnnotationOperateService;
+  private final AnnotationOperateService localAnnotationOperateService;
   private final AnnotationOperateService algorithmAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationRelationService annotationRelationService;
 
-  private int globalRole;
-
   public AddAnnotationBiz(
-      @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
-      @Qualifier("local-review") AnnotationOperateService reviewAnnotationOperateService,
+      @Qualifier("local") AnnotationOperateService localAnnotationOperateService,
       @Qualifier("algorithm") AnnotationOperateService algorithmAnnotationOperateService,
       AnnotationCombineRepository annotationCombineRepository,
       AnnotationRelationService annotationRelationService) {
-    this.finalAnnotationOperateService = finalAnnotationOperateService;
-    this.reviewAnnotationOperateService = reviewAnnotationOperateService;
+    this.localAnnotationOperateService = localAnnotationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.annotationRelationService = annotationRelationService;
     this.algorithmAnnotationOperateService = algorithmAnnotationOperateService;
@@ -69,7 +64,6 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
   @Override
   protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
       throws BusinessRuleException {
-    globalRole = role;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(addAnnotationRequest.getId());
@@ -95,7 +89,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
           annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 1) { // 分句
-          annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
+          annotation = localAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 2) { // 关联
           annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);
@@ -113,7 +107,7 @@ public class AddAnnotationBiz extends BaseBiz<AddAnnotationRequest, AnnotationCo
           annotation = algorithmAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 1) { // 分句
-          annotation = finalAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
+          annotation = localAnnotationOperateService.addAnnotation(addAnnotationRequest, role);
         }
         if (annotationCombine.getAnnotationType() == 2) { // 关联
           annotation = annotationRelationService.addAnnotation(addAnnotationRequest, role);

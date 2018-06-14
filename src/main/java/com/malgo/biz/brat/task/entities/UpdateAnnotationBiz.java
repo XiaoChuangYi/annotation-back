@@ -21,17 +21,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, AnnotationCombineBratVO> {
 
-  private final AnnotationOperateService finalAnnotationOperateService;
-  private final AnnotationOperateService reviewAnnotationOperateService;
+  private final AnnotationOperateService localAnnotationOperateService;
   private final AnnotationCombineRepository annotationCombineRepository;
-  private int globalRole;
 
   public UpdateAnnotationBiz(
-      @Qualifier("local-final") AnnotationOperateService finalAnnotationOperateService,
-      @Qualifier("local-review") AnnotationOperateService reviewAnnotationOperateService,
+      @Qualifier("local") AnnotationOperateService localAnnotationOperateService,
       AnnotationCombineRepository annotationCombineRepository) {
-    this.finalAnnotationOperateService = finalAnnotationOperateService;
-    this.reviewAnnotationOperateService = reviewAnnotationOperateService;
+    this.localAnnotationOperateService = localAnnotationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
   }
 
@@ -55,7 +51,6 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
   @Override
   protected void authorize(int userId, int role, UpdateAnnotationRequest updateAnnotationRequest)
       throws BusinessRuleException {
-    globalRole = role;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(updateAnnotationRequest.getId());
@@ -76,9 +71,8 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
       AnnotationCombine annotationCombine = optional.get();
       AnnotationCombineBratVO annotationCombineBratVO;
       if (role > 0 && role < 3) { // 管理员或者是审核人员级别
-        String annotation = finalAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
+        String annotation = localAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
         annotationCombine.setReviewedAnnotation(annotation);
-        //        annotationCombine = annotationCombineRepository.save(annotationCombine);
         annotationCombineBratVO =
             AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
         return annotationCombineBratVO;
@@ -88,7 +82,7 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
           annotationCombine = annotationCombineRepository.save(annotationCombine);
           String annotation =
-              finalAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
+              localAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);

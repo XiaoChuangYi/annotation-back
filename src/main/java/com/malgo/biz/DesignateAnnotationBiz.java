@@ -5,7 +5,6 @@ import com.malgo.exception.InternalServiceException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.DesignateAnnotationRequest;
 import com.malgo.service.AnnotationCombineService;
-import com.malgo.utils.OpLoggerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

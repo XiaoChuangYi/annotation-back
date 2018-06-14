@@ -13,14 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Created by cjl on 2018/5/31. */
-@Service("local-review")
+@Service("local")
 @Slf4j
-public class AnnotationOperateServiceReviewImpl implements AnnotationOperateService {
+public class AnnotationOperateServiceImpl implements AnnotationOperateService {
 
   private final AnnotationCombineRepository annotationCombineRepository;
 
   @Autowired
-  public AnnotationOperateServiceReviewImpl(
+  public AnnotationOperateServiceImpl(
       AnnotationCombineRepository annotationCombineRepository) {
     this.annotationCombineRepository = annotationCombineRepository;
   }
@@ -39,7 +39,7 @@ public class AnnotationOperateServiceReviewImpl implements AnnotationOperateServ
               addAnnotationRequest.getEndPosition(),
               addAnnotationRequest.getTerm());
       annotationCombine.setManualAnnotation(newAnnotation);
-
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";
@@ -54,6 +54,8 @@ public class AnnotationOperateServiceReviewImpl implements AnnotationOperateServ
       String newAnnotation =
           AnnotationConvert.deleteEntitiesAnnotation(
               annotationCombine.getManualAnnotation(), deleteAnnotationRequest.getTag());
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";
@@ -70,13 +72,10 @@ public class AnnotationOperateServiceReviewImpl implements AnnotationOperateServ
               annotationCombine.getManualAnnotation(),
               updateAnnotationRequest.getTag(),
               updateAnnotationRequest.getNewType());
+      annotationCombine.setManualAnnotation(newAnnotation);
+      annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }
     return "";
-  }
-
-  @Override
-  public void test() {
-    log.info("local-review");
   }
 }

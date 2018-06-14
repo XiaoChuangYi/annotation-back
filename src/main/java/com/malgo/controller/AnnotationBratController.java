@@ -1,9 +1,6 @@
 package com.malgo.controller;
 
-import com.malgo.biz.brat.task.algorithm.AddAnnotationAlgorithmBiz;
 import com.malgo.biz.brat.task.GetAutoAnnotationBiz;
-import com.malgo.biz.brat.task.algorithm.DeleteAnnotationAlgorithmBiz;
-import com.malgo.biz.brat.task.algorithm.UpdateAnnotationAlgorithmBiz;
 import com.malgo.biz.brat.task.entities.AddAnnotationBiz;
 import com.malgo.biz.brat.task.entities.DeleteAnnotationBiz;
 import com.malgo.biz.brat.task.entities.UpdateAnnotationBiz;
@@ -34,9 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnnotationBratController extends BaseController {
 
   private final GetAutoAnnotationBiz getAutoAnnotationBiz;
-  private final AddAnnotationAlgorithmBiz addAnnotationAlgorithmBiz;
-  private final UpdateAnnotationAlgorithmBiz updateAnnotationAlgorithmBiz;
-  private final DeleteAnnotationAlgorithmBiz deleteAnnotationAlgorithmBiz;
   private final AddAnnotationBiz addAnnotationBiz;
   private final UpdateAnnotationBiz updateAnnotationBiz;
   private final DeleteAnnotationBiz deleteAnnotationBiz;
@@ -46,25 +40,19 @@ public class AnnotationBratController extends BaseController {
 
   public AnnotationBratController(
       GetAutoAnnotationBiz getAutoAnnotationBiz,
-      AddAnnotationAlgorithmBiz addAnnotationAlgorithmBiz,
-      DeleteAnnotationAlgorithmBiz deleteAnnotationAlgorithmBiz,
       AddAnnotationBiz addAnnotationBiz,
       UpdateAnnotationBiz updateAnnotationBiz,
       DeleteAnnotationBiz deleteAnnotationBiz,
       AddRelationBiz addRelationBiz,
       UpdateRelationBiz updateRelationBiz,
-      DeleteRelationBiz deleteRelationBiz,
-      UpdateAnnotationAlgorithmBiz updateAnnotationAlgorithmBiz) {
+      DeleteRelationBiz deleteRelationBiz) {
     this.getAutoAnnotationBiz = getAutoAnnotationBiz;
-    this.addAnnotationAlgorithmBiz = addAnnotationAlgorithmBiz;
-    this.deleteAnnotationAlgorithmBiz = deleteAnnotationAlgorithmBiz;
     this.addAnnotationBiz = addAnnotationBiz;
     this.updateAnnotationBiz = updateAnnotationBiz;
     this.deleteAnnotationBiz = deleteAnnotationBiz;
     this.addRelationBiz = addRelationBiz;
     this.updateRelationBiz = updateRelationBiz;
     this.deleteRelationBiz = deleteRelationBiz;
-    this.updateAnnotationAlgorithmBiz = updateAnnotationAlgorithmBiz;
   }
 
   /** 获取算法服务的预标注结果 */
@@ -76,27 +64,6 @@ public class AnnotationBratController extends BaseController {
         getAutoAnnotationBiz.process(
             new GetAutoAnnotationRequest(id), userAccount.getId(), userAccount.getRoleId()));
   }
-
-  /** 新增标注,经过算法服务处理 */
-  @RequestMapping(value = "/add-annotation-algorithm", method = RequestMethod.POST)
-  public Response addAnnotationAlgorithm(
-      @RequestBody AddAnnotationRequest addAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
-        addAnnotationAlgorithmBiz.process(
-            addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
-  }
-
-  /** 新增标注,经过算法服务处理 */
-  @RequestMapping(value = "/update-annotation-algorithm", method = RequestMethod.POST)
-  public Response updateAnnotationAlgorithm(
-      @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
-        updateAnnotationAlgorithmBiz.process(
-            updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
-  }
-
   /** 标注entities处理，新增标注的接口，不过算法api */
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
   public Response addAnnotation(
@@ -106,7 +73,6 @@ public class AnnotationBratController extends BaseController {
         addAnnotationBiz.process(
             addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-
   /** entities处理，更新标注 ，不过算法api */
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
   public Response updateAnnotation(
@@ -116,7 +82,6 @@ public class AnnotationBratController extends BaseController {
         updateAnnotationBiz.process(
             updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-
   /** entities处理，删除标注，不过算法api */
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
   public Response deleteAnnotation(
@@ -126,17 +91,6 @@ public class AnnotationBratController extends BaseController {
         deleteAnnotationBiz.process(
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-
-  /** 普通人员删除标注，通过算法服务处理 */
-  @RequestMapping(value = "/delete-annotation-algorithm", method = RequestMethod.POST)
-  public Response deleteAnnotationAlgorithm(
-      @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
-        deleteAnnotationAlgorithmBiz.process(
-            deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
-  }
-
   /** 普通人员，新增关联标注 */
   @RequestMapping(value = "add-relation", method = RequestMethod.POST)
   public Response addRelation(

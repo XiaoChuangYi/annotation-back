@@ -12,7 +12,6 @@ import com.malgo.request.AnnotationStateRequest;
 import com.malgo.service.AlgorithmApiService;
 import com.malgo.service.ExtractAddAtomicTermService;
 import com.malgo.utils.AnnotationConvert;
-import com.malgo.utils.OpLoggerUtil;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;

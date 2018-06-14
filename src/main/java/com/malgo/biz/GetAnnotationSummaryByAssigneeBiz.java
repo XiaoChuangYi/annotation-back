@@ -18,7 +18,6 @@ public class GetAnnotationSummaryByAssigneeBiz
 
   private final AnnotationCombineRepository annotationCombineRepository;
   private final UserExerciseRepository userExerciseRepository;
-  private int globalRole;
 
   public GetAnnotationSummaryByAssigneeBiz(
       AnnotationCombineRepository annotationCombineRepository,
@@ -40,9 +39,7 @@ public class GetAnnotationSummaryByAssigneeBiz
 
   @Override
   protected void authorize(int userId, int role, SetUserStateRequest setUserStateRequest)
-      throws BusinessRuleException {
-    globalRole = role;
-  }
+      throws BusinessRuleException {}
 
   @Override
   protected List<AnnotationSummaryVO> doBiz(

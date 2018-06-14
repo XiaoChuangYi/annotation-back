@@ -7,7 +7,6 @@ import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
-import com.malgo.utils.OpLoggerUtil;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 

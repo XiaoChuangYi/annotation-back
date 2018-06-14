@@ -6,7 +6,6 @@ import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InternalServiceException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AddUserAccountRequest;
-import com.malgo.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

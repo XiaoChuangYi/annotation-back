@@ -1,27 +1,18 @@
 package com.malgo.biz.brat.task;
 
-import cn.malgo.core.definition.Entity;
 import com.malgo.biz.BaseBiz;
 import com.malgo.dao.AnnotationCombineRepository;
-import com.malgo.dao.AtomicTermRepository;
 import com.malgo.dto.AutoAnnotation;
-import com.malgo.dto.NewTerm;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
 import com.malgo.entity.AnnotationCombine;
-import com.malgo.entity.AtomicTerm;
 import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.CommitAnnotationRequest;
 import com.malgo.service.AlgorithmApiService;
 import com.malgo.service.ExtractAddAtomicTermService;
-import com.malgo.utils.AnnotationConvert;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

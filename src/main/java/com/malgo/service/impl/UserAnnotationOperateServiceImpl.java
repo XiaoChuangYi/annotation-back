@@ -68,7 +68,4 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
     }
     return "";
   }
-
-  @Override
-  public void test() {}
 }

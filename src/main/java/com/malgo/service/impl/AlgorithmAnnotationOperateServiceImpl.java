@@ -129,9 +129,4 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
             updateAnnotationRequest.getAutoAnnotation());
     return annotation;
   }
-
-  @Override
-  public void test() {
-    log.info("algorithm");
-  }
 }

@@ -14,5 +14,4 @@ public interface AnnotationOperateService {
 
   String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest);
 
-  void test();
 }

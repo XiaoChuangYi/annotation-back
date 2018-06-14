@@ -16,22 +16,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/1. */
+/**
+ * Created by cjl on 2018/6/1.
+ */
 @Component
 @Slf4j
 public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, AnnotationCombineBratVO> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
-  private final RelationOperateService finalRelationOperateService;
-  private final RelationOperateService reviewRelationOperateService;
-  private int globalRole;
+  private final RelationOperateService relationOperateService;
 
   public DeleteRelationBiz(
-      @Qualifier("final") RelationOperateService finalRelationOperateService,
-      @Qualifier("review") RelationOperateService reviewRelationOperateService,
+      @Qualifier("task-relation") RelationOperateService relationOperateService,
       AnnotationCombineRepository annotationCombineRepository) {
-    this.finalRelationOperateService = finalRelationOperateService;
-    this.reviewRelationOperateService = reviewRelationOperateService;
+    this.relationOperateService = relationOperateService;
     this.annotationCombineRepository = annotationCombineRepository;
   }
 
@@ -52,7 +50,6 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
   @Override
   protected void authorize(int userId, int role, DeleteRelationRequest deleteRelationRequest)
       throws BusinessRuleException {
-    globalRole = role;
     if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
       Optional<AnnotationCombine> optional =
           annotationCombineRepository.findById(deleteRelationRequest.getId());
@@ -74,7 +71,7 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
       AnnotationCombineBratVO annotationCombineBratVO;
       if (role > 0 && role < 3) { // 管理员或者是审核人员级别
         if (annotationCombine.getAnnotationType() == 2) {
-          String annotation = finalRelationOperateService.deleteRelation(deleteRelationRequest);
+          String annotation = relationOperateService.deleteRelation(deleteRelationRequest);
           annotationCombine.setReviewedAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
@@ -84,7 +81,7 @@ public class DeleteRelationBiz extends BaseBiz<DeleteRelationRequest, Annotation
       if (role >= 3) { // 标注人员
         if (annotationCombine.getAnnotationType() == 2) { // 当前标注类型为关联标注
           annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          String annotation = finalRelationOperateService.deleteRelation(deleteRelationRequest);
+          String annotation = relationOperateService.deleteRelation(deleteRelationRequest);
           annotationCombine.setFinalAnnotation(annotation);
           annotationCombineBratVO =
               AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
