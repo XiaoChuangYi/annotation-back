@@ -4,13 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeleteRelationRequest {
-    private int id;
-    private String reTag;
+public class DeleteRelationRequest implements BaseAnnotationRequest {
+  private int id;
+  private String reTag;
 }

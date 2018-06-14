@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddAnnotationRequest {
+public class AddAnnotationRequest implements BaseAnnotationRequest {
 
   private String term;
   private String type;

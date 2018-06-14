@@ -89,8 +89,8 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getRelationAnnotationVO(int role, AnnotationCombine annotation) {
-    annotation.setManualAnnotation("");
     annotation.setFinalAnnotation("");
+    annotation.setManualAnnotation(annotation.getFinalAnnotation());
     annotation = annotationCombineRepository.save(annotation);
 
     // TODO 过算法的关联算法
@@ -143,8 +143,10 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       }
 
       if (role == AnnotationRoleStateEnum.auditor.getRole()
-          && StringUtils.equals(
-              annotation.getState(), AnnotationCombineStateEnum.preExamine.name())) {
+          && StringUtils.equalsAny(
+              annotation.getState(),
+              AnnotationCombineStateEnum.preExamine.name(),
+              AnnotationCombineStateEnum.abandon.name())) {
         annotation.setManualAnnotation(annotation.getFinalAnnotation());
         annotation = annotationCombineRepository.save(annotation);
 

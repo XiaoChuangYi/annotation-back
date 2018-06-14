@@ -9,6 +9,7 @@ import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.AnnotationStateRequest;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /** Created by cjl on 2018/6/3. */
@@ -43,11 +44,10 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
         if (userId != annotationCombine.getAssignee()) {
           throw new BusinessRuleException("no-permission-handle-current-record", "当前用户没有权限操作该条记录！");
         }
-        if (!annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())
-            || !annotationCombine
-                .getState()
-                .equals(AnnotationCombineStateEnum.annotationProcessing.name())) {
-        } else {
+        if (!StringUtils.equalsAny(
+            annotationCombine.getState(),
+            AnnotationCombineStateEnum.preAnnotation.name(),
+            AnnotationCombineStateEnum.annotationProcessing.name())) {
           throw new BusinessRuleException("current-annotation-state-error", "当前记录无法直接设定为'放弃'状态！");
         }
       }

@@ -73,6 +73,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         annotationCombineRepository.findById(commitAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
       if (annotationCombine.getAnnotationType()
           == AnnotationTypeEnum.wordPos.getValue()) { // 分词标注提交
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
@@ -83,18 +84,14 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
           throw new BusinessRuleException("null-response", "调用算法后台数据返回null");
         }
-        annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
         annotationCombine.setFinalAnnotation(autoAnnotationList.get(0).getAnnotation());
         annotationCombine.setManualAnnotation("");
-        annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
-        annotationCombineRepository.save(annotationCombine);
       } else {
         // 分句，关联提交
-        annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
         annotationCombine.setFinalAnnotation(annotationCombine.getManualAnnotation());
-        annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
-        annotationCombineRepository.save(annotationCombine);
       }
+      annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
+      annotationCombineRepository.save(annotationCombine);
     }
     return null;
   }

@@ -60,6 +60,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
         annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      // state handle
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
         boolean changed =
             AnnotationConvert.compareAnnotation(
@@ -73,6 +74,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       }
+      // 入库
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
             extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);

@@ -1,5 +1,6 @@
 package com.malgo.service.impl;
 
+import cn.malgo.core.definition.Entity;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
@@ -17,7 +18,9 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/** Created by cjl on 2018/5/31. */
+/**
+ * Created by cjl on 2018/5/31.
+ */
 @Service("algorithm")
 @Slf4j
 public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateService {
@@ -73,13 +76,7 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
   public String addAnnotation(AddAnnotationRequest addAnnotationRequest, int roleId) {
     AnnotationCombine annotationCombine = getAnnotationCombine(addAnnotationRequest.getId());
     String manualAnnotation = annotationCombine.getManualAnnotation();
-    String autoAnnotation = "";
-    if (roleId > 0 && roleId < 3) { // 审核人员，管理人员
-      autoAnnotation = annotationCombine.getFinalAnnotation();
-    }
-    if (roleId > 2) { // 标注人员
-      autoAnnotation = addAnnotationRequest.getAutoAnnotation();
-    }
+    String autoAnnotation = addAnnotationRequest.getAutoAnnotation();
     manualAnnotation =
         AnnotationConvert.handleCrossAnnotation(
             manualAnnotation,
@@ -95,38 +92,30 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
 
   @Override
   public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
-    AnnotationCombine annotationCombine = getAnnotationCombine(deleteAnnotationRequest.getId());
-    String manualAnnotation = annotationCombine.getManualAnnotation();
-    //    manualAnnotation = AnnotationConvert
-    //        .deleteEntitiesAnnotation(manualAnnotation, deleteAnnotationRequest.getTag());
-    manualAnnotation =
-        AnnotationConvert.updateEntitiesAnnotation(
-            manualAnnotation, deleteAnnotationRequest.getTag(), "Token");
-    String annotation =
-        handleAnnotationCombine(
-            deleteAnnotationRequest.getId(),
-            annotationCombine,
-            manualAnnotation,
-            deleteAnnotationRequest.getAutoAnnotation());
-    return annotation;
+    Entity entity = AnnotationConvert
+        .getEntityFromAnnotation(deleteAnnotationRequest.getAutoAnnotation(),
+            deleteAnnotationRequest.getTag());
+    AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
+    addAnnotationRequest.setId(deleteAnnotationRequest.getId());
+    addAnnotationRequest.setStartPosition(entity.getStart());
+    addAnnotationRequest.setAutoAnnotation(deleteAnnotationRequest.getAutoAnnotation());
+    addAnnotationRequest.setEndPosition(entity.getEnd());
+    addAnnotationRequest.setTerm(entity.getTerm());
+    addAnnotationRequest.setType("Token");
+    return addAnnotation(addAnnotationRequest, 0);
   }
 
   @Override
   public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
-    AnnotationCombine annotationCombine = getAnnotationCombine(updateAnnotationRequest.getId());
-    String manualAnnotation = annotationCombine.getManualAnnotation();
-
-    manualAnnotation =
-        AnnotationConvert.updateEntitiesAnnotation(
-            manualAnnotation,
-            updateAnnotationRequest.getTag(),
-            updateAnnotationRequest.getNewType());
-    String annotation =
-        handleAnnotationCombine(
-            updateAnnotationRequest.getId(),
-            annotationCombine,
-            manualAnnotation,
-            updateAnnotationRequest.getAutoAnnotation());
-    return annotation;
+    Entity entity = AnnotationConvert
+        .getEntityFromAnnotation(updateAnnotationRequest.getAutoAnnotation(), updateAnnotationRequest.getTag());
+    AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
+    addAnnotationRequest.setId(updateAnnotationRequest.getId());
+    addAnnotationRequest.setTerm(entity.getTerm());
+    addAnnotationRequest.setType(updateAnnotationRequest.getNewType());
+    addAnnotationRequest.setStartPosition(entity.getStart());
+    addAnnotationRequest.setEndPosition(entity.getEnd());
+    addAnnotationRequest.setAutoAnnotation(updateAnnotationRequest.getAutoAnnotation());
+    return addAnnotation(addAnnotationRequest,0);
   }
 }

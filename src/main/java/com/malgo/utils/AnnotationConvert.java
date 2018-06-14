@@ -34,6 +34,14 @@ public class AnnotationConvert {
     return annotationDocument.getEntities();
   }
 
+  /** 获取指定的entity */
+  public static Entity getEntityFromAnnotation(String annotation,String tag){
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        annotation == null ? "" : annotation, annotationDocument);
+    return annotationDocument.getEntities().stream().filter(x->x.getTag().equals(tag)).findFirst().get();
+  }
+
   /** 查询，将字符串形式的格式转换成前端可以渲染的jsonObject */
   public static JSONObject convertAnnotation2BratFormat(
       String text, String annotation, int annotationType) {
@@ -271,11 +279,9 @@ public class AnnotationConvert {
                   if (StringUtils.equals(x.getTerm(), newTerm)) {
                     return true;
                   }
-
                   if (x.getTerm().contains(newTerm)) {
                     return false;
                   }
-
                   return x.getEnd() <= startPosition || x.getStart() >= endPosition;
                 })
             .collect(Collectors.toList()));

@@ -1,47 +1,26 @@
 package com.malgo.biz.brat.task.entities;
 
-import com.malgo.biz.BaseBiz;
-import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.entity.AnnotationCombine;
-import com.malgo.enums.AnnotationCombineStateEnum;
 import com.malgo.enums.AnnotationRoleStateEnum;
-import com.malgo.enums.AnnotationTypeEnum;
 import com.malgo.exception.BusinessRuleException;
 import com.malgo.exception.InvalidInputException;
 import com.malgo.request.brat.UpdateAnnotationRequest;
 import com.malgo.service.AnnotationOperateService;
 import com.malgo.utils.AnnotationConvert;
 import com.malgo.vo.AnnotationCombineBratVO;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /** Created by cjl on 2018/6/1. */
 @Component
 @Slf4j
-public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, AnnotationCombineBratVO> {
-
-  private final AnnotationOperateService localAnnotationOperateService;
-  private final AnnotationCombineRepository annotationCombineRepository;
-
-  public UpdateAnnotationBiz(
-      @Qualifier("local") AnnotationOperateService localAnnotationOperateService,
-      AnnotationCombineRepository annotationCombineRepository) {
-    this.localAnnotationOperateService = localAnnotationOperateService;
-    this.annotationCombineRepository = annotationCombineRepository;
-  }
+public class UpdateAnnotationBiz
+    extends BaseAnnotationBiz<UpdateAnnotationRequest, AnnotationCombineBratVO> {
 
   @Override
   protected void validateRequest(UpdateAnnotationRequest updateAnnotationRequest)
       throws InvalidInputException {
-    if (updateAnnotationRequest == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
-    }
-    if (updateAnnotationRequest.getId() <= 0) {
-      throw new InvalidInputException("invalid-id", "无效的id");
-    }
     if (StringUtils.isBlank(updateAnnotationRequest.getTag())) {
       throw new InvalidInputException("invalid-tag", "参数tag不能为空");
     }
@@ -52,49 +31,25 @@ public class UpdateAnnotationBiz extends BaseBiz<UpdateAnnotationRequest, Annota
 
   @Override
   protected void authorize(int userId, int role, UpdateAnnotationRequest updateAnnotationRequest)
-      throws BusinessRuleException {
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) { // 标注人员，练习人员，需要判断是否有权限操作这一条
-      Optional<AnnotationCombine> optional =
-          annotationCombineRepository.findById(updateAnnotationRequest.getId());
-      if (optional.isPresent()) {
-        if (optional.get().getAssignee() != userId) {
-          throw new BusinessRuleException("no-authorize-handle-current-record", "当前练习人员无权操作当前记录");
-        }
-      }
-    }
-  }
+      throws BusinessRuleException {}
 
   @Override
-  protected AnnotationCombineBratVO doBiz(
-      int userId, int role, UpdateAnnotationRequest updateAnnotationRequest) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(updateAnnotationRequest.getId());
-    if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      AnnotationCombineBratVO annotationCombineBratVO;
-      if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
-        String annotation = localAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
-        annotationCombine.setReviewedAnnotation(annotation);
-        annotationCombineBratVO =
-            AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-        return annotationCombineBratVO;
-      }
-      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()) { // 标注人员
-        if (annotationCombine.getAnnotationType() != AnnotationTypeEnum.wordPos.getValue()) {
-          annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-          annotationCombine = annotationCombineRepository.save(annotationCombine);
-          String annotation =
-              localAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
-          annotationCombine.setFinalAnnotation(annotation);
-          annotationCombineBratVO =
-              AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
-          return annotationCombineBratVO;
-        } else {
-          // "当前角色操作，标注类型不匹配");
-          throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
-        }
-      }
+  AnnotationCombineBratVO doInternalProcess(
+      int role,
+      AnnotationOperateService annotationOperateService,
+      AnnotationCombine annotationCombine,
+      UpdateAnnotationRequest updateAnnotationRequest) {
+    AnnotationCombineBratVO annotationCombineBratVO;
+    String annotation = annotationOperateService.updateAnnotation(updateAnnotationRequest);
+    if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) {
+      // 管理员或者是审核人员级别
+      annotationCombine.setReviewedAnnotation(annotation);
     }
-    return null;
+    if (role >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+      // 标注人员
+      annotationCombine.setFinalAnnotation(annotation);
+    }
+    annotationCombineBratVO = AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
+    return annotationCombineBratVO;
   }
 }
