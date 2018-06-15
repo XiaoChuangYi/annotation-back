@@ -35,11 +35,16 @@ public class AnnotationConvert {
   }
 
   /** 获取指定的entity */
-  public static Entity getEntityFromAnnotation(String annotation,String tag){
+  public static Entity getEntityFromAnnotation(String annotation, String tag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(
         annotation == null ? "" : annotation, annotationDocument);
-    return annotationDocument.getEntities().stream().filter(x->x.getTag().equals(tag)).findFirst().get();
+    return annotationDocument
+        .getEntities()
+        .stream()
+        .filter(x -> x.getTag().equals(tag))
+        .findFirst()
+        .get();
   }
 
   /** 查询，将字符串形式的格式转换成前端可以渲染的jsonObject */
@@ -215,6 +220,31 @@ public class AnnotationConvert {
                             && x.getStart() == entity.getStart()
                             && x.getEnd() == entity.getEnd()
                             && x.getTerm().equals(entity.getTerm()))
+                .count();
+        if (num == 0) {
+          return false;
+        }
+      }
+    }
+    if (sourceDocument.getRelationEntities().size()
+        != targetDocument.getRelationEntities().size()) {
+      return false;
+    }
+    if (sourceDocument.getRelationEntities().size() == targetDocument.getRelationEntities().size()
+        && sourceDocument.getRelationEntities().size() == 0) {
+      return true;
+    }
+    if (sourceDocument.getRelationEntities().size() > 0) {
+      for (RelationEntity relationEntity : sourceDocument.getRelationEntities()) {
+        long num =
+            targetDocument
+                .getRelationEntities()
+                .stream()
+                .filter(
+                    x ->
+                        x.getTargetTag().equals(relationEntity.getTargetTag())
+                            && x.getSourceTag().equals(relationEntity.getSourceTag())
+                            && x.getType().equals(relationEntity.getType()))
                 .count();
         if (num == 0) {
           return false;
