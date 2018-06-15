@@ -1,0 +1,12 @@
+.idea
+.class
+.vscode
+.settings
+*.class
+*.iml
+target
+example/
+.DS_Store
+/src/main/resources/application-dev.properties
+db.properties
+log4j2-test.xml
