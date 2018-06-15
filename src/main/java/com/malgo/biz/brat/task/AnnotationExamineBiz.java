@@ -60,20 +60,6 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
         annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      // state handle
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-        boolean changed =
-            AnnotationConvert.compareAnnotation(
-                annotationCombine.getFinalAnnotation(), annotationCombine.getReviewedAnnotation());
-        if (changed) { // 相同
-          annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
-        } else { // 不同
-          annotationCombine.setState(AnnotationCombineStateEnum.errorPass.name());
-        }
-      }
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
-        annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
-      }
       // 入库
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
@@ -89,6 +75,20 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()
           || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
         annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
+      }
+      // state handle
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
+        boolean changed =
+            AnnotationConvert.compareAnnotation(
+                annotationCombine.getFinalAnnotation(), annotationCombine.getReviewedAnnotation());
+        if (changed) { // 相同
+          annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
+        } else { // 不同
+          annotationCombine.setState(AnnotationCombineStateEnum.errorPass.name());
+        }
+      }
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       }
       annotationCombineRepository.save(annotationCombine);
     }
