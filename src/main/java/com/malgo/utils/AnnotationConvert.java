@@ -309,9 +309,6 @@ public class AnnotationConvert {
                   if (StringUtils.equals(x.getTerm(), newTerm)) {
                     return true;
                   }
-                  if (x.getTerm().contains(newTerm)) {
-                    return false;
-                  }
                   return x.getEnd() <= startPosition || x.getStart() >= endPosition;
                 })
             .collect(Collectors.toList()));

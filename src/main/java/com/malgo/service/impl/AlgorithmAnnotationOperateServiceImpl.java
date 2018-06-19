@@ -1,6 +1,5 @@
 package com.malgo.service.impl;
 
-import cn.malgo.core.definition.Entity;
 import com.malgo.dao.AnnotationCombineRepository;
 import com.malgo.dto.AutoAnnotation;
 import com.malgo.dto.UpdateAnnotationAlgorithm;
@@ -18,9 +17,7 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by cjl on 2018/5/31.
- */
+/** Created by cjl on 2018/5/31. */
 @Service("algorithm")
 @Slf4j
 public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateService {
@@ -92,30 +89,25 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
 
   @Override
   public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
-    Entity entity = AnnotationConvert
-        .getEntityFromAnnotation(deleteAnnotationRequest.getAutoAnnotation(),
-            deleteAnnotationRequest.getTag());
     AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
     addAnnotationRequest.setId(deleteAnnotationRequest.getId());
-    addAnnotationRequest.setStartPosition(entity.getStart());
+    addAnnotationRequest.setStartPosition(deleteAnnotationRequest.getStartPosition());
     addAnnotationRequest.setAutoAnnotation(deleteAnnotationRequest.getAutoAnnotation());
-    addAnnotationRequest.setEndPosition(entity.getEnd());
-    addAnnotationRequest.setTerm(entity.getTerm());
+    addAnnotationRequest.setEndPosition(deleteAnnotationRequest.getEndPosition());
+    addAnnotationRequest.setTerm(deleteAnnotationRequest.getTerm());
     addAnnotationRequest.setType("Token");
     return addAnnotation(addAnnotationRequest, 0);
   }
 
   @Override
   public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
-    Entity entity = AnnotationConvert
-        .getEntityFromAnnotation(updateAnnotationRequest.getAutoAnnotation(), updateAnnotationRequest.getTag());
     AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
     addAnnotationRequest.setId(updateAnnotationRequest.getId());
-    addAnnotationRequest.setTerm(entity.getTerm());
+    addAnnotationRequest.setTerm(updateAnnotationRequest.getTerm());
     addAnnotationRequest.setType(updateAnnotationRequest.getNewType());
-    addAnnotationRequest.setStartPosition(entity.getStart());
-    addAnnotationRequest.setEndPosition(entity.getEnd());
+    addAnnotationRequest.setStartPosition(updateAnnotationRequest.getStartPosition());
+    addAnnotationRequest.setEndPosition(updateAnnotationRequest.getEndPosition());
     addAnnotationRequest.setAutoAnnotation(updateAnnotationRequest.getAutoAnnotation());
-    return addAnnotation(addAnnotationRequest,0);
+    return addAnnotation(addAnnotationRequest, 0);
   }
 }

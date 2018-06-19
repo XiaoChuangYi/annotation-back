@@ -13,4 +13,8 @@ public class DeleteAnnotationRequest implements BaseAnnotationRequest {
   private int id;
   private String tag;
   private String autoAnnotation;
+
+  private int startPosition;
+  private int endPosition;
+  private String term;
 }

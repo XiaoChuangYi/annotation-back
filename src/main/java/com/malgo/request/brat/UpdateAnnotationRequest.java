@@ -13,4 +13,7 @@ public class UpdateAnnotationRequest implements BaseAnnotationRequest {
   private String tag;
   private String newType;
   private String autoAnnotation;
+  private int startPosition;
+  private int endPosition;
+  private String term;
 }
