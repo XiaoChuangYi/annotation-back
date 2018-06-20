@@ -38,7 +38,7 @@ public class AnnotationStateController extends BaseController {
   public Response commitAnnotation(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         annotationCommitBiz.process(
             commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -48,7 +48,7 @@ public class AnnotationStateController extends BaseController {
   public Response abandonAnnotation(
       @RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         annotationAbandonBiz.process(
             annotationStateRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -58,7 +58,7 @@ public class AnnotationStateController extends BaseController {
   public Response examineAnnotation(
       @RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         annotationExamineBiz.process(
             annotationStateRequest, userAccount.getId(), userAccount.getRoleId()));
   }

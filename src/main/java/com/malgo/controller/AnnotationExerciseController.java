@@ -48,19 +48,19 @@ public class AnnotationExerciseController extends BaseController {
   @RequestMapping(value = "list-standard-exercise", method = RequestMethod.GET)
   public Response listStandardExercise(
       ListExerciseAnnotationRequest listExerciseAnnotationRequest) {
-    return new Response(listExerciseAnnotationBiz.process(listExerciseAnnotationRequest, 0, 0));
+    return new Response<>(listExerciseAnnotationBiz.process(listExerciseAnnotationRequest, 0, 0));
   }
 
   /** 用户习题重置 */
   @RequestMapping(value = "user-exercise-reset", method = RequestMethod.POST)
   public Response userExerciseReset(@RequestBody UserResetRequest resetRequest) {
-    return new Response(resetUserExerciseBiz.process(resetRequest, 0, 0));
+    return new Response<>(resetUserExerciseBiz.process(resetRequest, 0, 0));
   }
 
   /** 习题集结果对照 */
   @RequestMapping(value = "list-contrast-exercise", method = RequestMethod.GET)
   public Response listContrastExercise(ListExerciseContrastRequest listExerciseContrastRequest) {
-    return new Response(listContrastExerciseBiz.process(listExerciseContrastRequest, 0, 0));
+    return new Response<>(listContrastExerciseBiz.process(listExerciseContrastRequest, 0, 0));
   }
 
   /** 练习人员提交标注 */
@@ -68,7 +68,7 @@ public class AnnotationExerciseController extends BaseController {
   public Response commitUserExercise(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         commitExerciseAnnotationBiz.process(
             commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -78,7 +78,7 @@ public class AnnotationExerciseController extends BaseController {
   public Response designateExercise(
       @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         designateUserExerciseBiz.process(
             designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }

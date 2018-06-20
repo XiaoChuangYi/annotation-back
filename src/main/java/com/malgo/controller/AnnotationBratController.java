@@ -60,7 +60,7 @@ public class AnnotationBratController extends BaseController {
   public Response getAutoAnnotation(
       @RequestParam("id") int id,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         getAutoAnnotationBiz.process(
             new GetAutoAnnotationRequest(id), userAccount.getId(), userAccount.getRoleId()));
   }
@@ -69,7 +69,7 @@ public class AnnotationBratController extends BaseController {
   public Response addAnnotation(
       @RequestBody AddAnnotationRequest addAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         addAnnotationBiz.process(
             addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -78,7 +78,7 @@ public class AnnotationBratController extends BaseController {
   public Response updateAnnotation(
       @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         updateAnnotationBiz.process(
             updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -87,7 +87,7 @@ public class AnnotationBratController extends BaseController {
   public Response deleteAnnotation(
       @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         deleteAnnotationBiz.process(
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -96,7 +96,7 @@ public class AnnotationBratController extends BaseController {
   public Response addRelation(
       @RequestBody AddRelationRequest addRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         addRelationBiz.process(addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 
@@ -105,7 +105,7 @@ public class AnnotationBratController extends BaseController {
   public Response deleteRelation(
       @RequestBody DeleteRelationRequest deleteRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         deleteRelationBiz.process(
             deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -115,7 +115,7 @@ public class AnnotationBratController extends BaseController {
   public Response updateRelation(
       @RequestBody UpdateRelationRequest updateRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response(
+    return new Response<>(
         updateRelationBiz.process(
             updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));
   }

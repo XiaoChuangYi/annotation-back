@@ -54,7 +54,7 @@ public class UserAccountController {
       @RequestBody LoginRequest loginRequest,
       HttpServletRequest servletRequest,
       HttpServletResponse servletResponse) {
-    return new Response(userAccountService.login(loginRequest, servletRequest, servletResponse));
+    return new Response<>(userAccountService.login(loginRequest, servletRequest, servletResponse));
   }
 
   /** 用户登出 */
@@ -63,33 +63,34 @@ public class UserAccountController {
       @RequestBody LogOutRequest logOutRequest,
       HttpServletRequest servletRequest,
       HttpServletResponse servletResponse) {
-    return new Response(userAccountService.logOut(logOutRequest, servletRequest, servletResponse));
+    return new Response<>(
+        userAccountService.logOut(logOutRequest, servletRequest, servletResponse));
   }
 
   @RequestMapping(value = "log-refresh", method = RequestMethod.GET)
   public Response logRefresh(
       HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-    return new Response(userAccountService.loginRefresh(servletRequest, servletResponse));
+    return new Response<>(userAccountService.loginRefresh(servletRequest, servletResponse));
   }
 
   /** 用户列表查询 */
   @RequestMapping(value = "/list-user-account", method = RequestMethod.GET)
   public Response listUserAccount(ListUserAccountRequest listUserAccountRequest) {
-    return new Response(listUserAccountBiz.process(listUserAccountRequest, 0, 0));
+    return new Response<>(listUserAccountBiz.process(listUserAccountRequest, 0, 0));
   }
   /** 新增用户 */
   @RequestMapping(value = "/add-user-account", method = RequestMethod.POST)
   public Response addUserAccount(@RequestBody AddUserAccountRequest addUserAccountRequest) {
-    return new Response(addUserAccountBiz.process(addUserAccountRequest, 0, 0));
+    return new Response<>(addUserAccountBiz.process(addUserAccountRequest, 0, 0));
   }
   /** 密码更新或者重置 */
   @RequestMapping(value = "/modify-user-password", method = RequestMethod.POST)
   public Response modifyUserPassword(@RequestBody ModifyPasswordRequest modifyPasswordRequest) {
-    return new Response(modifyUserPasswordBiz.process(modifyPasswordRequest, 0, 0));
+    return new Response<>(modifyUserPasswordBiz.process(modifyPasswordRequest, 0, 0));
   }
   /** 设定用户状态(启用/冻结) */
   @RequestMapping(value = "/set-user-state", method = RequestMethod.POST)
   public Response setUserState(@RequestBody SetUserStateRequest setUserStateRequest) {
-    return new Response(setUserStateBiz.process(setUserStateRequest, 0, 0));
+    return new Response<>(setUserStateBiz.process(setUserStateRequest, 0, 0));
   }
 }
