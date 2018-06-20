@@ -34,13 +34,14 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
     while (iterator.hasNext()) {
       Entity current = iterator.next();
       if (atomicTermList
-              .stream()
-              .filter(
-                  atomicTerm ->
-                      current.getType().equals(atomicTerm.getAnnotationType())
-                          && current.getTerm().equals(atomicTerm.getTerm()))
-              .count()
-          > 0) {
+                  .stream()
+                  .filter(
+                      atomicTerm ->
+                          current.getType().equals(atomicTerm.getAnnotationType())
+                              && current.getTerm().equals(atomicTerm.getTerm()))
+                  .count()
+              > 0
+          || current.getType().endsWith("-unconfirmed")) {
         iterator.remove();
       }
     }
