@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-/** Created by cjl on 2018/6/14. */
 public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, AnnotationCombineBratVO>
     extends BaseBiz<REQ, AnnotationCombineBratVO> {
 
