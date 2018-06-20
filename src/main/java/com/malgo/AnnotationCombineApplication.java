@@ -9,13 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableFeignClients
 @EnableJpaAuditing
 public class AnnotationCombineApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(AnnotationCombineApplication.class, args);
-	}
-
-//	@Bean
-//	public AddAnnotationAlgorithmBiz<WorSerIm> wordAddAlgorithmBiz() {
-//		return new Al
-//	}
+  public static void main(String[] args) {
+    SpringApplication.run(AnnotationCombineApplication.class, args);
+  }
 }

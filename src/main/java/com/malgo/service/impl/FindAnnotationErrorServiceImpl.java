@@ -4,19 +4,25 @@ import cn.malgo.common.StringUtilsExt;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
+import com.malgo.dao.AnnotationFixLogRepository;
 import com.malgo.dto.Annotation;
+import com.malgo.entity.AnnotationFixLog;
 import com.malgo.service.FindAnnotationErrorService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorService {
@@ -30,7 +36,13 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         Pattern.compile("m\\d+\\s*/\\s*\\d+", Pattern.CASE_INSENSITIVE)
       };
 
+  private final AnnotationFixLogRepository annotationFixLogRepository;
   private JSONObject staticWordsDict;
+
+  public FindAnnotationErrorServiceImpl(
+      final AnnotationFixLogRepository annotationFixLogRepository) {
+    this.annotationFixLogRepository = annotationFixLogRepository;
+  }
 
   @PostConstruct
   private void init() throws IOException {
@@ -66,14 +78,51 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     return result;
   }
 
+  private String getAnnotationFixLogKey(
+      Pair<Pair<Annotation, BratPosition>, Pair<String, String>> error) {
+    return error.getLeft().getLeft().getId()
+        + "-"
+        + error.getLeft().getRight().getStart()
+        + "-"
+        + error.getLeft().getRight().getEnd();
+  }
+
+  /** filter errors through {@link AnnotationFixLog} database */
+  private Stream<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> filterErrors(
+      List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> errors) {
+    final Set<String> fixLogs =
+        annotationFixLogRepository
+            .findAllFixedLogs(errors.stream().map(Pair::getLeft).collect(Collectors.toList()))
+            .stream()
+            .map(AnnotationFixLog::getUniqueKey)
+            .collect(Collectors.toSet());
+
+    return errors.stream().filter(error -> !fixLogs.contains(getAnnotationFixLogKey(error)));
+  }
+
+  private AlgorithmAnnotationWordError mapToWordError(
+      Map.Entry<String, List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>>> entry) {
+    final AlgorithmAnnotationWordError wordError = new AlgorithmAnnotationWordError(entry.getKey());
+    entry
+        .getValue()
+        .forEach(
+            pair ->
+                wordError.addError(
+                    pair.getLeft().getLeft(),
+                    pair.getRight().getRight(),
+                    pair.getLeft().getRight()));
+    return wordError;
+  }
+
   @Override
   public List<AlgorithmAnnotationWordError> findErrors(List<Annotation> annotations) {
-    final Map<String, AlgorithmAnnotationWordError> result = new HashMap<>();
+    final List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> results =
+        new ArrayList<>();
 
     for (Annotation annotation : annotations) {
       for (Entity entity : annotation.getDocument().getEntities()) {
         final String term = preProcessTerm(entity.getTerm());
-        if (term == null) {
+        if (StringUtils.isBlank(term)) {
           continue;
         }
 
@@ -81,13 +130,24 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
         if (!staticWordsDict.containsKey(term)
             || !staticWordsDict.getJSONObject(term).containsKey(type)) {
-          result
-              .computeIfAbsent(term, (t) -> new AlgorithmAnnotationWordError(term))
-              .addError(annotation, type, new BratPosition(entity.getStart(), entity.getEnd()));
+          results.add(
+              Pair.of(
+                  Pair.of(annotation, new BratPosition(entity.getStart(), entity.getEnd())),
+                  Pair.of(term, type)));
         }
       }
     }
 
-    return result.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
+    return Lists.partition(results, 1000)
+        .stream()
+        // 过滤已经被处理过的错误
+        .flatMap(this::filterErrors)
+        // group by word
+        .collect(Collectors.groupingBy(result -> result.getRight().getLeft()))
+        .entrySet()
+        .stream()
+        // 变成最终的数据结构
+        .map(this::mapToWordError)
+        .collect(Collectors.toList());
   }
 }

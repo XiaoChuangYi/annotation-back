@@ -4,11 +4,7 @@ import com.malgo.exception.MalgoServiceException;
 import com.malgo.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +37,7 @@ public class SystemArchitecture {
    * types are in sub-packages.
    */
   @Pointcut(
-      "execution(* com.malgo.service.*.*(..)) && !execution(* com.malgo.service.UserAccountService.*(..))&& !execution(* com.malgo.service.feigns.*.*(..))")
+      "execution(* com.malgo.service.*.*(..)) && !execution(* com.malgo.service.AnnotationFactory.*(..)) && !execution(* com.malgo.service.UserAccountService.*(..))&& !execution(* com.malgo.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
   @Before("businessLayer()||serviceLayer()")

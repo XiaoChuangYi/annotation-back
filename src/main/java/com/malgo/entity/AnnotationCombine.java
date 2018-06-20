@@ -8,16 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Created by cjl on 2018/5/29.
- */
+/** Created by cjl on 2018/5/29. */
 @Entity
 @Table(name = "annotation_combine")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class AnnotationCombine extends BaseEntity {
-
   @Column(name = "final_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String finalAnnotation;
 
@@ -31,6 +28,5 @@ public class AnnotationCombine extends BaseEntity {
 
   private int isTask;
 
-  @Transient
-  private String userName;
+  @Transient private String userName;
 }

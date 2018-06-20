@@ -8,6 +8,7 @@ import com.malgo.utils.AnnotationDocumentManipulator;
 import com.malgo.utils.entity.AnnotationDocument;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @ToString(exclude = "annotation")
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AnnotationErrorContext {
   private static final Pattern SENTENCE_SPLITS = Pattern.compile("([,!。，！？?])");
 
