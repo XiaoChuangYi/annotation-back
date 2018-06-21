@@ -41,7 +41,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
   public FindAnnotationErrorServiceImpl(
       final AnnotationFixLogRepository annotationFixLogRepository,
-      @Value("malgo.annotation.fix-log-batch-size") final int batchSize) {
+      @Value("${malgo.annotation.fix-log-batch-size}") final int batchSize) {
     this.annotationFixLogRepository = annotationFixLogRepository;
     this.batchSize = batchSize;
   }
