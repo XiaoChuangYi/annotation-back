@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.malgo.dao.AnnotationFixLogRepository;
 import com.malgo.dto.Annotation;
+import com.malgo.dto.WordTypeCount;
 import com.malgo.entity.AnnotationFixLog;
 import com.malgo.service.FindAnnotationErrorService;
 import org.apache.commons.io.IOUtils;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +35,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
       };
 
   private final AnnotationFixLogRepository annotationFixLogRepository;
-  private JSONObject staticWordsDict;
+  private Map<String, Map<String, WordTypeCount>> staticWordsDict;
 
   public FindAnnotationErrorServiceImpl(
       final AnnotationFixLogRepository annotationFixLogRepository) {
@@ -46,12 +44,26 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
   @PostConstruct
   private void init() throws IOException {
-    staticWordsDict =
+    final JSONObject obj =
         JSONObject.parseObject(
             IOUtils.toString(
                 Thread.currentThread()
                     .getContextClassLoader()
                     .getResourceAsStream("static-words.json")));
+
+    staticWordsDict = new HashMap<>();
+    for (String term : obj.keySet()) {
+      staticWordsDict.put(term, new HashMap<>());
+      for (String type : obj.getJSONObject(term).keySet()) {
+        final JSONObject typeObj = obj.getJSONObject(term).getJSONObject(type);
+        staticWordsDict
+            .get(term)
+            .put(
+                type,
+                new WordTypeCount(
+                    type, typeObj.getIntValue("count"), typeObj.getIntValue("concept_id")));
+      }
+    }
   }
 
   private String preProcessType(String type) {
@@ -102,7 +114,14 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
   private AlgorithmAnnotationWordError mapToWordError(
       Map.Entry<String, List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>>> entry) {
-    final AlgorithmAnnotationWordError wordError = new AlgorithmAnnotationWordError(entry.getKey());
+    final AlgorithmAnnotationWordError wordError =
+        new AlgorithmAnnotationWordError(
+            entry.getKey(),
+            new ArrayList<>(
+                staticWordsDict.containsKey(entry.getKey())
+                    ? staticWordsDict.get(entry.getKey()).values()
+                    : Collections.emptyList()));
+
     entry
         .getValue()
         .forEach(
@@ -111,6 +130,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
                     pair.getLeft().getLeft(),
                     pair.getRight().getRight(),
                     pair.getLeft().getRight()));
+
     return wordError;
   }
 
@@ -128,8 +148,8 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
         final String type = preProcessType(entity.getType());
 
-        if (!staticWordsDict.containsKey(term)
-            || !staticWordsDict.getJSONObject(term).containsKey(type)) {
+        if (!staticWordsDict.containsKey(term) || !staticWordsDict.get(term).containsKey(type)) {
+          // 新词或者旧词新义
           results.add(
               Pair.of(
                   Pair.of(annotation, new BratPosition(entity.getStart(), entity.getEnd())),

@@ -2,6 +2,7 @@ package com.malgo.service;
 
 import cn.malgo.core.definition.brat.BratPosition;
 import com.malgo.dto.Annotation;
+import com.malgo.dto.WordTypeCount;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public interface FindAnnotationErrorService {
   @Getter
   final class AlgorithmAnnotationWordError {
     @NonNull private final String word;
+    @NonNull private final List<WordTypeCount> counts;
     private List<AlgorithmAnnotationErrorType> typeContext = new ArrayList<>();
 
     public void addError(Annotation annotation, String type, BratPosition position) {
