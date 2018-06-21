@@ -10,6 +10,7 @@ import com.malgo.dto.Annotation;
 import com.malgo.dto.WordTypeCount;
 import com.malgo.entity.AnnotationFixLog;
 import com.malgo.service.FindAnnotationErrorService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorService {
   private static final Pattern[] IGNORE_WORD_PATTERNS =
       new Pattern[] {
@@ -162,6 +164,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
   @Override
   public List<AlgorithmAnnotationWordError> findErrors(List<Annotation> annotations) {
+    log.info("start find errors");
     final List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> results =
         new ArrayList<>();
 
@@ -184,6 +187,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
       }
     }
 
+    log.info("get potential error list: {}", results.size());
     return Lists.partition(results, batchSize)
         .stream()
         // 过滤已经被处理过的错误

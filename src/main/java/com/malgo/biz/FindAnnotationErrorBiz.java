@@ -81,6 +81,8 @@ public class FindAnnotationErrorBiz
       return Collections.emptyList();
     }
 
+    log.info("get error result from service: {}", errors.size());
+
     final List<AnnotationWordError> result =
         errors
             .stream()
@@ -89,7 +91,6 @@ public class FindAnnotationErrorBiz
             .collect(Collectors.toList());
 
     log.info("find annotation errors result, get {} errors", result.size());
-    log.debug("find annotation errors result: {}", result);
 
     return result;
   }
