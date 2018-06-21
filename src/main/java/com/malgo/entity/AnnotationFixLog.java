@@ -10,18 +10,21 @@ import java.sql.Timestamp;
 /**
  * <code>
  * ALTER TABLE annotation_fix_log ADD COLUMN unique_combined_id VARCHAR(64);
- * UPDATE annotation_fix_log SET unique_combined_id = CONCAT(annotation_id, '-', start, '-', end);
- * CREATE INDEX `idx_unique_combined_id` ON annotation_fix_log (`unique_combined_id`);
- *
+ * UPDATE annotation_fix_log
+ * SET unique_combined_id = CONCAT(annotation_id, '-', start, '-', end);
+ * CREATE INDEX `idx_unique_combined_id`
+ *   ON annotation_fix_log (`unique_combined_id`);
  * CREATE TRIGGER insert_trigger
- * BEFORE INSERT ON annotation_fix_log
- * FOR EACH ROW
- * SET new.unique_combined_id = CONCAT(annotation_id, '-', start, '-', end);
+ *   BEFORE INSERT
+ *   ON annotation_fix_log
+ *   FOR EACH ROW
+ *   SET new.unique_combined_id = CONCAT(new.annotation_id, '-', new.start, '-', new.end);
  *
  * CREATE TRIGGER update_trigger
- * BEFORE UPDATE ON annotation_fix_log
- * FOR EACH ROW
- * SET new.unique_combined_id = CONCAT(annotation_id, '-', start, '-', end);
+ *   BEFORE UPDATE
+ *   ON annotation_fix_log
+ *   FOR EACH ROW
+ *   SET new.unique_combined_id = CONCAT(new.annotation_id, '-', new.start, '-', new.end);
  * </code>
  */
 @Entity
