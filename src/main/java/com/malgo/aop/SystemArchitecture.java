@@ -40,7 +40,7 @@ public class SystemArchitecture {
       "execution(* com.malgo.service.*.*(..)) && !execution(* com.malgo.service.AnnotationFactory.*(..)) && !execution(* com.malgo.service.UserAccountService.*(..))&& !execution(* com.malgo.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
-  @Before("businessLayer()||serviceLayer()")
+  @Before("businessLayer()")
   public void beforeMethod(JoinPoint joinPoint) {
     String className = joinPoint.getTarget().getClass().getName();
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
@@ -64,7 +64,7 @@ public class SystemArchitecture {
     }
   }
 
-  @AfterReturning(value = "businessLayer()||serviceLayer()", returning = "retValue")
+  @AfterReturning(value = "businessLayer()", returning = "retValue")
   public void afterReturnMethod(JoinPoint joinPoint, Object retValue) {
     String className = joinPoint.getTarget().getClass().getName();
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
