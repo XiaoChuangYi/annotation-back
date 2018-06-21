@@ -1,6 +1,7 @@
 package com.malgo.aop;
 
 import com.malgo.exception.MalgoServiceException;
+import com.malgo.request.brat.BaseAnnotationRequest;
 import com.malgo.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -76,19 +77,25 @@ public class SystemArchitecture {
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     Object[] args = joinPoint.getArgs();
     if (args.length == 3) { // businessLayer
+      int anId = 0;
+      if (args[0] instanceof BaseAnnotationRequest) {
+        anId = ((BaseAnnotationRequest) args[0]).getId();
+      }
       String[] methodArr = className.split("\\.");
       if (retValue == null) {
         OpLoggerUtil.info(
             Integer.valueOf(args[1].toString()),
             Integer.valueOf(args[2].toString()),
             methodArr[methodArr.length - 1].replace("Biz", ""),
-            "无对应id记录");
+            "",
+            anId);
       } else {
         OpLoggerUtil.info(
             Integer.valueOf(args[1].toString()),
             Integer.valueOf(args[2].toString()),
             methodArr[methodArr.length - 1].replace("Biz", ""),
-            "success");
+            "success",
+            anId);
       }
 
       if (!isReadMethod(methodArr[methodArr.length - 1])) {
@@ -112,12 +119,17 @@ public class SystemArchitecture {
     String className = joinPoint.getTarget().getClass().getName();
     Object[] args = joinPoint.getArgs();
     if (args.length == 3) {
+      int anId = 0;
+      if (args[0] instanceof BaseAnnotationRequest) {
+        anId = ((BaseAnnotationRequest) args[0]).getId();
+      }
       String[] methodArr = className.split("\\.");
       OpLoggerUtil.info(
           Integer.valueOf(args[1].toString()),
           Integer.valueOf(args[2].toString()),
           methodArr[methodArr.length - 1].replace("Biz", ""),
-          ex.getMessage());
+          ex.getMessage(),
+          anId);
     }
     log.info("类名：{}；异常信息：{}；", className, ex);
   }

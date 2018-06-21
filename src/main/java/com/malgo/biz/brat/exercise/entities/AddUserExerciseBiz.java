@@ -88,10 +88,8 @@ public class AddUserExerciseBiz extends BaseBiz<AddAnnotationRequest, ExerciseAn
       userExercise = userExerciseRepository.save(userExercise);
       ExerciseAnnotationBratVO exerciseAnnotationBratVO =
           AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
-      OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-annotation", "success");
       return exerciseAnnotationBratVO;
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-annotation", "无对应id记录");
     return null;
   }
 }

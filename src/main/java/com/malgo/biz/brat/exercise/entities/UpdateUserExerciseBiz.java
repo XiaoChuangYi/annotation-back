@@ -17,13 +17,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/4.
- */
+/** Created by cjl on 2018/6/4. */
 @Component
 @Slf4j
-public class UpdateUserExerciseBiz extends
-    BaseBiz<UpdateAnnotationRequest, ExerciseAnnotationBratVO> {
+public class UpdateUserExerciseBiz
+    extends BaseBiz<UpdateAnnotationRequest, ExerciseAnnotationBratVO> {
 
   private final AnnotationOperateService exerciseAnnotationOperateService;
   private final UserExerciseRepository userExerciseRepository;
@@ -59,9 +57,9 @@ public class UpdateUserExerciseBiz extends
       throws BusinessRuleException {
     globalRole = role;
     globalUserId = userId;
-    if (role > 2) {//标注人员，练习人员，需要判断是否有权限操作这一条
-      Optional<UserExercise> optional = userExerciseRepository
-          .findById(updateAnnotationRequest.getId());
+    if (role > 2) { // 标注人员，练习人员，需要判断是否有权限操作这一条
+      Optional<UserExercise> optional =
+          userExerciseRepository.findById(updateAnnotationRequest.getId());
       if (optional.isPresent()) {
         if (optional.get().getAssignee() != userId) {
           throw new BusinessRuleException("no-authorize-current-record", "当前练习人员无权操作当前记录");
@@ -72,23 +70,21 @@ public class UpdateUserExerciseBiz extends
 
   @Override
   protected ExerciseAnnotationBratVO doBiz(UpdateAnnotationRequest updateAnnotationRequest) {
-    Optional<UserExercise> optional = userExerciseRepository
-        .findById(updateAnnotationRequest.getId());
+    Optional<UserExercise> optional =
+        userExerciseRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
       log.info("习题更新标注请求参数：{}", updateAnnotationRequest);
       UserExercise userExercise = optional.get();
-      String annotation = exerciseAnnotationOperateService
-          .updateAnnotation(updateAnnotationRequest);
+      String annotation =
+          exerciseAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
       log.info("习题更新标注返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
-          .convert2ExerciseAnnotationBratVO(userExercise);
-      OpLoggerUtil.info(globalUserId, globalRole, "update-exercise-annotation", "success");
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO =
+          AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
       return exerciseAnnotationBratVO;
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "update-exercise-annotation", "无对应id记录");
     return null;
   }
 }

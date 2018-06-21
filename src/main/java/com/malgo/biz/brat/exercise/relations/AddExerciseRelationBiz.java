@@ -17,9 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-/**
- * Created by cjl on 2018/6/4.
- */
+/** Created by cjl on 2018/6/4. */
 @Component
 @Slf4j
 public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, ExerciseAnnotationBratVO> {
@@ -82,12 +80,10 @@ public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, Exercise
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);
-      ExerciseAnnotationBratVO exerciseAnnotationBratVO = AnnotationConvert
-          .convert2ExerciseAnnotationBratVO(userExercise);
-      OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-relation", "success");
+      ExerciseAnnotationBratVO exerciseAnnotationBratVO =
+          AnnotationConvert.convert2ExerciseAnnotationBratVO(userExercise);
       return exerciseAnnotationBratVO;
     }
-    OpLoggerUtil.info(globalUserId, globalRole, "add-exercise-relation", "无对应id记录");
     return null;
   }
 }
