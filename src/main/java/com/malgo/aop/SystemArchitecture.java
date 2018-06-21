@@ -40,6 +40,12 @@ public class SystemArchitecture {
       "execution(* com.malgo.service.*.*(..)) && !execution(* com.malgo.service.AnnotationFactory.*(..)) && !execution(* com.malgo.service.UserAccountService.*(..))&& !execution(* com.malgo.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
+  private boolean isReadMethod(final String className) {
+    return className.startsWith("List")
+        || className.startsWith("Get")
+        || className.startsWith("Find");
+  }
+
   @Before("businessLayer()")
   public void beforeMethod(JoinPoint joinPoint) {
     String className = joinPoint.getTarget().getClass().getName();
@@ -47,8 +53,8 @@ public class SystemArchitecture {
     Object[] args = joinPoint.getArgs();
     if (args.length == 3) { // businessLayer
       String[] methodArr = className.split("\\.");
-      if (!methodArr[methodArr.length - 1].startsWith("List")
-          && !methodArr[methodArr.length - 1].startsWith("Get")) {
+
+      if (!isReadMethod(methodArr[methodArr.length - 1])) {
         log.info(
             "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；请求参数：{}；",
             className,
@@ -84,8 +90,8 @@ public class SystemArchitecture {
             methodArr[methodArr.length - 1].replace("Biz", ""),
             "success");
       }
-      if (!methodArr[methodArr.length - 1].startsWith("List")
-          && !methodArr[methodArr.length - 1].startsWith("Get")) {
+
+      if (!isReadMethod(methodArr[methodArr.length - 1])) {
         log.info(
             "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；返回结果：{}；",
             className,
