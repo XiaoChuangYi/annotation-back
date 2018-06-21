@@ -2,6 +2,7 @@ package com.malgo.controller;
 
 import com.malgo.biz.FindAnnotationErrorBiz;
 import com.malgo.biz.FixAnnotationBiz;
+import com.malgo.dto.AnnotationWordError;
 import com.malgo.dto.FixAnnotationResult;
 import com.malgo.entity.UserAccount;
 import com.malgo.request.FixAnnotationErrorRequest;
@@ -32,11 +33,10 @@ public class AnnotationErrorController extends BaseController {
   public Response<AnnotationErrorVO> getAnnotationErrors(
       GetAnnotationErrorRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    final List<AnnotationWordError> errors =
+        findAnnotationErrorBiz.process(request, userAccount.getId(), userAccount.getRoleId());
     return new Response<>(
-        new AnnotationErrorVO(
-            findAnnotationErrorBiz
-                .process(request, userAccount.getId(), userAccount.getRoleId())
-                .subList(0, 1)));
+        new AnnotationErrorVO(errors != null && errors.size() > 0 ? errors.subList(0, 1) : errors));
   }
 
   @RequestMapping(value = "/annotation/fix-errors", method = RequestMethod.POST)
