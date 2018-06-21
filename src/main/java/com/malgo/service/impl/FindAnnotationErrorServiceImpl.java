@@ -35,6 +35,18 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         Pattern.compile("m\\d+\\s*/\\s*\\d+", Pattern.CASE_INSENSITIVE)
       };
 
+  private static final Pair[] IGNORE_WORD_TYPES =
+      new Pair[] {
+        Pair.of("&", "Token"),
+        Pair.of(";", "Token"),
+        Pair.of("，", "Token"),
+        Pair.of("。", "Token"),
+        Pair.of("！", "Token"),
+        Pair.of("!", "Token"),
+        Pair.of("?", "Token"),
+        Pair.of("？", "Token"),
+      };
+
   private final AnnotationFixLogRepository annotationFixLogRepository;
   private final int batchSize;
   private Map<String, Map<String, WordTypeCount>> staticWordsDict;
@@ -66,6 +78,16 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
                 type,
                 new WordTypeCount(
                     type, typeObj.getIntValue("count"), typeObj.getIntValue("concept_id")));
+      }
+    }
+
+    for (Pair ignoreWordType : IGNORE_WORD_TYPES) {
+      if (!staticWordsDict.containsKey(ignoreWordType.getLeft())) {
+        staticWordsDict.put(
+            (String) ignoreWordType.getLeft(),
+            Collections.singletonMap(
+                (String) ignoreWordType.getRight(),
+                new WordTypeCount((String) ignoreWordType.getRight(), 0, 0)));
       }
     }
   }
