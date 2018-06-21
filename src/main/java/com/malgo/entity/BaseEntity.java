@@ -1,22 +1,14 @@
 package com.malgo.entity;
 
 import com.alibaba.fastjson.annotation.JSONType;
-import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import com.malgo.enums.AnnotationCombineStateEnum;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import javax.persistence.*;
+import java.util.Date;
 
 /** Created by cjl on 2018/5/29. */
 @Getter
@@ -45,13 +37,13 @@ public abstract class BaseEntity {
   @Column(name = "term", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String term;
 
-  @Setter @Getter private String state;
+  @Setter @Getter private String state = AnnotationCombineStateEnum.unDistributed.name();
 
-  @Setter @Getter private int assignee;
+  @Setter @Getter private int assignee = 1;
 
-  @Setter @Getter private int creator;
+  @Setter @Getter private int creator = 0;
 
-  @Setter @Getter private int reviewer;
+  @Setter @Getter private int reviewer = 1;
 
   @Setter @Getter private long deleteToken;
 

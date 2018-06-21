@@ -1,34 +1,36 @@
 package com.malgo.controller;
 
-import com.malgo.biz.CountAnnotationBiz;
-import com.malgo.biz.DesignateAnnotationBiz;
-import com.malgo.biz.GetAnnotationSummaryBiz;
-import com.malgo.biz.GetAnnotationSummaryByAssigneeBiz;
-import com.malgo.biz.ListAnnotationBiz;
-import com.malgo.biz.RandomDesignateAnnotationBiz;
+import com.malgo.biz.*;
 import com.malgo.biz.brat.ListAnTypeBiz;
+import com.malgo.dao.AnnotationCombineRepository;
+import com.malgo.entity.AnnotationCombine;
 import com.malgo.entity.UserAccount;
-import com.malgo.request.CountAnnotationRequest;
-import com.malgo.request.DesignateAnnotationRequest;
-import com.malgo.request.ListAnnotationCombineRequest;
-import com.malgo.request.RandomDesignateAnnotationRequest;
-import com.malgo.request.SetUserStateRequest;
+import com.malgo.enums.AnnotationTypeEnum;
+import com.malgo.exception.BusinessRuleException;
+import com.malgo.exception.InvalidInputException;
+import com.malgo.request.*;
 import com.malgo.result.PageVO;
 import com.malgo.result.Response;
 import com.malgo.vo.AnnotationCombineBratVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-/** Created by cjl on 2018/5/30. */
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationCombineController extends BaseController {
-
+  private final String secretKey;
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
@@ -36,15 +38,19 @@ public class AnnotationCombineController extends BaseController {
   private final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz;
   private final CountAnnotationBiz countAnnotationBiz;
   private final ListAnTypeBiz listAnTypeBiz;
+  private final AnnotationCombineRepository annotationCombineRepository;
 
   public AnnotationCombineController(
+      @Value("${malgo.internal.secret-key}") String secretKey,
       ListAnnotationBiz listAnnotationBiz,
       DesignateAnnotationBiz designateAnnotationBiz,
       GetAnnotationSummaryBiz getAnnotationSummaryBiz,
       GetAnnotationSummaryByAssigneeBiz getAnnotationSummaryByAssigneeBiz,
       RandomDesignateAnnotationBiz randomDesignateAnnotationBiz,
       CountAnnotationBiz countAnnotationBiz,
-      ListAnTypeBiz listAnTypeBiz) {
+      ListAnTypeBiz listAnTypeBiz,
+      AnnotationCombineRepository annotationCombineRepository) {
+    this.secretKey = secretKey;
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.getAnnotationSummaryBiz = getAnnotationSummaryBiz;
@@ -52,6 +58,7 @@ public class AnnotationCombineController extends BaseController {
     this.countAnnotationBiz = countAnnotationBiz;
     this.listAnTypeBiz = listAnTypeBiz;
     this.getAnnotationSummaryByAssigneeBiz = getAnnotationSummaryByAssigneeBiz;
+    this.annotationCombineRepository = annotationCombineRepository;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -108,5 +115,40 @@ public class AnnotationCombineController extends BaseController {
     return new Response<>(
         getAnnotationSummaryByAssigneeBiz.process(
             setUserStateRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
+
+  @RequestMapping(value = "/import", method = RequestMethod.POST)
+  public Response<List<AnnotationCombine>> importAnnotations(
+      @RequestParam("secretKey") final String secretKey,
+      @RequestParam("annotationType") final int annotationType,
+      @RequestParam("file") final MultipartFile file) {
+    if (annotationType < 0 || annotationType >= AnnotationTypeEnum.values().length) {
+      throw new InvalidInputException("invalid-annotation-type", annotationType + " is invalid");
+    }
+
+    if (!StringUtils.equals(secretKey, this.secretKey)) {
+      throw new BusinessRuleException("permission-denied", "wrong secret key");
+    }
+
+    try {
+      final String contents = IOUtils.toString(file.getInputStream());
+      final Set<String> terms = new HashSet<>(Arrays.asList(contents.split("\n")));
+      return new Response<>(
+          annotationCombineRepository.saveAll(
+              terms
+                  .stream()
+                  .filter(StringUtils::isNotBlank)
+                  .map(
+                      term -> {
+                        final AnnotationCombine annotationCombine = new AnnotationCombine();
+                        annotationCombine.setTerm(term);
+                        annotationCombine.setAnnotationType(annotationType);
+                        return annotationCombine;
+                      })
+                  .collect(Collectors.toList())));
+    } catch (IOException e) {
+      log.error("get wrong file: {}", file.getName());
+      throw new InvalidInputException("wrong-file", e.getMessage());
+    }
   }
 }
