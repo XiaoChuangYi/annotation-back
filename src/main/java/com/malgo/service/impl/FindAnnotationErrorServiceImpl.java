@@ -13,6 +13,7 @@ import com.malgo.service.FindAnnotationErrorService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -35,11 +36,14 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
       };
 
   private final AnnotationFixLogRepository annotationFixLogRepository;
+  private final int batchSize;
   private Map<String, Map<String, WordTypeCount>> staticWordsDict;
 
   public FindAnnotationErrorServiceImpl(
-      final AnnotationFixLogRepository annotationFixLogRepository) {
+      final AnnotationFixLogRepository annotationFixLogRepository,
+      @Value("malgo.annotation.fix-log-batch-size") final int batchSize) {
     this.annotationFixLogRepository = annotationFixLogRepository;
+    this.batchSize = batchSize;
   }
 
   @PostConstruct
@@ -158,7 +162,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
       }
     }
 
-    return Lists.partition(results, 1000)
+    return Lists.partition(results, batchSize)
         .stream()
         // 过滤已经被处理过的错误
         .flatMap(this::filterErrors)
