@@ -1,0 +1,72 @@
+.deploy_template: &deploy_definition
+  dependencies: []
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  script:
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker pull $PULL_REPO"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker stop $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker rm -f $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m 768m --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
+
+stages:
+  - package
+  - build
+  - deploy_test
+  - deploy_prod
+
+variables:
+  DOCKER_DRIVER: overlay
+  REPO_NAME: annotation-service
+  PULL_REPO: registry-vpc.cn-hangzhou.aliyuncs.com/malgo/$REPO_NAME:$CI_COMMIT_SHA
+  PUSH_REPO: $REGISTRY_SERVER/malgo/$REPO_NAME:$CI_COMMIT_SHA
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+maven-build:
+  image: maven:3-jdk-8
+  stage: package
+  script:
+    - mvn $MAVEN_CLI_OPTS package
+    - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
+  artifacts:
+    paths:
+      - target/*.jar
+      - target/.version
+  cache:
+    paths:
+      - .m2/repository/
+
+docker-build:
+  stage: build
+  image: docker:latest
+  services:
+   - docker:dind
+  allow_failure: false
+  before_script:
+    - docker info
+  script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY_SERVER
+    - docker build -t $PUSH_REPO --build-arg JAR_FILE=$REPO_NAME-`cat ./target/.version`.jar -f APP-META/Dockerfile .
+    - docker push $PUSH_REPO
+
+deploy-test:
+  stage: deploy_test
+  environment:
+    name: test
+    url: 121.196.212.109
+  when: on_success
+  <<: *deploy_definition
+
+deploy-prod:
+  stage: deploy_prod
+  environment:
+    name: prod
+    url: 47.96.0.236
+  when: manual
+  <<: *deploy_definition
