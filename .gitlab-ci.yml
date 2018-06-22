@@ -35,6 +35,7 @@ maven-build:
     - mvn $MAVEN_CLI_OPTS package
     - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
   artifacts:
+    expire_in: 1h
     paths:
       - target/*.jar
       - target/.version
@@ -54,6 +55,9 @@ docker-build:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY_SERVER
     - docker build -t $PUSH_REPO --build-arg JAR_FILE=$REPO_NAME-`cat ./target/.version`.jar -f APP-META/Dockerfile .
     - docker push $PUSH_REPO
+  only:
+    - develop
+    - master
 
 deploy-test:
   stage: deploy_test
@@ -61,6 +65,9 @@ deploy-test:
     name: test
     url: 121.196.212.109
   when: on_success
+  only:
+    - develop
+    - master
   <<: *deploy_definition
 
 deploy-prod:
@@ -69,4 +76,6 @@ deploy-prod:
     name: prod
     url: 47.96.0.236
   when: manual
+  only:
+    - master
   <<: *deploy_definition
