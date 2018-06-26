@@ -1,7 +1,5 @@
 .deploy_template: &deploy_definition
   dependencies: []
-  variables:
-    GIT_STRATEGY: none
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - mkdir -p ~/.ssh
@@ -12,7 +10,7 @@
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker pull $PULL_REPO"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker stop $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker rm -f $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
-    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m 768m --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always -p $BIND_IP:9001:9001 --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m 768m --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
 
 stages:
   - package
@@ -68,6 +66,9 @@ deploy-test:
   only:
     - develop
     - master
+  variables:
+    GIT_STRATEGY: none
+    BIND_IP: 172.16.209.199
   <<: *deploy_definition
 
 deploy-prod:
@@ -78,4 +79,7 @@ deploy-prod:
   when: manual
   only:
     - master
+  variables:
+    GIT_STRATEGY: none
+    BIND_IP: 172.16.209.198
   <<: *deploy_definition
