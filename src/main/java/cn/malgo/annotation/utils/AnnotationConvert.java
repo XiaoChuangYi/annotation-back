@@ -398,7 +398,6 @@ public class AnnotationConvert {
             .stream()
             .filter(x -> !x.getTag().equals(tag))
             .collect(Collectors.toList());
-    IntStream.range(0, entityList.size()).forEach(i -> entityList.get(i).setTag("T" + (i + 1)));
     annoDocument.setEntities(entityList);
     // 再删除与该标签相关联relation
     List<RelationEntity> relationEntityList =
@@ -408,8 +407,6 @@ public class AnnotationConvert {
             .filter(x -> !x.getTargetTag().equals(tag))
             .filter(x -> !x.getSourceTag().equals(tag))
             .collect(Collectors.toList());
-    IntStream.range(0, relationEntityList.size())
-        .forEach(i -> relationEntityList.get(i).setTag("R" + (i + 1)));
     annoDocument.setRelationEntities(relationEntityList);
     // todo,后期加入events/triggers，同时删除events关联相关标签的关系
     return AnnotationDocumentManipulator.toBratAnnotations(annoDocument);
@@ -474,8 +471,6 @@ public class AnnotationConvert {
             .stream()
             .filter(x -> !x.getTag().equals(rTag))
             .collect(Collectors.toList());
-    IntStream.range(0, relationEntityList.size())
-        .forEach(i -> relationEntityList.get(i).setTag("R" + (i + 1)));
     annotationDocument.setRelationEntities(relationEntityList);
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
