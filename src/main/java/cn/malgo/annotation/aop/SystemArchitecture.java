@@ -44,6 +44,7 @@ public class SystemArchitecture {
   private boolean isReadMethod(final String className) {
     return className.startsWith("List")
         || className.startsWith("Get")
+        || className.startsWith("Search")
         || className.startsWith("Find");
   }
 

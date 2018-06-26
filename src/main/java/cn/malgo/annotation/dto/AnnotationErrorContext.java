@@ -1,11 +1,10 @@
 package cn.malgo.annotation.dto;
 
+import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
+import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
-import cn.malgo.annotation.service.FindAnnotationErrorService;
-import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
-import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,14 +26,12 @@ public class AnnotationErrorContext {
   private int end;
   private JSONObject annotation;
 
-  public AnnotationErrorContext(
-      final FindAnnotationErrorService.AlgorithmAnnotationErrorContext errorContext,
-      final BratPosition position) {
-    this.id = errorContext.getAnnotation().getId();
+  public AnnotationErrorContext(final Annotation annotation, final BratPosition position) {
+    this.id = annotation.getId();
     this.start = position.getStart();
     this.end = position.getEnd();
 
-    final AnnotationDocument document = errorContext.getAnnotation().getDocument();
+    final AnnotationDocument document = annotation.getDocument();
     int start = this.start;
     int end = this.end;
 

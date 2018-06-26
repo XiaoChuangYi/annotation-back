@@ -24,7 +24,7 @@ public class AnnotationError {
                     context
                         .getIndex()
                         .stream()
-                        .map(index -> new AnnotationErrorContext(context, index)))
+                        .map(index -> new AnnotationErrorContext(context.getAnnotation(), index)))
             .collect(Collectors.toList());
   }
 }
