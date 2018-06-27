@@ -12,4 +12,5 @@ public class SearchAnnotationRequest {
   // term and type are both regex
   private final String term;
   private final String type;
+  private final boolean filterFixedErrors;
 }

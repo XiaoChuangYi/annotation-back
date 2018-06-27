@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AnnotationErrorContext {
+public class AnnotationErrorContext implements AnnotationWithPosition {
   private static final Pattern SENTENCE_SPLITS = Pattern.compile("([,!。，！？?])");
 
   private int id;
@@ -47,6 +47,11 @@ public class AnnotationErrorContext {
 
     this.annotation =
         getBratResult(document, Math.max(0, start), Math.min(end, document.getText().length() - 1));
+  }
+
+  @Override
+  public int getAnnotationId() {
+    return this.id;
   }
 
   private static final JSONObject getBratResult(

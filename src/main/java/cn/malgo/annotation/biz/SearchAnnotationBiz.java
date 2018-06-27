@@ -9,6 +9,7 @@ import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
+import cn.malgo.annotation.service.FindAnnotationErrorService;
 import cn.malgo.core.definition.brat.BratPosition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -28,13 +28,16 @@ public class SearchAnnotationBiz
     extends BaseBiz<SearchAnnotationRequest, List<AnnotationErrorContext>> {
   private final AnnotationFactory annotationFactory;
   private final AnnotationCombineRepository annotationCombineRepository;
+  private final FindAnnotationErrorService findAnnotationErrorService;
 
   @Autowired
   public SearchAnnotationBiz(
-      AnnotationFactory annotationFactory,
-      AnnotationCombineRepository annotationCombineRepository) {
+      final AnnotationFactory annotationFactory,
+      final AnnotationCombineRepository annotationCombineRepository,
+      final FindAnnotationErrorService findAnnotationErrorService) {
     this.annotationFactory = annotationFactory;
     this.annotationCombineRepository = annotationCombineRepository;
+    this.findAnnotationErrorService = findAnnotationErrorService;
   }
 
   @Override
@@ -77,13 +80,11 @@ public class SearchAnnotationBiz
       return Collections.emptyList();
     }
 
-    final Predicate<String> term = Pattern.compile(request.getTerm()).asPredicate();
-    final Predicate<String> type =
-        StringUtils.isBlank(request.getType())
-            ? (s) -> true
-            : Pattern.compile(request.getType()).asPredicate();
+    final Pattern term = Pattern.compile(request.getTerm());
+    final Pattern type =
+        StringUtils.isBlank(request.getType()) ? null : Pattern.compile(request.getType());
 
-    final List<AnnotationErrorContext> results =
+    List<AnnotationErrorContext> results =
         annotations
             .stream()
             .map(this.annotationFactory::create)
@@ -94,15 +95,25 @@ public class SearchAnnotationBiz
                         .getEntities()
                         .stream()
                         .filter(
-                            entity -> term.test(entity.getTerm()) && type.test(entity.getType()))
+                            entity ->
+                                term.matcher(entity.getTerm()).matches()
+                                    && (type == null || type.matcher(entity.getType()).matches()))
                         .map(
                             entity ->
                                 new AnnotationErrorContext(
                                     annotation,
                                     new BratPosition(entity.getStart(), entity.getEnd()))))
             .collect(Collectors.toList());
+    log.info(
+        "search annotations potential results {}, will filter: {}",
+        results.size(),
+        request.isFilterFixedErrors());
 
-    log.info("search annotations results {}", results.size());
+    if (request.isFilterFixedErrors()) {
+      results = this.findAnnotationErrorService.filterErrors(results).collect(Collectors.toList());
+      log.info("search annotations filtered results {}", results.size());
+    }
+
     return results;
   }
 }

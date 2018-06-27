@@ -1,9 +1,7 @@
 package cn.malgo.annotation.dao;
 
-import cn.malgo.core.definition.brat.BratPosition;
-import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.dto.AnnotationWithPosition;
 import cn.malgo.annotation.entity.AnnotationFixLog;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -22,17 +20,18 @@ public interface AnnotationFixLogRepository
   )
   List<AnnotationFixLog> findAllFixedLogsByUniqueIdIn(Collection<String> ids);
 
-  default List<AnnotationFixLog> findAllFixedLogs(List<Pair<Annotation, BratPosition>> fixedLogs) {
+  default <T extends AnnotationWithPosition> List<AnnotationFixLog> findAllFixedLogs(
+      List<T> fixedLogs) {
     return findAllFixedLogsByUniqueIdIn(
         fixedLogs
             .stream()
             .map(
                 fixedLog ->
-                    fixedLog.getLeft().getId()
+                    fixedLog.getAnnotationId()
                         + "-"
-                        + fixedLog.getRight().getStart()
+                        + fixedLog.getStart()
                         + "-"
-                        + fixedLog.getRight().getEnd())
+                        + fixedLog.getEnd())
             .collect(Collectors.toSet()));
   }
 }
