@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat.task.entities;
 
+import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;

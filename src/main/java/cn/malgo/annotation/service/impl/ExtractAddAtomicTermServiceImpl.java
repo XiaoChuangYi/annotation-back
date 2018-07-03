@@ -2,13 +2,11 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.core.definition.Entity;
 import cn.malgo.annotation.dao.AtomicTermRepository;
-import cn.malgo.annotation.dto.NewTerm;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AtomicTerm;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,14 +44,7 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
       }
     }
     // todo,当然还有其它的过滤规则
-    UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
     if (entities.size() > 0) {
-      List<NewTerm> newTermList =
-          IntStream.range(0, entities.size())
-              .mapToObj(
-                  (int i) -> new NewTerm(entities.get(i).getTerm(), entities.get(i).getType()))
-              .collect(Collectors.toList());
-      updateAnnotationAlgorithm.setNewTerms(newTermList);
       List<AtomicTerm> atomicTerms =
           IntStream.range(0, entities.size())
               .mapToObj(
@@ -63,13 +54,11 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
                           entities.get(i).getType(),
                           annotationCombine.getId()))
               .collect(Collectors.toList());
-      atomicTermRepository.saveAll(atomicTerms);
-    } else {
-      updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
+      // todo ,test
+      if (atomicTerms.stream().distinct().collect(Collectors.toList()).size() > 0) {
+        atomicTermRepository.saveAll(atomicTerms.stream().distinct().collect(Collectors.toList()));
+      }
     }
-    updateAnnotationAlgorithm.setId(annotationCombine.getId());
-    updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
-    updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
-    return updateAnnotationAlgorithm;
+    return null;
   }
 }

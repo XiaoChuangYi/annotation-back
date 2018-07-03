@@ -40,7 +40,7 @@ public class UpdateAnnotationBiz
       AnnotationCombine annotationCombine,
       UpdateAnnotationRequest updateAnnotationRequest) {
     AnnotationCombineBratVO annotationCombineBratVO;
-    String annotation = annotationOperateService.updateAnnotation(updateAnnotationRequest);
+    String annotation = annotationOperateService.updateAnnotation(updateAnnotationRequest, role);
     if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) {
       // 管理员或者是审核人员级别
       annotationCombine.setReviewedAnnotation(annotation);

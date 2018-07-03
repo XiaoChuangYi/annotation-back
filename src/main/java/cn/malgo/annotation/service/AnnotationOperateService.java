@@ -10,7 +10,7 @@ public interface AnnotationOperateService {
 
   String addAnnotation(AddAnnotationRequest addAnnotationRequest, int roleId);
 
-  String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest);
+  String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest, int roleId);
 
-  String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest);
+  String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest, int roleId);
 }

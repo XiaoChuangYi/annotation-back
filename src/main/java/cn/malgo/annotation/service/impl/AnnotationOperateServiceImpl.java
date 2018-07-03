@@ -2,6 +2,8 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import java.util.Optional;
@@ -34,6 +36,7 @@ public class AnnotationOperateServiceImpl extends BaseAnnotationOperateImpl {
               addAnnotationRequest.getEndPosition(),
               addAnnotationRequest.getTerm());
       annotationCombine.setManualAnnotation(newAnnotation);
+      //      annotationCombine.setFinalAnnotation(newAnnotation);
       annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }

@@ -74,10 +74,6 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
     final Optional<AnnotationCombine> optional = annotationCombineRepository.findById(req.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()) {
-        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-        annotationCombine = annotationCombineRepository.save(annotationCombine);
-      }
       return this.doInternalProcess(
           role,
           getAnnotationOperateService(annotationCombine.getAnnotationType()),

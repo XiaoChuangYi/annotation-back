@@ -37,7 +37,7 @@ public class DeleteAnnotationBiz
       AnnotationCombine annotationCombine,
       DeleteAnnotationRequest deleteAnnotationRequest) {
     AnnotationCombineBratVO annotationCombineBratVO;
-    String annotation = annotationOperateService.deleteAnnotation(deleteAnnotationRequest);
+    String annotation = annotationOperateService.deleteAnnotation(deleteAnnotationRequest, role);
     if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) {
       // 管理员，审核人员
       annotationCombine.setReviewedAnnotation(annotation);

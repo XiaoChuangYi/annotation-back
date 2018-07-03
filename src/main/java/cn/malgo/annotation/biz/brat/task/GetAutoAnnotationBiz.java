@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.biz.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -15,6 +16,7 @@ import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AlgorithmAnnotationVO;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import java.util.Optional;
 @Component
 @Slf4j
 public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, AlgorithmAnnotationVO> {
+
   private final AlgorithmApiService algorithmApiService;
   private final AnnotationCombineRepository annotationCombineRepository;
 
@@ -55,31 +58,41 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
     }
   }
 
+  private UpdateAnnotationAlgorithm getUpdateAnnotationAlgorithm(
+      AnnotationCombine annotationCombine) {
+    UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
+    updateAnnotationAlgorithm.setId(annotationCombine.getId());
+    updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
+    updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
+    updateAnnotationAlgorithm.setManualAnnotation(annotationCombine.getManualAnnotation());
+    return updateAnnotationAlgorithm;
+  }
+
   private AlgorithmAnnotationVO getWordAnnotationVO(int role, AnnotationCombine annotation) {
-    final List<AutoAnnotation> autoAnnotationList =
-        algorithmApiService.listAutoAnnotationThroughAlgorithm(annotation.getId());
-    if (autoAnnotationList != null
-        && autoAnnotationList.size() == 1
-        && autoAnnotationList.get(0) != null) {
-      annotation.setManualAnnotation("");
-      annotation = annotationCombineRepository.save(annotation);
-
-      final AutoAnnotation autoAnnotation = autoAnnotationList.get(0);
-      autoAnnotation.setAnnotation(
-          AnnotationConvert.addUncomfirmed(autoAnnotation.getAnnotation()));
-      annotation.setFinalAnnotation(autoAnnotation.getAnnotation());
-
-      return new AlgorithmAnnotationVO(
-          autoAnnotation.getAnnotation(),
-          AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
-    } else {
-      log.warn("调用算法后台病历分词预标注接口: {}, {}", annotation.getId(), autoAnnotationList);
-      throw new AlgorithmServiceException("algorithm-response-error", "调用算法后台病历分词预标注接口，返回异常null");
+    if (annotation.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+      final UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
+          getUpdateAnnotationAlgorithm(annotation);
+      final List<AutoAnnotation> finalAnnotationList =
+          algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+      String autoAnnotation = null;
+      if (finalAnnotationList != null
+          && finalAnnotationList.size() > 0
+          && finalAnnotationList.get(0) != null) {
+        autoAnnotation = finalAnnotationList.get(0).getAnnotation();
+        annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
+      } else {
+        log.warn("调用算法后台病历分词预标注接口: {}, {}", annotation.getId(), autoAnnotation);
+        throw new AlgorithmServiceException("algorithm-response-error", "调用算法后台病历分词预标注接口，返回异常null");
+      }
     }
+    return new AlgorithmAnnotationVO(
+        "", AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
   }
 
   private AlgorithmAnnotationVO getSentenceAnnotationVO(int role, AnnotationCombine annotation) {
-    annotation.setManualAnnotation(annotation.getFinalAnnotation());
+    //    annotation.setManualAnnotation(annotation.getFinalAnnotation());
+    annotation.setFinalAnnotation(annotation.getManualAnnotation());
+    annotation.setState(AnnotationCombineStateEnum.annotationProcessing.name());
     annotation = annotationCombineRepository.save(annotation);
 
     // TODO 过后端自己的分句算法
@@ -89,8 +102,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getRelationAnnotationVO(int role, AnnotationCombine annotation) {
-    annotation.setFinalAnnotation("");
-    annotation.setManualAnnotation(annotation.getFinalAnnotation());
+    annotation.setFinalAnnotation(annotation.getManualAnnotation());
+    annotation.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+    //    annotation.setManualAnnotation(annotation.getFinalAnnotation());
     annotation = annotationCombineRepository.save(annotation);
 
     // TODO 过算法的关联算法
@@ -147,12 +161,19 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
               annotation.getState(),
               AnnotationCombineStateEnum.preExamine.name(),
               AnnotationCombineStateEnum.abandon.name())) {
-        annotation.setManualAnnotation(annotation.getFinalAnnotation());
-        annotation = annotationCombineRepository.save(annotation);
 
+        if (annotation.getAnnotationType() == AnnotationTypeEnum.relation.getValue()
+            || annotation.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()) {
+          annotation.setReviewedAnnotation(annotation.getManualAnnotation());
+        } else {
+          annotation.setManualAnnotation(annotation.getFinalAnnotation());
+        }
+        annotation = annotationCombineRepository.save(annotation);
         // 审核人员，而且已经被标注过，直接返回最后的标注结果
         return new AlgorithmAnnotationVO(
-            annotation.getFinalAnnotation(),
+            annotation.getAnnotationType() == 0
+                ? annotation.getReviewedAnnotation()
+                : annotation.getFinalAnnotation(),
             AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
       }
       switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType())) {

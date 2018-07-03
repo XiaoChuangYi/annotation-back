@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.request.brat.DeleteAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
@@ -31,7 +32,7 @@ public abstract class BaseAnnotationOperateImpl implements AnnotationOperateServ
   }
 
   @Override
-  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
+  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
@@ -39,6 +40,10 @@ public abstract class BaseAnnotationOperateImpl implements AnnotationOperateServ
       String annotation =
           AnnotationConvert.deleteEntitiesAnnotation(
               annotationCombine.getManualAnnotation(), deleteAnnotationRequest.getTag());
+      //      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+      //      } else {
+      //        annotationCombine.setReviewedAnnotation(annotation);
+      //      }
       annotationCombine.setManualAnnotation(annotation);
       annotationCombineRepository.save(annotationCombine);
       return annotation;
@@ -47,7 +52,7 @@ public abstract class BaseAnnotationOperateImpl implements AnnotationOperateServ
   }
 
   @Override
-  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
+  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
