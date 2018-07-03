@@ -5,10 +5,14 @@ import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateResetRequest;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -43,19 +47,30 @@ public class AnnotationReworkBiz extends BaseBiz<AnnotationStateResetRequest, Ob
   @Override
   protected Object doBiz(
       int userId, int role, AnnotationStateResetRequest annotationStateResetRequest) {
-    //    final Optional<AnnotationCombine> optional =
-    // annotationCombineRepository.findAllByIdInAndIsTaskEquals();
-    //    if (optional.isPresent()) {
-    //      final AnnotationCombine annotationCombine = optional.get();
-    //      if (role == AnnotationRoleStateEnum.auditor.getRole()) {//审核人员发起返工
-    //        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-    //        //返工如果是在原先的基础上做相应的操作
-    //        annotationCombine.setManualAnnotation(annotationCombine.getFinalAnnotation());
-    //      }
-    //      annotationCombineRepository.save(annotationCombine);
-    //    } else {
-    //      throw new BusinessRuleException("no-current-record", "没有当前数据");
-    //    }
+    final List<AnnotationCombine> annotationCombineList =
+        annotationCombineRepository.findAllByIdInAndIsTaskEquals(
+            annotationStateResetRequest.getIdList());
+    if (annotationCombineList.size() > 0) {
+      if (role == AnnotationRoleStateEnum.auditor.getRole()) { // 审核人员发起返工
+        final List<AnnotationCombine> annotationCombines =
+            annotationCombineList
+                .stream()
+                .map(
+                    x -> {
+                      x.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+                      if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) {
+                        // 分词类型用到了manual_annotation
+                        x.setManualAnnotation(x.getFinalAnnotation());
+                      }
+                      return x;
+                      // 分句和关联的内容返工后的数据还是在final_annotation
+                    })
+                .collect(Collectors.toList());
+        annotationCombineRepository.saveAll(annotationCombines);
+      }
+    } else {
+      throw new BusinessRuleException("no-current-record", "没有当前数据");
+    }
     return null;
   }
 }

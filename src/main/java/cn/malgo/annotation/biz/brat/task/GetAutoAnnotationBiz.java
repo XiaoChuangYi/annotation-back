@@ -80,6 +80,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
           && finalAnnotationList.get(0) != null) {
         autoAnnotation = finalAnnotationList.get(0).getAnnotation();
         annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
+        annotation.setManualAnnotation("");
         annotationCombineRepository.save(annotation);
       } else {
         log.warn("调用算法后台病历分词预标注接口: {}, {}", annotation.getId(), autoAnnotation);

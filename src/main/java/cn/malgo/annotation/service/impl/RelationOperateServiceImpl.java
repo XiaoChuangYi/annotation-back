@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.DeleteRelationRequest;
@@ -29,6 +30,9 @@ public class RelationOperateServiceImpl implements RelationOperateService {
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
       String annotation;
       if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
         annotation =
@@ -59,6 +63,9 @@ public class RelationOperateServiceImpl implements RelationOperateService {
         annotationCombineRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
       String annotation;
       if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
         annotation =
@@ -87,6 +94,9 @@ public class RelationOperateServiceImpl implements RelationOperateService {
         annotationCombineRepository.findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
       String annotation;
       if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
         annotation =
