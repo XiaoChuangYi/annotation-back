@@ -40,6 +40,9 @@ maven-build:
   cache:
     paths:
       - .m2/repository/
+  only:
+    - develop
+    - master
 
 docker-build:
   stage: build
