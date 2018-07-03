@@ -71,7 +71,7 @@ public class UpdateExerciseRelationBiz
       log.info("习题更新关系请求参数：{}", updateRelationRequest);
       UserExercise userExercise = optional.get();
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      String annotation = exerciseRelationOperateService.updateRelation(updateRelationRequest);
+      String annotation = exerciseRelationOperateService.updateRelation(updateRelationRequest, 0);
       log.info("习题更新关系返回结果：{}", annotation);
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);

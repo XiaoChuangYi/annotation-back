@@ -74,7 +74,7 @@ public class DeleteExerciseRelationBiz
       log.info("习题删除关系请求参数：{}", deleteRelationRequest);
       UserExercise userExercise = optional.get();
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      String annotation = exerciseRelationOperateService.deleteRelation(deleteRelationRequest);
+      String annotation = exerciseRelationOperateService.deleteRelation(deleteRelationRequest, 0);
       log.info("习题删除关系返回结果：{}", annotation);
       userExercise.setUserAnnotation(annotation);
       userExercise = userExerciseRepository.save(userExercise);

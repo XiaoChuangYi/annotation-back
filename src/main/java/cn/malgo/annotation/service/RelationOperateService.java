@@ -7,9 +7,9 @@ import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 /** Created by cjl on 2018/5/31. */
 public interface RelationOperateService {
 
-  String addRelation(AddRelationRequest addRelationRequest);
+  String addRelation(AddRelationRequest addRelationRequest, int roleId);
 
-  String updateRelation(UpdateRelationRequest updateRelationRequest);
+  String updateRelation(UpdateRelationRequest updateRelationRequest, int roleId);
 
-  String deleteRelation(DeleteRelationRequest deleteRelationRequest);
+  String deleteRelation(DeleteRelationRequest deleteRelationRequest, int roleId);
 }
