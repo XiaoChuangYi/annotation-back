@@ -1,6 +1,7 @@
 package cn.malgo.annotation.entity;
 
-import cn.malgo.annotation.enums.OriginalDocState;
+import cn.malgo.annotation.enums.AnnotationTaskState;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import com.alibaba.fastjson.annotation.JSONType;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,12 +15,11 @@ import java.util.List;
 
 @Entity
 @Table(
-  name = "original_doc",
+  name = "annotation_task_block",
   indexes = {
-    @Index(name = "idx_type", columnList = "type"),
-    @Index(name = "idx_name", columnList = "name"),
-    @Index(name = "idx_source", columnList = "source"),
+    @Index(name = "idx_annotation_type", columnList = "annotation_type"),
     @Index(name = "idx_state", columnList = "state"),
+    //      @Index(name = "idx_unique_text", columnList = "annotation_type,text", unique = true),
   }
 )
 @AllArgsConstructor
@@ -27,9 +27,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
-@ToString(exclude = {"tasks"})
-@JSONType(ignores = {"createdTime", "lastModified", "tasks"})
-public class OriginalDoc {
+@ToString(exclude = {"taskDocs"})
+@JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
+public class AnnotationTaskBlock {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Getter
@@ -53,42 +53,37 @@ public class OriginalDoc {
   )
   private Timestamp lastModified;
 
-  @Column(name = "name", nullable = false, length = 512)
-  @Getter
-  @Setter
-  @NonNull
-  private String name;
-
   @Column(name = "text", nullable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter
   @NonNull
   private String text;
 
-  @Column(name = "type", nullable = false, length = 16)
+  @Column(name = "annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter
   @NonNull
-  private String type;
-
-  @Column(name = "source", nullable = false, length = 16)
-  @Getter
-  @Setter
-  @NonNull
-  private String source;
+  private String annotation;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "state", nullable = false, length = 16)
   @Getter
   @Setter
-  private OriginalDocState state = OriginalDocState.IMPORTED;
+  private AnnotationTaskState state = AnnotationTaskState.CREATED;
+
+  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "annotation_type", nullable = false)
+  @Getter
+  @Setter
+  @NonNull
+  private AnnotationTypeEnum annotationType;
 
   @OneToMany(
     fetch = FetchType.LAZY,
-    mappedBy = "doc",
+    mappedBy = "block",
     cascade = CascadeType.ALL,
     orphanRemoval = true
   )
   @Getter(AccessLevel.PACKAGE)
-  private List<AnnotationTaskDoc> tasks = new ArrayList<>();
+  private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
 }
