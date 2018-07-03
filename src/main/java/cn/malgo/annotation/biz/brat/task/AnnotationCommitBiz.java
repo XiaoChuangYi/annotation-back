@@ -23,13 +23,16 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
 
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
+  private final AlgorithmApiService algorithmApiService;
 
   @Autowired
   public AnnotationCommitBiz(
       AnnotationCombineRepository annotationCombineRepository,
-      ExtractAddAtomicTermService extractAddAtomicTermService) {
+      ExtractAddAtomicTermService extractAddAtomicTermService,
+      AlgorithmApiService algorithmApiService) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
+    this.algorithmApiService = algorithmApiService;
   }
 
   @Override
@@ -67,7 +70,15 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
       if (annotationCombine.getAnnotationType()
           == AnnotationTypeEnum.wordPos.getValue()) { // 分词标注提交
-        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
+        UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
+            extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
+        updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());
+        List<AutoAnnotation> autoAnnotationList =
+            algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+        if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
+          throw new BusinessRuleException("null-response", "调用算法后台数据返回null");
+        }
+        annotationCombine.setFinalAnnotation(autoAnnotationList.get(0).getAnnotation());
         annotationCombine.setManualAnnotation("");
       } else {
         // 分句，关联提交
