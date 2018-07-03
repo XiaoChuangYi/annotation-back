@@ -2,6 +2,8 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import java.util.Optional;
@@ -26,14 +28,29 @@ public class AnnotationOperateServiceImpl extends BaseAnnotationOperateImpl {
         annotationCombineRepository.findById(addAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String newAnnotation =
-          AnnotationConvert.addEntitiesAnnotation(
-              annotationCombine.getManualAnnotation(),
-              addAnnotationRequest.getType(),
-              addAnnotationRequest.getStartPosition(),
-              addAnnotationRequest.getEndPosition(),
-              addAnnotationRequest.getTerm());
-      annotationCombine.setManualAnnotation(newAnnotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String newAnnotation = "";
+      if (roleId > AnnotationRoleStateEnum.auditor.getRole()) {
+        newAnnotation =
+            AnnotationConvert.addEntitiesAnnotation(
+                annotationCombine.getFinalAnnotation(),
+                addAnnotationRequest.getType(),
+                addAnnotationRequest.getStartPosition(),
+                addAnnotationRequest.getEndPosition(),
+                addAnnotationRequest.getTerm());
+        annotationCombine.setFinalAnnotation(newAnnotation);
+      } else if (roleId > 0 && roleId <= AnnotationRoleStateEnum.auditor.getRole()) {
+        newAnnotation =
+            AnnotationConvert.addEntitiesAnnotation(
+                annotationCombine.getReviewedAnnotation(),
+                addAnnotationRequest.getType(),
+                addAnnotationRequest.getStartPosition(),
+                addAnnotationRequest.getEndPosition(),
+                addAnnotationRequest.getTerm());
+        annotationCombine.setReviewedAnnotation(newAnnotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }

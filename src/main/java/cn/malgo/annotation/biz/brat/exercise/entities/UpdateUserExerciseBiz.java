@@ -76,7 +76,7 @@ public class UpdateUserExerciseBiz
       log.info("习题更新标注请求参数：{}", updateAnnotationRequest);
       UserExercise userExercise = optional.get();
       String annotation =
-          exerciseAnnotationOperateService.updateAnnotation(updateAnnotationRequest);
+          exerciseAnnotationOperateService.updateAnnotation(updateAnnotationRequest, 0);
       log.info("习题更新标注返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);

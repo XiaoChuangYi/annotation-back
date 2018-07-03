@@ -40,7 +40,7 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
   }
 
   @Override
-  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
+  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest, int roleId) {
     Optional<UserExercise> optional =
         userExerciseRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
@@ -54,7 +54,7 @@ public class UserAnnotationOperateServiceImpl implements AnnotationOperateServic
   }
 
   @Override
-  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
+  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest, int roleId) {
     Optional<UserExercise> optional =
         userExerciseRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {

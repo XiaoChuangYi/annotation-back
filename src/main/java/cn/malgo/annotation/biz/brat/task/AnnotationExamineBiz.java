@@ -2,8 +2,6 @@ package cn.malgo.annotation.biz.brat.task;
 
 import cn.malgo.annotation.biz.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.dto.AutoAnnotation;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -11,10 +9,8 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
-import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -24,15 +20,12 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
 
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
-  private final AlgorithmApiService algorithmApiService;
 
   public AnnotationExamineBiz(
       AnnotationCombineRepository annotationCombineRepository,
-      ExtractAddAtomicTermService extractAddAtomicTermService,
-      AlgorithmApiService algorithmApiService) {
+      ExtractAddAtomicTermService extractAddAtomicTermService) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
-    this.algorithmApiService = algorithmApiService;
   }
 
   @Override
@@ -62,19 +55,7 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       AnnotationCombine annotationCombine = optional.get();
       // 入库
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
-        UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
-            extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
-        updateAnnotationAlgorithm.setAutoAnnotation(annotationCombine.getFinalAnnotation());
-        List<AutoAnnotation> autoAnnotationList =
-            algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
-        if (autoAnnotationList == null || autoAnnotationList.get(0) == null) {
-          throw new BusinessRuleException("null-response", "调用算法后台数据返回null");
-        }
-        annotationCombine.setReviewedAnnotation(autoAnnotationList.get(0).getAnnotation());
-      }
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()
-          || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
-        annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
+        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }
       // state handle
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {

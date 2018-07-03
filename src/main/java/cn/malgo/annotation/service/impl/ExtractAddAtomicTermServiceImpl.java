@@ -1,8 +1,8 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.dto.NewTerm;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.annotation.dao.AtomicTermRepository;
-import cn.malgo.annotation.dto.NewTerm;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AtomicTerm;
@@ -63,13 +63,16 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
                           entities.get(i).getType(),
                           annotationCombine.getId()))
               .collect(Collectors.toList());
-      atomicTermRepository.saveAll(atomicTerms);
+      if (atomicTerms.stream().distinct().collect(Collectors.toList()).size() > 0) {
+        atomicTermRepository.saveAll(atomicTerms.stream().distinct().collect(Collectors.toList()));
+      }
     } else {
       updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
     }
     updateAnnotationAlgorithm.setId(annotationCombine.getId());
     updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
     updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
+
     return updateAnnotationAlgorithm;
   }
 }

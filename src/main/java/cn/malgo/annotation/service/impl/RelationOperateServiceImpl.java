@@ -2,6 +2,8 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.DeleteRelationRequest;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
@@ -23,18 +25,32 @@ public class RelationOperateServiceImpl implements RelationOperateService {
   }
 
   @Override
-  public String addRelation(AddRelationRequest addRelationRequest) {
+  public String addRelation(AddRelationRequest addRelationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String annotation =
-          AnnotationConvert.addRelationsAnnotation(
-              annotationCombine.getManualAnnotation(),
-              addRelationRequest.getSourceTag(),
-              addRelationRequest.getTargetTag(),
-              addRelationRequest.getRelation());
-      annotationCombine.setManualAnnotation(annotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String annotation;
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        annotation =
+            AnnotationConvert.addRelationsAnnotation(
+                annotationCombine.getFinalAnnotation(),
+                addRelationRequest.getSourceTag(),
+                addRelationRequest.getTargetTag(),
+                addRelationRequest.getRelation());
+        annotationCombine.setFinalAnnotation(annotation);
+      } else {
+        annotation =
+            AnnotationConvert.addRelationsAnnotation(
+                annotationCombine.getReviewedAnnotation(),
+                addRelationRequest.getSourceTag(),
+                addRelationRequest.getTargetTag(),
+                addRelationRequest.getRelation());
+        annotationCombine.setReviewedAnnotation(annotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
@@ -42,17 +58,30 @@ public class RelationOperateServiceImpl implements RelationOperateService {
   }
 
   @Override
-  public String updateRelation(UpdateRelationRequest updateRelationRequest) {
+  public String updateRelation(UpdateRelationRequest updateRelationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String annotation =
-          AnnotationConvert.updateRelationAnnotation(
-              annotationCombine.getManualAnnotation(),
-              updateRelationRequest.getReTag(),
-              updateRelationRequest.getRelation());
-      annotationCombine.setManualAnnotation(annotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String annotation;
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        annotation =
+            AnnotationConvert.updateRelationAnnotation(
+                annotationCombine.getFinalAnnotation(),
+                updateRelationRequest.getReTag(),
+                updateRelationRequest.getRelation());
+        annotationCombine.setFinalAnnotation(annotation);
+      } else {
+        annotation =
+            AnnotationConvert.updateRelationAnnotation(
+                annotationCombine.getReviewedAnnotation(),
+                updateRelationRequest.getReTag(),
+                updateRelationRequest.getRelation());
+        annotationCombine.setReviewedAnnotation(annotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
@@ -60,15 +89,26 @@ public class RelationOperateServiceImpl implements RelationOperateService {
   }
 
   @Override
-  public String deleteRelation(DeleteRelationRequest deleteRelationRequest) {
+  public String deleteRelation(DeleteRelationRequest deleteRelationRequest, int roleId) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String annotation =
-          AnnotationConvert.deleteRelationsAnnotation(
-              annotationCombine.getManualAnnotation(), deleteRelationRequest.getReTag());
-      annotationCombine.setManualAnnotation(annotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String annotation;
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        annotation =
+            AnnotationConvert.deleteRelationsAnnotation(
+                annotationCombine.getFinalAnnotation(), deleteRelationRequest.getReTag());
+        annotationCombine.setFinalAnnotation(annotation);
+      } else {
+        annotation =
+            AnnotationConvert.deleteRelationsAnnotation(
+                annotationCombine.getReviewedAnnotation(), deleteRelationRequest.getReTag());
+        annotationCombine.setReviewedAnnotation(annotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return annotation;
     }

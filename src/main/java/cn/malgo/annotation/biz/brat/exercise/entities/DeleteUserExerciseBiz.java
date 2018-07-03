@@ -73,7 +73,7 @@ public class DeleteUserExerciseBiz
       log.info("习题删除标注请求参数：{}", deleteAnnotationRequest);
       UserExercise userExercise = new UserExercise();
       String annotation =
-          exerciseAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest);
+          exerciseAnnotationOperateService.deleteAnnotation(deleteAnnotationRequest, 0);
       log.info("习题删除标注返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);

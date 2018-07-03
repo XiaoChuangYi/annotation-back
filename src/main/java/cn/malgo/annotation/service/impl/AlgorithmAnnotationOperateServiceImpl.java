@@ -4,6 +4,8 @@ import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.request.brat.DeleteAnnotationRequest;
@@ -47,11 +49,15 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
   }
 
   private String handleAnnotationCombine(
-      int id, AnnotationCombine annotationCombine, String manualAnnotation, String autoAnnotation) {
-    // 手动标注入库
+      int id,
+      AnnotationCombine annotationCombine,
+      String manualAnnotation,
+      String autoAnnotation,
+      int roleId) {
     annotationCombine.setManualAnnotation(manualAnnotation);
-    annotationCombine = annotationCombineRepository.save(annotationCombine);
-    // 最终标注不入库
+    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+      annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+    }
     UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
     updateAnnotationAlgorithm.setId(id);
     updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
@@ -64,6 +70,12 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
     if (finalAnnotationList != null
         && finalAnnotationList.size() > 0
         && finalAnnotationList.get(0) != null) {
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        annotationCombine.setFinalAnnotation(finalAnnotationList.get(0).getAnnotation());
+      } else {
+        annotationCombine.setReviewedAnnotation(finalAnnotationList.get(0).getAnnotation());
+      }
+      annotationCombineRepository.save(annotationCombine);
       return finalAnnotationList.get(0).getAnnotation();
     }
     return "";
@@ -83,12 +95,16 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
             addAnnotationRequest.getEndPosition());
     String annotation =
         handleAnnotationCombine(
-            addAnnotationRequest.getId(), annotationCombine, manualAnnotation, autoAnnotation);
+            addAnnotationRequest.getId(),
+            annotationCombine,
+            manualAnnotation,
+            autoAnnotation,
+            roleId);
     return annotation;
   }
 
   @Override
-  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest) {
+  public String deleteAnnotation(DeleteAnnotationRequest deleteAnnotationRequest, int roleId) {
     AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
     addAnnotationRequest.setId(deleteAnnotationRequest.getId());
     addAnnotationRequest.setStartPosition(deleteAnnotationRequest.getStartPosition());
@@ -96,11 +112,11 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
     addAnnotationRequest.setEndPosition(deleteAnnotationRequest.getEndPosition());
     addAnnotationRequest.setTerm(deleteAnnotationRequest.getTerm());
     addAnnotationRequest.setType("Token");
-    return addAnnotation(addAnnotationRequest, 0);
+    return addAnnotation(addAnnotationRequest, roleId);
   }
 
   @Override
-  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest) {
+  public String updateAnnotation(UpdateAnnotationRequest updateAnnotationRequest, int roleId) {
     AddAnnotationRequest addAnnotationRequest = new AddAnnotationRequest();
     addAnnotationRequest.setId(updateAnnotationRequest.getId());
     addAnnotationRequest.setTerm(updateAnnotationRequest.getTerm());
@@ -108,6 +124,6 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
     addAnnotationRequest.setStartPosition(updateAnnotationRequest.getStartPosition());
     addAnnotationRequest.setEndPosition(updateAnnotationRequest.getEndPosition());
     addAnnotationRequest.setAutoAnnotation(updateAnnotationRequest.getAutoAnnotation());
-    return addAnnotation(addAnnotationRequest, 0);
+    return addAnnotation(addAnnotationRequest, roleId);
   }
 }
