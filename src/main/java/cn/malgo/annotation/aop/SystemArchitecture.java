@@ -26,7 +26,8 @@ public class SystemArchitecture {
    * A join point is in the service layer if the method is defined in a type in the
    * com.xyz.someapp.service package or any sub-package under that.
    */
-  @Pointcut("within(cn.malgo.annotation.biz..*)")
+  @Pointcut(
+      "within(cn.malgo.annotation.biz..*) && !within(cn.malgo.annotation.biz.doc.ImportDocBiz)")
   public void inBusinessLayer() {}
 
   @Pointcut("inBusinessLayer()")
@@ -38,7 +39,10 @@ public class SystemArchitecture {
    * types are in sub-packages.
    */
   @Pointcut(
-      "execution(* cn.malgo.annotation.service.*.*(..)) && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..)) && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))&& !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
+      "execution(* cn.malgo.annotation.service.*.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
   private boolean isReadMethod(final String className) {

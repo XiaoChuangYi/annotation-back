@@ -20,6 +20,7 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         .addPathPatterns("/**")
         .excludePathPatterns("/api/v2/user/login")
         .excludePathPatterns("/api/v2/import")
+        .excludePathPatterns("/api/v2/doc/import")
         .excludePathPatterns("/static/*");
   }
 }
