@@ -11,6 +11,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.service.TaskDocService;
+import cn.malgo.annotation.vo.AddDocsToTaskResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,8 @@ import java.util.List;
 @Service
 @Slf4j
 @RequireRole(AnnotationRoleStateEnum.admin)
-public class AddDocsToTaskBiz extends TransactionalBiz<AddDocsToTaskRequest, AnnotationTask> {
+public class AddDocsToTaskBiz
+    extends TransactionalBiz<AddDocsToTaskRequest, AddDocsToTaskResponse> {
   private final AnnotationTaskRepository taskRepository;
   private final OriginalDocRepository docRepository;
   private final TaskDocService taskDocService;
@@ -48,7 +50,7 @@ public class AddDocsToTaskBiz extends TransactionalBiz<AddDocsToTaskRequest, Ann
   }
 
   @Override
-  protected AnnotationTask doBiz(AddDocsToTaskRequest request) {
+  protected AddDocsToTaskResponse doBiz(AddDocsToTaskRequest request) {
     final AnnotationTypeEnum annotationType =
         AnnotationTypeEnum.getByValue(request.getAnnotationType());
 
@@ -59,11 +61,12 @@ public class AddDocsToTaskBiz extends TransactionalBiz<AddDocsToTaskRequest, Ann
         log.warn("some doc ids are invalid {}", request.getDocIds());
       }
 
+      int createdBlocks = 0;
       for (final OriginalDoc doc : docs) {
-        taskDocService.addDocToTask(task, doc, annotationType);
+        createdBlocks += taskDocService.addDocToTask(task, doc, annotationType).getCreatedBlocks();
       }
 
-      return task;
+      return new AddDocsToTaskResponse(task, createdBlocks);
     } catch (EntityNotFoundException ex) {
       throw new InvalidInputException("invalid-task-id", "invalid task id: " + request.getId());
     }

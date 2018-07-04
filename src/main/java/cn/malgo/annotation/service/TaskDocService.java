@@ -1,11 +1,11 @@
 package cn.malgo.annotation.service;
 
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.service.impl.TaskDocServiceImpl;
 
 public interface TaskDocService {
-  AnnotationTaskDoc addDocToTask(
+  TaskDocServiceImpl.AddDocResult addDocToTask(
       AnnotationTask task, OriginalDoc doc, AnnotationTypeEnum annotationType);
 }

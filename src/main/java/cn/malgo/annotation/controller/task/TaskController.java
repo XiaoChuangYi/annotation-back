@@ -7,6 +7,7 @@ import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.result.Response;
+import cn.malgo.annotation.vo.AddDocsToTaskResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +32,7 @@ public class TaskController {
   }
 
   @RequestMapping(value = "/addDocs", method = RequestMethod.POST)
-  public Response<AnnotationTask> addDocs(
+  public Response<AddDocsToTaskResponse> addDocs(
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
       @RequestBody AddDocsToTaskRequest request) {
     return new Response<>(addDocsToTaskBiz.process(request, userAccount));
