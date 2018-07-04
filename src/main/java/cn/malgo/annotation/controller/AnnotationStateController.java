@@ -7,6 +7,7 @@ import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.request.AnnotationStateRequest;
+import cn.malgo.annotation.request.AnnotationStateResetRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.result.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class AnnotationStateController extends BaseController {
   }
 
   /** 标注人员提交 */
-  @RequestMapping(value = "commit-annotation", method = RequestMethod.POST)
+  @RequestMapping(value = "/commit-annotation", method = RequestMethod.POST)
   public Response commitAnnotation(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
@@ -52,7 +53,7 @@ public class AnnotationStateController extends BaseController {
   }
 
   /** 标注人员放弃 */
-  @RequestMapping(value = "abandon-annotation", method = RequestMethod.POST)
+  @RequestMapping(value = "/abandon-annotation", method = RequestMethod.POST)
   public Response abandonAnnotation(
       @RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
@@ -62,7 +63,7 @@ public class AnnotationStateController extends BaseController {
   }
 
   /** 审核人员审核 */
-  @RequestMapping(value = "examine-annotation", method = RequestMethod.POST)
+  @RequestMapping(value = "/examine-annotation", method = RequestMethod.POST)
   public Response examineAnnotation(
       @RequestBody AnnotationStateRequest annotationStateRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
@@ -70,5 +71,24 @@ public class AnnotationStateController extends BaseController {
         annotationExamineBiz.process(
             annotationStateRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-  /** */
+
+  /** 审核人员打回返工 */
+  @RequestMapping(value = "/annotation-rework", method = RequestMethod.POST)
+  public Response reworkAnnotation(
+      @RequestBody AnnotationStateResetRequest annotationStateResetRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response<>(
+        annotationReworkBiz.process(
+            annotationStateResetRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
+
+  /** 管理人员返回重新审核 */
+  @RequestMapping(value = "/annotation-re-examination", method = RequestMethod.POST)
+  public Response reExaminationAnnotation(
+      @RequestBody AnnotationStateResetRequest annotationStateResetRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response<>(
+        annotationReExaminationBiz.process(
+            annotationStateResetRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
 }

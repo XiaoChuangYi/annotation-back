@@ -90,25 +90,25 @@ public class AnnotationCombineController extends BaseController {
   }
 
   /** 标注预览(标注各种状态下的条数图形化展示) */
-  @RequestMapping(value = "get-annotation-summary", method = RequestMethod.GET)
+  @RequestMapping(value = "/get-annotation-summary", method = RequestMethod.GET)
   public Response getAnnotationSummary() {
     return new Response<>(getAnnotationSummaryBiz.process(null, 0, 0));
   }
 
   /** 根据标注类型，返回指定标注类型的未分配的总条数 */
-  @RequestMapping(value = "count-undistributed-annotation", method = RequestMethod.GET)
+  @RequestMapping(value = "/count-undistributed-annotation", method = RequestMethod.GET)
   public Response countUnDistributedAnnotation(CountAnnotationRequest countAnnotationRequest) {
     return new Response<>(countAnnotationBiz.process(countAnnotationRequest, 0, 0));
   }
 
   /** 查询分词标注类型列表 */
-  @RequestMapping(value = "list-type", method = RequestMethod.GET)
+  @RequestMapping(value = "/list-type", method = RequestMethod.GET)
   public Response listType() {
     return new Response<>(listAnTypeBiz.process(null, 0, 0));
   }
 
   /** 根据被指派人userId,查询其标注的各种状态 */
-  @RequestMapping(value = "get-annotation-summary-by-assignee", method = RequestMethod.GET)
+  @RequestMapping(value = "/get-annotation-summary-by-assignee", method = RequestMethod.GET)
   public Response getAnnotationSummaryByAssignee(
       SetUserStateRequest setUserStateRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {

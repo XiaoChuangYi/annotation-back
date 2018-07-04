@@ -92,7 +92,7 @@ public class AnnotationBratController extends BaseController {
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
   /** 普通人员，新增关联标注 */
-  @RequestMapping(value = "add-relation", method = RequestMethod.POST)
+  @RequestMapping(value = "/add-relation", method = RequestMethod.POST)
   public Response addRelation(
       @RequestBody AddRelationRequest addRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {

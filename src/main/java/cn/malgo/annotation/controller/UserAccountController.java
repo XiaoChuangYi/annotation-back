@@ -58,7 +58,7 @@ public class UserAccountController {
   }
 
   /** 用户登出 */
-  @RequestMapping(value = "log-out", method = RequestMethod.POST)
+  @RequestMapping(value = "/log-out", method = RequestMethod.POST)
   public Response logout(
       @RequestBody LogOutRequest logOutRequest,
       HttpServletRequest servletRequest,
@@ -67,7 +67,7 @@ public class UserAccountController {
         userAccountService.logOut(logOutRequest, servletRequest, servletResponse));
   }
 
-  @RequestMapping(value = "log-refresh", method = RequestMethod.GET)
+  @RequestMapping(value = "/log-refresh", method = RequestMethod.GET)
   public Response logRefresh(
       HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
     return new Response<>(userAccountService.loginRefresh(servletRequest, servletResponse));

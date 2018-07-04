@@ -59,7 +59,7 @@ public class AnnotationReworkBiz extends BaseBiz<AnnotationStateResetRequest, Ob
                     x -> {
                       x.setState(AnnotationCombineStateEnum.annotationProcessing.name());
                       if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) {
-                        // 分词类型用到了manual_annotation
+                        // 分词类型用到了manual_annotation,todo 需要处理类型
                         x.setManualAnnotation(x.getFinalAnnotation());
                       }
                       return x;
