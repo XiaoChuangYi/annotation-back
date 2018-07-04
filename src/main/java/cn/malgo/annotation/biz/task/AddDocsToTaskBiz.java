@@ -1,25 +1,26 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.biz.AdminBaseBiz;
+import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.service.TaskDocService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Service
 @Slf4j
-public class AddDocsToTaskBiz extends AdminBaseBiz<AddDocsToTaskRequest, AnnotationTask> {
+@RequireRole(AnnotationRoleStateEnum.admin)
+public class AddDocsToTaskBiz extends TransactionalBiz<AddDocsToTaskRequest, AnnotationTask> {
   private final AnnotationTaskRepository taskRepository;
   private final OriginalDocRepository docRepository;
   private final TaskDocService taskDocService;

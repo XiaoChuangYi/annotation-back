@@ -27,10 +27,6 @@ public class DeleteRelationBiz
   }
 
   @Override
-  protected void authorize(int userId, int role, DeleteRelationRequest deleteRelationRequest)
-      throws BusinessRuleException {}
-
-  @Override
   AnnotationCombineBratVO doInternalProcess(
       int role,
       RelationOperateService relationOperateService,

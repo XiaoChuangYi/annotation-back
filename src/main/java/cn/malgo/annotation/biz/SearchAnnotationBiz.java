@@ -1,5 +1,7 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
 import cn.malgo.annotation.entity.AnnotationCombine;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequireRole(AnnotationRoleStateEnum.admin)
 public class SearchAnnotationBiz
     extends BaseBiz<SearchAnnotationRequest, List<AnnotationErrorContext>> {
   private final AnnotationFactory annotationFactory;
@@ -49,14 +52,6 @@ public class SearchAnnotationBiz
 
     if (StringUtils.isBlank(request.getTerm())) {
       throw new InvalidInputException("invalid-search-term", "term必须有值");
-    }
-  }
-
-  @Override
-  protected void authorize(int userId, int role, SearchAnnotationRequest request)
-      throws BusinessRuleException {
-    if (role != AnnotationRoleStateEnum.admin.getRole()) {
-      throw new BusinessRuleException("permission-denied", "仅管理员可以操作");
     }
   }
 

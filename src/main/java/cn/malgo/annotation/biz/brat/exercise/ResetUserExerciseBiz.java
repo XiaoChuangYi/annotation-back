@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.exercise;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
@@ -39,10 +39,6 @@ public class ResetUserExerciseBiz extends BaseBiz<UserResetRequest, Object> {
       throw new InvalidInputException("invalid-user-id", "无效的用户Id");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, UserResetRequest resetRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected Object doBiz(UserResetRequest resetRequest) {

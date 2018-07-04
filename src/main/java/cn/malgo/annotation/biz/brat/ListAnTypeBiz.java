@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnTypeRepository;
 import cn.malgo.annotation.entity.AnType;
 import cn.malgo.annotation.exception.BusinessRuleException;
@@ -20,9 +20,6 @@ public class ListAnTypeBiz extends BaseBiz<Object, List<AnType>> {
 
   @Override
   protected void validateRequest(Object o) throws InvalidInputException {}
-
-  @Override
-  protected void authorize(int userId, int role, Object o) throws BusinessRuleException {}
 
   @Override
   protected List<AnType> doBiz(Object o) {

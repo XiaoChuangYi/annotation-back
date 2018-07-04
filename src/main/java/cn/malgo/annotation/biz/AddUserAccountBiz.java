@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -43,10 +44,6 @@ public class AddUserAccountBiz extends BaseBiz<AddUserAccountRequest, UserAccoun
       throw new InvalidInputException("invalid-role", "用户角色不能为管理员");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, AddUserAccountRequest addUserAccountRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected UserAccount doBiz(AddUserAccountRequest addUserAccountRequest) {

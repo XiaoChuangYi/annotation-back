@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.exception.BusinessRuleException;
@@ -32,10 +33,6 @@ public class SetUserStateBiz extends BaseBiz<SetUserStateRequest, UserAccount> {
       throw new InvalidInputException("invalid-current-state", "currentState参数为空");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, SetUserStateRequest setUserStateRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected UserAccount doBiz(SetUserStateRequest setUserStateRequest) {

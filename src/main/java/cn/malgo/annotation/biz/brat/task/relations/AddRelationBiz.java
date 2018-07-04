@@ -32,10 +32,6 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
   }
 
   @Override
-  protected void authorize(int userId, int role, AddRelationRequest addRelationRequest)
-      throws BusinessRuleException {}
-
-  @Override
   AnnotationCombineBratVO doInternalProcess(
       int role,
       RelationOperateService relationOperateService,

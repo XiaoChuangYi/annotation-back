@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.exercise.relations;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.entity.UserExercise;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;

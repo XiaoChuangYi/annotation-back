@@ -1,8 +1,10 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.biz.AdminBaseBiz;
+import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ImportDocRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ImportDocBiz extends AdminBaseBiz<ImportDocRequest, List<OriginalDoc>> {
+@RequireRole(AnnotationRoleStateEnum.admin)
+public class ImportDocBiz extends TransactionalBiz<ImportDocRequest, List<OriginalDoc>> {
   private static final List<Pair<Predicate<String>, String>> TYPE_PATTERNS =
       Arrays.asList(
           Pair.of(Pattern.compile("(外伤|骨折|骨裂)").asPredicate(), "外伤"),

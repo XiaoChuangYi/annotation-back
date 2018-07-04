@@ -1,6 +1,7 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.core.definition.Entity;
+import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
@@ -9,11 +10,13 @@ import cn.malgo.annotation.dto.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.BaseEntity;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
 import cn.malgo.annotation.service.FixAnnotationErrorService;
+import cn.malgo.core.definition.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,8 +28,9 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequireRole(AnnotationRoleStateEnum.admin)
 public class FixAnnotationBiz
-    extends AdminBaseBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
+    extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
   private final AnnotationFactory annotationFactory;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final FixAnnotationErrorService fixAnnotationErrorService;

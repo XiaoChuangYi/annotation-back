@@ -31,7 +31,7 @@ public class OriginalDocController {
   public Response<List<OriginalDoc>> importDocs(
       @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
       @RequestBody ImportDocRequest request) {
-    if (!StringUtils.equals(secretKey, this.secretKey)
+    if (!StringUtils.equals(request.getSecretKey(), this.secretKey)
         && (userAccount == null
             || userAccount.getRoleId() != AnnotationRoleStateEnum.admin.getRole())) {
       throw new BusinessRuleException("permission-denied", "secret key or admin role required");

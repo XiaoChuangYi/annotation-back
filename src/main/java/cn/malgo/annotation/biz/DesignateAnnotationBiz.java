@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InternalServiceException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -28,11 +29,6 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, 
       throw new InvalidInputException("invalid-user-id", "userId参数不正确");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, DesignateAnnotationRequest designateAnnotationRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected String doBiz(DesignateAnnotationRequest designateAnnotationRequest) {
