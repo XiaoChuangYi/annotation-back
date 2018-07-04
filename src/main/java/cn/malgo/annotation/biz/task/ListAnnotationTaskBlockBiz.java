@@ -43,7 +43,7 @@ public class ListAnnotationTaskBlockBiz
             predicates.add(criteriaBuilder.in(root.get("state")).value(param.getStates()));
           }
           if (param.getAnnotationTypes().size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getAnnotationTypes()));
+            predicates.add(criteriaBuilder.in(root.get("type")).value(param.getAnnotationTypes()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
@@ -67,11 +67,11 @@ public class ListAnnotationTaskBlockBiz
   protected PageVO<AnnotationTaskBlock> doBiz(
       int userId, int role, ListAnnotationTaskBlockRequest listAnnotationTaskBlockRequest) {
     final int pageIndex = listAnnotationTaskBlockRequest.getPageIndex() - 1;
-    Page page =
+    Page<AnnotationTaskBlock> page =
         annotationTaskBlockRepository.findAll(
             queryAnnotationTaskBlockCondition(listAnnotationTaskBlockRequest),
             PageRequest.of(pageIndex, listAnnotationTaskBlockRequest.getPageSize()));
-    PageVO pageVO = new PageVO(page, false);
+    PageVO<AnnotationTaskBlock> pageVO = new PageVO(page, false);
     pageVO.setDataList(page.getContent());
     return pageVO;
   }

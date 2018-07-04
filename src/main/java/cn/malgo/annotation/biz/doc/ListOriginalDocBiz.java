@@ -73,11 +73,11 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
   @Override
   protected PageVO<OriginalDoc> doBiz(int userId, int role, ListDocRequest listDocRequest) {
     final int pageIndex = listDocRequest.getPageIndex() - 1;
-    Page page =
+    Page<OriginalDoc> page =
         originalDocRepository.findAll(
             queryOriginalDocCondition(listDocRequest),
             PageRequest.of(pageIndex, listDocRequest.getPageSize()));
-    PageVO pageVO = new PageVO(page, false);
+    PageVO<OriginalDoc> pageVO = new PageVO(page, false);
     pageVO.setDataList(page.getContent());
     return pageVO;
   }

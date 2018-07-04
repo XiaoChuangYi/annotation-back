@@ -69,7 +69,7 @@ public class ListAnnotationTaskBiz
         annotationTaskRepository.findAll(
             queryAnnotationTaskCondition(listAnnotationTaskRequest),
             PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
-    PageVO pageVO = new PageVO(page, false);
+    PageVO<AnnotationTask> pageVO = new PageVO(page, false);
     pageVO.setDataList(page.getContent());
     return pageVO;
   }
