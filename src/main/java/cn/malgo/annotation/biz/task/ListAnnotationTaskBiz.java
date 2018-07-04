@@ -1,22 +1,25 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.exception.BusinessRuleException;
+import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.result.PageVO;
-import java.util.ArrayList;
-import java.util.List;
-import javax.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
+@RequireRole(AnnotationRoleStateEnum.admin)
 public class ListAnnotationTaskBiz
     extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTask>> {
 
@@ -24,6 +27,23 @@ public class ListAnnotationTaskBiz
 
   public ListAnnotationTaskBiz(AnnotationTaskRepository annotationTaskRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
+  }
+
+  private static Specification<AnnotationTask> queryAnnotationTaskCondition(
+      ListAnnotationTaskRequest param) {
+    return (Specification<AnnotationTask>)
+        (root, criteriaQuery, criteriaBuilder) -> {
+          // todo 还会有其它的过滤条件
+          List<Predicate> predicates = new ArrayList<>();
+          if (StringUtils.isNotBlank(param.getName())) {
+            predicates.add(
+                criteriaBuilder.like(root.get("name"), String.format("%{}%", param.getName())));
+          }
+          if (param.getTaskState().size() > 0) {
+            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskState()));
+          }
+          return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
   }
 
   @Override
@@ -42,11 +62,6 @@ public class ListAnnotationTaskBiz
   }
 
   @Override
-  protected void authorize(
-      int userId, int role, ListAnnotationTaskRequest listAnnotationTaskRequest)
-      throws BusinessRuleException {}
-
-  @Override
   protected PageVO<AnnotationTask> doBiz(
       int userId, int role, ListAnnotationTaskRequest listAnnotationTaskRequest) {
     final int pageIndex = listAnnotationTaskRequest.getPageIndex() - 1;
@@ -57,22 +72,5 @@ public class ListAnnotationTaskBiz
     PageVO pageVO = new PageVO(page, false);
     pageVO.setDataList(page.getContent());
     return pageVO;
-  }
-
-  private static Specification<AnnotationTask> queryAnnotationTaskCondition(
-      ListAnnotationTaskRequest param) {
-    return (Specification<AnnotationTask>)
-        (root, criteriaQuery, criteriaBuilder) -> {
-          // todo 还会有其它的过滤条件
-          List<Predicate> predicates = new ArrayList<>();
-          if (StringUtils.isNotBlank(param.getName())) {
-            predicates.add(
-                criteriaBuilder.like(root.get("name"), String.format("%{}%", param.getName())));
-          }
-          if (param.getTaskState().size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskState()));
-          }
-          return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
   }
 }
