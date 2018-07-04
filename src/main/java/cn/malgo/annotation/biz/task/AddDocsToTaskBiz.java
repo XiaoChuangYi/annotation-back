@@ -5,6 +5,7 @@ import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
@@ -46,7 +47,6 @@ public class AddDocsToTaskBiz extends AdminBaseBiz<AddDocsToTaskRequest, Annotat
   }
 
   @Override
-  @Transactional
   protected AnnotationTask doBiz(AddDocsToTaskRequest request) {
     final AnnotationTypeEnum annotationType =
         AnnotationTypeEnum.getByValue(request.getAnnotationType());

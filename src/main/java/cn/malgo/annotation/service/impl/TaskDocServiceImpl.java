@@ -7,9 +7,11 @@ import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.TaskDocService;
+import lombok.Synchronized;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class TaskDocServiceImpl implements TaskDocService {
   }
 
   @Override
+  @Synchronized
   public AnnotationTaskDoc addDocToTask(
       final AnnotationTask task, final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
     final AnnotationTaskDoc taskDoc = task.addDoc(doc, annotationType);
@@ -38,13 +41,20 @@ public class TaskDocServiceImpl implements TaskDocService {
         break;
 
       default:
-        taskDoc.addBlock(
-            taskBlockRepository.save(new AnnotationTaskBlock(doc.getText(), "", annotationType)),
-            0);
+        taskDoc.addBlock(getOrCreateBlock(annotationType, doc.getText()), 0);
         break;
     }
 
     return taskDoc;
+  }
+
+  private AnnotationTaskBlock getOrCreateBlock(
+      final AnnotationTypeEnum annotationType, final String text) {
+    try {
+      return taskBlockRepository.findByAnnotationTypeEqualsAndTextEquals(annotationType, text);
+    } catch (EntityNotFoundException ex) {
+      return taskBlockRepository.save(new AnnotationTaskBlock(text, "", annotationType));
+    }
   }
 
   private List<AnnotationTaskBlock> createWordPosBlocks(final String text) {
@@ -57,9 +67,8 @@ public class TaskDocServiceImpl implements TaskDocService {
 
       if (current.length() > MINIMUM_WORD_BLOCK_LENGTH || i == sentences.length - 1) {
         blocks.add(
-            taskBlockRepository.save(
-                new AnnotationTaskBlock(
-                    current.substring(0, current.length() - 1), "", AnnotationTypeEnum.wordPos)));
+            getOrCreateBlock(
+                AnnotationTypeEnum.wordPos, current.substring(0, current.length() - 1)));
         current.setLength(0);
       }
     }
