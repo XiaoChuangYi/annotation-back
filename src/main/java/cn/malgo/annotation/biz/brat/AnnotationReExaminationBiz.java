@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -9,9 +9,10 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateResetRequest;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AnnotationReExaminationBiz extends BaseBiz<AnnotationStateResetRequest, Object> {
@@ -55,7 +56,7 @@ public class AnnotationReExaminationBiz extends BaseBiz<AnnotationStateResetRequ
                 .map(
                     x -> {
                       x.setState(AnnotationCombineStateEnum.preExamine.name());
-                      if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) {
+                      if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
                         x.setManualAnnotation(x.getReviewedAnnotation());
                       }
                       return x;
