@@ -162,8 +162,8 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
               AnnotationCombineStateEnum.preExamine.name(),
               AnnotationCombineStateEnum.abandon.name())) {
 
-        if (annotation.getAnnotationType() == AnnotationTypeEnum.relation.getValue()
-            || annotation.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()) {
+        if (annotation.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
+            || annotation.getAnnotationType() == AnnotationTypeEnum.sentence.ordinal()) {
           annotation.setReviewedAnnotation(annotation.getManualAnnotation());
         } else {
           annotation.setManualAnnotation(annotation.getFinalAnnotation());

@@ -1,10 +1,10 @@
-package cn.malgo.annotation.biz.doc;
+package cn.malgo.annotation.biz.task;
 
 import cn.malgo.annotation.biz.AdminBaseBiz;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.exception.InvalidInputException;
-import cn.malgo.annotation.request.doc.ImportDocRequest;
+import cn.malgo.annotation.request.task.ImportDocRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;

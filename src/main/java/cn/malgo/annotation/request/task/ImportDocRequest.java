@@ -1,4 +1,4 @@
-package cn.malgo.annotation.request.doc;
+package cn.malgo.annotation.request.task;
 
 import lombok.Value;
 

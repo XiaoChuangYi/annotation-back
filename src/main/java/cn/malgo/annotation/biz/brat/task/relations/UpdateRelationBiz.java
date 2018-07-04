@@ -43,7 +43,7 @@ public class UpdateRelationBiz
     AnnotationCombineBratVO annotationCombineBratVO;
     String annotation = relationOperateService.updateRelation(updateRelationRequest);
     if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
         annotationCombine.setReviewedAnnotation(annotation);
       }
     }

@@ -68,8 +68,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-      if (annotationCombine.getAnnotationType()
-          == AnnotationTypeEnum.wordPos.getValue()) { // 分词标注提交
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词标注提交
         UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
             extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
         updateAnnotationAlgorithm.setAutoAnnotation(commitAnnotationRequest.getAutoAnnotation());

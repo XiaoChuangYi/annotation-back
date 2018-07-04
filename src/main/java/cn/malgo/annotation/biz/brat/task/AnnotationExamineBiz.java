@@ -2,8 +2,6 @@ package cn.malgo.annotation.biz.brat.task;
 
 import cn.malgo.annotation.biz.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.dto.AutoAnnotation;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -11,10 +9,9 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
-import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.List;
+
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -58,11 +55,11 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       // 入库
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词，入库
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.getValue()
-          || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.getValue()) {
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.ordinal()
+          || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
         annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
       }
       // state handle

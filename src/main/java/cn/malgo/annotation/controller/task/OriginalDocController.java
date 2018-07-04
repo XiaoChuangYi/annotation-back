@@ -1,11 +1,11 @@
-package cn.malgo.annotation.controller.doc;
+package cn.malgo.annotation.controller.task;
 
-import cn.malgo.annotation.biz.doc.ImportDocBiz;
+import cn.malgo.annotation.biz.task.ImportDocBiz;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.request.doc.ImportDocRequest;
+import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.result.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

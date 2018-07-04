@@ -1,11 +1,11 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
 
-/** Created by cjl on 2018/5/30. */
 @Slf4j
 public abstract class BaseBiz<REQ, RES> {
 
@@ -23,6 +23,10 @@ public abstract class BaseBiz<REQ, RES> {
 
   private boolean isServerSideException(final Throwable ex) {
     return !(ex instanceof InvalidInputException) && !(ex instanceof BusinessRuleException);
+  }
+
+  public RES process(REQ req, UserAccount user) {
+    return process(req, user.getId(), user.getRoleId());
   }
 
   public RES process(REQ req, int userId, int role) {
