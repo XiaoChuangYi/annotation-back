@@ -80,6 +80,8 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
           && finalAnnotationList.get(0) != null) {
         autoAnnotation = finalAnnotationList.get(0).getAnnotation();
         annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
+        annotation.setManualAnnotation("");
+        annotationCombineRepository.save(annotation);
       } else {
         log.warn("调用算法后台病历分词预标注接口: {}, {}", annotation.getId(), autoAnnotation);
         throw new AlgorithmServiceException("algorithm-response-error", "调用算法后台病历分词预标注接口，返回异常null");
@@ -90,11 +92,6 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getSentenceAnnotationVO(int role, AnnotationCombine annotation) {
-    //    annotation.setManualAnnotation(annotation.getFinalAnnotation());
-    annotation.setFinalAnnotation(annotation.getManualAnnotation());
-    annotation.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-    annotation = annotationCombineRepository.save(annotation);
-
     // TODO 过后端自己的分句算法
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(),
@@ -102,11 +99,6 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getRelationAnnotationVO(int role, AnnotationCombine annotation) {
-    annotation.setFinalAnnotation(annotation.getManualAnnotation());
-    annotation.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-    //    annotation.setManualAnnotation(annotation.getFinalAnnotation());
-    annotation = annotationCombineRepository.save(annotation);
-
     // TODO 过算法的关联算法
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(),
@@ -147,9 +139,6 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       }
 
       if (role == AnnotationRoleStateEnum.admin.getRole()) {
-        annotation.setManualAnnotation(annotation.getReviewedAnnotation());
-        annotation = annotationCombineRepository.save(annotation);
-
         // 管理员永远返回已审核结果
         return new AlgorithmAnnotationVO(
             annotation.getReviewedAnnotation(),
@@ -162,13 +151,6 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
               AnnotationCombineStateEnum.preExamine.name(),
               AnnotationCombineStateEnum.abandon.name())) {
 
-        if (annotation.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
-            || annotation.getAnnotationType() == AnnotationTypeEnum.sentence.ordinal()) {
-          annotation.setReviewedAnnotation(annotation.getManualAnnotation());
-        } else {
-          annotation.setManualAnnotation(annotation.getFinalAnnotation());
-        }
-        annotation = annotationCombineRepository.save(annotation);
         // 审核人员，而且已经被标注过，直接返回最后的标注结果
         return new AlgorithmAnnotationVO(
             annotation.getAnnotationType() == 0

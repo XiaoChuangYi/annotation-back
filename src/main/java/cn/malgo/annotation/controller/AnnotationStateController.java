@@ -1,5 +1,7 @@
 package cn.malgo.annotation.controller;
 
+import cn.malgo.annotation.biz.brat.AnnotationReExaminationBiz;
+import cn.malgo.annotation.biz.brat.AnnotationReworkBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationAbandonBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
@@ -23,14 +25,20 @@ public class AnnotationStateController extends BaseController {
   private final AnnotationCommitBiz annotationCommitBiz;
   private final AnnotationAbandonBiz annotationAbandonBiz;
   private final AnnotationExamineBiz annotationExamineBiz;
+  private final AnnotationReExaminationBiz annotationReExaminationBiz;
+  private final AnnotationReworkBiz annotationReworkBiz;
 
   public AnnotationStateController(
       AnnotationCommitBiz annotationCommitBiz,
       AnnotationAbandonBiz annotationAbandonBiz,
-      AnnotationExamineBiz annotationExamineBiz) {
+      AnnotationExamineBiz annotationExamineBiz,
+      AnnotationReworkBiz annotationReworkBiz,
+      AnnotationReExaminationBiz annotationReExaminationBiz) {
     this.annotationCommitBiz = annotationCommitBiz;
     this.annotationAbandonBiz = annotationAbandonBiz;
     this.annotationExamineBiz = annotationExamineBiz;
+    this.annotationReworkBiz = annotationReworkBiz;
+    this.annotationReExaminationBiz = annotationReExaminationBiz;
   }
 
   /** 标注人员提交 */
@@ -62,4 +70,5 @@ public class AnnotationStateController extends BaseController {
         annotationExamineBiz.process(
             annotationStateRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+  /** */
 }

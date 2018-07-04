@@ -11,7 +11,6 @@ import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -57,10 +56,6 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
       // 入库
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词，入库
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
-      }
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.sentence.ordinal()
-          || annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
-        annotationCombine.setReviewedAnnotation(annotationCombine.getManualAnnotation());
       }
       // state handle
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {

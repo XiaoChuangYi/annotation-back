@@ -23,7 +23,7 @@ public class UserRelationOperateServiceExerciseImpl implements RelationOperateSe
   }
 
   @Override
-  public String addRelation(AddRelationRequest addRelationRequest) {
+  public String addRelation(AddRelationRequest addRelationRequest, int roleId) {
     Optional<UserExercise> optional = userExerciseRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       UserExercise userExercise = optional.get();
@@ -39,7 +39,7 @@ public class UserRelationOperateServiceExerciseImpl implements RelationOperateSe
   }
 
   @Override
-  public String updateRelation(UpdateRelationRequest updateRelationRequest) {
+  public String updateRelation(UpdateRelationRequest updateRelationRequest, int roleId) {
     Optional<UserExercise> optional =
         userExerciseRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
@@ -55,7 +55,7 @@ public class UserRelationOperateServiceExerciseImpl implements RelationOperateSe
   }
 
   @Override
-  public String deleteRelation(DeleteRelationRequest deleteRelationRequest) {
+  public String deleteRelation(DeleteRelationRequest deleteRelationRequest, int roleId) {
     Optional<UserExercise> optional =
         userExerciseRepository.findById(deleteRelationRequest.getId());
     if (optional.isPresent()) {

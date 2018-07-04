@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.request.brat.DeleteAnnotationRequest;
@@ -37,14 +38,21 @@ public abstract class BaseAnnotationOperateImpl implements AnnotationOperateServ
         annotationCombineRepository.findById(deleteAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String annotation =
-          AnnotationConvert.deleteEntitiesAnnotation(
-              annotationCombine.getManualAnnotation(), deleteAnnotationRequest.getTag());
-      //      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
-      //      } else {
-      //        annotationCombine.setReviewedAnnotation(annotation);
-      //      }
-      annotationCombine.setManualAnnotation(annotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String annotation;
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                annotationCombine.getFinalAnnotation(), deleteAnnotationRequest.getTag());
+        annotationCombine.setFinalAnnotation(annotation);
+      } else {
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                annotationCombine.getReviewedAnnotation(), deleteAnnotationRequest.getTag());
+        annotationCombine.setReviewedAnnotation(annotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return annotation;
     }
@@ -57,12 +65,25 @@ public abstract class BaseAnnotationOperateImpl implements AnnotationOperateServ
         annotationCombineRepository.findById(updateAnnotationRequest.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      String newAnnotation =
-          AnnotationConvert.updateEntitiesAnnotation(
-              annotationCombine.getManualAnnotation(),
-              updateAnnotationRequest.getTag(),
-              updateAnnotationRequest.getNewType());
-      annotationCombine.setManualAnnotation(newAnnotation);
+      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+      }
+      String newAnnotation;
+      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+        newAnnotation =
+            AnnotationConvert.updateEntitiesAnnotation(
+                annotationCombine.getFinalAnnotation(),
+                updateAnnotationRequest.getTag(),
+                updateAnnotationRequest.getNewType());
+        annotationCombine.setFinalAnnotation(newAnnotation);
+      } else {
+        newAnnotation =
+            AnnotationConvert.updateEntitiesAnnotation(
+                annotationCombine.getReviewedAnnotation(),
+                updateAnnotationRequest.getTag(),
+                updateAnnotationRequest.getNewType());
+        annotationCombine.setReviewedAnnotation(newAnnotation);
+      }
       annotationCombineRepository.save(annotationCombine);
       return newAnnotation;
     }

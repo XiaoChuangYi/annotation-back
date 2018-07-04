@@ -74,7 +74,7 @@ public class AddExerciseRelationBiz extends BaseBiz<AddRelationRequest, Exercise
     if (optional.isPresent()) {
       log.info("习题新增关系请求参数：{}", addRelationRequest);
       UserExercise userExercise = optional.get();
-      String annotation = exerciseRelationOperateService.addRelation(addRelationRequest);
+      String annotation = exerciseRelationOperateService.addRelation(addRelationRequest, 0);
       log.info("习题新增关系返回结果：{}", annotation);
       userExercise.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       userExercise.setUserAnnotation(annotation);

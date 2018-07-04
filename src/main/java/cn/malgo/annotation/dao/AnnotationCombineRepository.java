@@ -12,6 +12,10 @@ import java.util.List;
 public interface AnnotationCombineRepository
     extends JpaRepository<AnnotationCombine, Integer>, JpaSpecificationExecutor {
 
+  default List<AnnotationCombine> findAllByIdInAndIsTaskEquals(List<Integer> idList) {
+    return findAllByIdInAndIsTaskEquals(idList, 0);
+  }
+
   List<AnnotationCombine> findAllByIdInAndIsTaskEquals(List<Integer> idList, int task);
 
   List<AnnotationCombine> findAllByAnnotationTypeInAndStateEqualsAndIsTaskEquals(

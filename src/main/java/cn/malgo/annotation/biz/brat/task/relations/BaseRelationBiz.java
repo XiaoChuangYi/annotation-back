@@ -57,7 +57,6 @@ public abstract class BaseRelationBiz<REQ extends BaseAnnotationRequest, Annotat
     Optional<AnnotationCombine> optional = annotationCombineRepository.findById(req.getId());
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
-      annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
       return doInternalProcess(role, relationOperateService, annotationCombine, req);
     }
     return null;

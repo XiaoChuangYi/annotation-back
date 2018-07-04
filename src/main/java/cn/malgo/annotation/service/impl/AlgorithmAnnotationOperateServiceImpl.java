@@ -54,12 +54,10 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
       String manualAnnotation,
       String autoAnnotation,
       int roleId) {
-    // 手动标注入库
     annotationCombine.setManualAnnotation(manualAnnotation);
-    if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
+    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
       annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
     }
-    // 最终标注不入库
     UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
     updateAnnotationAlgorithm.setId(id);
     updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
