@@ -1,10 +1,8 @@
 package cn.malgo.annotation.request;
 
-import lombok.Data;
+import lombok.Value;
 
-/** Created by cjl on 2018/6/1. */
-@Data
+@Value
 public class AnnotationStateRequest {
   private int id;
-  private String state;
 }

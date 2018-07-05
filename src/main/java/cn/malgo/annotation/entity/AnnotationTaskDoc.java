@@ -11,7 +11,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -29,7 +28,10 @@ import java.util.List;
 @ToString(exclude = {"task", "doc", "blocks"})
 @JSONType(ignores = {"createdTime", "lastModified", "task", "doc", "blocks"})
 public class AnnotationTaskDoc {
-  @Getter @EmbeddedId private AnnotationTaskDocId id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Getter
+  private int id;
 
   @CreatedDate
   @Column(
@@ -49,14 +51,14 @@ public class AnnotationTaskDoc {
   )
   private Timestamp lastModified;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @MapsId("taskId")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "task_id")
   @Setter(AccessLevel.PACKAGE)
   @Getter
   private AnnotationTask task;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @MapsId("docId")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "doc_id")
   @Setter(AccessLevel.PACKAGE)
   @Getter
   private OriginalDoc doc;
@@ -79,6 +81,7 @@ public class AnnotationTaskDoc {
     cascade = CascadeType.ALL,
     orphanRemoval = true
   )
+  @Getter
   @OrderBy("order")
   private List<AnnotationTaskDocBlock> blocks = new ArrayList<>();
 
@@ -86,21 +89,16 @@ public class AnnotationTaskDoc {
       final AnnotationTask task, final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
     this.task = task;
     this.doc = doc;
-    this.id = new AnnotationTaskDocId(task.getId(), doc.getId());
     this.annotationType = annotationType;
   }
 
-  public void addBlock(final AnnotationTaskBlock block, final int order) {
+  public AnnotationTaskDocBlock addBlock(final AnnotationTaskBlock block, final int order) {
     if (block.getAnnotationType() != this.getAnnotationType()) {
       throw new IllegalArgumentException("invalid annotation type: " + block.getAnnotationType());
     }
 
     final AnnotationTaskDocBlock taskDocBlock = new AnnotationTaskDocBlock(this, block, order);
     blocks.add(taskDocBlock);
-    block.getTaskDocs().add(taskDocBlock);
-  }
-
-  public List<AnnotationTaskDocBlock> getBlocks() {
-    return Collections.unmodifiableList(blocks);
+    return taskDocBlock;
   }
 }

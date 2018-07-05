@@ -1,10 +1,7 @@
 package cn.malgo.annotation.entity;
 
 import com.alibaba.fastjson.annotation.JSONType;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,10 +16,12 @@ import java.sql.Timestamp;
     @Index(name = "idx_order", columnList = "block_order"),
   }
 )
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"taskDoc", "block"})
 @JSONType(ignores = {"createdTime", "lastModified", "taskDoc", "block"})
+@Data
 public class AnnotationTaskDocBlock {
   @EmbeddedId private AnnotationTaskDocBlockId id;
 
@@ -44,23 +43,18 @@ public class AnnotationTaskDocBlock {
   )
   private Timestamp lastModified;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)
   @MapsId("taskDocId")
-  @NonNull
-  @Getter
+  @JoinColumn(name = "task_doc_id")
   private AnnotationTaskDoc taskDoc;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY /*, cascade = { CascadeType.MERGE }*/)
   @MapsId("blockId")
-  @NonNull
-  @Getter
+  @JoinColumn(name = "block_id")
   private AnnotationTaskBlock block;
 
-  @Column(name = "block_order", nullable = false)
-  @NonNull
+  @Column(name = "block_order", nullable = false, updatable = false)
   private int order;
-
-  private AnnotationTaskDocBlock() {}
 
   public AnnotationTaskDocBlock(
       final AnnotationTaskDoc taskDoc, final AnnotationTaskBlock block, final int order) {
@@ -68,5 +62,7 @@ public class AnnotationTaskDocBlock {
     this.block = block;
     this.order = order;
     this.id = new AnnotationTaskDocBlockId(taskDoc.getId(), block.getId());
+    //    this.id.setTaskDocId(taskDoc.getId());
+    //    this.id.setBlockId(block.getId());
   }
 }

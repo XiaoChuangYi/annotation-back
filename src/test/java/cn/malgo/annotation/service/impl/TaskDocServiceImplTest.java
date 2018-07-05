@@ -28,6 +28,7 @@ public class TaskDocServiceImplTest {
       };
 
   private AnnotationTaskDocRepository mockTaskDocRepository;
+  //  private AnnotationTaskDocBlockRepository mockTaskDocBlockRepository;
   private AnnotationBlockService mockBlockService;
   private TaskDocServiceImpl taskDocService;
   private AnnotationTask task;
@@ -36,15 +37,19 @@ public class TaskDocServiceImplTest {
   @BeforeMethod
   public void init() {
     mockTaskDocRepository = Mockito.mock(AnnotationTaskDocRepository.class);
+    Mockito.when(mockTaskDocRepository.updateState(Mockito.any())).thenCallRealMethod();
     Mockito.when(mockTaskDocRepository.save(Mockito.any()))
         .thenAnswer(invocation -> invocation.getArguments()[0]);
+
+    //    mockTaskDocBlockRepository = Mockito.mock(AnnotationTaskDocBlockRepository.class);
+    //    Mockito.when(mockTaskDocRepository.save(Mockito.any()))
+    //            .thenAnswer(invocation -> invocation.getArguments()[0]);
 
     mockBlockService = Mockito.mock(AnnotationBlockService.class);
     Mockito.when(mockBlockService.getOrCreateAnnotation(Mockito.any(), Mockito.anyString()))
         .thenAnswer(BLOCK_ANSWER);
 
-    taskDocService =
-        new TaskDocServiceImpl(taskRepository, mockTaskDocRepository, mockBlockService);
+    taskDocService = new TaskDocServiceImpl(mockTaskDocRepository, mockBlockService);
     task = new AnnotationTask("test-task");
     doc = new OriginalDoc("test-doc", SAMPLE_TEXT, "", "");
   }

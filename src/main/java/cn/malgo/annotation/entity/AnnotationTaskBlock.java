@@ -78,12 +78,12 @@ public class AnnotationTaskBlock {
   @NonNull
   private AnnotationTypeEnum annotationType;
 
-  @OneToMany(
-    fetch = FetchType.LAZY,
-    mappedBy = "block",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
-  @Getter
-  private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
+  //  @OneToMany(
+  //    fetch = FetchType.LAZY,
+  //    mappedBy = "block",
+  //    cascade = CascadeType.ALL,
+  //    orphanRemoval = true
+  //  )
+  //  @Getter
+  //  private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
 }

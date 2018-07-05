@@ -13,8 +13,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.persistence.EntityNotFoundException;
-
 public class AnnotationBlockServiceImplTest {
   private static final Answer<AnnotationTaskBlock> BLOCK_ANSWER =
       invocation -> {
@@ -41,15 +39,17 @@ public class AnnotationBlockServiceImplTest {
     Mockito.when(mockBlockRepository.save(Mockito.any()))
         .thenAnswer(invocation -> invocation.getArguments()[0]);
 
-    blockService = new AnnotationBlockServiceImpl(mockAnnotationRepository, mockBlockRepository);
+    blockService =
+        new AnnotationBlockServiceImpl(
+            mockAnnotationRepository, mockBlockRepository, null, null, null);
   }
 
   @Test
   public void testDuplicateBlock() {
     Mockito.when(
-            mockBlockRepository.findByAnnotationTypeEqualsAndTextEquals(
+            mockBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
                 Mockito.any(), Mockito.anyString()))
-        .thenThrow(new EntityNotFoundException())
+        .thenReturn(null)
         .thenAnswer(BLOCK_ANSWER);
 
     final Pair<AnnotationTaskBlock, Boolean> result1 =
