@@ -15,4 +15,6 @@ public interface AnnotationBlockService {
    */
   Pair<AnnotationTaskBlock, Boolean> getOrCreateAnnotation(
       final AnnotationTypeEnum annotationType, final String text);
+
+  AnnotationTaskBlock saveAnnotation(final AnnotationCombine annotationCombine);
 }

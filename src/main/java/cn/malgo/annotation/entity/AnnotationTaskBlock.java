@@ -53,7 +53,7 @@ public class AnnotationTaskBlock {
   )
   private Timestamp lastModified;
 
-  @Column(name = "text", nullable = false, columnDefinition = "MEDIUMTEXT")
+  @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter
   @NonNull
@@ -72,7 +72,7 @@ public class AnnotationTaskBlock {
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
 
   @Enumerated(EnumType.ORDINAL)
-  @Column(name = "annotation_type", nullable = false)
+  @Column(name = "annotation_type", nullable = false, updatable = false)
   @Getter
   @Setter
   @NonNull

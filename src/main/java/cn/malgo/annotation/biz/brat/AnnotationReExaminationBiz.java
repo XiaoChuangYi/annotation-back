@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class AnnotationReExaminationBiz extends BaseBiz<AnnotationStateResetRequest, Object> {
-
+public class AnnotationReExaminationBiz
+    extends TransactionalBiz<AnnotationStateResetRequest, Object> {
   private final AnnotationCombineRepository annotationCombineRepository;
 
   public AnnotationReExaminationBiz(AnnotationCombineRepository annotationCombineRepository) {
@@ -36,11 +36,6 @@ public class AnnotationReExaminationBiz extends BaseBiz<AnnotationStateResetRequ
       throw new InvalidInputException("empty-id-list", "空id集合");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, AnnotationStateResetRequest annotationStateResetRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected Object doBiz(

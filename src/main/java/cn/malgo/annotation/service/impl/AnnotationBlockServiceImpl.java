@@ -4,12 +4,18 @@ import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationBlockService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Objects;
+
 @Service
+@Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
@@ -35,5 +41,23 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     }
 
     return result;
+  }
+
+  @Override
+  public AnnotationTaskBlock saveAnnotation(final AnnotationCombine annotationCombine) {
+    Objects.requireNonNull(annotationCombine);
+
+    try {
+      final AnnotationTaskBlock block =
+          annotationTaskBlockRepository.findByAnnotationTypeEqualsAndTextEquals(
+              AnnotationTypeEnum.getByValue(annotationCombine.getAnnotationType()),
+              annotationCombine.getTerm());
+      block.setAnnotation(annotationCombine.getReviewedAnnotation());
+      block.setState(AnnotationTaskState.ANNOTATED);
+      return annotationTaskBlockRepository.save(block);
+    } catch (EntityNotFoundException ex) {
+      log.warn("annotation combine {} not found in task block", annotationCombine.getId());
+      return null;
+    }
   }
 }
