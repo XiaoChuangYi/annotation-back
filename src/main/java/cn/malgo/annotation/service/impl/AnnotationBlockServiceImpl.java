@@ -38,6 +38,9 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
       annotationCombine.setAnnotationType(annotationType.ordinal());
       annotationCombine.setTerm(text);
       annotationCombineRepository.save(annotationCombine);
+
+      result.getLeft().setState(AnnotationTaskState.DOING);
+      return Pair.of(annotationTaskBlockRepository.save(result.getLeft()), result.getRight());
     }
 
     return result;

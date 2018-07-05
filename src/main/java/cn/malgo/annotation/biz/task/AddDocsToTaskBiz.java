@@ -7,10 +7,13 @@ import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.service.TaskDocService;
+import cn.malgo.annotation.service.impl.TaskDocServiceImpl;
 import cn.malgo.annotation.vo.AddDocsToTaskResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -63,7 +66,21 @@ public class AddDocsToTaskBiz
 
       int createdBlocks = 0;
       for (final OriginalDoc doc : docs) {
-        createdBlocks += taskDocService.addDocToTask(task, doc, annotationType).getCreatedBlocks();
+        final TaskDocServiceImpl.AddDocResult addDocResult =
+            taskDocService.addDocToTask(task, doc, annotationType);
+        createdBlocks += addDocResult.getCreatedBlocks();
+        doc.setState(OriginalDocState.PROCESSING);
+      }
+
+      if (docs.size() != 0) {
+        if (createdBlocks != 0) {
+          task.setState(AnnotationTaskState.DOING);
+        } else if (task.getState() != AnnotationTaskState.DOING) {
+          // 如果没有生成任何block，而且之前不是DOING状态，则设置状态为标注完成，跳过DOING状态
+          task.setState(AnnotationTaskState.ANNOTATED);
+        }
+
+        docRepository.saveAll(docs);
       }
 
       return new AddDocsToTaskResponse(task, createdBlocks);

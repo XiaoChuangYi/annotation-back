@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
@@ -11,22 +12,27 @@ import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
+import cn.malgo.annotation.service.TaskDocService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
   private final AnnotationBlockService annotationBlockService;
+  private final TaskDocService taskDocService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
 
   public AnnotationExamineBiz(
       final AnnotationBlockService annotationBlockService,
+      final TaskDocService taskDocService,
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService) {
     this.annotationBlockService = annotationBlockService;
+    this.taskDocService = taskDocService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
   }
@@ -75,10 +81,27 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
         }
       } else if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
+      } else {
+        throw new BusinessRuleException(
+            "invalid-annotation-state", annotationCombine.getState() + "状态不可以被审核提交");
       }
 
       // 更新block
-      annotationBlockService.saveAnnotation(annotationCombineRepository.save(annotationCombine));
+      final AnnotationTaskBlock taskBlock =
+          annotationBlockService.saveAnnotation(
+              annotationCombineRepository.save(annotationCombine));
+
+      // 更新所有对应的TaskDoc的状态
+      taskBlock
+          .getTaskDocs()
+          .forEach(taskDocBlock -> taskDocService.updateState(taskDocBlock.getTaskDoc()));
+
+      taskBlock
+          .getTaskDocs()
+          .stream()
+          .map(taskDocBlock -> taskDocBlock.getTaskDoc().getTask())
+          .collect(Collectors.toSet())
+          .forEach(taskDocService::updateState);
     }
 
     return null;

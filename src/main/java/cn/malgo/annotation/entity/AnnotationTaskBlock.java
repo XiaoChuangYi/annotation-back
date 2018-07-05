@@ -84,6 +84,6 @@ public class AnnotationTaskBlock {
     cascade = CascadeType.ALL,
     orphanRemoval = true
   )
-  @Getter(AccessLevel.PACKAGE)
+  @Getter
   private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
 }
