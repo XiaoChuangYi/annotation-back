@@ -49,6 +49,7 @@ public class SystemArchitecture {
     return className.startsWith("List")
         || className.startsWith("Get")
         || className.startsWith("Search")
+        || className.startsWith("Import")
         || className.startsWith("Find");
   }
 
