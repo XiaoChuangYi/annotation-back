@@ -1,16 +1,18 @@
 package cn.malgo.annotation.request.doc;
 
 import cn.malgo.annotation.enums.OriginalDocState;
-import java.util.Set;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+import java.util.Set;
+
+@Data
 public class ListDocRequest {
-  int pageIndex;
-  int pageSize;
-  String name; // 文档名字
-  String source; // 文档来源
-  Set<OriginalDocState> docState;
-  String text; // 文档内容
-  String type; // 文档类型
+  private int pageIndex;
+  private int pageSize;
+  private int minTextLength;
+  private String name; // 文档名字
+  private String source; // 文档来源
+  private Set<OriginalDocState> docState;
+  private String text; // 文档内容
+  private String type; // 文档类型
 }

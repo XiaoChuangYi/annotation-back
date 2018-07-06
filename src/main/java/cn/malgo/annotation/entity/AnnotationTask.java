@@ -16,12 +16,11 @@ import java.util.List;
 
 @Entity
 @Table(
-  name = "annotation_task",
-  indexes = {
-    @Index(name = "idx_name", columnList = "name"),
-    @Index(name = "idx_state", columnList = "state"),
-  }
-)
+    name = "annotation_task",
+    indexes = {
+      @Index(name = "idx_name", columnList = "name"),
+      @Index(name = "idx_state", columnList = "state"),
+    })
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
@@ -37,21 +36,19 @@ public class AnnotationTask {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   @Getter
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "last_modified",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "last_modified",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   @Getter
   private Timestamp lastModified;
 
@@ -68,11 +65,11 @@ public class AnnotationTask {
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
 
   @OneToMany(
-    fetch = FetchType.LAZY,
-    mappedBy = "task",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
+      fetch = FetchType.LAZY,
+      mappedBy = "task",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @Getter
   private List<AnnotationTaskDoc> taskDocs = new ArrayList<>();
 
   public AnnotationTaskDoc addDoc(final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
@@ -80,9 +77,5 @@ public class AnnotationTask {
     this.taskDocs.add(taskDoc);
     doc.getTasks().add(taskDoc);
     return taskDoc;
-  }
-
-  public List<AnnotationTaskDoc> getTaskDocs() {
-    return Collections.unmodifiableList(this.taskDocs);
   }
 }

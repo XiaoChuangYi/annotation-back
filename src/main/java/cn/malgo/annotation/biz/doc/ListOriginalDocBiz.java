@@ -35,23 +35,25 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
           List<Predicate> predicates = new ArrayList<>();
           if (StringUtils.isNotBlank(param.getName())) {
             predicates.add(
-                criteriaBuilder.like(
-                    root.get("name"), String.format("%s%s%s", "%", param.getName(), "%")));
+                criteriaBuilder.like(root.get("name"), String.format("%%%s%%", param.getName())));
           }
           if (StringUtils.isNotBlank(param.getType())) {
             predicates.add(
-                criteriaBuilder.like(
-                    root.get("type"), String.format("%s%s%s", "%", param.getType(), "%")));
+                criteriaBuilder.like(root.get("type"), String.format("%%%s%%", param.getType())));
           }
           if (StringUtils.isNotBlank(param.getText())) {
             predicates.add(
-                criteriaBuilder.like(
-                    root.get("text"), String.format("%s%s%s", "%", param.getText(), "%")));
+                criteriaBuilder.like(root.get("text"), String.format("%%%s%%", param.getText())));
           }
           if (StringUtils.isNotBlank(param.getSource())) {
             predicates.add(
                 criteriaBuilder.like(
-                    root.get("source"), String.format("%s%s%s", "%", param.getSource(), "%")));
+                    root.get("source"), String.format("%%%s%%", param.getSource())));
+          }
+          if (param.getMinTextLength() != 0) {
+            predicates.add(
+                criteriaBuilder.ge(
+                    criteriaBuilder.length(root.get("text")), param.getMinTextLength()));
           }
           if (param.getDocState() != null
               && param.getDocState().size() > 0
