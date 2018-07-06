@@ -9,7 +9,7 @@ import lombok.Value;
 public class ListAnnotationTaskBlockRequest {
   int pageIndex;
   int pageSize;
-  List<AnnotationTypeEnum> annotationTypes;
+  List<String> annotationTypes;
   String text;
   List<AnnotationTaskState> states;
 }

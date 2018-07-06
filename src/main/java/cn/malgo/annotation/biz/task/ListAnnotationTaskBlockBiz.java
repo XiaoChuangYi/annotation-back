@@ -5,6 +5,7 @@ import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
@@ -49,15 +50,13 @@ public class ListAnnotationTaskBlockBiz
           if (param.getAnnotationTypes() != null
               && param.getAnnotationTypes().size() > 0
               && !param.getAnnotationTypes().contains(null)) {
-            predicates.add(
-                criteriaBuilder
-                    .in(root.get("annotation_type"))
-                    .value(
-                        param
-                            .getAnnotationTypes()
-                            .stream()
-                            .map(x -> x.ordinal())
-                            .collect(Collectors.toList())));
+            final List<AnnotationTypeEnum> annotationTypes =
+                param
+                    .getAnnotationTypes()
+                    .stream()
+                    .map(x -> AnnotationTypeEnum.valueOf(x))
+                    .collect(Collectors.toList());
+            predicates.add(criteriaBuilder.in(root.get("annotationType")).value(annotationTypes));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
