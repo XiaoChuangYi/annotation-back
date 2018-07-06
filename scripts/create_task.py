@@ -20,7 +20,7 @@ def login(url, username, password):
 @click.argument('task_name')
 @click.argument('text_filter')
 @click.option('--no-create-task', default=False, is_flag=True)
-@click.option('--count', default='1', show_default=True)
+@click.option('--count', default='200', show_default=True)
 @click.option('--min-text-length', default='500', show_default=True)
 @click.option('--annotation-type', default='0', show_default=True)
 @click.option('--url', default='http://localhost:9001', show_default=True)
