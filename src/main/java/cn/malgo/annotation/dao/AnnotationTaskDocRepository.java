@@ -1,7 +1,9 @@
 package cn.malgo.annotation.dao;
 
 import cn.malgo.annotation.entity.AnnotationTaskDoc;
+import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Comparator;
@@ -25,4 +27,6 @@ public interface AnnotationTaskDocRepository extends JpaRepository<AnnotationTas
     taskDoc.setState(state);
     return save(taskDoc);
   }
+
+  List<AnnotationTaskDoc> findAllByDoc(final OriginalDoc originalDoc);
 }

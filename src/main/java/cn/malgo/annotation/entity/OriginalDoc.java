@@ -14,14 +14,13 @@ import java.util.List;
 
 @Entity
 @Table(
-  name = "original_doc",
-  indexes = {
-    @Index(name = "idx_type", columnList = "type"),
-    @Index(name = "idx_name", columnList = "name"),
-    @Index(name = "idx_source", columnList = "source"),
-    @Index(name = "idx_state", columnList = "state"),
-  }
-)
+    name = "original_doc",
+    indexes = {
+      @Index(name = "idx_type", columnList = "type"),
+      @Index(name = "idx_name", columnList = "name"),
+      @Index(name = "idx_source", columnList = "source"),
+      @Index(name = "idx_state", columnList = "state"),
+    })
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
@@ -37,20 +36,19 @@ public class OriginalDoc {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @Getter
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "last_modified",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "last_modified",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp lastModified;
 
   @Column(name = "name", nullable = false, length = 512)
@@ -84,11 +82,14 @@ public class OriginalDoc {
   private OriginalDocState state = OriginalDocState.IMPORTED;
 
   @OneToMany(
-    fetch = FetchType.LAZY,
-    mappedBy = "doc",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
+      fetch = FetchType.LAZY,
+      mappedBy = "doc",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @Getter(AccessLevel.PACKAGE)
   private List<AnnotationTaskDoc> tasks = new ArrayList<>();
+
+  public OriginalDoc(int id) {
+    this.id = id;
+  }
 }

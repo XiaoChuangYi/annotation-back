@@ -3,7 +3,6 @@ package cn.malgo.annotation.biz.brat;
 import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnTypeRepository;
 import cn.malgo.annotation.entity.AnType;
-import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import java.util.List;
 import org.springframework.stereotype.Component;
