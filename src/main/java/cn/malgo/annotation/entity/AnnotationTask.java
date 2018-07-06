@@ -42,6 +42,7 @@ public class AnnotationTask {
     nullable = false,
     columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
   )
+  @Getter
   private Timestamp createdTime;
 
   @LastModifiedDate
@@ -51,6 +52,7 @@ public class AnnotationTask {
     nullable = false,
     columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
   )
+  @Getter
   private Timestamp lastModified;
 
   @Column(name = "name", nullable = false, length = 128)

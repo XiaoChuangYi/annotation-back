@@ -8,8 +8,9 @@ import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.vo.AnnotationTaskVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -20,8 +21,9 @@ import java.util.List;
 
 @Component
 @RequireRole(AnnotationRoleStateEnum.admin)
+@Slf4j
 public class ListAnnotationTaskBiz
-    extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTask>> {
+    extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTaskVO>> {
 
   private final AnnotationTaskRepository annotationTaskRepository;
 
@@ -37,10 +39,13 @@ public class ListAnnotationTaskBiz
           List<Predicate> predicates = new ArrayList<>();
           if (StringUtils.isNotBlank(param.getName())) {
             predicates.add(
-                criteriaBuilder.like(root.get("name"), String.format("%{}%", param.getName())));
+                criteriaBuilder.like(
+                    root.get("name"), String.format("%s%s%s", "%", param.getName(), "%")));
           }
-          if (param.getTaskState().size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskState()));
+          if (param.getTaskStates() != null
+              && param.getTaskStates().size() > 0
+              && !param.getTaskStates().contains(null)) {
+            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskStates()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
@@ -62,15 +67,11 @@ public class ListAnnotationTaskBiz
   }
 
   @Override
-  protected PageVO<AnnotationTask> doBiz(
+  protected PageVO<AnnotationTaskVO> doBiz(
       int userId, int role, ListAnnotationTaskRequest listAnnotationTaskRequest) {
     final int pageIndex = listAnnotationTaskRequest.getPageIndex() - 1;
-    Page<AnnotationTask> page =
-        annotationTaskRepository.findAll(
-            queryAnnotationTaskCondition(listAnnotationTaskRequest),
-            PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
-    PageVO<AnnotationTask> pageVO = new PageVO(page, false);
-    pageVO.setDataList(page.getContent());
-    return pageVO;
+    return annotationTaskRepository.listAnnotationTasks(
+        queryAnnotationTaskCondition(listAnnotationTaskRequest),
+        PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
   }
 }

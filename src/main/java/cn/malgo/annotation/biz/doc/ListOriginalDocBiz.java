@@ -5,7 +5,6 @@ import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.result.PageVO;
@@ -34,23 +33,29 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
         (root, criteriaQuery, criteriaBuilder) -> {
           // todo 还会有其它的过滤条件
           List<Predicate> predicates = new ArrayList<>();
-          if (StringUtils.isNotBlank(param.getText())) {
+          if (StringUtils.isNotBlank(param.getName())) {
             predicates.add(
-                criteriaBuilder.like(root.get("text"), String.format("%{}%", param.getText())));
+                criteriaBuilder.like(
+                    root.get("name"), String.format("%s%s%s", "%", param.getName(), "%")));
           }
           if (StringUtils.isNotBlank(param.getType())) {
             predicates.add(
-                criteriaBuilder.like(root.get("type"), String.format("%{}%", param.getType())));
+                criteriaBuilder.like(
+                    root.get("type"), String.format("%s%s%s", "%", param.getType(), "%")));
           }
-          if (StringUtils.isNotBlank(param.getName())) {
+          if (StringUtils.isNotBlank(param.getText())) {
             predicates.add(
-                criteriaBuilder.like(root.get("text"), String.format("%{}%", param.getText())));
+                criteriaBuilder.like(
+                    root.get("text"), String.format("%s%s%s", "%", param.getText(), "%")));
           }
           if (StringUtils.isNotBlank(param.getSource())) {
             predicates.add(
-                criteriaBuilder.like(root.get("source"), String.format("%{}%", param.getSource())));
+                criteriaBuilder.like(
+                    root.get("source"), String.format("%s%s%s", "%", param.getSource(), "%")));
           }
-          if (param.getDocState().size() > 0) {
+          if (param.getDocState() != null
+              && param.getDocState().size() > 0
+              && !param.getDocState().contains(null)) {
             predicates.add(criteriaBuilder.in(root.get("state")).value(param.getDocState()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));

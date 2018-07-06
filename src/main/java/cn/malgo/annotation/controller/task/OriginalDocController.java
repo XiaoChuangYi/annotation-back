@@ -3,12 +3,14 @@ package cn.malgo.annotation.controller.task;
 import cn.malgo.annotation.biz.task.ImportDocBiz;
 
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
+import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.request.doc.ListDocRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.result.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v2/doc")
 @Slf4j
-public class OriginalDocController {
+public class OriginalDocController extends BaseController {
 
   private final String secretKey;
   private final ImportDocBiz importDocBiz;
@@ -51,7 +53,10 @@ public class OriginalDocController {
 
   /** 原始文本查询 */
   @RequestMapping(value = "/list-doc", method = RequestMethod.GET)
-  public Response listOriginalDoc(ListDocRequest listDocRequest) {
-    return new Response(listOriginalDocBiz.process(listDocRequest, 0, 0));
+  public Response<PageVO<OriginalDoc>> listOriginalDoc(
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
+      ListDocRequest listDocRequest) {
+    return new Response<>(
+        listOriginalDocBiz.process(listDocRequest, 0, AnnotationRoleStateEnum.admin.getRole()));
   }
 }

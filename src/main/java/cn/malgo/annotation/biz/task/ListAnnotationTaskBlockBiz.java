@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,13 +38,26 @@ public class ListAnnotationTaskBlockBiz
           List<Predicate> predicates = new ArrayList<>();
           if (StringUtils.isNotBlank(param.getText())) {
             predicates.add(
-                criteriaBuilder.like(root.get("text"), String.format("%{}%", param.getText())));
+                criteriaBuilder.like(
+                    root.get("text"), String.format("%s%s%s", "%", param.getText(), "%")));
           }
-          if (param.getStates().size() > 0) {
+          if (param.getStates() != null
+              && param.getStates().size() > 0
+              && !param.getStates().contains(null)) {
             predicates.add(criteriaBuilder.in(root.get("state")).value(param.getStates()));
           }
-          if (param.getAnnotationTypes().size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("type")).value(param.getAnnotationTypes()));
+          if (param.getAnnotationTypes() != null
+              && param.getAnnotationTypes().size() > 0
+              && !param.getAnnotationTypes().contains(null)) {
+            predicates.add(
+                criteriaBuilder
+                    .in(root.get("annotation_type"))
+                    .value(
+                        param
+                            .getAnnotationTypes()
+                            .stream()
+                            .map(x -> x.ordinal())
+                            .collect(Collectors.toList())));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };

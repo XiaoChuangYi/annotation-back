@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
+
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskDocRepository annotationTaskDocRepository;
