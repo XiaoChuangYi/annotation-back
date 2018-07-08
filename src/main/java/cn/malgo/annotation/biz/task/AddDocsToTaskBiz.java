@@ -66,8 +66,18 @@ public class AddDocsToTaskBiz
 
       int createdBlocks = 0;
       for (final OriginalDoc doc : docs) {
+        log.info(
+            "adding doc({}) to task({}), annotation type: {}",
+            doc.getId(),
+            task.getId(),
+            annotationType);
         final TaskDocServiceImpl.AddDocResult addDocResult =
             taskDocService.addDocToTask(task, doc, annotationType);
+        log.info(
+            "adding doc({}) to task({}) success, blocks: {}",
+            doc.getId(),
+            task.getId(),
+            addDocResult.getCreatedBlocks());
         createdBlocks += addDocResult.getCreatedBlocks();
         doc.setState(OriginalDocState.PROCESSING);
       }

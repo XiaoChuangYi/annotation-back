@@ -8,17 +8,18 @@ import java.io.Serializable;
 
 @Embeddable
 @NoArgsConstructor
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
 public class AnnotationTaskDocBlockId implements Serializable {
   @Column(name = "task_doc_id", nullable = false)
-  @NonNull
   private int taskDocId;
 
   @Column(name = "block_id", nullable = false)
-  @NonNull
   private int blockId;
+
+  @Column(name = "block_order", nullable = false, updatable = false)
+  private int order;
 }

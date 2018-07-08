@@ -11,11 +11,10 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(
-  name = "annotation_task_doc_block",
-  indexes = {
-    @Index(name = "idx_order", columnList = "block_order"),
-  }
-)
+    name = "annotation_task_doc_block",
+    indexes = {
+      @Index(name = "idx_order", columnList = "block_order"),
+    })
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
@@ -27,20 +26,18 @@ public class AnnotationTaskDocBlock {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "last_modified",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "last_modified",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp lastModified;
 
   @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)
@@ -53,16 +50,10 @@ public class AnnotationTaskDocBlock {
   @JoinColumn(name = "block_id")
   private AnnotationTaskBlock block;
 
-  @Column(name = "block_order", nullable = false, updatable = false)
-  private int order;
-
   public AnnotationTaskDocBlock(
       final AnnotationTaskDoc taskDoc, final AnnotationTaskBlock block, final int order) {
     this.taskDoc = taskDoc;
     this.block = block;
-    this.order = order;
-    this.id = new AnnotationTaskDocBlockId(taskDoc.getId(), block.getId());
-    //    this.id.setTaskDocId(taskDoc.getId());
-    //    this.id.setBlockId(block.getId());
+    this.id = new AnnotationTaskDocBlockId(taskDoc.getId(), block.getId(), order);
   }
 }

@@ -15,20 +15,19 @@ import java.util.List;
 
 @Entity
 @Table(
-  name = "annotation_task_block",
-  indexes = {
-    @Index(name = "idx_annotation_type", columnList = "annotation_type"),
-    @Index(name = "idx_state", columnList = "state"),
-    //      @Index(name = "idx_unique_text", columnList = "annotation_type,text", unique = true),
-  }
-)
+    name = "annotation_task_block",
+    indexes = {
+      @Index(name = "idx_annotation_type", columnList = "annotation_type"),
+      @Index(name = "idx_state", columnList = "state"),
+      //      @Index(name = "idx_unique_text", columnList = "annotation_type,text", unique = true),
+    })
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
-@ToString(exclude = {"taskDocs"})
-@JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
+@ToString
+@JSONType(ignores = {"createdTime", "lastModified"})
 public class AnnotationTaskBlock {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,20 +36,18 @@ public class AnnotationTaskBlock {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "last_modified",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "last_modified",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp lastModified;
 
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
