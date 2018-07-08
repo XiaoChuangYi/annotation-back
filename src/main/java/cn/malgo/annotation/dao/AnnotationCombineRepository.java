@@ -22,17 +22,15 @@ public interface AnnotationCombineRepository
       List<Integer> annotationTypeList, String state, Pageable pageable, int task);
 
   @Query(
-    value =
-        "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 group by ac.state",
-    nativeQuery = true
-  )
+      value =
+          "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 group by ac.state",
+      nativeQuery = true)
   List<AnnotationSummary> findByStateGroup();
 
   @Query(
-    value =
-        "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 and ac.assignee= ?1 group by ac.state",
-    nativeQuery = true
-  )
+      value =
+          "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 and ac.assignee= ?1 group by ac.state",
+      nativeQuery = true)
   List<AnnotationSummary> findByAssigneeAndStateGroup(int assignee);
 
   Integer countAllByAnnotationTypeInAndStateEquals(List<Integer> annotationTypes, String state);
@@ -41,4 +39,6 @@ public interface AnnotationCombineRepository
 
   List<AnnotationCombine> findByAnnotationTypeAndIdBetweenAndStateIn(
       int annotationType, int startId, int endId, List<String> states);
+
+  AnnotationCombine findByTermEquals(String text);
 }

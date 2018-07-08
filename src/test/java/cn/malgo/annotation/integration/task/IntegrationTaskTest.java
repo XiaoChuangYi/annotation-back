@@ -77,10 +77,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING, AnnotationTaskState.DOING});
 
-    final List<AnnotationCombine> annotations = annotationCombineRepository.findAll();
-    assertEquals(annotations.size(), 2);
-
-    finishAnnotation(annotations.get(0));
+    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -91,7 +88,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.ANNOTATED, AnnotationTaskState.DOING});
 
-    finishAnnotation(annotations.get(1));
+    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -158,10 +155,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
-    final List<AnnotationCombine> annotations = annotationCombineRepository.findAll();
-    assertEquals(annotations.size(), 3);
-
-    finishAnnotation(annotations.get(0));
+    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -181,7 +175,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
-    finishAnnotation(annotations.get(1));
+    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -201,7 +195,8 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
-    finishAnnotation(annotations.get(2));
+    finishAnnotation(
+        annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),

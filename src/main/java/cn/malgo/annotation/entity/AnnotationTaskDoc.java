@@ -78,7 +78,7 @@ public class AnnotationTaskDoc {
       cascade = CascadeType.ALL,
       orphanRemoval = true)
   @Getter
-  //  @OrderBy("order")
+  @OrderBy("id.order")
   private List<AnnotationTaskDocBlock> blocks = new ArrayList<>();
 
   public AnnotationTaskDoc(
