@@ -15,12 +15,11 @@ import java.util.List;
 
 @Entity
 @Table(
-  name = "annotation_task_doc",
-  indexes = {
-    @Index(name = "idx_annotation_type", columnList = "annotation_type"),
-    @Index(name = "idx_state", columnList = "state"),
-  }
-)
+    name = "annotation_task_doc",
+    indexes = {
+      @Index(name = "idx_annotation_type", columnList = "annotation_type"),
+      @Index(name = "idx_state", columnList = "state"),
+    })
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -35,20 +34,18 @@ public class AnnotationTaskDoc {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "last_modified",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "last_modified",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp lastModified;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -76,13 +73,12 @@ public class AnnotationTaskDoc {
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
 
   @OneToMany(
-    fetch = FetchType.LAZY,
-    mappedBy = "taskDoc",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
+      fetch = FetchType.LAZY,
+      mappedBy = "taskDoc",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @Getter
-  @OrderBy("order")
+  //  @OrderBy("order")
   private List<AnnotationTaskDocBlock> blocks = new ArrayList<>();
 
   public AnnotationTaskDoc(
