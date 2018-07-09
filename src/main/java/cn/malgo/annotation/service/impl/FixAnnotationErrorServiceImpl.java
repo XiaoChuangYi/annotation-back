@@ -145,7 +145,7 @@ public class FixAnnotationErrorServiceImpl implements FixAnnotationErrorService 
                         return entity;
                       }
 
-                      if (!StringUtils.equals(
+                      if (!StringUtils.equalsIgnoreCase(
                           oldDoc.getText().substring(start, end), fixEntity.getTerm())) {
                         throw new IllegalArgumentException(
                             "mismatch term: "

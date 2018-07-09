@@ -94,7 +94,7 @@ public class FixAnnotationBiz
 
       return new FixAnnotationResult(true, null);
     } catch (IllegalArgumentException ex) {
-      log.warn("标注状态错误: {}, state: {}", block.getId(), block.getState());
+      log.warn("标注状态错误: {}, state: {}, ex: {}", block.getId(), block.getState(), ex.getMessage());
       return new FixAnnotationResult(false, "标注状态错误: " + block.getState());
     } catch (Exception ex) {
       log.error("修复标注出错: " + block.getId(), ex);
