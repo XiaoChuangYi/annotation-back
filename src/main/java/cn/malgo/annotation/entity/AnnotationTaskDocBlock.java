@@ -44,7 +44,7 @@ public class AnnotationTaskDocBlock {
   @JoinColumn(name = "task_doc_id")
   private AnnotationTaskDoc taskDoc;
 
-  @ManyToOne(fetch = FetchType.LAZY /*, cascade = { CascadeType.MERGE }*/)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @MapsId("blockId")
   @JoinColumn(name = "block_id")
   private AnnotationTaskBlock block;

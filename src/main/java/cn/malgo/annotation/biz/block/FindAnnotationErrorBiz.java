@@ -1,14 +1,14 @@
-package cn.malgo.annotation.biz;
+package cn.malgo.annotation.biz.block;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.AnnotationWordError;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FindAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
@@ -29,15 +29,15 @@ public class FindAnnotationErrorBiz
     extends BaseBiz<FindAnnotationErrorRequest, List<AnnotationWordError>> {
   private final AnnotationFactory annotationFactory;
   private final FindAnnotationErrorService findAnnotationErrorService;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationTaskBlockRepository blockRepository;
 
   @Autowired
   public FindAnnotationErrorBiz(
-      AnnotationFactory annotationFactory,
-      AnnotationCombineRepository annotationCombineRepository,
-      FindAnnotationErrorService findAnnotationErrorService) {
+      final AnnotationFactory annotationFactory,
+      final FindAnnotationErrorService findAnnotationErrorService,
+      final AnnotationTaskBlockRepository blockRepository) {
     this.annotationFactory = annotationFactory;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.blockRepository = blockRepository;
     this.findAnnotationErrorService = findAnnotationErrorService;
   }
 
@@ -48,36 +48,25 @@ public class FindAnnotationErrorBiz
       throw new InvalidInputException(
           "invalid-annotation-type", request.getErrorType() + "不是合法的错误类型");
     }
-
-    if (request.getStartId() >= request.getEndId()) {
-      throw new InvalidInputException("invalid-start-end-id", "startId必须小于endId");
-    }
   }
 
   @Override
   protected List<AnnotationWordError> doBiz(FindAnnotationErrorRequest request) {
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
 
-    final List<AnnotationCombine> annotationCombines =
-        annotationCombineRepository.findByAnnotationTypeAndIdBetweenAndStateIn(
-            errorType.getAnnotationType().ordinal(),
-            request.getStartId(),
-            request.getEndId(),
-            Arrays.asList(
-                AnnotationCombineStateEnum.preExamine.name(),
-                AnnotationCombineStateEnum.errorPass.name(),
-                AnnotationCombineStateEnum.examinePass.name()));
-    log.info("find annotation errors, get back {} annotations", annotationCombines.size());
+    final List<AnnotationTaskBlock> blocks =
+        blockRepository.findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+            errorType.getAnnotationType(),
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            request.getTaskId());
+    log.info("find annotation errors, get back {} annotations", blocks.size());
 
-    if (annotationCombines.size() == 0) {
+    if (blocks.size() == 0) {
       return Collections.emptyList();
     }
 
     final List<Annotation> annotations =
-        annotationCombines
-            .stream()
-            .map(this.annotationFactory::create)
-            .collect(Collectors.toList());
+        blocks.stream().map(this.annotationFactory::create).collect(Collectors.toList());
 
     final List<FindAnnotationErrorService.AlgorithmAnnotationWordError> errors =
         findAnnotationErrorService.findErrors(errorType, annotations);

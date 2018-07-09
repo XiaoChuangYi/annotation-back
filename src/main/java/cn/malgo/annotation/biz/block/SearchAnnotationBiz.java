@@ -1,13 +1,13 @@
-package cn.malgo.annotation.biz;
+package cn.malgo.annotation.biz.block;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
+import cn.malgo.annotation.enums.AnnotationTaskState;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
@@ -30,24 +30,20 @@ import java.util.stream.Collectors;
 public class SearchAnnotationBiz
     extends BaseBiz<SearchAnnotationRequest, List<AnnotationErrorContext>> {
   private final AnnotationFactory annotationFactory;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationTaskBlockRepository blockRepository;
 
   @Autowired
   public SearchAnnotationBiz(
-      AnnotationFactory annotationFactory,
-      AnnotationCombineRepository annotationCombineRepository) {
+      final AnnotationFactory annotationFactory,
+      final AnnotationTaskBlockRepository blockRepository) {
     this.annotationFactory = annotationFactory;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.blockRepository = blockRepository;
   }
 
   @Override
   protected void validateRequest(SearchAnnotationRequest request) throws InvalidInputException {
     if (request.getAnnotationType() != 0) {
       throw new InvalidInputException("invalid-annotation-type", "目前仅支持分词纠错");
-    }
-
-    if (request.getStartId() >= request.getEndId()) {
-      throw new InvalidInputException("invalid-start-end-id", "startId必须小于endId");
     }
 
     if (StringUtils.isBlank(request.getTerm())) {
@@ -57,15 +53,11 @@ public class SearchAnnotationBiz
 
   @Override
   protected List<AnnotationErrorContext> doBiz(SearchAnnotationRequest request) {
-    final List<AnnotationCombine> annotations =
-        annotationCombineRepository.findByAnnotationTypeAndIdBetweenAndStateIn(
-            request.getAnnotationType(),
-            request.getStartId(),
-            request.getEndId(),
-            Arrays.asList(
-                AnnotationCombineStateEnum.preExamine.name(),
-                AnnotationCombineStateEnum.errorPass.name(),
-                AnnotationCombineStateEnum.examinePass.name()));
+    final List<AnnotationTaskBlock> annotations =
+        blockRepository.findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+            AnnotationTypeEnum.getByValue(request.getAnnotationType()),
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            request.getTaskId());
     log.info("search annotations, get back {} annotations", annotations.size());
 
     if (annotations.size() == 0) {

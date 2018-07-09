@@ -1,13 +1,11 @@
 package cn.malgo.annotation.request;
 
-import lombok.Getter;
 import lombok.Value;
 
 @Value
 public class SearchAnnotationRequest {
   private final int annotationType;
-  private final int startId;
-  private final int endId;
+  private final int taskId;
 
   // term and type are both regex
   private final String term;

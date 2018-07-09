@@ -1,14 +1,13 @@
-package cn.malgo.annotation.biz;
+package cn.malgo.annotation.biz.block;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.TransactionalBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
 import cn.malgo.annotation.dto.FixAnnotationEntity;
 import cn.malgo.annotation.dto.FixAnnotationResult;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.entity.BaseEntity;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -33,18 +32,18 @@ import java.util.stream.Collectors;
 public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
   private final AnnotationFactory annotationFactory;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationTaskBlockRepository blockRepository;
   private final FixAnnotationErrorService fixAnnotationErrorService;
   private final AnnotationFixLogService annotationFixLogService;
 
   @Autowired
   public FixAnnotationBiz(
-      AnnotationFactory annotationFactory,
-      AnnotationCombineRepository annotationCombineRepository,
-      FixAnnotationErrorService fixAnnotationErrorService,
-      AnnotationFixLogService annotationFixLogService) {
+      final AnnotationFactory annotationFactory,
+      final AnnotationTaskBlockRepository blockRepository,
+      final FixAnnotationErrorService fixAnnotationErrorService,
+      final AnnotationFixLogService annotationFixLogService) {
     this.annotationFactory = annotationFactory;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.blockRepository = blockRepository;
     this.fixAnnotationErrorService = fixAnnotationErrorService;
     this.annotationFixLogService = annotationFixLogService;
   }
@@ -60,15 +59,15 @@ public class FixAnnotationBiz
 
   private FixAnnotationResult fixAnnotation(
       final AnnotationErrorEnum errorType,
-      final AnnotationCombine annotationCombine,
+      final AnnotationTaskBlock block,
       final int start,
       final int end,
       final List<FixAnnotationEntity> entities) {
-    if (annotationCombine == null) {
+    if (block == null) {
       return new FixAnnotationResult(false, "ID不存在");
     }
 
-    if (annotationCombine.getAnnotationType() != errorType.getAnnotationType().ordinal()) {
+    if (block.getAnnotationType() != errorType.getAnnotationType()) {
       return new FixAnnotationResult(false, "标注类型只能是: " + errorType.getAnnotationType());
     }
 
@@ -76,7 +75,7 @@ public class FixAnnotationBiz
       final boolean doFix = entities != null && entities.size() != 0;
 
       if (doFix) {
-        final Annotation annotation = annotationFactory.create(annotationCombine);
+        final Annotation annotation = annotationFactory.create(block);
         final List<Entity> fixedEntities =
             fixAnnotationErrorService.fixAnnotationError(
                 errorType, annotation, start, end, entities);
@@ -87,18 +86,18 @@ public class FixAnnotationBiz
                     entity.getStart(),
                     entity.getEnd(),
                     AnnotationFixLogStateEnum.FIXED));
-        annotationCombineRepository.save(annotationCombine);
+        blockRepository.save(block);
       } else {
         annotationFixLogService.insertOrUpdate(
-            annotationCombine.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
+            block.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
       }
 
       return new FixAnnotationResult(true, null);
     } catch (IllegalArgumentException ex) {
-      log.warn("标注状态错误: {}, state: {}", annotationCombine.getId(), annotationCombine.getState());
-      return new FixAnnotationResult(false, "标注状态错误: " + annotationCombine.getState());
+      log.warn("标注状态错误: {}, state: {}", block.getId(), block.getState());
+      return new FixAnnotationResult(false, "标注状态错误: " + block.getState());
     } catch (Exception ex) {
-      log.error("修复标注出错: " + annotationCombine.getId(), ex);
+      log.error("修复标注出错: " + block.getId(), ex);
       return new FixAnnotationResult(false, "修复标注出错: " + ex.getMessage());
     }
   }
@@ -106,8 +105,8 @@ public class FixAnnotationBiz
   @Override
   @Transactional
   protected List<FixAnnotationResult> doBiz(final FixAnnotationErrorRequest request) {
-    final Map<Integer, AnnotationCombine> idMap =
-        annotationCombineRepository
+    final Map<Integer, AnnotationTaskBlock> idMap =
+        blockRepository
             .findAllById(
                 request
                     .getAnnotations()
@@ -115,7 +114,7 @@ public class FixAnnotationBiz
                     .map(AnnotationErrorContext::getId)
                     .collect(Collectors.toSet()))
             .stream()
-            .collect(Collectors.toMap(BaseEntity::getId, annotation -> annotation));
+            .collect(Collectors.toMap(AnnotationTaskBlock::getId, annotation -> annotation));
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
 

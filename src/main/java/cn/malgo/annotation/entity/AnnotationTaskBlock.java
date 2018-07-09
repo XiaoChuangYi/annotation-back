@@ -10,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -24,8 +26,8 @@ import java.sql.Timestamp;
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
-@ToString
-@JSONType(ignores = {"createdTime", "lastModified"})
+@ToString(exclude = {"taskDocs"})
+@JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
 public class AnnotationTaskBlock {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,12 +74,7 @@ public class AnnotationTaskBlock {
   @NonNull
   private AnnotationTypeEnum annotationType;
 
-  //  @OneToMany(
-  //    fetch = FetchType.LAZY,
-  //    mappedBy = "block",
-  //    cascade = CascadeType.ALL,
-  //    orphanRemoval = true
-  //  )
-  //  @Getter
-  //  private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "block", orphanRemoval = true)
+  @Getter
+  private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
 }

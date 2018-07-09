@@ -5,17 +5,22 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
+
+import java.util.Collections;
 
 import static org.testng.Assert.assertEquals;
 
 @SpringBootTest(classes = AnnotationCombineApplication.class)
 public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpringContextTests {
   @Autowired private AnnotationTaskRepository taskRepository;
+  @Autowired private AnnotationTaskDocRepository taskDocRepository;
   @Autowired private OriginalDocRepository docRepository;
   @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
 
@@ -29,10 +34,25 @@ public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpr
         taskBlockRepository.save(
             new AnnotationTaskBlock("test-text", "", AnnotationTypeEnum.wordPos)),
         0);
+    taskDocRepository.save(taskDoc);
+
+    TestTransaction.flagForCommit();
+    TestTransaction.end();
+
+    TestTransaction.start();
 
     assertEquals(docRepository.count(), 1);
     assertEquals(taskRepository.count(), 1);
+    assertEquals(taskDocRepository.count(), 1);
     assertEquals(taskBlockRepository.count(), 1);
+    assertEquals(
+        taskBlockRepository
+            .findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+                AnnotationTypeEnum.wordPos,
+                Collections.singletonList(AnnotationTaskState.CREATED),
+                task.getId())
+            .size(),
+        1);
     assertEquals(taskRepository.getOne(task.getId()).getTaskDocs().size(), 1);
     assertEquals(taskRepository.getOne(task.getId()).getTaskDocs().get(0).getBlocks().size(), 1);
     assertEquals(

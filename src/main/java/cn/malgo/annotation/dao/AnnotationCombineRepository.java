@@ -37,8 +37,5 @@ public interface AnnotationCombineRepository
 
   Integer countAllByStateIn(String state);
 
-  List<AnnotationCombine> findByAnnotationTypeAndIdBetweenAndStateIn(
-      int annotationType, int startId, int endId, List<String> states);
-
   AnnotationCombine findByTermEquals(String text);
 }

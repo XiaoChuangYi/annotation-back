@@ -1,8 +1,8 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.FindAnnotationErrorBiz;
-import cn.malgo.annotation.biz.FixAnnotationBiz;
-import cn.malgo.annotation.biz.SearchAnnotationBiz;
+import cn.malgo.annotation.biz.block.FindAnnotationErrorBiz;
+import cn.malgo.annotation.biz.block.FixAnnotationBiz;
+import cn.malgo.annotation.biz.block.SearchAnnotationBiz;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
 import cn.malgo.annotation.dto.AnnotationWordError;
 import cn.malgo.annotation.dto.FixAnnotationResult;
