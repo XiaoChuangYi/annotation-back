@@ -3,13 +3,14 @@ package cn.malgo.annotation.biz;
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.AnnotationWordError;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
-import cn.malgo.annotation.request.GetAnnotationErrorRequest;
+import cn.malgo.annotation.request.FindAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.FindAnnotationErrorService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequireRole(AnnotationRoleStateEnum.admin)
 public class FindAnnotationErrorBiz
-    extends BaseBiz<GetAnnotationErrorRequest, List<AnnotationWordError>> {
+    extends BaseBiz<FindAnnotationErrorRequest, List<AnnotationWordError>> {
   private final AnnotationFactory annotationFactory;
   private final FindAnnotationErrorService findAnnotationErrorService;
   private final AnnotationCombineRepository annotationCombineRepository;
@@ -41,9 +42,11 @@ public class FindAnnotationErrorBiz
   }
 
   @Override
-  protected void validateRequest(GetAnnotationErrorRequest request) throws InvalidInputException {
-    if (request.getAnnotationType() != 0) {
-      throw new InvalidInputException("invalid-annotation-type", "目前仅支持分词纠错");
+  protected void validateRequest(FindAnnotationErrorRequest request) throws InvalidInputException {
+    if (request.getErrorType() < 0
+        || request.getErrorType() >= AnnotationErrorEnum.values().length) {
+      throw new InvalidInputException(
+          "invalid-annotation-type", request.getErrorType() + "不是合法的错误类型");
     }
 
     if (request.getStartId() >= request.getEndId()) {
@@ -52,25 +55,32 @@ public class FindAnnotationErrorBiz
   }
 
   @Override
-  protected List<AnnotationWordError> doBiz(GetAnnotationErrorRequest request) {
-    final List<AnnotationCombine> annotations =
+  protected List<AnnotationWordError> doBiz(FindAnnotationErrorRequest request) {
+    final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
+
+    final List<AnnotationCombine> annotationCombines =
         annotationCombineRepository.findByAnnotationTypeAndIdBetweenAndStateIn(
-            request.getAnnotationType(),
+            errorType.getAnnotationType().ordinal(),
             request.getStartId(),
             request.getEndId(),
             Arrays.asList(
                 AnnotationCombineStateEnum.preExamine.name(),
                 AnnotationCombineStateEnum.errorPass.name(),
                 AnnotationCombineStateEnum.examinePass.name()));
-    log.info("find annotation errors, get back {} annotations", annotations.size());
+    log.info("find annotation errors, get back {} annotations", annotationCombines.size());
 
-    if (annotations.size() == 0) {
+    if (annotationCombines.size() == 0) {
       return Collections.emptyList();
     }
 
+    final List<Annotation> annotations =
+        annotationCombines
+            .stream()
+            .map(this.annotationFactory::create)
+            .collect(Collectors.toList());
+
     final List<FindAnnotationErrorService.AlgorithmAnnotationWordError> errors =
-        this.findAnnotationErrorService.findErrors(
-            annotations.stream().map(this.annotationFactory::create).collect(Collectors.toList()));
+        findAnnotationErrorService.findErrors(errorType, annotations);
 
     if (errors.size() == 0) {
       return Collections.emptyList();

@@ -9,6 +9,7 @@ import cn.malgo.annotation.dto.FixAnnotationEntity;
 import cn.malgo.annotation.dto.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.BaseEntity;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -49,12 +50,26 @@ public class FixAnnotationBiz
   }
 
   @Override
-  protected void validateRequest(FixAnnotationErrorRequest request) throws InvalidInputException {}
+  protected void validateRequest(FixAnnotationErrorRequest request) throws InvalidInputException {
+    if (request.getErrorType() < 0
+        || request.getErrorType() >= AnnotationErrorEnum.values().length) {
+      throw new InvalidInputException(
+          "invalid-annotation-type", request.getErrorType() + "不是合法的错误类型");
+    }
+  }
 
   private FixAnnotationResult fixAnnotation(
-      AnnotationCombine annotationCombine, int start, int end, List<FixAnnotationEntity> entities) {
+      final AnnotationErrorEnum errorType,
+      final AnnotationCombine annotationCombine,
+      final int start,
+      final int end,
+      final List<FixAnnotationEntity> entities) {
     if (annotationCombine == null) {
       return new FixAnnotationResult(false, "ID不存在");
+    }
+
+    if (annotationCombine.getAnnotationType() != errorType.getAnnotationType().ordinal()) {
+      return new FixAnnotationResult(false, "标注类型只能是: " + errorType.getAnnotationType());
     }
 
     try {
@@ -63,7 +78,8 @@ public class FixAnnotationBiz
       if (doFix) {
         final Annotation annotation = annotationFactory.create(annotationCombine);
         final List<Entity> fixedEntities =
-            fixAnnotationErrorService.fixAnnotation(annotation, start, end, entities);
+            fixAnnotationErrorService.fixAnnotationError(
+                errorType, annotation, start, end, entities);
         fixedEntities.forEach(
             entity ->
                 annotationFixLogService.insertOrUpdate(
@@ -89,7 +105,7 @@ public class FixAnnotationBiz
 
   @Override
   @Transactional
-  protected List<FixAnnotationResult> doBiz(FixAnnotationErrorRequest request) {
+  protected List<FixAnnotationResult> doBiz(final FixAnnotationErrorRequest request) {
     final Map<Integer, AnnotationCombine> idMap =
         annotationCombineRepository
             .findAllById(
@@ -101,6 +117,8 @@ public class FixAnnotationBiz
             .stream()
             .collect(Collectors.toMap(BaseEntity::getId, annotation -> annotation));
 
+    final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
+
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
         .getAnnotations()
@@ -108,6 +126,7 @@ public class FixAnnotationBiz
         .map(
             annotation ->
                 fixAnnotation(
+                    errorType,
                     idMap.get(annotation.getId()),
                     annotation.getStart(),
                     annotation.getEnd(),

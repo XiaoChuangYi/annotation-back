@@ -8,6 +8,7 @@ import java.util.List;
 
 @Value
 public class FixAnnotationErrorRequest {
+  private int errorType;
   private List<AnnotationErrorContext> annotations;
   private List<FixAnnotationEntity> entities;
 }

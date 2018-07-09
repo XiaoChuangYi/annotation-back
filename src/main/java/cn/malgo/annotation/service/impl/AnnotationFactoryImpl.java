@@ -3,6 +3,7 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
@@ -18,12 +19,9 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
       throw new NullPointerException("create annotation get null");
     }
 
-    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-      return new AnnotationFinal(annotationCombine);
-    }
-
     if (StringUtils.equalsAny(
         annotationCombine.getState(),
+        AnnotationCombineStateEnum.preExamine.name(),
         AnnotationCombineStateEnum.examinePass.name(),
         AnnotationCombineStateEnum.errorPass.name())) {
       return new AnnotationReviewed(annotationCombine);
@@ -47,6 +45,11 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return AnnotationTypeEnum.getByValue(annotationCombine.getAnnotationType());
+    }
+
+    @Override
     public void setAnnotation(String annotation) {
       document = null;
     }
@@ -67,22 +70,22 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
   }
 
-  static class AnnotationFinal extends BaseAnnotation {
-    AnnotationFinal(final AnnotationCombine annotationCombine) {
-      super(annotationCombine);
-    }
-
-    @Override
-    public String getAnnotation() {
-      return annotationCombine.getFinalAnnotation();
-    }
-
-    @Override
-    public void setAnnotation(String annotation) {
-      super.setAnnotation(annotation);
-      annotationCombine.setFinalAnnotation(annotation);
-    }
-  }
+  //  static class AnnotationFinal extends BaseAnnotation {
+  //    AnnotationFinal(final AnnotationCombine annotationCombine) {
+  //      super(annotationCombine);
+  //    }
+  //
+  //    @Override
+  //    public String getAnnotation() {
+  //      return annotationCombine.getFinalAnnotation();
+  //    }
+  //
+  //    @Override
+  //    public void setAnnotation(String annotation) {
+  //      super.setAnnotation(annotation);
+  //      annotationCombine.setFinalAnnotation(annotation);
+  //    }
+  //  }
 
   static class AnnotationReviewed extends BaseAnnotation {
     AnnotationReviewed(AnnotationCombine annotationCombine) {

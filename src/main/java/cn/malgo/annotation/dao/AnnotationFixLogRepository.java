@@ -1,9 +1,7 @@
 package cn.malgo.annotation.dao;
 
-import cn.malgo.core.definition.brat.BratPosition;
-import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.dto.AnnotationWithPosition;
 import cn.malgo.annotation.entity.AnnotationFixLog;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -17,22 +15,22 @@ public interface AnnotationFixLogRepository
   AnnotationFixLog findByAnnotationIdAndStartAndEnd(int annotationId, int start, int end);
 
   @Query(
-    value = "select * from annotation_fix_log where unique_combined_id in ?1",
-    nativeQuery = true
-  )
+      value = "select * from annotation_fix_log where unique_combined_id in ?1",
+      nativeQuery = true)
   List<AnnotationFixLog> findAllFixedLogsByUniqueIdIn(Collection<String> ids);
 
-  default List<AnnotationFixLog> findAllFixedLogs(List<Pair<Annotation, BratPosition>> fixedLogs) {
+  default <T extends AnnotationWithPosition> List<AnnotationFixLog> findAllFixedLogs(
+      List<T> fixedLogs) {
     return findAllFixedLogsByUniqueIdIn(
         fixedLogs
             .stream()
             .map(
                 fixedLog ->
-                    fixedLog.getLeft().getId()
+                    fixedLog.getAnnotation().getId()
                         + "-"
-                        + fixedLog.getRight().getStart()
+                        + fixedLog.getPosition().getStart()
                         + "-"
-                        + fixedLog.getRight().getEnd())
+                        + fixedLog.getPosition().getEnd())
             .collect(Collectors.toSet()));
   }
 }

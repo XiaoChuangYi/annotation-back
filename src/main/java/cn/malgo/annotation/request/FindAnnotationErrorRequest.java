@@ -3,8 +3,8 @@ package cn.malgo.annotation.request;
 import lombok.Data;
 
 @Data
-public class GetAnnotationErrorRequest {
-  private int annotationType;
+public class FindAnnotationErrorRequest {
+  private int errorType;
   private int startId;
   private int endId;
 }

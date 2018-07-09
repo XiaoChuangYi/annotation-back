@@ -1,15 +1,17 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.dao.AnnotationFixLogRepository;
+import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.dto.AnnotationWithPosition;
+import cn.malgo.annotation.dto.WordTypeCount;
+import cn.malgo.annotation.entity.AnnotationFixLog;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.service.FindAnnotationErrorService;
 import cn.malgo.common.StringUtilsExt;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import cn.malgo.annotation.dao.AnnotationFixLogRepository;
-import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.WordTypeCount;
-import cn.malgo.annotation.entity.AnnotationFixLog;
-import cn.malgo.annotation.service.FindAnnotationErrorService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -118,21 +120,19 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     return result;
   }
 
-  private String getAnnotationFixLogKey(
-      Pair<Pair<Annotation, BratPosition>, Pair<String, String>> error) {
-    return error.getLeft().getLeft().getId()
+  private String getAnnotationFixLogKey(WordErrorWithPosition error) {
+    return error.getAnnotation().getId()
         + "-"
-        + error.getLeft().getRight().getStart()
+        + error.getPosition().getStart()
         + "-"
-        + error.getLeft().getRight().getEnd();
+        + error.getPosition().getEnd();
   }
 
   /** filter errors through {@link AnnotationFixLog} database */
-  private Stream<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> filterErrors(
-      List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> errors) {
+  private Stream<WordErrorWithPosition> filterErrors(List<WordErrorWithPosition> errors) {
     final Set<String> fixLogs =
         annotationFixLogRepository
-            .findAllFixedLogs(errors.stream().map(Pair::getLeft).collect(Collectors.toList()))
+            .findAllFixedLogs(errors)
             .stream()
             .map(AnnotationFixLog::getUniqueKey)
             .collect(Collectors.toSet());
@@ -141,7 +141,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
   }
 
   private AlgorithmAnnotationWordError mapToWordError(
-      Map.Entry<String, List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>>> entry) {
+      Map.Entry<String, List<WordErrorWithPosition>> entry) {
     final AlgorithmAnnotationWordError wordError =
         new AlgorithmAnnotationWordError(
             entry.getKey(),
@@ -153,20 +153,34 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     entry
         .getValue()
         .forEach(
-            pair ->
-                wordError.addError(
-                    pair.getLeft().getLeft(),
-                    pair.getRight().getRight(),
-                    pair.getLeft().getRight()));
+            pair -> wordError.addError(pair.getAnnotation(), pair.getType(), pair.getPosition()));
 
     return wordError;
   }
 
   @Override
-  public List<AlgorithmAnnotationWordError> findErrors(List<Annotation> annotations) {
-    log.info("start find errors");
-    final List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> results =
-        new ArrayList<>();
+  public List<AlgorithmAnnotationWordError> findErrors(
+      final AnnotationErrorEnum errorType, final List<Annotation> annotations) {
+    switch (errorType) {
+      case NEW_WORD:
+        return findWordErrors(annotations);
+
+      case ENTITY_MULTIPLE_TYPE:
+        return findRelationErrors(annotations);
+    }
+
+    throw new IllegalArgumentException("invalid-error-type");
+  }
+
+  /**
+   * 新词或旧词新意错误分析
+   *
+   * @param annotations 标注列表
+   * @return 可能错误的词语
+   */
+  private List<AlgorithmAnnotationWordError> findWordErrors(List<Annotation> annotations) {
+    log.info("start finding word errors");
+    final List<WordErrorWithPosition> results = new ArrayList<>();
 
     for (Annotation annotation : annotations) {
       for (Entity entity : annotation.getDocument().getEntities()) {
@@ -180,24 +194,83 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         if (!staticWordsDict.containsKey(term) || !staticWordsDict.get(term).containsKey(type)) {
           // 新词或者旧词新义
           results.add(
-              Pair.of(
-                  Pair.of(annotation, new BratPosition(entity.getStart(), entity.getEnd())),
-                  Pair.of(term, type)));
+              new WordErrorWithPosition(
+                  term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
         }
       }
     }
 
-    log.info("get potential error list: {}", results.size());
+    log.info("get potential word error list: {}", results.size());
     return Lists.partition(results, batchSize)
         .stream()
         // 过滤已经被处理过的错误
         .flatMap(this::filterErrors)
         // group by word
-        .collect(Collectors.groupingBy(result -> result.getRight().getLeft()))
+        .collect(Collectors.groupingBy(WordErrorWithPosition::getTerm))
         .entrySet()
         .stream()
         // 变成最终的数据结构
         .map(this::mapToWordError)
         .collect(Collectors.toList());
+  }
+
+  /** 判断同一个entity是否都是同一个类型的 */
+  private boolean isEntitiesDifferentType(final List<WordErrorWithPosition> positions) {
+    return !positions
+        .stream()
+        .allMatch(position -> StringUtils.equals(position.getType(), positions.get(0).getType()));
+  }
+
+  private List<AlgorithmAnnotationWordError> findRelationErrors(
+      final List<Annotation> annotations) {
+    log.info("start finding relation errors");
+
+    final Map<String, List<WordErrorWithPosition>> wordLists = new HashMap<>();
+
+    for (Annotation annotation : annotations) {
+      for (Entity entity : annotation.getDocument().getEntities()) {
+        final String term = preProcessTerm(entity.getTerm());
+        if (StringUtils.isBlank(term)) {
+          continue;
+        }
+
+        final String type = preProcessType(entity.getType());
+
+        wordLists
+            .computeIfAbsent(term, t -> new ArrayList<>())
+            .add(
+                new WordErrorWithPosition(
+                    term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
+      }
+    }
+
+    final List<WordErrorWithPosition> results =
+        wordLists
+            .values()
+            .stream()
+            .filter(this::isEntitiesDifferentType)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
+    log.info("get potential relation error list: {}", results.size());
+    return Lists.partition(results, batchSize)
+        .stream()
+        // 过滤已经被处理过的错误
+        .flatMap(this::filterErrors)
+        // group by word
+        .collect(Collectors.groupingBy(WordErrorWithPosition::getTerm))
+        .entrySet()
+        .stream()
+        // 变成最终的数据结构
+        .map(this::mapToWordError)
+        .collect(Collectors.toList());
+  }
+
+  @lombok.Value
+  static class WordErrorWithPosition implements AnnotationWithPosition {
+    private final String term;
+    private final String type;
+    private final BratPosition position;
+    private final Annotation annotation;
   }
 }
