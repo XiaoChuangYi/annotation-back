@@ -35,7 +35,6 @@ public class ListAnnotationTaskBlockBiz
       ListAnnotationTaskBlockRequest param) {
     return (Specification<AnnotationTaskBlock>)
         (root, criteriaQuery, criteriaBuilder) -> {
-          // todo 还会有其它的过滤条件
           List<Predicate> predicates = new ArrayList<>();
           if (StringUtils.isNotBlank(param.getText())) {
             predicates.add(

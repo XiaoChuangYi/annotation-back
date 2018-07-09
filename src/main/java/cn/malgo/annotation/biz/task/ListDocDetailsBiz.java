@@ -72,8 +72,8 @@ public class ListDocDetailsBiz extends BaseBiz<ListDocDetailRequest, OriginalDoc
                           x.getName(),
                           x.getState().name()))
               .collect(Collectors.toList());
-      // 封装到最终对象
     }
+    // 封装到最终对象
     originalDocDetailVO =
         new OriginalDocDetailVO(
             originalDoc.getId(), originalDoc.getCreatedTime(), annotationTaskVOList);

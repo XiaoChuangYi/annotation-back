@@ -1,12 +1,12 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.brat.AnnotationReExaminationBiz;
 import cn.malgo.annotation.biz.brat.AnnotationReworkBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationAbandonBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.request.AnnotationStateRequest;
+import cn.malgo.annotation.request.AnnotationStateResetRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.result.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -25,20 +25,18 @@ public class AnnotationStateController extends BaseController {
   private final AnnotationCommitBiz annotationCommitBiz;
   private final AnnotationAbandonBiz annotationAbandonBiz;
   private final AnnotationExamineBiz annotationExamineBiz;
-  private final AnnotationReExaminationBiz annotationReExaminationBiz;
+
   private final AnnotationReworkBiz annotationReworkBiz;
 
   public AnnotationStateController(
       AnnotationCommitBiz annotationCommitBiz,
       AnnotationAbandonBiz annotationAbandonBiz,
       AnnotationExamineBiz annotationExamineBiz,
-      AnnotationReworkBiz annotationReworkBiz,
-      AnnotationReExaminationBiz annotationReExaminationBiz) {
+      AnnotationReworkBiz annotationReworkBiz) {
     this.annotationCommitBiz = annotationCommitBiz;
     this.annotationAbandonBiz = annotationAbandonBiz;
     this.annotationExamineBiz = annotationExamineBiz;
     this.annotationReworkBiz = annotationReworkBiz;
-    this.annotationReExaminationBiz = annotationReExaminationBiz;
   }
 
   /** 标注人员提交 */
@@ -70,5 +68,14 @@ public class AnnotationStateController extends BaseController {
         annotationExamineBiz.process(
             annotationStateRequest, userAccount.getId(), userAccount.getRoleId()));
   }
-  /** */
+
+  /** 审核人员打回返工操作 */
+  @RequestMapping(value = "/annotation-rework", method = RequestMethod.POST)
+  public Response annotationRework(
+      @RequestBody AnnotationStateResetRequest annotationStateResetRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response<>(
+        annotationReworkBiz.process(
+            annotationStateResetRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
 }
