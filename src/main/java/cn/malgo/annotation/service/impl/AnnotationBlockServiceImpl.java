@@ -4,6 +4,8 @@ import cn.malgo.annotation.dao.*;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AnnotationTaskDocBlock;
+import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationBlockService;
@@ -90,5 +92,26 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
         .map(taskDocBlock -> taskDocBlock.getTaskDoc().getTask())
         .collect(Collectors.toSet())
         .forEach(annotationTaskRepository::updateState);
+  }
+
+  @Override
+  public AnnotationCombine resetBlock(
+      final AnnotationTaskBlock block, final AnnotationBlockActionEnum action) {
+    block.setState(AnnotationTaskState.DOING);
+    updateTaskAndDocState(annotationTaskBlockRepository.save(block));
+
+    final AnnotationCombine annotationCombine = new AnnotationCombine();
+    annotationCombine.setTerm(block.getText());
+    annotationCombine.setAnnotationType(block.getAnnotationType().ordinal());
+    annotationCombine.setAssignee(0);
+    annotationCombine.setManualAnnotation(block.getAnnotation());
+    annotationCombine.setFinalAnnotation(block.getAnnotation());
+    annotationCombine.setReviewedAnnotation(block.getAnnotation());
+    annotationCombine.setState(
+        action == AnnotationBlockActionEnum.RE_ANNOTATION
+            ? AnnotationCombineStateEnum.unDistributed.name()
+            : AnnotationCombineStateEnum.preExamine.name());
+
+    return annotationCombineRepository.save(annotationCombine);
   }
 }

@@ -2,12 +2,9 @@ package cn.malgo.annotation.biz.block;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.TransactionalBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -27,15 +24,12 @@ import java.util.stream.Collectors;
 public class AnnotationBlockResetToAnnotationBiz
     extends TransactionalBiz<ResetAnnotationBlockRequest, List<Integer>> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
-  private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationBlockService blockService;
 
   public AnnotationBlockResetToAnnotationBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final AnnotationCombineRepository annotationCombineRepository,
       final AnnotationBlockService blockService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
-    this.annotationCombineRepository = annotationCombineRepository;
     this.blockService = blockService;
   }
 
@@ -68,30 +62,7 @@ public class AnnotationBlockResetToAnnotationBiz
 
     return blocks
         .stream()
-        .map(
-            block -> {
-              block.setState(AnnotationTaskState.DOING);
-              blockService.updateTaskAndDocState(annotationTaskBlockRepository.save(block));
-              return annotationCombineRepository
-                  .save(createAnnotationCombine(action, block))
-                  .getId();
-            })
+        .map(block -> blockService.resetBlock(block, action).getId())
         .collect(Collectors.toList());
-  }
-
-  private AnnotationCombine createAnnotationCombine(
-      final AnnotationBlockActionEnum action, final AnnotationTaskBlock block) {
-    final AnnotationCombine annotationCombine = new AnnotationCombine();
-    annotationCombine.setTerm(block.getText());
-    annotationCombine.setAnnotationType(block.getAnnotationType().ordinal());
-    annotationCombine.setAssignee(0);
-    annotationCombine.setManualAnnotation(block.getAnnotation());
-    annotationCombine.setFinalAnnotation(block.getAnnotation());
-    annotationCombine.setReviewedAnnotation(block.getAnnotation());
-    annotationCombine.setState(
-        action == AnnotationBlockActionEnum.RE_ANNOTATION
-            ? AnnotationCombineStateEnum.unDistributed.name()
-            : AnnotationCombineStateEnum.preExamine.name());
-    return annotationCombine;
   }
 }

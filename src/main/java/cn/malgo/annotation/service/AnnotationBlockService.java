@@ -2,6 +2,7 @@ package cn.malgo.annotation.service;
 
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,4 +26,13 @@ public interface AnnotationBlockService {
    * @param block block
    */
   void updateTaskAndDocState(final AnnotationTaskBlock block);
+
+  /**
+   * 重置block到标注系统中，变为待分配或待审核状态
+   *
+   * @param block target block
+   * @param action 操作
+   */
+  AnnotationCombine resetBlock(
+      final AnnotationTaskBlock block, final AnnotationBlockActionEnum action);
 }

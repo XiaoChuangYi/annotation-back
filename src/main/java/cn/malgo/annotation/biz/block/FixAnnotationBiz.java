@@ -8,11 +8,13 @@ import cn.malgo.annotation.dto.AnnotationErrorContext;
 import cn.malgo.annotation.dto.FixAnnotationEntity;
 import cn.malgo.annotation.dto.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
+import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
 import cn.malgo.annotation.service.FixAnnotationErrorService;
@@ -33,6 +35,7 @@ public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
   private final AnnotationFactory annotationFactory;
   private final AnnotationTaskBlockRepository blockRepository;
+  private final AnnotationBlockService blockService;
   private final FixAnnotationErrorService fixAnnotationErrorService;
   private final AnnotationFixLogService annotationFixLogService;
 
@@ -40,10 +43,12 @@ public class FixAnnotationBiz
   public FixAnnotationBiz(
       final AnnotationFactory annotationFactory,
       final AnnotationTaskBlockRepository blockRepository,
+      final AnnotationBlockService blockService,
       final FixAnnotationErrorService fixAnnotationErrorService,
       final AnnotationFixLogService annotationFixLogService) {
     this.annotationFactory = annotationFactory;
     this.blockRepository = blockRepository;
+    this.blockService = blockService;
     this.fixAnnotationErrorService = fixAnnotationErrorService;
     this.annotationFixLogService = annotationFixLogService;
   }
@@ -62,6 +67,7 @@ public class FixAnnotationBiz
       final AnnotationTaskBlock block,
       final int start,
       final int end,
+      final boolean doFix,
       final List<FixAnnotationEntity> entities) {
     if (block == null) {
       return new FixAnnotationResult(false, "ID不存在");
@@ -72,21 +78,23 @@ public class FixAnnotationBiz
     }
 
     try {
-      final boolean doFix = entities != null && entities.size() != 0;
-
       if (doFix) {
-        final Annotation annotation = annotationFactory.create(block);
-        final List<Entity> fixedEntities =
-            fixAnnotationErrorService.fixAnnotationError(
-                errorType, annotation, start, end, entities);
-        fixedEntities.forEach(
-            entity ->
-                annotationFixLogService.insertOrUpdate(
-                    annotation.getId(),
-                    entity.getStart(),
-                    entity.getEnd(),
-                    AnnotationFixLogStateEnum.FIXED));
-        blockRepository.save(block);
+        if (errorType == AnnotationErrorEnum.ISOLATED_ENTITY) {
+          blockService.resetBlock(block, AnnotationBlockActionEnum.RE_EXAMINE);
+        } else {
+          final Annotation annotation = annotationFactory.create(block);
+          final List<Entity> fixedEntities =
+              fixAnnotationErrorService.fixAnnotationError(
+                  errorType, annotation, start, end, entities);
+          fixedEntities.forEach(
+              entity ->
+                  annotationFixLogService.insertOrUpdate(
+                      annotation.getId(),
+                      entity.getStart(),
+                      entity.getEnd(),
+                      AnnotationFixLogStateEnum.FIXED));
+          blockRepository.save(block);
+        }
       } else {
         annotationFixLogService.insertOrUpdate(
             block.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
@@ -117,6 +125,11 @@ public class FixAnnotationBiz
             .collect(Collectors.toMap(AnnotationTaskBlock::getId, annotation -> annotation));
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
+    final List<FixAnnotationEntity> entities = request.getEntities();
+    final boolean doFix =
+        errorType == AnnotationErrorEnum.ISOLATED_ENTITY
+            ? entities != null
+            : (entities != null && entities.size() != 0);
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
@@ -129,7 +142,8 @@ public class FixAnnotationBiz
                     idMap.get(annotation.getId()),
                     annotation.getStart(),
                     annotation.getEnd(),
-                    request.getEntities()))
+                    doFix,
+                    entities))
         .collect(Collectors.toList());
   }
 }
