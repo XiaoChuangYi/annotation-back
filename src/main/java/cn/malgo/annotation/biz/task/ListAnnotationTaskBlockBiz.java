@@ -49,7 +49,7 @@ public class ListAnnotationTaskBlockBiz
           }
           if (param.getAnnotationTypes() != null
               && param.getAnnotationTypes().size() > 0
-              && !param.getAnnotationTypes().contains(null)) {
+              && !param.getAnnotationTypes().contains("")) {
             final List<AnnotationTypeEnum> annotationTypes =
                 param
                     .getAnnotationTypes()

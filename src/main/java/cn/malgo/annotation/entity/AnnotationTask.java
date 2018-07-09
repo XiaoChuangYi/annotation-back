@@ -78,4 +78,8 @@ public class AnnotationTask {
     doc.getTasks().add(taskDoc);
     return taskDoc;
   }
+
+  public AnnotationTask(int id) {
+    this.id = id;
+  }
 }

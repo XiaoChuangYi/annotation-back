@@ -1,5 +1,6 @@
 package cn.malgo.annotation.dao;
 
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
@@ -29,4 +30,6 @@ public interface AnnotationTaskDocRepository extends JpaRepository<AnnotationTas
   }
 
   List<AnnotationTaskDoc> findAllByDoc(final OriginalDoc originalDoc);
+
+  List<AnnotationTaskDoc> findAllByTask(final AnnotationTask annotationTask);
 }
