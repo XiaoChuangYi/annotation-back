@@ -1,6 +1,6 @@
 package cn.malgo.annotation.enums;
 
 public enum AnnotationBlockActionEnum {
-  REANNOTATION,
-  REEXAMINE;
+  RE_ANNOTATION,
+  RE_EXAMINE;
 }

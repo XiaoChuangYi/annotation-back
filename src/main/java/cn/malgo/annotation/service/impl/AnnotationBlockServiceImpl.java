@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
-
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskDocRepository annotationTaskDocRepository;
@@ -74,10 +73,14 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     block.setAnnotation(annotationCombine.getReviewedAnnotation());
     block.setState(AnnotationTaskState.ANNOTATED);
 
+    updateTaskAndDocState(annotationTaskBlockRepository.save(block));
+  }
+
+  @Override
+  public void updateTaskAndDocState(final AnnotationTaskBlock block) {
     // 更新所有对应的TaskDoc的状态
     final List<AnnotationTaskDocBlock> taskDocBlocks =
-        annotationTaskDocBlockRepository.findByBlockEquals(
-            annotationTaskBlockRepository.save(block));
+        annotationTaskDocBlockRepository.findByBlockEquals(block);
 
     taskDocBlocks.forEach(
         taskDocBlock -> annotationTaskDocRepository.updateState(taskDocBlock.getTaskDoc()));

@@ -3,10 +3,11 @@ package cn.malgo.annotation.dao;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.List;
 
 public interface AnnotationTaskBlockRepository
     extends JpaRepository<AnnotationTaskBlock, Integer>, JpaSpecificationExecutor {
@@ -32,12 +33,6 @@ public interface AnnotationTaskBlockRepository
         : Pair.of(save(new AnnotationTaskBlock(text, "", annotationType)), true);
   }
 
-  default List<AnnotationTaskBlock> findAllByIdIn(List<Integer> idList) {
-    return findAllByStateInAndIdIn(
-        new AnnotationTaskState[] {AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED},
-        idList);
-  }
-
   List<AnnotationTaskBlock> findAllByStateInAndIdIn(
-      AnnotationTaskState[] stateList, List<Integer> idList);
+      List<AnnotationTaskState> stateList, List<Integer> ids);
 }

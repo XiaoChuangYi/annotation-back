@@ -17,4 +17,12 @@ public interface AnnotationBlockService {
       final AnnotationTypeEnum annotationType, final String text);
 
   void saveAnnotation(final AnnotationCombine annotationCombine);
+
+  /**
+   * block状态更新之后，同步{@link cn.malgo.annotation.entity.AnnotationTaskDoc}和{@link
+   * cn.malgo.annotation.entity.AnnotationTask}的状态
+   *
+   * @param block block
+   */
+  void updateTaskAndDocState(final AnnotationTaskBlock block);
 }

@@ -4,143 +4,94 @@ import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.AnnotationTaskDocBlockRepository;
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
-import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDocBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
-import java.util.List;
-import java.util.stream.Collectors;
+import cn.malgo.annotation.service.AnnotationBlockService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 @RequireRole(AnnotationRoleStateEnum.admin)
+@Slf4j
 public class AnnotationBlockResetToAnnotationBiz
-    extends TransactionalBiz<ResetAnnotationBlockRequest, Object> {
-
+    extends TransactionalBiz<ResetAnnotationBlockRequest, List<Integer>> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationCombineRepository annotationCombineRepository;
-  private final AnnotationTaskDocBlockRepository annotationTaskDocBlockRepository;
-  private final AnnotationTaskDocRepository annotationTaskDocRepository;
-  private final AnnotationTaskRepository annotationTaskRepository;
+  private final AnnotationBlockService blockService;
 
   public AnnotationBlockResetToAnnotationBiz(
-      AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      AnnotationCombineRepository annotationCombineRepository,
-      AnnotationTaskDocBlockRepository annotationTaskDocBlockRepository,
-      AnnotationTaskDocRepository annotationTaskDocRepository,
-      AnnotationTaskRepository annotationTaskRepository) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationCombineRepository annotationCombineRepository,
+      final AnnotationBlockService blockService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationCombineRepository = annotationCombineRepository;
-    this.annotationTaskDocBlockRepository = annotationTaskDocBlockRepository;
-    this.annotationTaskDocRepository = annotationTaskDocRepository;
-    this.annotationTaskRepository = annotationTaskRepository;
+    this.blockService = blockService;
   }
 
   @Override
-  protected void validateRequest(ResetAnnotationBlockRequest resetAnnotationBlockRequest)
-      throws InvalidInputException {
-    if (resetAnnotationBlockRequest == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
-    }
-    if (resetAnnotationBlockRequest.getIdList() == null
-        || resetAnnotationBlockRequest.getIdList().size() == 0) {
+  protected void validateRequest(ResetAnnotationBlockRequest request) throws InvalidInputException {
+    if (request.getIds() == null || request.getIds().size() == 0) {
       throw new InvalidInputException("id-list-empty", "参数blockId集合为空");
     }
-    if (StringUtils.isBlank(resetAnnotationBlockRequest.getAction().name())) {
-      throw new InvalidInputException("invalid-action", "参数action为空");
+
+    if (!StringUtils.equalsAny(
+        request.getAction(),
+        AnnotationBlockActionEnum.RE_ANNOTATION.name(),
+        AnnotationBlockActionEnum.RE_EXAMINE.name())) {
+      throw new InvalidInputException("invalid-action", request.getAction() + "不是一个合法的action");
     }
   }
 
   @Override
-  protected Object doBiz(
-      int userId, int role, ResetAnnotationBlockRequest resetAnnotationBlockRequest) {
-    List<AnnotationTaskBlock> annotationTaskBlockList =
-        annotationTaskBlockRepository.findAllByIdIn(resetAnnotationBlockRequest.getIdList());
-    if (annotationTaskBlockList.size() > 0) {
-      // 修改查询出的block的状态为doing
-      annotationTaskBlockList
-          .stream()
-          .forEach(annotationTaskBlock -> multipleUpdateByAnnotationTaskBlock(annotationTaskBlock));
-      annotationTaskBlockRepository.saveAll(annotationTaskBlockList);
-      // 重新生生成对应的annotationCombine
-      addAnnotationCombineByBlocks(
-          annotationTaskBlockList, resetAnnotationBlockRequest.getAction());
-    }
-    return null;
-  }
+  protected List<Integer> doBiz(int userId, int role, ResetAnnotationBlockRequest request) {
+    final AnnotationBlockActionEnum action = AnnotationBlockActionEnum.valueOf(request.getAction());
 
-  private void multipleUpdateByAnnotationTaskBlock(AnnotationTaskBlock annotationTaskBlock) {
-    annotationTaskBlock.setState(AnnotationTaskState.DOING);
-    // 查询出所有的annotationTaskDoc中间表
-    List<AnnotationTaskDocBlock> taskDocBlocks =
-        annotationTaskDocBlockRepository.findByBlockEquals(annotationTaskBlock);
-    // 更新中间表annotationTaskDoc状态,annotationTaskDoc表的状态是由对应的block表决定的，只有对应所有的block recode的状态都为某一状态才更新
-    // (换句话说)每次取最小ordinal状态的值更新
-    taskDocBlocks.forEach(
-        taskDocBlock -> annotationTaskDocRepository.updateState(taskDocBlock.getTaskDoc()));
-    // 同时更新task，更新规则同上
-    taskDocBlocks
+    final List<AnnotationTaskBlock> blocks =
+        annotationTaskBlockRepository.findAllByStateInAndIdIn(
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            request.getIds());
+
+    if (blocks.size() != request.getIds().size()) {
+      log.warn("语料重新标注中存在非法ID: {}", request.getIds());
+    }
+
+    return blocks
         .stream()
-        .map(taskDocBlock -> taskDocBlock.getTaskDoc().getTask())
-        .collect(Collectors.toSet())
-        .forEach(annotationTaskRepository::updateState);
+        .map(
+            block -> {
+              block.setState(AnnotationTaskState.DOING);
+              blockService.updateTaskAndDocState(annotationTaskBlockRepository.save(block));
+              return annotationCombineRepository
+                  .save(createAnnotationCombine(action, block))
+                  .getId();
+            })
+        .collect(Collectors.toList());
   }
 
-  private void addAnnotationCombineByBlocks(
-      List<AnnotationTaskBlock> annotationTaskBlocks,
-      AnnotationBlockActionEnum annotationBlockActionEnum) {
-    final List<AnnotationCombine> annotationCombines =
-        annotationTaskBlocks
-            .stream()
-            .map(
-                annotationTaskBlock -> {
-                  AnnotationCombine annotationCombine = new AnnotationCombine();
-                  annotationCombine.setTerm(annotationTaskBlock.getText());
-                  annotationCombine.setIsTask(0);
-                  annotationCombine.setAnnotationType(
-                      annotationTaskBlock.getAnnotationType().ordinal());
-                  annotationCombine.setAssignee(0);
-                  if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.wordPos) {
-                    annotationCombine.setManualAnnotation(annotationTaskBlock.getAnnotation());
-                    if (annotationBlockActionEnum
-                        .name()
-                        .equals(AnnotationBlockActionEnum.REANNOTATION.name())) {
-                      annotationCombine.setState(AnnotationCombineStateEnum.unDistributed.name());
-                    }
-                    if (annotationBlockActionEnum
-                        .name()
-                        .equals(AnnotationBlockActionEnum.REEXAMINE.name())) {
-                      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-                    }
-                  } else {
-                    if (annotationBlockActionEnum
-                        .name()
-                        .equals(AnnotationBlockActionEnum.REANNOTATION.name())) {
-                      annotationCombine.setState(AnnotationCombineStateEnum.unDistributed.name());
-                      annotationCombine.setFinalAnnotation(annotationTaskBlock.getAnnotation());
-                    }
-                    if (annotationBlockActionEnum
-                        .name()
-                        .equals(AnnotationBlockActionEnum.REEXAMINE.name())) {
-                      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-                      annotationCombine.setReviewedAnnotation(annotationTaskBlock.getAnnotation());
-                    }
-                  }
-                  return annotationCombine;
-                })
-            .collect(Collectors.toList());
-    if (annotationCombines != null && annotationCombines.size() > 0) {
-      annotationCombineRepository.saveAll(annotationCombines);
-    }
+  private AnnotationCombine createAnnotationCombine(
+      final AnnotationBlockActionEnum action, final AnnotationTaskBlock block) {
+    final AnnotationCombine annotationCombine = new AnnotationCombine();
+    annotationCombine.setTerm(block.getText());
+    annotationCombine.setAnnotationType(block.getAnnotationType().ordinal());
+    annotationCombine.setAssignee(0);
+    annotationCombine.setManualAnnotation(block.getAnnotation());
+    annotationCombine.setFinalAnnotation(block.getAnnotation());
+    annotationCombine.setReviewedAnnotation(block.getAnnotation());
+    annotationCombine.setState(
+        action == AnnotationBlockActionEnum.RE_ANNOTATION
+            ? AnnotationCombineStateEnum.unDistributed.name()
+            : AnnotationCombineStateEnum.preExamine.name());
+    return annotationCombine;
   }
 }
