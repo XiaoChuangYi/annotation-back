@@ -46,7 +46,6 @@ public class AnnotationTask {
   @LastModifiedDate
   @Column(
       name = "last_modified",
-      updatable = false,
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   @Getter

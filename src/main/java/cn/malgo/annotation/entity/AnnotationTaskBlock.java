@@ -10,8 +10,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(
@@ -45,7 +43,6 @@ public class AnnotationTaskBlock {
   @LastModifiedDate
   @Column(
       name = "last_modified",
-      updatable = false,
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp lastModified;

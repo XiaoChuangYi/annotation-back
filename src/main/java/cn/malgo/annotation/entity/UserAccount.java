@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-/** Created by cjl on 2018/5/30. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
