@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface AnnotationFixLogRepository
     extends JpaRepository<AnnotationFixLog, Integer>, JpaSpecificationExecutor<AnnotationFixLog> {
@@ -21,9 +22,13 @@ public interface AnnotationFixLogRepository
 
   default <T extends AnnotationWithPosition> List<AnnotationFixLog> findAllFixedLogs(
       List<T> fixedLogs) {
+    return findAllFixedLogs(fixedLogs.stream());
+  }
+
+  default <T extends AnnotationWithPosition> List<AnnotationFixLog> findAllFixedLogs(
+      Stream<T> fixedLogs) {
     return findAllFixedLogsByUniqueIdIn(
         fixedLogs
-            .stream()
             .map(
                 fixedLog ->
                     fixedLog.getAnnotation().getId()

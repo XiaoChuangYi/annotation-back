@@ -8,6 +8,7 @@ import cn.malgo.annotation.entity.AnnotationFixLog;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.service.FindAnnotationErrorService;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.common.StringUtilsExt;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
@@ -121,7 +122,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     return result;
   }
 
-  private String getAnnotationFixLogKey(WordErrorWithPosition error) {
+  private <T extends AnnotationWithPosition> String getAnnotationFixLogKey(T error) {
     return error.getAnnotation().getId()
         + "-"
         + error.getPosition().getStart()
@@ -130,7 +131,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
   }
 
   /** filter errors through {@link AnnotationFixLog} database */
-  private Stream<WordErrorWithPosition> filterErrors(List<WordErrorWithPosition> errors) {
+  private <T extends AnnotationWithPosition> Stream<T> filterErrors(List<T> errors) {
     final Set<String> fixLogs =
         annotationFixLogRepository
             .findAllFixedLogs(errors)
@@ -162,7 +163,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
   @Override
   public List<AlgorithmAnnotationWordError> findErrors(
       final AnnotationErrorEnum errorType, final List<Annotation> annotations) {
-    List<WordErrorWithPosition> results = null;
+    List<WordErrorWithPosition> results;
 
     switch (errorType) {
       case NEW_WORD:
@@ -170,11 +171,15 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         break;
 
       case ENTITY_MULTIPLE_TYPE:
-        results = findRelationErrors(annotations);
+        results = findEntityWithMultipleTypes(annotations);
         break;
 
       case ISOLATED_ENTITY:
         results = findIsolatedEntityErrors(annotations);
+        break;
+
+      case ENTITY_CONSISTENCY:
+        results = findEntityConsistencyErrors(annotations);
         break;
 
       default:
@@ -233,14 +238,15 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         .allMatch(position -> StringUtils.equals(position.getType(), positions.get(0).getType()));
   }
 
-  private List<WordErrorWithPosition> findRelationErrors(final List<Annotation> annotations) {
+  private List<WordErrorWithPosition> findEntityWithMultipleTypes(
+      final List<Annotation> annotations) {
     log.info("start finding relation errors");
 
     final Map<String, List<WordErrorWithPosition>> wordLists = new HashMap<>();
 
     for (Annotation annotation : annotations) {
       for (Entity entity : annotation.getDocument().getEntities()) {
-        final String term = preProcessTerm(entity.getTerm());
+        final String term = entity.getTerm();
         if (StringUtils.isBlank(term)) {
           continue;
         }
@@ -289,7 +295,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
           .filter(entity -> !usedTags.contains(entity.getTag()))
           .forEach(
               entity -> {
-                final String term = preProcessTerm(entity.getTerm());
+                final String term = entity.getTerm();
                 if (StringUtils.isBlank(term)) {
                   return;
                 }
@@ -309,11 +315,124 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     return results;
   }
 
+  private Stream<EntityListWithPosition> getTermEntities(
+      final Annotation annotation, final String targetTerm) {
+    final AnnotationDocument document = annotation.getDocument();
+
+    if (!StringUtils.contains(document.getText(), targetTerm)) {
+      return Stream.empty();
+    }
+
+    final List<EntityListWithPosition> results = new ArrayList<>();
+
+    int index = -1;
+    while ((index = document.getText().indexOf(targetTerm, index)) != -1) {
+      final int start = index;
+      final int end = index + targetTerm.length();
+      final BratPosition position = new BratPosition(start, end);
+
+      if (document.getEntities().stream().anyMatch(entity -> entity.intersectWith(start, end))) {
+        index = end;
+        continue;
+      }
+
+      // 找到所有在这个文本范围内的entity
+      final List<Entity> entities = document.getEntitiesInside(position);
+      final Map<String, Entity> entityMap =
+          entities.stream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
+
+      // 找到所有tag以及和这些tag有关的外部关联关系
+      final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
+
+      if (relations.size() == 0) {
+        // 如果没有外部关联，则表示这是一个合法的对应子图
+        results.add(new EntityListWithPosition(position, annotation, entities));
+      } else {
+        final RelationEntity firstRelation = relations.get(0);
+        final Entity targetEntity =
+            entityMap.get(
+                entityMap.containsKey(firstRelation.getSourceTag())
+                    ? firstRelation.getSourceTag()
+                    : firstRelation.getTargetTag());
+        if (relations
+            .stream()
+            .allMatch(
+                relation -> {
+                  final Entity entity =
+                      entityMap.get(
+                          entityMap.containsKey(relation.getSourceTag())
+                              ? relation.getSourceTag()
+                              : relation.getTargetTag());
+                  return entity.getStart() == targetEntity.getStart()
+                      && entity.getEnd() == targetEntity.getEnd();
+                })) {
+          results.add(new EntityListWithPosition(position, annotation, entities));
+        }
+      }
+
+      index = end;
+    }
+
+    return results.stream();
+  }
+
+  private List<WordErrorWithPosition> findEntityConsistencyErrors(
+      final List<Annotation> annotations) {
+    //    final Comparator<String> comparator = (lhs, rhs) -> rhs.length() - lhs.length();
+    final Comparator<String> comparator = (lhs, rhs) -> lhs.length() - rhs.length();
+
+    final List<String> terms =
+        annotations
+            .stream()
+            .flatMap(
+                annotation -> annotation.getDocument().getEntities().stream().map(Entity::getTerm))
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.toSet())
+            .stream()
+            .sorted(comparator)
+            .collect(Collectors.toList());
+
+    for (final String term : terms) {
+      final List<EntityListWithPosition> entityLists =
+          annotations
+              .stream()
+              .flatMap(annotation -> this.getTermEntities(annotation, term))
+              .collect(Collectors.toList());
+
+      if (!entityLists.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+        // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
+        final List<EntityListWithPosition> filtered =
+            filterErrors(entityLists).collect(Collectors.toList());
+        if (!filtered.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+          return filtered
+              .stream()
+              .map(
+                  entityList ->
+                      new WordErrorWithPosition(
+                          term,
+                          entityList.getEntities().size() == 1 ? "单一实体" : "子图",
+                          entityList.getPosition(),
+                          entityList.getAnnotation()))
+              .collect(Collectors.toList());
+        }
+      }
+    }
+
+    return Collections.emptyList();
+  }
+
   @lombok.Value
   static class WordErrorWithPosition implements AnnotationWithPosition {
     private final String term;
     private final String type;
     private final BratPosition position;
     private final Annotation annotation;
+  }
+
+  @lombok.Value
+  static class EntityListWithPosition implements AnnotationWithPosition {
+    private final BratPosition position;
+    private final Annotation annotation;
+    private final List<Entity> entities;
   }
 }
