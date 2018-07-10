@@ -121,7 +121,7 @@ public class AnnotationBratController extends BaseController {
   /** 关联标注限制规则列表 */
   @RequestMapping(value = "/list-relation-limit", method = RequestMethod.GET)
   public Response<RelationLimitRuleVO> listRelationLimit(
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(listRelationLimitRuleBiz.process(null, userAccount));
   }
 }
