@@ -1,7 +1,9 @@
 package cn.malgo.annotation.dto;
 
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
+import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +46,14 @@ public class AnnotationErrorContext {
     final String[] after = SENTENCE_SPLITS.split(document.getText().substring(this.end));
     if (after.length != 0) {
       end = this.end + Math.min(after[0].length(), 5);
+    }
+
+    if (document.getRelationEntities().size() != 0) {
+      // 包含关联
+      final List<Entity> entities = document.getEntitiesInside(position);
+      final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
+      start = Math.min(start, DocumentUtils.getMinStart(document, relations));
+      end = Math.max(end, DocumentUtils.getMaxEnd(document, relations));
     }
 
     this.annotation =
