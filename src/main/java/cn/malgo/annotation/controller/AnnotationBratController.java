@@ -1,5 +1,6 @@
 package cn.malgo.annotation.controller;
 
+import cn.malgo.annotation.biz.brat.ListRelationLimitRuleBiz;
 import cn.malgo.annotation.biz.brat.task.GetAutoAnnotationBiz;
 import cn.malgo.annotation.biz.brat.task.entities.AddAnnotationBiz;
 import cn.malgo.annotation.biz.brat.task.entities.DeleteAnnotationBiz;
@@ -16,6 +17,7 @@ import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 import cn.malgo.annotation.result.Response;
+import cn.malgo.annotation.vo.RelationLimitRuleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,7 @@ public class AnnotationBratController extends BaseController {
   private final AddRelationBiz addRelationBiz;
   private final UpdateRelationBiz updateRelationBiz;
   private final DeleteRelationBiz deleteRelationBiz;
+  private final ListRelationLimitRuleBiz listRelationLimitRuleBiz;
 
   public AnnotationBratController(
       GetAutoAnnotationBiz getAutoAnnotationBiz,
@@ -45,7 +48,8 @@ public class AnnotationBratController extends BaseController {
       DeleteAnnotationBiz deleteAnnotationBiz,
       AddRelationBiz addRelationBiz,
       UpdateRelationBiz updateRelationBiz,
-      DeleteRelationBiz deleteRelationBiz) {
+      DeleteRelationBiz deleteRelationBiz,
+      ListRelationLimitRuleBiz listRelationLimitRuleBiz) {
     this.getAutoAnnotationBiz = getAutoAnnotationBiz;
     this.addAnnotationBiz = addAnnotationBiz;
     this.updateAnnotationBiz = updateAnnotationBiz;
@@ -53,6 +57,7 @@ public class AnnotationBratController extends BaseController {
     this.addRelationBiz = addRelationBiz;
     this.updateRelationBiz = updateRelationBiz;
     this.deleteRelationBiz = deleteRelationBiz;
+    this.listRelationLimitRuleBiz = listRelationLimitRuleBiz;
   }
 
   /** 获取算法服务的预标注结果 */
@@ -64,6 +69,7 @@ public class AnnotationBratController extends BaseController {
         getAutoAnnotationBiz.process(
             new GetAutoAnnotationRequest(id), userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** 标注entities处理，新增标注的接口，不过算法api */
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
   public Response addAnnotation(
@@ -73,6 +79,7 @@ public class AnnotationBratController extends BaseController {
         addAnnotationBiz.process(
             addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** entities处理，更新标注 ，不过算法api */
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
   public Response updateAnnotation(
@@ -82,6 +89,7 @@ public class AnnotationBratController extends BaseController {
         updateAnnotationBiz.process(
             updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** entities处理，删除标注，不过算法api */
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
   public Response deleteAnnotation(
@@ -91,6 +99,7 @@ public class AnnotationBratController extends BaseController {
         deleteAnnotationBiz.process(
             deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
   }
+
   /** 普通人员，新增关联标注 */
   @RequestMapping(value = "add-relation", method = RequestMethod.POST)
   public Response addRelation(
@@ -118,5 +127,12 @@ public class AnnotationBratController extends BaseController {
     return new Response<>(
         updateRelationBiz.process(
             updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
+
+  /** 关联标注限制规则列表 */
+  @RequestMapping(value = "/list-relation-limit", method = RequestMethod.GET)
+  public Response<RelationLimitRuleVO> listRelationLimit(
+      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+    return new Response<>(listRelationLimitRuleBiz.process(null, userAccount));
   }
 }
