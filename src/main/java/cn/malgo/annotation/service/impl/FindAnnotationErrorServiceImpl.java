@@ -285,8 +285,10 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
             .values()
             .stream()
             .filter(this::isEntitiesDifferentType)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+            .map(wordList -> this.filterErrors(wordList).collect(Collectors.toList()))
+            .filter(this::isEntitiesDifferentType)
+            .findFirst()
+            .orElse(Collections.emptyList());
 
     log.info("get potential relation error list: {}", results.size());
     return results;
