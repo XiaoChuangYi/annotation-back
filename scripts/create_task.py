@@ -1,19 +1,8 @@
 # coding=utf-8
 import json
-import os
-import io
 
 import click
-import requests
-
-session = requests.session()
-
-
-def login(url, username, password):
-    session.post('%s/api/v2/user/login' % url, json={
-        'accountName': username,
-        'password': password
-    })
+from login import login
 
 
 @click.command()
@@ -27,7 +16,7 @@ def login(url, username, password):
 @click.option('--username', default='admin')
 @click.option('--password', default='123456')
 def run(task_name, text_filter, no_create_task, count, min_text_length, annotation_type, url, username, password):
-    login(url, username, password)
+    session = login(url, username, password)
 
     print('logged in, getting docs')
 
