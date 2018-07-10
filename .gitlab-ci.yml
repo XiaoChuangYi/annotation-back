@@ -81,6 +81,7 @@ deploy-prod:
     url: 47.96.0.236
   when: manual
   only:
+    - develop
     - master
   variables:
     GIT_STRATEGY: none
