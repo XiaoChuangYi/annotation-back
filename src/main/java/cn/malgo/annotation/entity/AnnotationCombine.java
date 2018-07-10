@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-/** Created by cjl on 2018/5/29. */
 @Entity
 @Table(name = "annotation_combine")
 @Data

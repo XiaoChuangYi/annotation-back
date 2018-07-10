@@ -1,7 +1,7 @@
 package cn.malgo.annotation.biz.brat.exercise;
 
 import com.alibaba.fastjson.JSONObject;
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
@@ -54,11 +54,6 @@ public class ListContrastExerciseBiz
       throw new InvalidInputException("invalid-user-id", "无效的userId");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, ListExerciseContrastRequest listExerciseContrastRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected PageVO<ExerciseAnnotationContrastBratVO> doBiz(

@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -34,10 +35,6 @@ public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest, PageVO<U
       }
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, ListUserAccountRequest listUserAccountRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected PageVO<UserAccount> doBiz(ListUserAccountRequest listUserAccountRequest) {

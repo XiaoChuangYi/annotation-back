@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -9,11 +9,10 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateResetRequest;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class AnnotationReworkBiz extends BaseBiz<AnnotationStateResetRequest, Object> {
@@ -58,7 +57,7 @@ public class AnnotationReworkBiz extends BaseBiz<AnnotationStateResetRequest, Ob
                 .map(
                     x -> {
                       x.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-                      if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) {
+                      if (x.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
                         // 分词类型用到了manual_annotation
                         x.setManualAnnotation(x.getFinalAnnotation());
                       }

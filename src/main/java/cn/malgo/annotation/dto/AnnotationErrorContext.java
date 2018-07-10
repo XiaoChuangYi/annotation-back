@@ -1,7 +1,9 @@
 package cn.malgo.annotation.dto;
 
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
+import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
@@ -10,7 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -45,6 +48,14 @@ public class AnnotationErrorContext {
       end = this.end + Math.min(after[0].length(), 5);
     }
 
+    if (document.getRelationEntities().size() != 0) {
+      // 包含关联
+      final List<Entity> entities = document.getEntitiesInside(position);
+      final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
+      start = Math.min(start, DocumentUtils.getMinStart(document, relations));
+      end = Math.max(end, DocumentUtils.getMaxEnd(document, relations));
+    }
+
     this.annotation =
         getBratResult(document, Math.max(0, start), Math.min(end, document.getText().length() - 1));
   }
@@ -53,7 +64,7 @@ public class AnnotationErrorContext {
       final AnnotationDocument document, final int start, final int end) {
     final AnnotationDocument result =
         new AnnotationDocument(document.getText().substring(start, end + 1));
-    result.setRelationEntities(Collections.emptyList());
+
     result.setEntities(
         document
             .getEntities()
@@ -68,6 +79,19 @@ public class AnnotationErrorContext {
                         entity.getType(),
                         entity.getTerm()))
             .collect(Collectors.toList()));
+
+    final Set<String> tags =
+        result.getEntities().stream().map(Entity::getTag).collect(Collectors.toSet());
+
+    result.setRelationEntities(
+        document
+            .getRelationEntities()
+            .stream()
+            .filter(
+                entity ->
+                    tags.contains(entity.getSourceTag()) && tags.contains(entity.getTargetTag()))
+            .collect(Collectors.toList()));
+
     return AnnotationDocumentManipulator.toBratAjaxFormat(result);
   }
 }

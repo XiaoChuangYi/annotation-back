@@ -37,10 +37,6 @@ public class AddAnnotationBiz
   }
 
   @Override
-  protected void authorize(int userId, int role, AddAnnotationRequest addAnnotationRequest)
-      throws BusinessRuleException {}
-
-  @Override
   AnnotationCombineBratVO doInternalProcess(
       int role,
       AnnotationOperateService annotationOperateService,

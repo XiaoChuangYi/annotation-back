@@ -10,7 +10,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.util.Date;
 
-/** Created by cjl on 2018/5/29. */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

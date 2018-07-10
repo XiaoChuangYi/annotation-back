@@ -1,19 +1,27 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.dao.AnnotationFixLogRepository;
+import cn.malgo.annotation.dao.RelationLimitRuleRepository;
+import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.dto.AnnotationWithPosition;
+import cn.malgo.annotation.dto.WordTypeCount;
+import cn.malgo.annotation.entity.AnnotationFixLog;
+import cn.malgo.annotation.entity.RelationLimitRule;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.service.FindAnnotationErrorService;
+import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.common.StringUtilsExt;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import cn.malgo.annotation.dao.AnnotationFixLogRepository;
-import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.WordTypeCount;
-import cn.malgo.annotation.entity.AnnotationFixLog;
-import cn.malgo.annotation.service.FindAnnotationErrorService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +35,7 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorService {
+
   private static final Pattern[] IGNORE_WORD_PATTERNS =
       new Pattern[] {
         // numbers
@@ -48,14 +57,16 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         Pair.of("?", "Token"),
         Pair.of("？", "Token"),
       };
-
+  private final RelationLimitRuleRepository relationLimitRuleRepository;
   private final AnnotationFixLogRepository annotationFixLogRepository;
   private final int batchSize;
   private Map<String, Map<String, WordTypeCount>> staticWordsDict;
 
   public FindAnnotationErrorServiceImpl(
+      final RelationLimitRuleRepository relationLimitRuleRepository,
       final AnnotationFixLogRepository annotationFixLogRepository,
       @Value("${malgo.annotation.fix-log-batch-size}") final int batchSize) {
+    this.relationLimitRuleRepository = relationLimitRuleRepository;
     this.annotationFixLogRepository = annotationFixLogRepository;
     this.batchSize = batchSize;
   }
@@ -118,21 +129,19 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     return result;
   }
 
-  private String getAnnotationFixLogKey(
-      Pair<Pair<Annotation, BratPosition>, Pair<String, String>> error) {
-    return error.getLeft().getLeft().getId()
+  private <T extends AnnotationWithPosition> String getAnnotationFixLogKey(T error) {
+    return error.getAnnotation().getId()
         + "-"
-        + error.getLeft().getRight().getStart()
+        + error.getPosition().getStart()
         + "-"
-        + error.getLeft().getRight().getEnd();
+        + error.getPosition().getEnd();
   }
 
   /** filter errors through {@link AnnotationFixLog} database */
-  private Stream<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> filterErrors(
-      List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> errors) {
+  private <T extends AnnotationWithPosition> Stream<T> filterErrors(List<T> errors) {
     final Set<String> fixLogs =
         annotationFixLogRepository
-            .findAllFixedLogs(errors.stream().map(Pair::getLeft).collect(Collectors.toList()))
+            .findAllFixedLogs(errors)
             .stream()
             .map(AnnotationFixLog::getUniqueKey)
             .collect(Collectors.toSet());
@@ -141,7 +150,7 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
   }
 
   private AlgorithmAnnotationWordError mapToWordError(
-      Map.Entry<String, List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>>> entry) {
+      Map.Entry<String, List<WordErrorWithPosition>> entry) {
     final AlgorithmAnnotationWordError wordError =
         new AlgorithmAnnotationWordError(
             entry.getKey(),
@@ -153,20 +162,63 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
     entry
         .getValue()
         .forEach(
-            pair ->
-                wordError.addError(
-                    pair.getLeft().getLeft(),
-                    pair.getRight().getRight(),
-                    pair.getLeft().getRight()));
+            pair -> wordError.addError(pair.getAnnotation(), pair.getType(), pair.getPosition()));
 
     return wordError;
   }
 
   @Override
-  public List<AlgorithmAnnotationWordError> findErrors(List<Annotation> annotations) {
-    log.info("start find errors");
-    final List<Pair<Pair<Annotation, BratPosition>, Pair<String, String>>> results =
-        new ArrayList<>();
+  public List<AlgorithmAnnotationWordError> findErrors(
+      final AnnotationErrorEnum errorType, final List<Annotation> annotations) {
+    List<WordErrorWithPosition> results;
+
+    switch (errorType) {
+      case NEW_WORD:
+        results = findWordErrors(annotations);
+        break;
+
+      case ENTITY_MULTIPLE_TYPE:
+        results = findEntityWithMultipleTypes(annotations);
+        break;
+
+      case ISOLATED_ENTITY:
+        results = findIsolatedEntityErrors(annotations);
+        break;
+
+      case ENTITY_CONSISTENCY:
+        results = findEntityConsistencyErrors(annotations);
+        break;
+
+      case WRONG_RELATION_TYPE:
+        results = findRelationIllegals(annotations);
+        break;
+
+      default:
+        throw new IllegalArgumentException("invalid-error-type");
+    }
+
+    return Lists.partition(results, batchSize)
+        .stream()
+        // 过滤已经被处理过的错误
+        .flatMap(this::filterErrors)
+        // group by word
+        .collect(Collectors.groupingBy(WordErrorWithPosition::getTerm))
+        .entrySet()
+        .stream()
+        // 变成最终的数据结构
+        .map(this::mapToWordError)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * 新词或旧词新意错误分析
+   *
+   * @param annotations 标注列表
+   * @return 可能错误的词语
+   */
+  private List<WordErrorWithPosition> findWordErrors(List<Annotation> annotations) {
+    log.info("start finding word errors");
+    final List<WordErrorWithPosition> results = new ArrayList<>();
 
     for (Annotation annotation : annotations) {
       for (Entity entity : annotation.getDocument().getEntities()) {
@@ -180,24 +232,314 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
         if (!staticWordsDict.containsKey(term) || !staticWordsDict.get(term).containsKey(type)) {
           // 新词或者旧词新义
           results.add(
-              Pair.of(
-                  Pair.of(annotation, new BratPosition(entity.getStart(), entity.getEnd())),
-                  Pair.of(term, type)));
+              new WordErrorWithPosition(
+                  term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
         }
       }
     }
 
-    log.info("get potential error list: {}", results.size());
-    return Lists.partition(results, batchSize)
+    log.info("get potential word error list: {}", results.size());
+    return results;
+  }
+
+  /** 判断同一个entity是否都是同一个类型的 */
+  private boolean isEntitiesDifferentType(final List<WordErrorWithPosition> positions) {
+    return !positions
         .stream()
-        // 过滤已经被处理过的错误
-        .flatMap(this::filterErrors)
-        // group by word
-        .collect(Collectors.groupingBy(result -> result.getRight().getLeft()))
-        .entrySet()
+        .allMatch(position -> StringUtils.equals(position.getType(), positions.get(0).getType()));
+  }
+
+  private List<WordErrorWithPosition> findEntityWithMultipleTypes(
+      final List<Annotation> annotations) {
+    log.info("start finding relation errors");
+
+    final Map<String, List<WordErrorWithPosition>> wordLists = new HashMap<>();
+
+    for (Annotation annotation : annotations) {
+      for (Entity entity : annotation.getDocument().getEntities()) {
+        final String term = entity.getTerm();
+        if (StringUtils.isBlank(term)) {
+          continue;
+        }
+
+        final String type = preProcessType(entity.getType());
+
+        wordLists
+            .computeIfAbsent(term, t -> new ArrayList<>())
+            .add(
+                new WordErrorWithPosition(
+                    term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
+      }
+    }
+
+    wordLists.forEach(
+        (term, words) ->
+            words.addAll(
+                annotations
+                    .stream()
+                    .flatMap(annotation -> getNotAnnotatedPositions(annotation, term))
+                    .collect(Collectors.toList())));
+
+    final List<WordErrorWithPosition> results =
+        wordLists
+            .values()
+            .stream()
+            .filter(this::isEntitiesDifferentType)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
+    log.info("get potential relation error list: {}", results.size());
+    return results;
+  }
+
+  private Stream<WordErrorWithPosition> getNotAnnotatedPositions(
+      final Annotation annotation, final String targetTerm) {
+    final List<WordErrorWithPosition> results = new ArrayList<>();
+    final String text = annotation.getDocument().getText();
+    int index = -1;
+    while ((index = text.indexOf(targetTerm, index)) != -1) {
+      final int start = index;
+      final int end = index + targetTerm.length();
+
+      if (!annotation.getDocument().hasEntityBetweenPosition(start, end)) {
+        results.add(
+            new WordErrorWithPosition(
+                targetTerm, "未标注实体", new BratPosition(start, end), annotation));
+      }
+
+      index = end;
+    }
+    return results.stream();
+  }
+
+  private List<WordErrorWithPosition> findIsolatedEntityErrors(final List<Annotation> annotations) {
+    log.info("start finding isolated entity errors");
+
+    final List<WordErrorWithPosition> results = new ArrayList<>();
+
+    for (Annotation annotation : annotations) {
+      final AnnotationDocument document = annotation.getDocument();
+      final Set<String> usedTags = new HashSet<>();
+      document
+          .getRelationEntities()
+          .forEach(
+              entity -> {
+                usedTags.add(entity.getSourceTag());
+                usedTags.add(entity.getTargetTag());
+              });
+
+      document
+          .getEntities()
+          .stream()
+          .filter(entity -> !usedTags.contains(entity.getTag()))
+          .forEach(
+              entity -> {
+                final String term = entity.getTerm();
+                if (StringUtils.isBlank(term)) {
+                  return;
+                }
+
+                final String type = preProcessType(entity.getType());
+
+                results.add(
+                    new WordErrorWithPosition(
+                        term,
+                        type,
+                        new BratPosition(entity.getStart(), entity.getEnd()),
+                        annotation));
+              });
+    }
+
+    log.info("get potential isolated entity error list: {}", results.size());
+    return results;
+  }
+
+  private Stream<EntityListWithPosition> getTermEntities(
+      final Annotation annotation, final String targetTerm) {
+    final AnnotationDocument document = annotation.getDocument();
+
+    if (!StringUtils.contains(document.getText(), targetTerm)) {
+      return Stream.empty();
+    }
+
+    final List<EntityListWithPosition> results = new ArrayList<>();
+
+    int index = -1;
+    while ((index = document.getText().indexOf(targetTerm, index)) != -1) {
+      final int start = index;
+      final int end = index + targetTerm.length();
+      final BratPosition position = new BratPosition(start, end);
+
+      if (document.getEntities().stream().anyMatch(entity -> entity.intersectWith(start, end))) {
+        index = end;
+        continue;
+      }
+
+      // 找到所有在这个文本范围内的entity
+      final List<Entity> entities = document.getEntitiesInside(position);
+      final Map<String, Entity> entityMap =
+          entities.stream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
+
+      // 找到所有tag以及和这些tag有关的外部关联关系
+      final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
+
+      if (relations.size() == 0) {
+        // 如果没有外部关联，则表示这是一个合法的对应子图
+        results.add(new EntityListWithPosition(position, annotation, entities));
+      } else {
+        final RelationEntity firstRelation = relations.get(0);
+        final Entity targetEntity =
+            entityMap.get(
+                entityMap.containsKey(firstRelation.getSourceTag())
+                    ? firstRelation.getSourceTag()
+                    : firstRelation.getTargetTag());
+        if (relations
+            .stream()
+            .allMatch(
+                relation -> {
+                  final Entity entity =
+                      entityMap.get(
+                          entityMap.containsKey(relation.getSourceTag())
+                              ? relation.getSourceTag()
+                              : relation.getTargetTag());
+                  return entity.getStart() == targetEntity.getStart()
+                      && entity.getEnd() == targetEntity.getEnd();
+                })) {
+          results.add(new EntityListWithPosition(position, annotation, entities));
+        }
+      }
+
+      index = end;
+    }
+
+    return results.stream();
+  }
+
+  private List<WordErrorWithPosition> findEntityConsistencyErrors(
+      final List<Annotation> annotations) {
+    //    final Comparator<String> comparator = (lhs, rhs) -> rhs.length() - lhs.length();
+    final Comparator<String> comparator = (lhs, rhs) -> lhs.length() - rhs.length();
+
+    final List<String> terms =
+        annotations
+            .stream()
+            .flatMap(
+                annotation -> annotation.getDocument().getEntities().stream().map(Entity::getTerm))
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.toSet())
+            .stream()
+            .sorted(comparator)
+            .collect(Collectors.toList());
+
+    for (final String term : terms) {
+      final List<EntityListWithPosition> entityLists =
+          annotations
+              .stream()
+              .flatMap(annotation -> this.getTermEntities(annotation, term))
+              .collect(Collectors.toList());
+
+      if (!entityLists.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+        // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
+        final List<EntityListWithPosition> filtered =
+            filterErrors(entityLists).collect(Collectors.toList());
+        if (!filtered.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+          return filtered
+              .stream()
+              .map(
+                  entityList ->
+                      new WordErrorWithPosition(
+                          term,
+                          entityList.getEntities().size() == 1 ? "单一实体" : "子图",
+                          entityList.getPosition(),
+                          entityList.getAnnotation()))
+              .collect(Collectors.toList());
+        }
+      }
+    }
+
+    return Collections.emptyList();
+  }
+
+  /** 关联标注，错误关联类型，source->target的关联type有误 R3 site source:T5 target:T4 {0}\t{1} {2} {3}\n */
+  private List<WordErrorWithPosition> findRelationIllegals(List<Annotation> annotations) {
+    log.info("start finding illegal relations");
+
+    final List<RelationLimitRule> rules = relationLimitRuleRepository.findAll();
+    final Set<RelationLimitRulePair> legalRules =
+        rules
+            .stream()
+            .flatMap(
+                rule ->
+                    StringUtils.equals(rule.getSource(), rule.getTarget())
+                        ? Stream.of(
+                            new RelationLimitRulePair(
+                                rule.getSource(), rule.getTarget(), rule.getRelationType()))
+                        : Stream.of(
+                            new RelationLimitRulePair(
+                                rule.getTarget(), rule.getSource(), rule.getRelationType()),
+                            new RelationLimitRulePair(
+                                rule.getSource(), rule.getTarget(), rule.getRelationType())))
+            .collect(Collectors.toSet());
+
+    return annotations
         .stream()
-        // 变成最终的数据结构
-        .map(this::mapToWordError)
+        .filter(annotation -> annotation.getAnnotationType() == AnnotationTypeEnum.relation)
+        .flatMap(annotation -> getIllegalRelations(legalRules, annotation))
         .collect(Collectors.toList());
+  }
+
+  @NotNull
+  private Stream<WordErrorWithPosition> getIllegalRelations(
+      final Set<RelationLimitRulePair> legalRules, final Annotation annotation) {
+    final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
+
+    return annotation
+        .getDocument()
+        .getRelationEntities()
+        .stream()
+        .filter(
+            relation ->
+                !legalRules.contains(
+                    new RelationLimitRulePair(
+                        entityMap.get(relation.getSourceTag()).getType(),
+                        entityMap.get(relation.getTargetTag()).getType(),
+                        relation.getType())))
+        .map(
+            relation ->
+                new WordErrorWithPosition(
+                    entityMap.get(relation.getSourceTag()).getType()
+                        + "-"
+                        + entityMap.get(relation.getTargetTag()).getType(),
+                    relation.getType(),
+                    new BratPosition(
+                        Math.min(
+                            entityMap.get(relation.getSourceTag()).getStart(),
+                            entityMap.get(relation.getTargetTag()).getStart()),
+                        Math.max(
+                            entityMap.get(relation.getSourceTag()).getEnd(),
+                            entityMap.get(relation.getTargetTag()).getEnd())),
+                    annotation));
+  }
+
+  @lombok.Value
+  static class WordErrorWithPosition implements AnnotationWithPosition {
+    private final String term;
+    private final String type;
+    private final BratPosition position;
+    private final Annotation annotation;
+  }
+
+  @lombok.Value
+  static class EntityListWithPosition implements AnnotationWithPosition {
+    private final BratPosition position;
+    private final Annotation annotation;
+    private final List<Entity> entities;
+  }
+
+  @lombok.Value
+  static class RelationLimitRulePair {
+    private final String source;
+    private final String target;
+    private final String relation;
   }
 }

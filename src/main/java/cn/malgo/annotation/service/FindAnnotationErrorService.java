@@ -1,8 +1,9 @@
 package cn.malgo.annotation.service;
 
-import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.WordTypeCount;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.core.definition.brat.BratPosition;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface FindAnnotationErrorService {
-  List<AlgorithmAnnotationWordError> findErrors(List<Annotation> annotations);
+  List<AlgorithmAnnotationWordError> findErrors(
+      AnnotationErrorEnum errorType, List<Annotation> annotations);
 
   @RequiredArgsConstructor
   @ToString

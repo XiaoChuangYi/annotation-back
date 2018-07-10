@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.exercise.entities;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.entity.UserExercise;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -9,7 +9,6 @@ import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.annotation.utils.OpLoggerUtil;
 import cn.malgo.annotation.vo.ExerciseAnnotationBratVO;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;

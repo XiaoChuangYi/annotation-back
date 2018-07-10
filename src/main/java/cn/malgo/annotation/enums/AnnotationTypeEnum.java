@@ -1,29 +1,21 @@
 package cn.malgo.annotation.enums;
 
-/** Created by cjl on 2018/6/14. */
 public enum AnnotationTypeEnum {
-  wordPos(0, "分词"),
-  sentence(1, "分句"),
-  relation(2, "关联");
+  wordPos("分词"), // 0
+  sentence("分句"), // 1
+  relation("关联"); // 2
 
-  private final int value;
   private final String name;
 
-  AnnotationTypeEnum(int value, String name) {
-    this.value = value;
+  AnnotationTypeEnum(final String name) {
     this.name = name;
   }
 
-  public int getValue() {
-    return this.value;
-  }
-
   public static AnnotationTypeEnum getByValue(int value) {
-    for (AnnotationTypeEnum current : values()) {
-      if (current.value == value) {
-        return current;
-      }
+    if (value < 0 || value >= values().length) {
+      return null;
     }
-    return null;
+
+    return values()[value];
   }
 }

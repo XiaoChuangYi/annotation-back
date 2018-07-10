@@ -1,12 +1,14 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.core.definition.Entity;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.FixAnnotationEntity;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.service.FixAnnotationErrorService;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.core.definition.Entity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,7 +19,28 @@ import java.util.stream.Collectors;
 @Service
 public class FixAnnotationErrorServiceImpl implements FixAnnotationErrorService {
   @Override
-  public List<Entity> fixAnnotation(
+  public List<Entity> fixAnnotationError(
+      final AnnotationErrorEnum errorType,
+      final Annotation annotation,
+      final int start,
+      final int end,
+      final List<FixAnnotationEntity> entities) {
+    switch (errorType) {
+      case NEW_WORD:
+        return fixNewWord(annotation, start, end, entities);
+
+      case ENTITY_MULTIPLE_TYPE:
+        if (entities.size() != 1) {
+          throw new IllegalArgumentException("ENTITY_MULTIPLE_TYPE 修复只接受一个修复对象，实际得到: " + entities);
+        }
+
+        return fixEntityMultipleType(annotation, start, end, entities.get(0));
+    }
+
+    throw new IllegalArgumentException("invalid-error-type: " + errorType);
+  }
+
+  private List<Entity> fixNewWord(
       final Annotation annotation,
       final int start,
       final int end,
@@ -101,5 +124,51 @@ public class FixAnnotationErrorServiceImpl implements FixAnnotationErrorService 
     throw new InvalidInputException(
         "invalid-fix-annotation",
         String.format("未在\"%s\"中找到开始小于%s，结束大于等于%s的字符串\"%s\"", text, start, end, targetText));
+  }
+
+  private List<Entity> fixEntityMultipleType(
+      final Annotation annotation,
+      final int start,
+      final int end,
+      final FixAnnotationEntity fixEntity) {
+    final AnnotationDocument oldDoc = annotation.getDocument();
+    final AnnotationDocument newDoc =
+        new AnnotationDocument(
+            oldDoc.getText(),
+            oldDoc.getRelationEntities(),
+            oldDoc
+                .getEntities()
+                .stream()
+                .map(
+                    entity -> {
+                      if (entity.getStart() != start || entity.getEnd() != end) {
+                        return entity;
+                      }
+
+                      if (!StringUtils.equalsIgnoreCase(
+                          oldDoc.getText().substring(start, end), fixEntity.getTerm())) {
+                        throw new IllegalArgumentException(
+                            "mismatch term: "
+                                + fixEntity.getTerm()
+                                + ", annotation id: "
+                                + annotation.getId()
+                                + ", start: "
+                                + start
+                                + ", end: "
+                                + end);
+                      }
+
+                      return new Entity(
+                          entity.getTag(), start, end, fixEntity.getType(), fixEntity.getTerm());
+                    })
+                .collect(Collectors.toList()));
+
+    annotation.setAnnotation(AnnotationDocumentManipulator.toBratAnnotations(newDoc));
+
+    return newDoc
+        .getEntities()
+        .stream()
+        .filter(entity -> entity.getStart() == start && entity.getEnd() == end)
+        .collect(Collectors.toList());
   }
 }

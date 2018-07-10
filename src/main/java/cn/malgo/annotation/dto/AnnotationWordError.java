@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,11 @@ public class AnnotationWordError {
     this.word = error.getWord();
     this.counts = error.getCounts();
     this.errors =
-        error.getTypeContext().stream().map(AnnotationError::new).collect(Collectors.toList());
+        error
+            .getTypeContext()
+            .stream()
+            .sorted(Comparator.comparingInt(lhs -> lhs.getContext().size()))
+            .map(AnnotationError::new)
+            .collect(Collectors.toList());
   }
 }

@@ -8,7 +8,9 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * <code>
+ *
+ *
+ * <pre>
  * ALTER TABLE annotation_fix_log ADD COLUMN unique_combined_id VARCHAR(64);
  * UPDATE annotation_fix_log
  * SET unique_combined_id = CONCAT(annotation_id, '-', start, '-', end);
@@ -25,18 +27,17 @@ import java.sql.Timestamp;
  *   ON annotation_fix_log
  *   FOR EACH ROW
  *   SET new.unique_combined_id = CONCAT(new.annotation_id, '-', new.start, '-', new.end);
- * </code>
+ * </pre>
  */
 @Entity
 @Table(
-  name = "annotation_fix_log",
-  indexes = {
-    @Index(name = "unique_fix_log", columnList = "annotation_id,start,end", unique = true),
-    @Index(name = "idx_annotation_id", columnList = "annotation_id"),
-    @Index(name = "idx_start", columnList = "start"),
-    @Index(name = "idx_end", columnList = "end"),
-  }
-)
+    name = "annotation_fix_log",
+    indexes = {
+      @Index(name = "unique_fix_log", columnList = "annotation_id,start,end", unique = true),
+      @Index(name = "idx_annotation_id", columnList = "annotation_id"),
+      @Index(name = "idx_start", columnList = "start"),
+      @Index(name = "idx_end", columnList = "end"),
+    })
 @Data
 public class AnnotationFixLog {
   @Id
@@ -45,19 +46,17 @@ public class AnnotationFixLog {
 
   @CreatedDate
   @Column(
-    name = "created_time",
-    updatable = false,
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "created_time",
+      updatable = false,
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp createdTime;
 
   @LastModifiedDate
   @Column(
-    name = "modified_time",
-    nullable = false,
-    columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-  )
+      name = "modified_time",
+      nullable = false,
+      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   private Timestamp modifiedTime;
 
   @Column(name = "annotation_id", nullable = false)

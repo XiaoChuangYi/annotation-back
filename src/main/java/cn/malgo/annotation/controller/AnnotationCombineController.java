@@ -3,8 +3,8 @@ package cn.malgo.annotation.controller;
 import cn.malgo.annotation.biz.*;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -65,7 +65,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationCombineBratVO>> listAnnotationCombine(
       ListAnnotationCombineRequest annotationCombineQuery,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         listAnnotationBiz.process(
             annotationCombineQuery, userAccount.getId(), userAccount.getRoleId()));
@@ -75,7 +75,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "/designate-task-annotation", method = RequestMethod.POST)
   public Response designateTaskAnnotation(
       @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         designateAnnotationBiz.process(
             designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -111,7 +111,7 @@ public class AnnotationCombineController extends BaseController {
   @RequestMapping(value = "get-annotation-summary-by-assignee", method = RequestMethod.GET)
   public Response getAnnotationSummaryByAssignee(
       SetUserStateRequest setUserStateRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         getAnnotationSummaryByAssigneeBiz.process(
             setUserStateRequest, userAccount.getId(), userAccount.getRoleId()));

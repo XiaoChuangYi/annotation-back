@@ -1,14 +1,14 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.FindAnnotationErrorBiz;
-import cn.malgo.annotation.biz.FixAnnotationBiz;
-import cn.malgo.annotation.biz.SearchAnnotationBiz;
+import cn.malgo.annotation.biz.block.FindAnnotationErrorBiz;
+import cn.malgo.annotation.biz.block.FixAnnotationBiz;
+import cn.malgo.annotation.biz.block.SearchAnnotationBiz;
 import cn.malgo.annotation.dto.AnnotationErrorContext;
 import cn.malgo.annotation.dto.AnnotationWordError;
 import cn.malgo.annotation.dto.FixAnnotationResult;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.dto.UserDetails;
+import cn.malgo.annotation.request.FindAnnotationErrorRequest;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
-import cn.malgo.annotation.request.GetAnnotationErrorRequest;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AnnotationErrorVO;
@@ -37,8 +37,8 @@ public class AnnotationErrorController extends BaseController {
 
   @RequestMapping(value = "/annotation/errors", method = RequestMethod.GET)
   public Response<AnnotationErrorVO> getAnnotationErrors(
-      GetAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      FindAnnotationErrorRequest request,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     final List<AnnotationWordError> errors =
         findAnnotationErrorBiz.process(request, userAccount.getId(), userAccount.getRoleId());
     return new Response<>(
@@ -48,7 +48,7 @@ public class AnnotationErrorController extends BaseController {
   @RequestMapping(value = "/annotation/search", method = RequestMethod.GET)
   public Response<List<AnnotationErrorContext>> searchAnnotations(
       SearchAnnotationRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         searchAnnotationBiz.process(request, userAccount.getId(), userAccount.getRoleId()));
   }
@@ -56,7 +56,7 @@ public class AnnotationErrorController extends BaseController {
   @RequestMapping(value = "/annotation/fix-errors", method = RequestMethod.POST)
   public Response<FixAnnotationResponse> fixAnnotationError(
       @RequestBody FixAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     final List<FixAnnotationResult> results =
         this.fixAnnotationBiz.process(request, userAccount.getId(), userAccount.getRoleId());
     return new Response<>(new FixAnnotationResponse(results));

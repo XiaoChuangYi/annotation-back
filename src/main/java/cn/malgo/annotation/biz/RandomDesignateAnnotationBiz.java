@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InternalServiceException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -43,11 +44,6 @@ public class RandomDesignateAnnotationBiz
       throw new InvalidInputException("param-error", "指派数量num参数小于用户人数");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, RandomDesignateAnnotationRequest randomDesignateAnnotationRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected Object doBiz(RandomDesignateAnnotationRequest randomDesignateAnnotationRequest) {

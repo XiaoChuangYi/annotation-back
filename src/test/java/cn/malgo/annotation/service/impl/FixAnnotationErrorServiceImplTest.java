@@ -2,6 +2,8 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.FixAnnotationEntity;
+import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.service.FixAnnotationErrorService;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
@@ -83,18 +85,19 @@ public class FixAnnotationErrorServiceImplTest {
       final List<FixAnnotationEntity> entities,
       final String result) {
     final Annotation annotation = new TestAnnotation(text, annotationText);
-    fixAnnotationErrorService.fixAnnotation(annotation, start, end, entities);
+    fixAnnotationErrorService.fixAnnotationError(
+        AnnotationErrorEnum.NEW_WORD, annotation, start, end, entities);
     Assert.assertEquals(annotation.getAnnotation(), result);
   }
 
   @Test(
-    expectedExceptions = InvalidInputException.class,
-    expectedExceptionsMessageRegExp = "未在\"01234等大等圆01234\"中找到开始小于5，结束大于等于9的字符串\"等大等圆a\""
-  )
+      expectedExceptions = InvalidInputException.class,
+      expectedExceptionsMessageRegExp = "未在\"01234等大等圆01234\"中找到开始小于5，结束大于等于9的字符串\"等大等圆a\"")
   public void testFixAnnotationNotFoundException() {
     final Annotation annotation = new TestAnnotation("01234等大等圆01234", "T1\twrong 5 9\t等大等圆");
 
-    fixAnnotationErrorService.fixAnnotation(
+    fixAnnotationErrorService.fixAnnotationError(
+        AnnotationErrorEnum.NEW_WORD,
         annotation,
         5,
         9,
@@ -103,14 +106,14 @@ public class FixAnnotationErrorServiceImplTest {
   }
 
   @Test(
-    expectedExceptions = InvalidInputException.class,
-    expectedExceptionsMessageRegExp = "想要修复的部分和已经标注的集合不完全匹配"
-  )
+      expectedExceptions = InvalidInputException.class,
+      expectedExceptionsMessageRegExp = "想要修复的部分和已经标注的集合不完全匹配")
   public void testFixAnnotationNotContainsException() {
     final Annotation annotation =
         new TestAnnotation("01234等大等圆01234", "T1\tcorrect1 5 7\t等大\nT2\tcorrect2 7 9\t等圆");
 
-    fixAnnotationErrorService.fixAnnotation(
+    fixAnnotationErrorService.fixAnnotationError(
+        AnnotationErrorEnum.NEW_WORD,
         annotation,
         5,
         7,
@@ -119,12 +122,12 @@ public class FixAnnotationErrorServiceImplTest {
   }
 
   @Test(
-    expectedExceptions = InvalidInputException.class,
-    expectedExceptionsMessageRegExp = "\"等大等\"必须包含\"等大等圆\""
-  )
+      expectedExceptions = InvalidInputException.class,
+      expectedExceptionsMessageRegExp = "\"等大等\"必须包含\"等大等圆\"")
   public void testFixAnnotationNotMatchManualAnnotation() {
     final Annotation annotation = new TestAnnotation("01234等大等圆01234", "T1\twrong 5 9\t等大等圆");
-    fixAnnotationErrorService.fixAnnotation(
+    fixAnnotationErrorService.fixAnnotationError(
+        AnnotationErrorEnum.NEW_WORD,
         annotation,
         5,
         9,
@@ -145,6 +148,11 @@ public class FixAnnotationErrorServiceImplTest {
     @Override
     public int getId() {
       return 0;
+    }
+
+    @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return AnnotationTypeEnum.wordPos;
     }
 
     @Override
