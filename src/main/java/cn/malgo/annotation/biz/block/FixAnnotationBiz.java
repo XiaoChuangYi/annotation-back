@@ -61,10 +61,16 @@ public class FixAnnotationBiz
           "invalid-annotation-type", request.getErrorType() + "不是合法的错误类型");
     }
 
-    if (request.getErrorType() == AnnotationErrorEnum.ISOLATED_ENTITY.ordinal()) {
-      if (request.getEntities() != null && request.getEntities().size() != 0) {
-        throw new InvalidInputException(
-            "invalid-fix-entities", "ISOLATED_ENTITY只支持null或长度为0的fixEntities");
+    final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
+    if (request.getEntities() == null) {
+      // reset
+      if (!errorType.isCanReset()) {
+        throw new InvalidInputException("invalid-reset-action", errorType + "不支持打回重审");
+      }
+    } else if (request.getEntities().size() != 0) {
+      // 修复
+      if (!errorType.isCanFix()) {
+        throw new InvalidInputException("invalid-reset-action", errorType + "不支持批量修复");
       }
     }
   }
@@ -74,7 +80,6 @@ public class FixAnnotationBiz
       final AnnotationTaskBlock block,
       final int start,
       final int end,
-      final boolean doFix,
       final List<FixAnnotationEntity> entities) {
     if (block == null) {
       return new FixAnnotationResult(false, "ID不存在");
@@ -84,11 +89,25 @@ public class FixAnnotationBiz
       return new FixAnnotationResult(false, "标注类型只能是: " + errorType.getAnnotationType());
     }
 
+    // 0: reset
+    // 1: fix
+    // 2: skip
+    int action;
+    if (entities == null) {
+      action = 0;
+    } else if (entities.size() == 0) {
+      action = 2;
+    } else {
+      action = 1;
+    }
+
     try {
-      if (doFix) {
-        if (errorType == AnnotationErrorEnum.ISOLATED_ENTITY) {
+      switch (action) {
+        case 0:
           blockService.resetBlock(block, AnnotationBlockActionEnum.RE_EXAMINE);
-        } else {
+          break;
+
+        case 1:
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
               fixAnnotationErrorService.fixAnnotationError(
@@ -101,10 +120,12 @@ public class FixAnnotationBiz
                       entity.getEnd(),
                       AnnotationFixLogStateEnum.FIXED));
           blockRepository.save(block);
-        }
-      } else {
-        annotationFixLogService.insertOrUpdate(
-            block.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
+          break;
+
+        case 2:
+          annotationFixLogService.insertOrUpdate(
+              block.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
+          break;
       }
 
       return new FixAnnotationResult(true, null);
@@ -133,10 +154,6 @@ public class FixAnnotationBiz
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
     final List<FixAnnotationEntity> entities = request.getEntities();
-    final boolean doFix =
-        errorType == AnnotationErrorEnum.ISOLATED_ENTITY
-            ? entities == null
-            : (entities != null && entities.size() != 0);
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
@@ -149,7 +166,6 @@ public class FixAnnotationBiz
                     idMap.get(annotation.getId()),
                     annotation.getStart(),
                     annotation.getEnd(),
-                    doFix,
                     entities))
         .collect(Collectors.toList());
   }
