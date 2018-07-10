@@ -60,6 +60,13 @@ public class FixAnnotationBiz
       throw new InvalidInputException(
           "invalid-annotation-type", request.getErrorType() + "不是合法的错误类型");
     }
+
+    if (request.getErrorType() == AnnotationErrorEnum.ISOLATED_ENTITY.ordinal()) {
+      if (request.getEntities() != null && request.getEntities().size() != 0) {
+        throw new InvalidInputException(
+            "invalid-fix-entities", "ISOLATED_ENTITY只支持null或长度为0的fixEntities");
+      }
+    }
   }
 
   private FixAnnotationResult fixAnnotation(
@@ -128,7 +135,7 @@ public class FixAnnotationBiz
     final List<FixAnnotationEntity> entities = request.getEntities();
     final boolean doFix =
         errorType == AnnotationErrorEnum.ISOLATED_ENTITY
-            ? entities != null
+            ? entities == null
             : (entities != null && entities.size() != 0);
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
