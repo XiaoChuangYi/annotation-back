@@ -1,8 +1,7 @@
 package cn.malgo.annotation.request;
 
-import cn.malgo.annotation.dto.AnnotationErrorContext;
-import cn.malgo.annotation.dto.FixAnnotationEntity;
-import lombok.NonNull;
+import cn.malgo.annotation.dto.error.AnnotationErrorContext;
+import cn.malgo.annotation.dto.error.FixAnnotationEntity;
 import lombok.Value;
 
 import java.util.List;

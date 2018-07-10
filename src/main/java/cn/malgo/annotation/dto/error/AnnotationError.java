@@ -1,6 +1,5 @@
-package cn.malgo.annotation.dto;
+package cn.malgo.annotation.dto.error;
 
-import cn.malgo.annotation.service.FindAnnotationErrorService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,7 +12,7 @@ public class AnnotationError {
   private String type;
   private List<AnnotationErrorContext> annotations;
 
-  public AnnotationError(FindAnnotationErrorService.AlgorithmAnnotationErrorType typeContext) {
+  public AnnotationError(AlgorithmAnnotationErrorType typeContext) {
     this.type = typeContext.getType();
     this.annotations =
         typeContext

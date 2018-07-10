@@ -1,6 +1,6 @@
-package cn.malgo.annotation.dto;
+package cn.malgo.annotation.dto.error;
 
-import cn.malgo.annotation.service.FindAnnotationErrorService;
+import cn.malgo.annotation.dto.WordTypeCount;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -16,7 +16,7 @@ public class AnnotationWordError {
   @NonNull private List<WordTypeCount> counts;
   @NonNull private List<AnnotationError> errors;
 
-  public AnnotationWordError(final FindAnnotationErrorService.AlgorithmAnnotationWordError error) {
+  public AnnotationWordError(final AlgorithmAnnotationWordError error) {
     this.word = error.getWord();
     this.counts = error.getCounts();
     this.errors =

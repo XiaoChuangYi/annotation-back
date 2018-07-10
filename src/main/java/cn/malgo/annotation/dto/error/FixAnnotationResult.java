@@ -1,4 +1,4 @@
-package cn.malgo.annotation.dto;
+package cn.malgo.annotation.dto.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

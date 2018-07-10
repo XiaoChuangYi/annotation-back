@@ -4,9 +4,9 @@ import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.AnnotationErrorContext;
-import cn.malgo.annotation.dto.FixAnnotationEntity;
-import cn.malgo.annotation.dto.FixAnnotationResult;
+import cn.malgo.annotation.dto.error.AnnotationErrorContext;
+import cn.malgo.annotation.dto.error.FixAnnotationEntity;
+import cn.malgo.annotation.dto.error.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
@@ -15,9 +15,9 @@ import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
+import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
-import cn.malgo.annotation.service.FixAnnotationErrorService;
 import cn.malgo.core.definition.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,22 +34,22 @@ import java.util.stream.Collectors;
 public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
   private final AnnotationFactory annotationFactory;
+  private final AnnotationErrorFactory annotationErrorFactory;
   private final AnnotationTaskBlockRepository blockRepository;
   private final AnnotationBlockService blockService;
-  private final FixAnnotationErrorService fixAnnotationErrorService;
   private final AnnotationFixLogService annotationFixLogService;
 
   @Autowired
   public FixAnnotationBiz(
       final AnnotationFactory annotationFactory,
+      final AnnotationErrorFactory annotationErrorFactory,
       final AnnotationTaskBlockRepository blockRepository,
       final AnnotationBlockService blockService,
-      final FixAnnotationErrorService fixAnnotationErrorService,
       final AnnotationFixLogService annotationFixLogService) {
     this.annotationFactory = annotationFactory;
+    this.annotationErrorFactory = annotationErrorFactory;
     this.blockRepository = blockRepository;
     this.blockService = blockService;
-    this.fixAnnotationErrorService = fixAnnotationErrorService;
     this.annotationFixLogService = annotationFixLogService;
   }
 
@@ -110,8 +110,7 @@ public class FixAnnotationBiz
         case 1:
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
-              fixAnnotationErrorService.fixAnnotationError(
-                  errorType, annotation, start, end, entities);
+              annotationErrorFactory.getProvider(errorType).fix(annotation, start, end, entities);
           fixedEntities.forEach(
               entity ->
                   annotationFixLogService.insertOrUpdate(
