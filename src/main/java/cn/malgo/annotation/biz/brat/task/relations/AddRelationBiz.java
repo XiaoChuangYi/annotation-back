@@ -3,7 +3,6 @@ package cn.malgo.annotation.biz.brat.task.relations;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.RelationLimitRuleRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.entity.RelationLimitRule;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
@@ -91,26 +90,14 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
               .map(entity -> entity.getType())
               .collect(Collectors.toList());
 
-      RelationLimitRule relationLimitRule;
       if (entityTypes.size() == 2) {
-        relationLimitRule =
-            relationLimitRuleRepository.findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(
-                entityTypes.get(0), entityTypes.get(1), addRelationRequest.getRelation());
-        if (relationLimitRule == null) {
-          relationLimitRule =
-              relationLimitRuleRepository.findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(
-                  entityTypes.get(1), entityTypes.get(0), addRelationRequest.getRelation());
-          return relationLimitRule == null ? true : false;
-        } else {
-          return false;
-        }
+        return relationLimitRuleRepository.isLegalRelation(
+            entityTypes.get(0), entityTypes.get(1), addRelationRequest.getRelation());
       }
       // 自己关联自己的情况
       if (entityTypes.size() == 1) {
-        relationLimitRule =
-            relationLimitRuleRepository.findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(
-                entityTypes.get(0), entityTypes.get(0), addRelationRequest.getRelation());
-        return relationLimitRule == null ? true : false;
+        return relationLimitRuleRepository.isLegalRelation(
+            entityTypes.get(0), entityTypes.get(0), addRelationRequest.getRelation());
       }
     }
     return false;

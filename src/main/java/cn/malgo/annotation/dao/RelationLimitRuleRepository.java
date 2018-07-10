@@ -6,6 +6,17 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface RelationLimitRuleRepository
     extends JpaRepository<RelationLimitRule, Integer>, JpaSpecificationExecutor {
+
   RelationLimitRule findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(
       String source, String target, String relationType);
+
+  default boolean isLegalRelation(String source, String target, String relationType) {
+    return findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(source, target, relationType)
+            == null
+        ? (findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(target, source, relationType)
+                == null
+            ? true
+            : false)
+        : false;
+  }
 }
