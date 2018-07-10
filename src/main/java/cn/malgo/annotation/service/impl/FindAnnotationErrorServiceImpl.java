@@ -261,6 +261,14 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
       }
     }
 
+    wordLists.forEach(
+        (term, words) ->
+            words.addAll(
+                annotations
+                    .stream()
+                    .flatMap(annotation -> getNotAnnotatedPositions(annotation, term))
+                    .collect(Collectors.toList())));
+
     final List<WordErrorWithPosition> results =
         wordLists
             .values()
@@ -271,6 +279,26 @@ public class FindAnnotationErrorServiceImpl implements FindAnnotationErrorServic
 
     log.info("get potential relation error list: {}", results.size());
     return results;
+  }
+
+  private Stream<WordErrorWithPosition> getNotAnnotatedPositions(
+      final Annotation annotation, final String targetTerm) {
+    final List<WordErrorWithPosition> results = new ArrayList<>();
+    final String text = annotation.getDocument().getText();
+    int index = -1;
+    while ((index = text.indexOf(targetTerm, index)) != -1) {
+      final int start = index;
+      final int end = index + targetTerm.length();
+
+      if (!annotation.getDocument().hasEntityBetweenPosition(start, end)) {
+        results.add(
+            new WordErrorWithPosition(
+                targetTerm, "未标注实体", new BratPosition(start, end), annotation));
+      }
+
+      index = end;
+    }
+    return results.stream();
   }
 
   private List<WordErrorWithPosition> findIsolatedEntityErrors(final List<Annotation> annotations) {
