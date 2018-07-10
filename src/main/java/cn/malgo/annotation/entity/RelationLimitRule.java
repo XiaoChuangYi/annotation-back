@@ -1,16 +1,18 @@
 package cn.malgo.annotation.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
+
 @Entity
+@Table(
+    name = "relation_limit_rule",
+    indexes = {
+      @Index(name = "index_source_target_relation_type", columnList = "source,target,relationType"),
+    })
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
