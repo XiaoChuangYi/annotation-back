@@ -53,7 +53,7 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
       AnnotationCombine annotationCombine,
       AddRelationRequest addRelationRequest) {
     final AnnotationCombineBratVO annotationCombineBratVO;
-    if (!checkRelationIsLegalBeforeAdd(addRelationRequest, role)) {
+    if (checkRelationIsNotLegalBeforeAdd(addRelationRequest, role)) {
       throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
     }
     final String annotation = relationOperateService.addRelation(addRelationRequest, role);
@@ -67,7 +67,8 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
     return annotationCombineBratVO;
   }
 
-  private boolean checkRelationIsLegalBeforeAdd(AddRelationRequest addRelationRequest, int roleId) {
+  private boolean checkRelationIsNotLegalBeforeAdd(
+      AddRelationRequest addRelationRequest, int roleId) {
     final Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
