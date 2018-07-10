@@ -1,7 +1,7 @@
 package cn.malgo.annotation.biz.base;
 
 import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -45,7 +45,7 @@ public abstract class BaseBiz<REQ, RES> {
     return !(ex instanceof InvalidInputException) && !(ex instanceof BusinessRuleException);
   }
 
-  public RES process(REQ req, UserAccount user) {
+  public RES process(REQ req, UserDetails user) {
     return process(req, user.getId(), user.getRoleId());
   }
 

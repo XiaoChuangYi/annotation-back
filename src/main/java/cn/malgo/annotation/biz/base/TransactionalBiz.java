@@ -1,12 +1,12 @@
 package cn.malgo.annotation.biz.base;
 
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.dto.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
 public abstract class TransactionalBiz<REQ, RES> extends BaseBiz<REQ, RES> {
   @Override
   @Transactional
-  public RES process(final REQ req, final UserAccount user) {
+  public RES process(final REQ req, final UserDetails user) {
     return super.process(req, user);
   }
 

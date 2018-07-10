@@ -2,7 +2,7 @@ package cn.malgo.annotation.controller.block;
 
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
 import cn.malgo.annotation.controller.BaseController;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
@@ -21,7 +21,7 @@ public class AnnotationTaskBlockController extends BaseController {
   /** ANNOTATED或FINISHED状态的block可以被打回重新标注或审核 */
   @RequestMapping(value = "/reset-block-to-annotation", method = RequestMethod.POST)
   public Response<ResetBlockToAnnotationResponse> resetBlockToAnnotation(
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody ResetAnnotationBlockRequest resetAnnotationBlockRequest) {
     return new Response<>(
         new ResetBlockToAnnotationResponse(

@@ -1,17 +1,16 @@
 package cn.malgo.annotation.controller.task;
 
-import cn.malgo.annotation.biz.task.ImportDocBiz;
-
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
+import cn.malgo.annotation.biz.task.ImportDocBiz;
 import cn.malgo.annotation.biz.task.ListDocDetailsBiz;
 import cn.malgo.annotation.controller.BaseController;
+import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.entity.OriginalDoc;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.request.doc.ListDocDetailRequest;
-import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.request.doc.ListDocRequest;
+import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.OriginalDocDetailVO;
@@ -45,7 +44,7 @@ public class OriginalDocController extends BaseController {
 
   @RequestMapping(value = "/import", method = RequestMethod.POST)
   public Response<List<OriginalDoc>> importDocs(
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody ImportDocRequest request) {
     if (!StringUtils.equals(request.getSecretKey(), this.secretKey)
         && (userAccount == null
@@ -60,7 +59,7 @@ public class OriginalDocController extends BaseController {
   /** 原始文本查询 */
   @RequestMapping(value = "/list-doc", method = RequestMethod.GET)
   public Response<PageVO<OriginalDoc>> listOriginalDoc(
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListDocRequest listDocRequest) {
     return new Response<>(
         listOriginalDocBiz.process(listDocRequest, 0, AnnotationRoleStateEnum.admin.getRole()));
@@ -69,7 +68,7 @@ public class OriginalDocController extends BaseController {
   /** 文本detail详情查询 */
   @RequestMapping(value = "/list-doc-details/{id}", method = RequestMethod.GET)
   public Response<OriginalDocDetailVO> listDocDetails(
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @PathVariable("id") int id) {
     return new Response<>(
         listDocDetailsBiz.process(

@@ -1,11 +1,7 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.brat.exercise.CommitExerciseAnnotationBiz;
-import cn.malgo.annotation.biz.brat.exercise.DesignateUserExerciseBiz;
-import cn.malgo.annotation.biz.brat.exercise.ListContrastExerciseBiz;
-import cn.malgo.annotation.biz.brat.exercise.ListExerciseAnnotationBiz;
-import cn.malgo.annotation.biz.brat.exercise.ResetUserExerciseBiz;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.biz.brat.exercise.*;
+import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.request.exercise.ListExerciseAnnotationRequest;
@@ -13,11 +9,7 @@ import cn.malgo.annotation.request.exercise.ListExerciseContrastRequest;
 import cn.malgo.annotation.request.exercise.UserResetRequest;
 import cn.malgo.annotation.result.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /** Created by cjl on 2018/6/3. */
 @RestController
@@ -67,7 +59,7 @@ public class AnnotationExerciseController extends BaseController {
   @RequestMapping(value = "commit-user-exercise", method = RequestMethod.POST)
   public Response commitUserExercise(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         commitExerciseAnnotationBiz.process(
             commitAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
@@ -77,7 +69,7 @@ public class AnnotationExerciseController extends BaseController {
   @RequestMapping(value = "designate-exercise", method = RequestMethod.POST)
   public Response designateExercise(
       @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         designateUserExerciseBiz.process(
             designateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
