@@ -86,8 +86,8 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
             relation ->
                 !legalRules.contains(
                     new RelationLimitRulePair(
-                        entityMap.get(relation.getSourceTag()).getType(),
-                        entityMap.get(relation.getTargetTag()).getType(),
+                        entityMap.get(relation.getSourceTag()).getType().replace("-and", ""),
+                        entityMap.get(relation.getTargetTag()).getType().replace("-and", ""),
                         relation.getType())))
         .map(
             relation ->
