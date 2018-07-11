@@ -2,10 +2,12 @@ package cn.malgo.annotation.service.impl.error;
 
 import cn.malgo.annotation.dao.AnnotationFixLogRepository;
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
-import cn.malgo.annotation.dto.error.AnnotationWithPosition;
-import cn.malgo.annotation.dto.error.WordErrorWithPosition;
+import cn.malgo.annotation.dto.error.*;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.exception.InternalServiceException;
+import cn.malgo.annotation.exception.InvalidInputException;
+import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
+import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.core.definition.Entity;
@@ -74,6 +76,109 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
       }
     }
 
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<Entity> fix(
+      final Annotation annotation,
+      final int start,
+      final int end,
+      final FixAnnotationErrorData data) {
+    log.info("fixing {}, position: ({}, {}), data: {}", annotation.getId(), start, end, data);
+
+    final int activeEntity = data.getActiveEntity();
+    final List<FixAnnotationEntity> entities = data.getEntities();
+    final List<FixAnnotationRelationEntity> relations =
+        data.getRelations() != null ? data.getRelations() : Collections.emptyList();
+
+    if (activeEntity < 0 || activeEntity >= entities.size()) {
+      throw new InvalidInputException(
+          "invalid-active-entity", activeEntity + "不是一个合法的index位置，请检查表格");
+    }
+
+    final AnnotationDocument document = annotation.getDocument();
+    final String text = document.getText();
+
+    if (entities.stream().anyMatch(entity -> !StringUtils.contains(text, entity.getTerm()))) {
+      throw new InvalidInputException(
+          "invalid-fix-entities", "存在不包含在\"" + text + "\"中的entity，请检查表格");
+    }
+
+    if (relations
+        .stream()
+        .anyMatch(
+            entity ->
+                entity.getSource() < 0
+                    || entity.getSource() >= entities.size()
+                    || entity.getTarget() < 0
+                    || entity.getTarget() >= entities.size())) {
+      throw new InvalidInputException("invalid-relations", "relations中包含非法index");
+    }
+
+    final int oldEntitySize =
+        document
+            .getEntities()
+            .stream()
+            .mapToInt(entity -> Integer.parseInt(entity.getTag().replace("T", "")))
+            .max()
+            .orElse(1);
+    final int oldRelationSize =
+        document
+            .getRelationEntities()
+            .stream()
+            .mapToInt(entity -> Integer.parseInt(entity.getTag().replace("R", "")))
+            .max()
+            .orElse(1);
+    final List<Entity> createdEntities = new ArrayList<>();
+    final List<RelationEntity> createdRelations = new ArrayList<>();
+
+    for (final FixAnnotationEntity entity : entities) {
+      final int entityStart = text.indexOf(entity.getTerm(), start);
+      createdEntities.add(
+          new Entity(
+              "T" + (oldEntitySize + createdEntities.size() + 1),
+              entityStart,
+              entityStart + entity.getTerm().length(),
+              entity.getType(),
+              entity.getTerm()));
+    }
+
+    for (final FixAnnotationRelationEntity entity : relations) {
+      createdRelations.add(
+          new RelationEntity(
+              "R" + (oldRelationSize + createdRelations.size() + 1),
+              entity.getType(),
+              createdEntities.get(entity.getSource()).getTag(),
+              createdEntities.get(entity.getTarget()).getTag(),
+              "source",
+              "target"));
+    }
+
+    final List<Entity> oldEntities = document.getEntitiesInside(new BratPosition(start, end));
+    final Map<String, Entity> oldEntityMap = DocumentUtils.getEntityMap(oldEntities);
+    final List<RelationEntity> oldRelations = document.getRelationsOutsideToInside(oldEntities);
+    final List<RelationEntity> invalidRelations =
+        document.getRelationsInside(new BratPosition(start, end));
+    final String activeTag = createdEntities.get(activeEntity).getTag();
+
+    document.getEntities().removeAll(oldEntities);
+    document.getEntities().addAll(createdEntities);
+    document.getRelationEntities().addAll(createdRelations);
+    document.getRelationEntities().removeAll(invalidRelations);
+    oldRelations.forEach(
+        relation -> {
+          if (oldEntityMap.containsKey(relation.getSourceTag())) {
+            relation.setSourceTag(activeTag);
+          } else if (oldEntityMap.containsKey(relation.getTargetTag())) {
+            relation.setTargetTag(activeTag);
+          } else {
+            throw new InternalServiceException(
+                "invalid-relations", "outside inside relations不包含source和target");
+          }
+        });
+
+    annotation.setAnnotation(AnnotationDocumentManipulator.toBratAnnotations(document));
     return Collections.emptyList();
   }
 

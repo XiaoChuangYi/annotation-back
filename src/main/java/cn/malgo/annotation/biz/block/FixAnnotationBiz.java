@@ -5,7 +5,7 @@ import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
-import cn.malgo.annotation.dto.error.FixAnnotationEntity;
+import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.dto.error.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
@@ -80,7 +80,7 @@ public class FixAnnotationBiz
       final AnnotationTaskBlock block,
       final int start,
       final int end,
-      final List<FixAnnotationEntity> entities) {
+      final FixAnnotationErrorData data) {
     if (block == null) {
       return new FixAnnotationResult(false, "ID不存在");
     }
@@ -93,9 +93,9 @@ public class FixAnnotationBiz
     // 1: fix
     // 2: skip
     int action;
-    if (entities == null) {
+    if (data.getEntities() == null) {
       action = 0;
-    } else if (entities.size() == 0) {
+    } else if (data.getEntities().size() == 0) {
       action = 2;
     } else {
       action = 1;
@@ -110,7 +110,7 @@ public class FixAnnotationBiz
         case 1:
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
-              annotationErrorFactory.getProvider(errorType).fix(annotation, start, end, entities);
+              annotationErrorFactory.getProvider(errorType).fix(annotation, start, end, data);
           fixedEntities.forEach(
               entity ->
                   annotationFixLogService.insertOrUpdate(
@@ -152,7 +152,6 @@ public class FixAnnotationBiz
             .collect(Collectors.toMap(AnnotationTaskBlock::getId, annotation -> annotation));
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
-    final List<FixAnnotationEntity> entities = request.getEntities();
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
@@ -165,7 +164,7 @@ public class FixAnnotationBiz
                     idMap.get(annotation.getId()),
                     annotation.getStart(),
                     annotation.getEnd(),
-                    entities))
+                    request))
         .collect(Collectors.toList());
   }
 }

@@ -3,7 +3,8 @@ package cn.malgo.annotation.dto.error;
 import lombok.Value;
 
 @Value
-public class FixAnnotationEntity {
+public class FixAnnotationRelationEntity {
+  private final int source;
+  private final int target;
   private final String type;
-  private final String term;
 }

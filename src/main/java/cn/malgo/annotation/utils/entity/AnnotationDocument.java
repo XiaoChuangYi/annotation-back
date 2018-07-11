@@ -41,6 +41,21 @@ public class AnnotationDocument {
   }
 
   /**
+   * @param position start & end
+   * @return 完全包含在position范围内的所有relations
+   */
+  public List<RelationEntity> getRelationsInside(final BratPosition position) {
+    final Map<String, Entity> entityMap = DocumentUtils.getEntityMap(getEntitiesInside(position));
+    return relationEntities
+        .stream()
+        .filter(
+            relation ->
+                entityMap.containsKey(relation.getSourceTag())
+                    && entityMap.containsKey(relation.getTargetTag()))
+        .collect(Collectors.toList());
+  }
+
+  /**
    * 找到所有不在entities这个子图中的所有关联，即关联的source或target有且仅有一个在entities列表中
    *
    * @param entities
