@@ -29,7 +29,7 @@ maven-build:
   image: maven:3-jdk-8
   stage: package
   tags:
-    - docker
+    - backend
   script:
     - mvn $MAVEN_CLI_OPTS package
     - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
@@ -46,7 +46,7 @@ docker-build:
   stage: build
   image: docker:latest
   tags:
-    - docker
+    - dind
   allow_failure: false
   before_script:
     - docker info
@@ -61,7 +61,7 @@ docker-build:
 deploy-test:
   stage: deploy_test
   tags:
-    - docker
+    - deploy
   environment:
     name: test
     url: 121.196.212.109
@@ -77,7 +77,7 @@ deploy-test:
 deploy-prod:
   stage: deploy_prod
   tags:
-    - docker
+    - deploy
   environment:
     name: prod
     url: 47.96.0.236
