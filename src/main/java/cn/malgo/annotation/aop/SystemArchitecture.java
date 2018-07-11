@@ -4,6 +4,7 @@ import cn.malgo.annotation.exception.MalgoServiceException;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -71,7 +72,7 @@ public class SystemArchitecture {
             args);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；请求参数：{}；", className, methodSignature.getName(), args);
       }
     }
@@ -114,7 +115,7 @@ public class SystemArchitecture {
             retValue);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；返回结果：{}；", className, methodSignature.getName(), retValue);
       }
     }
