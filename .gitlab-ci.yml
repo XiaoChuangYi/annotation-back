@@ -38,9 +38,6 @@ maven-build:
     paths:
       - target/*.jar
       - target/.version
-  cache:
-    paths:
-      - .m2/repository/
   only:
     - develop
     - master
