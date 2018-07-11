@@ -7,6 +7,7 @@ import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
+import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import org.apache.commons.lang3.StringUtils;
@@ -19,12 +20,15 @@ public class UpdateBlockAnnotationBiz
 
   private final AnnotationWriteOperateService annotationWriteOperateService;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
 
   public UpdateBlockAnnotationBiz(
       AnnotationWriteOperateService annotationWriteOperateService,
-      AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+      AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
     this.annotationWriteOperateService = annotationWriteOperateService;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
   }
 
   @Override
@@ -54,6 +58,7 @@ public class UpdateBlockAnnotationBiz
       int role,
       AnnotationTaskBlock annotationTaskBlock,
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
+    checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock, role);
     final String annotation =
         annotationWriteOperateService.updateMetaDataAnnotation(
             updateAnnotationGroupRequest,
@@ -62,5 +67,19 @@ public class UpdateBlockAnnotationBiz
     annotationTaskBlock.setAnnotation(annotation);
     annotationTaskBlockRepository.save(annotationTaskBlock);
     return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
+  }
+
+  private void checkRuleBeforeUpdateRelation(
+      UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
+      AnnotationTaskBlock annotationTaskBlock,
+      int role) {
+    if (!StringUtils.isAllBlank(
+        updateAnnotationGroupRequest.getRelation(), updateAnnotationGroupRequest.getReTag())) {
+      // 新增relation
+      if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
+          updateAnnotationGroupRequest, annotationTaskBlock, role)) {
+        throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
+      }
+    }
   }
 }
