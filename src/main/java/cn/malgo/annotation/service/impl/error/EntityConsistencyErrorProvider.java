@@ -20,6 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORDS;
+
 @Slf4j
 @Service
 public class EntityConsistencyErrorProvider extends BaseErrorProvider {
@@ -42,7 +44,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
             .stream()
             .flatMap(
                 annotation -> annotation.getDocument().getEntities().stream().map(Entity::getTerm))
-            .filter(StringUtils::isNotBlank)
+            .filter(term -> StringUtils.isNotBlank(term) && !IGNORE_WORDS.contains(term))
             .collect(Collectors.toSet())
             .stream()
             .sorted(comparator)

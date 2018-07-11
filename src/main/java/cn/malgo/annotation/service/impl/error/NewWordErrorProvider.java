@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORD_TYPES;
+
 /** 新词或旧词新意错误分析 */
 @Service
 @Slf4j
@@ -40,17 +42,6 @@ public class NewWordErrorProvider extends BaseErrorProvider {
         // 疾病编码
         Pattern.compile("m\\d+\\s*/\\s*\\d+", Pattern.CASE_INSENSITIVE)
       };
-
-  private static final List<Pair<String, String>> IGNORE_WORD_TYPES =
-      Arrays.asList(
-          Pair.of("&", "Token"),
-          Pair.of(";", "Token"),
-          Pair.of("，", "Token"),
-          Pair.of("。", "Token"),
-          Pair.of("！", "Token"),
-          Pair.of("!", "Token"),
-          Pair.of("?", "Token"),
-          Pair.of("？", "Token"));
 
   private final int batchSize;
   private Map<String, Map<String, WordTypeCount>> staticWordsDict;

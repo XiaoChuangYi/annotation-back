@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORDS;
+
 @Slf4j
 @Service
 public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
@@ -40,7 +42,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
     for (Annotation annotation : annotations) {
       for (Entity entity : annotation.getDocument().getEntities()) {
         final String term = entity.getTerm();
-        if (StringUtils.isBlank(term)) {
+        if (StringUtils.isBlank(term) || IGNORE_WORDS.contains(term)) {
           continue;
         }
 
