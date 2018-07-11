@@ -19,16 +19,17 @@ stages:
   - deploy_prod
 
 variables:
-  DOCKER_DRIVER: overlay
   REPO_NAME: annotation-service
   PULL_REPO: registry-vpc.cn-hangzhou.aliyuncs.com/malgo/$REPO_NAME:$CI_COMMIT_SHA
   PUSH_REPO: $REGISTRY_SERVER/malgo/$REPO_NAME:$CI_COMMIT_SHA
-  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "-s /gitlab/.m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=/gitlab/.m2/repository"
 
 maven-build:
   image: maven:3-jdk-8
   stage: package
+  tags:
+    - docker
   script:
     - mvn $MAVEN_CLI_OPTS package
     - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
@@ -47,8 +48,8 @@ maven-build:
 docker-build:
   stage: build
   image: docker:latest
-  services:
-   - docker:dind
+  tags:
+    - docker
   allow_failure: false
   before_script:
     - docker info
@@ -62,6 +63,8 @@ docker-build:
 
 deploy-test:
   stage: deploy_test
+  tags:
+    - docker
   environment:
     name: test
     url: 121.196.212.109
@@ -76,6 +79,8 @@ deploy-test:
 
 deploy-prod:
   stage: deploy_prod
+  tags:
+    - docker
   environment:
     name: prod
     url: 47.96.0.236
