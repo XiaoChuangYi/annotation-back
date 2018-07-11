@@ -1,11 +1,10 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.FixAnnotationEntity;
-import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.dto.error.FixAnnotationEntity;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
-import cn.malgo.annotation.service.FixAnnotationErrorService;
+import cn.malgo.annotation.service.impl.error.NewWordErrorProvider;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import org.testng.Assert;
@@ -16,8 +15,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class FixAnnotationErrorServiceImplTest {
-  private FixAnnotationErrorService fixAnnotationErrorService = new FixAnnotationErrorServiceImpl();
+public class NewWordErrorProviderTest {
+  private NewWordErrorProvider fixAnnotationErrorService = new NewWordErrorProvider(null, 200);
 
   @DataProvider(name = "fix-annotation-data")
   public Object[][] getData() {
@@ -85,8 +84,7 @@ public class FixAnnotationErrorServiceImplTest {
       final List<FixAnnotationEntity> entities,
       final String result) {
     final Annotation annotation = new TestAnnotation(text, annotationText);
-    fixAnnotationErrorService.fixAnnotationError(
-        AnnotationErrorEnum.NEW_WORD, annotation, start, end, entities);
+    fixAnnotationErrorService.fix(annotation, start, end, entities);
     Assert.assertEquals(annotation.getAnnotation(), result);
   }
 
@@ -96,8 +94,7 @@ public class FixAnnotationErrorServiceImplTest {
   public void testFixAnnotationNotFoundException() {
     final Annotation annotation = new TestAnnotation("01234等大等圆01234", "T1\twrong 5 9\t等大等圆");
 
-    fixAnnotationErrorService.fixAnnotationError(
-        AnnotationErrorEnum.NEW_WORD,
+    fixAnnotationErrorService.fix(
         annotation,
         5,
         9,
@@ -112,8 +109,7 @@ public class FixAnnotationErrorServiceImplTest {
     final Annotation annotation =
         new TestAnnotation("01234等大等圆01234", "T1\tcorrect1 5 7\t等大\nT2\tcorrect2 7 9\t等圆");
 
-    fixAnnotationErrorService.fixAnnotationError(
-        AnnotationErrorEnum.NEW_WORD,
+    fixAnnotationErrorService.fix(
         annotation,
         5,
         7,
@@ -126,8 +122,7 @@ public class FixAnnotationErrorServiceImplTest {
       expectedExceptionsMessageRegExp = "\"等大等\"必须包含\"等大等圆\"")
   public void testFixAnnotationNotMatchManualAnnotation() {
     final Annotation annotation = new TestAnnotation("01234等大等圆01234", "T1\twrong 5 9\t等大等圆");
-    fixAnnotationErrorService.fixAnnotationError(
-        AnnotationErrorEnum.NEW_WORD,
+    fixAnnotationErrorService.fix(
         annotation,
         5,
         9,

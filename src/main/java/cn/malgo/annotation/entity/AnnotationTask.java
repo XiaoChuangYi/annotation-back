@@ -2,7 +2,9 @@ package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -61,6 +63,7 @@ public class AnnotationTask {
   @Column(name = "state", nullable = false, length = 16)
   @Getter
   @Setter
+  @JSONField(serialzeFeatures = SerializerFeature.WriteEnumUsingName)
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
 
   @OneToMany(

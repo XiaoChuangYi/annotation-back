@@ -5,13 +5,13 @@ import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
-import java.util.stream.Collectors;
+import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -19,72 +19,100 @@ import org.springframework.stereotype.Component;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Component
 @RequireRole(AnnotationRoleStateEnum.admin)
 public class ListAnnotationTaskBlockBiz
-    extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlock>> {
-
+    extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlockResponse>> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
   public ListAnnotationTaskBlockBiz(AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
-  private static Specification<AnnotationTaskBlock> queryAnnotationTaskBlockCondition(
-      ListAnnotationTaskBlockRequest param) {
+  private Specification<AnnotationTaskBlock> queryAnnotationTaskBlockCondition(
+      ListAnnotationTaskBlockRequest request) {
     return (Specification<AnnotationTaskBlock>)
         (root, criteriaQuery, criteriaBuilder) -> {
-          List<Predicate> predicates = new ArrayList<>();
-          if (StringUtils.isNotBlank(param.getText())) {
+          final List<Predicate> predicates = new ArrayList<>();
+
+          if (request.getId() != null && request.getId() != 0) {
+            predicates.add(criteriaBuilder.equal(root.get("id"), request.getId()));
+          }
+
+          if (request.getStates() != null && request.getStates().size() > 0) {
             predicates.add(
-                criteriaBuilder.like(
-                    root.get("text"), String.format("%s%s%s", "%", param.getText(), "%")));
+                criteriaBuilder
+                    .in(root.get("state"))
+                    .value(
+                        request
+                            .getStates()
+                            .stream()
+                            .map(AnnotationTaskState::valueOf)
+                            .collect(Collectors.toList())));
           }
-          if (param.getStates() != null
-              && param.getStates().size() > 0
-              && !param.getStates().contains(null)) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getStates()));
+
+          if (request.getAnnotationTypes() != null && request.getAnnotationTypes().size() > 0) {;
+            predicates.add(
+                criteriaBuilder
+                    .in(root.get("annotationType"))
+                    .value(
+                        request
+                            .getAnnotationTypes()
+                            .stream()
+                            .map(AnnotationTypeEnum::getByValue)
+                            .collect(Collectors.toList())));
           }
-          if (param.getAnnotationTypes() != null
-              && param.getAnnotationTypes().size() > 0
-              && !param.getAnnotationTypes().contains("")) {
-            final List<AnnotationTypeEnum> annotationTypes =
-                param
-                    .getAnnotationTypes()
-                    .stream()
-                    .map(x -> AnnotationTypeEnum.valueOf(x))
-                    .collect(Collectors.toList());
-            predicates.add(criteriaBuilder.in(root.get("annotationType")).value(annotationTypes));
+
+          if (StringUtils.isNotBlank(request.getText())) {
+            if (request.getRegexMode() == null || !request.getRegexMode()) {
+              predicates.add(
+                  criteriaBuilder.like(
+                      root.get("text"), String.format("%%%s%%", request.getText())));
+            } else {
+              predicates.add(
+                  criteriaBuilder.equal(
+                      criteriaBuilder.function(
+                          "rlike",
+                          Integer.class,
+                          root.get("text"),
+                          criteriaBuilder.literal(
+                              Pattern.compile(".*" + request.getText() + ".*").toString())),
+                      1));
+            }
           }
-          return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+
+          return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
 
   @Override
-  protected void validateRequest(ListAnnotationTaskBlockRequest listAnnotationTaskBlockRequest)
+  protected void validateRequest(ListAnnotationTaskBlockRequest request)
       throws InvalidInputException {
-    if (listAnnotationTaskBlockRequest == null) {
+    if (request == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
-    if (listAnnotationTaskBlockRequest.getPageIndex() <= 0) {
+
+    if (request.getPageIndex() <= 0) {
       throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
     }
-    if (listAnnotationTaskBlockRequest.getPageSize() <= 0) {
+
+    if (request.getPageSize() <= 0 || request.getPageSize() > 50) {
       throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
     }
   }
 
   @Override
-  protected PageVO<AnnotationTaskBlock> doBiz(
-      int userId, int role, ListAnnotationTaskBlockRequest listAnnotationTaskBlockRequest) {
-    final int pageIndex = listAnnotationTaskBlockRequest.getPageIndex() - 1;
-    Page<AnnotationTaskBlock> page =
-        annotationTaskBlockRepository.findAll(
-            queryAnnotationTaskBlockCondition(listAnnotationTaskBlockRequest),
-            PageRequest.of(pageIndex, listAnnotationTaskBlockRequest.getPageSize()));
-    PageVO<AnnotationTaskBlock> pageVO = new PageVO(page, false);
-    pageVO.setDataList(page.getContent());
-    return pageVO;
+  protected PageVO<AnnotationTaskBlockResponse> doBiz(
+      int userId, int role, ListAnnotationTaskBlockRequest request) {
+    final int pageIndex = request.getPageIndex() - 1;
+    return new PageVO<>(
+        annotationTaskBlockRepository
+            .findAll(
+                queryAnnotationTaskBlockCondition(request),
+                PageRequest.of(pageIndex, request.getPageSize()))
+            .map(AnnotationTaskBlockResponse::new));
   }
 }

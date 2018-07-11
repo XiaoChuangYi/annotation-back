@@ -1,6 +1,6 @@
 package cn.malgo.annotation.vo;
 
-import cn.malgo.annotation.dto.AnnotationWordError;
+import cn.malgo.annotation.dto.error.AnnotationWordError;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

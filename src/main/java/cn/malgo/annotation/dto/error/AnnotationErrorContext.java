@@ -1,5 +1,6 @@
-package cn.malgo.annotation.dto;
+package cn.malgo.annotation.dto.error;
 
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;

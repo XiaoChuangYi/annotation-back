@@ -1,5 +1,7 @@
 package cn.malgo.annotation.utils;
 
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
 import com.alibaba.fastjson.JSONObject;
@@ -82,6 +84,36 @@ public class AnnotationConvert {
               .collect(Collectors.toList()));
     }
     return finalJsonObj;
+  }
+
+  public static AnnotationBlockBratVO convert2AnnotationBlockBratVO(
+      AnnotationTaskBlock annotationTaskBlock) {
+    final JSONObject annotationJson;
+    try {
+      annotationJson =
+          convertAnnotation2BratFormat(
+              annotationTaskBlock.getText(),
+              annotationTaskBlock.getAnnotation(),
+              annotationTaskBlock.getAnnotationType().ordinal());
+    } catch (Exception ex) {
+      log.info(
+          "Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}",
+          annotationTaskBlock.getId(),
+          annotationTaskBlock.getText(),
+          annotationTaskBlock.getAnnotation(),
+          ex.getMessage());
+      throw new BratParseException("brat-parse-error", "异常标注id：" + annotationTaskBlock.getId());
+    }
+    final AnnotationBlockBratVO annotationBlockBratVO =
+        new AnnotationBlockBratVO(
+            annotationTaskBlock.getId(),
+            annotationJson,
+            annotationTaskBlock.getAnnotationType().ordinal(),
+            annotationTaskBlock.getCreatedTime(),
+            annotationTaskBlock.getLastModified(),
+            annotationTaskBlock.getState().name(),
+            annotationTaskBlock.getText());
+    return annotationBlockBratVO;
   }
 
   /** 将分句标注数据装载到前端vo对象中 */
