@@ -93,12 +93,16 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
 
       if (entityTypes.size() == 2) {
         return relationLimitRuleRepository.isLegalRelation(
-            entityTypes.get(0), entityTypes.get(1), addRelationRequest.getRelation());
+            entityTypes.get(0).replace("-and", ""),
+            entityTypes.get(1).replace("-and", ""),
+            addRelationRequest.getRelation());
       }
       // 自己关联自己的情况
       if (entityTypes.size() == 1) {
         return relationLimitRuleRepository.isLegalRelation(
-            entityTypes.get(0), entityTypes.get(0), addRelationRequest.getRelation());
+            entityTypes.get(0).replace("-and", ""),
+            entityTypes.get(0).replace("-and", ""),
+            addRelationRequest.getRelation());
       }
     }
     return false;
