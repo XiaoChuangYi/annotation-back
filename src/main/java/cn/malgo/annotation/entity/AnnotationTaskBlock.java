@@ -40,6 +40,7 @@ public class AnnotationTaskBlock {
       updatable = false,
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @Getter
   private Timestamp createdTime;
 
   @LastModifiedDate
@@ -47,6 +48,7 @@ public class AnnotationTaskBlock {
       name = "last_modified",
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @Getter
   private Timestamp lastModified;
 
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
