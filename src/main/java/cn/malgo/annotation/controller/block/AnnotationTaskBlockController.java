@@ -4,6 +4,7 @@ import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.DeleteBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.GetAnnotationBlockBiz;
+import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
+import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
@@ -24,16 +26,19 @@ public class AnnotationTaskBlockController extends BaseController {
   private final GetAnnotationBlockBiz getAnnotationBlockBiz;
   private final AddBlockAnnotationBiz addBlockAnnotationBiz;
   private final DeleteBlockAnnotationBiz deleteBlockAnnotationBiz;
+  private final UpdateBlockAnnotationBiz updateBlockAnnotationBiz;
 
   public AnnotationTaskBlockController(
       AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz,
       GetAnnotationBlockBiz getAnnotationBlockBiz,
       AddBlockAnnotationBiz addBlockAnnotationBiz,
-      DeleteBlockAnnotationBiz deleteBlockAnnotationBiz) {
+      DeleteBlockAnnotationBiz deleteBlockAnnotationBiz,
+      UpdateBlockAnnotationBiz updateBlockAnnotationBiz) {
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
     this.addBlockAnnotationBiz = addBlockAnnotationBiz;
     this.deleteBlockAnnotationBiz = deleteBlockAnnotationBiz;
+    this.updateBlockAnnotationBiz = updateBlockAnnotationBiz;
   }
 
   /** ANNOTATED或FINISHED状态的block可以被打回重新标注或审核 */
@@ -74,5 +79,15 @@ public class AnnotationTaskBlockController extends BaseController {
     return new Response<>(
         deleteBlockAnnotationBiz.process(
             deleteAnnotationGroupRequest, userAccount.getId(), userAccount.getRoleId()));
+  }
+
+  /** 更新block标注 */
+  @RequestMapping(value = "update-block-annotation", method = RequestMethod.POST)
+  public Response<AnnotationBlockBratVO> updateBlockAnnotation(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
+    return new Response<>(
+        updateBlockAnnotationBiz.process(
+            updateAnnotationGroupRequest, userAccount.getId(), userAccount.getRoleId()));
   }
 }
