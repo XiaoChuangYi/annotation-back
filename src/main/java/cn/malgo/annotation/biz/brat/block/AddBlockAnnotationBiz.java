@@ -10,7 +10,6 @@ import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -41,23 +40,17 @@ public class AddBlockAnnotationBiz
       int role,
       AnnotationTaskBlock annotationTaskBlock,
       AddAnnotationGroupRequest addAnnotationGroupRequest) {
-    final Optional<AnnotationTaskBlock> optional =
-        annotationTaskBlockRepository.findById(addAnnotationGroupRequest.getId());
-    if (optional.isPresent()) {
-      checkRuleBeforeAddRelation(addAnnotationGroupRequest, annotationTaskBlock, role);
-      final AnnotationTaskBlock taskBlock = optional.get();
-      String annotation =
-          annotationWriteOperateService.addMetaDataAnnotation(
-              addAnnotationGroupRequest,
-              taskBlock.getAnnotation(),
-              taskBlock.getAnnotationType().ordinal());
-      annotationTaskBlock.setAnnotation(annotation);
-      annotationTaskBlockRepository.save(annotationTaskBlock);
-      AnnotationBlockBratVO annotationBlockBratVO =
-          AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
-      return annotationBlockBratVO;
-    }
-    return null;
+    checkRuleBeforeAddRelation(addAnnotationGroupRequest, annotationTaskBlock, role);
+    String annotation =
+        annotationWriteOperateService.addMetaDataAnnotation(
+            addAnnotationGroupRequest,
+            annotationTaskBlock.getAnnotation(),
+            annotationTaskBlock.getAnnotationType().ordinal());
+    annotationTaskBlock.setAnnotation(annotation);
+    annotationTaskBlockRepository.save(annotationTaskBlock);
+    AnnotationBlockBratVO annotationBlockBratVO =
+        AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
+    return annotationBlockBratVO;
   }
 
   private void checkRuleBeforeAddRelation(
