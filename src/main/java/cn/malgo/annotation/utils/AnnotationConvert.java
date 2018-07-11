@@ -37,12 +37,12 @@ public class AnnotationConvert {
   }
 
   /** 获取指定的entity */
-  public static Entity getEntityFromAnnotation(String annotation, String tag) {
+  public static RelationEntity getRelationEntityFromAnnotation(String annotation, String tag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(
         annotation == null ? "" : annotation, annotationDocument);
     return annotationDocument
-        .getEntities()
+        .getRelationEntities()
         .stream()
         .filter(x -> x.getTag().equals(tag))
         .findFirst()
