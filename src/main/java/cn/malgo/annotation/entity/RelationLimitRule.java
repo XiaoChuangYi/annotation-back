@@ -11,7 +11,10 @@ import javax.persistence.*;
 @Table(
     name = "relation_limit_rule",
     indexes = {
-      @Index(name = "index_source_target_relation_type", columnList = "source,target,relationType"),
+      @Index(
+          name = "index_source_target_relation_type",
+          columnList = "source,target,relationType",
+          unique = true),
     })
 @Data
 @AllArgsConstructor
