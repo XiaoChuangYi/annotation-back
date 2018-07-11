@@ -18,6 +18,7 @@ import java.util.List;
 public class JsonConfig implements WebMvcConfigurer {
   static {
     JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+    JSON.DEFAULT_GENERATE_FEATURE &= ~SerializerFeature.WriteEnumUsingName.getMask();
   }
 
   @Value("${malgo.config.fastjson.pretty}")

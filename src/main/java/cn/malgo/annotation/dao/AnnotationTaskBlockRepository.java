@@ -10,7 +10,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface AnnotationTaskBlockRepository
-    extends JpaRepository<AnnotationTaskBlock, Integer>, JpaSpecificationExecutor {
+    extends JpaRepository<AnnotationTaskBlock, Integer>,
+        JpaSpecificationExecutor<AnnotationTaskBlock> {
 
   AnnotationTaskBlock getOneByAnnotationTypeEqualsAndTextEquals(
       AnnotationTypeEnum annotationType, String text);

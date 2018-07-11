@@ -1,15 +1,16 @@
 package cn.malgo.annotation.request.task;
 
-import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import java.util.List;
 import lombok.Value;
+
+import java.util.List;
 
 @Value
 public class ListAnnotationTaskBlockRequest {
-  int pageIndex;
-  int pageSize;
-  List<String> annotationTypes;
-  String text;
-  List<AnnotationTaskState> states;
+  private int pageIndex;
+  private int pageSize;
+  private String text;
+  private Boolean regexMode;
+  private Integer id;
+  private List<Integer> annotationTypes;
+  private List<String> states;
 }
