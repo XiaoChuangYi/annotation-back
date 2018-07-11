@@ -17,7 +17,11 @@ public abstract class BaseBlockAnnotationBiz<
   @Resource private AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
   @Override
-  protected void validateRequest(REQ req) throws InvalidInputException {}
+  protected void validateRequest(REQ req) throws InvalidInputException {
+    if (req.getId() <= 0) {
+      throw new InvalidInputException("invalid-id", "无效的id");
+    }
+  }
 
   @Override
   protected AnnotationBlockBratVO doBiz(int userId, int role, REQ req) {
