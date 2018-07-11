@@ -40,8 +40,7 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 addAnnotationGroupRequest.getTerm());
         break;
       case relation:
-        if (StringUtils.equalsAny(
-            null,
+        if (StringUtils.isAllBlank(
             addAnnotationGroupRequest.getRelation(),
             addAnnotationGroupRequest.getSourceTag(),
             addAnnotationGroupRequest.getTargetTag())) {
@@ -120,24 +119,22 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
       case sentence:
         annotation =
             AnnotationConvert.updateEntitiesAnnotation(
-                annotation,
+                oldAnnotation,
                 updateAnnotationGroupRequest.getTag(),
                 updateAnnotationGroupRequest.getNewType());
         break;
       case relation:
-        if (StringUtils.equalsAny(
-            null,
-            updateAnnotationGroupRequest.getReTag(),
-            updateAnnotationGroupRequest.getRelation())) {
+        if (StringUtils.isAllBlank(
+            updateAnnotationGroupRequest.getReTag(), updateAnnotationGroupRequest.getRelation())) {
           annotation =
               AnnotationConvert.updateEntitiesAnnotation(
-                  annotation,
+                  oldAnnotation,
                   updateAnnotationGroupRequest.getTag(),
                   updateAnnotationGroupRequest.getNewType());
         } else {
           annotation =
               AnnotationConvert.updateRelationAnnotation(
-                  annotation,
+                  oldAnnotation,
                   updateAnnotationGroupRequest.getReTag(),
                   updateAnnotationGroupRequest.getRelation());
         }
