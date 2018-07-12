@@ -31,6 +31,6 @@ public interface AnnotationErrorProvider {
   default List<Entity> fix(
       Annotation annotation, FixAnnotationErrorContext context, FixAnnotationErrorData data)
       throws InvalidInputException {
-    return fix(annotation, context.getStart(), context.getEnd(), data.getEntities());
+    return fix(annotation, context.getStart(), context.getEnd(), data);
   }
 }
