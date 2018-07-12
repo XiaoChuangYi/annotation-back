@@ -75,9 +75,15 @@ public class UpdateBlockAnnotationBiz
       int role) {
     if (!StringUtils.isAllBlank(
         updateAnnotationGroupRequest.getRelation(), updateAnnotationGroupRequest.getReTag())) {
-      // 新增relation
+      // 更新relation
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
           updateAnnotationGroupRequest, annotationTaskBlock, role)) {
+        throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
+      }
+    } else {
+      // 更新entity
+      if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
+          updateAnnotationGroupRequest, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
     }
