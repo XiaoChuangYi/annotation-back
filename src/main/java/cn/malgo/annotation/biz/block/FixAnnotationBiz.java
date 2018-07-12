@@ -19,7 +19,6 @@ import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
-import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +79,7 @@ public class FixAnnotationBiz
 
   private FixAnnotationResult fixAnnotation(
       final AnnotationErrorEnum errorType,
+      final String word,
       final AnnotationTaskBlock block,
       final FixAnnotationErrorContext context,
       final FixAnnotationErrorData data) {
@@ -102,20 +102,12 @@ public class FixAnnotationBiz
     } else {
       action = 1;
     }
-    final Entity finalEntity =
-        AnnotationConvert.getEntitiesFromAnnotation(block.getAnnotation())
-            .stream()
-            .filter(entity -> entity.getStart() == start && entity.getEnd() == end)
-            .findFirst()
-            .orElse(null);
 
     try {
       switch (action) {
         case 0:
           blockService.resetBlock(
-              block,
-              AnnotationBlockActionEnum.RE_EXAMINE,
-              errorType + ":" + finalEntity == null ? "无对应的错误词term" : finalEntity.getTerm());
+              block, AnnotationBlockActionEnum.RE_EXAMINE, errorType.name() + ": " + word);
           break;
 
         case 1:
@@ -166,6 +158,7 @@ public class FixAnnotationBiz
             .collect(Collectors.toMap(AnnotationTaskBlock::getId, annotation -> annotation));
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
+    final String word = request.getWord();
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
@@ -173,7 +166,7 @@ public class FixAnnotationBiz
         .stream()
         .map(
             annotation ->
-                fixAnnotation(errorType, idMap.get(annotation.getId()), annotation, request))
+                fixAnnotation(errorType, word, idMap.get(annotation.getId()), annotation, request))
         .collect(Collectors.toList());
   }
 }

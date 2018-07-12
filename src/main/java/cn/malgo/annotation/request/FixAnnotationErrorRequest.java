@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 public class FixAnnotationErrorRequest implements FixAnnotationErrorData {
   private int errorType;
+  private String word;
   // 需要修复的标注block
   private List<AnnotationErrorContext> annotations;
   // 分词、实体数据
