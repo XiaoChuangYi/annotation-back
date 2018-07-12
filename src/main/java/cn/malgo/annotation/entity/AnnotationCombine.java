@@ -15,6 +15,7 @@ import javax.persistence.Transient;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AnnotationCombine extends BaseEntity {
+
   @Column(name = "final_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String finalAnnotation = "";
 
@@ -24,11 +25,13 @@ public class AnnotationCombine extends BaseEntity {
   @Column(name = "reviewed_annotation", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String reviewedAnnotation = "";
 
+  @Column(name = "is_task")
   private int isTask;
 
+  @Column(name = "block_id")
   private int blockId;
 
-  @Column(columnDefinition = "text")
+  @Column(name = "comment", columnDefinition = "text")
   private String comment;
 
   @Transient private String userName;

@@ -18,6 +18,7 @@ import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
+import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequireRole(AnnotationRoleStateEnum.admin)
 public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
+
   private final AnnotationFactory annotationFactory;
   private final AnnotationErrorFactory annotationErrorFactory;
   private final AnnotationTaskBlockRepository blockRepository;
@@ -100,11 +102,20 @@ public class FixAnnotationBiz
     } else {
       action = 1;
     }
+    final Entity finalEntity =
+        AnnotationConvert.getEntitiesFromAnnotation(block.getAnnotation())
+            .stream()
+            .filter(entity -> entity.getStart() == start && entity.getEnd() == end)
+            .findFirst()
+            .orElse(null);
 
     try {
       switch (action) {
         case 0:
-          blockService.resetBlock(block, AnnotationBlockActionEnum.RE_EXAMINE, "reset");
+          blockService.resetBlock(
+              block,
+              AnnotationBlockActionEnum.RE_EXAMINE,
+              errorType + ":" + finalEntity == null ? "无对应的错误词term" : finalEntity.getTerm());
           break;
 
         case 1:

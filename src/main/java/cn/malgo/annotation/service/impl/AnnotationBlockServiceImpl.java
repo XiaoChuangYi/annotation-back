@@ -115,7 +115,7 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
             ? AnnotationCombineStateEnum.unDistributed.name()
             : AnnotationCombineStateEnum.preExamine.name());
     annotationCombine.setBlockId(block.getId());
-    annotationCombine.setComment(comment + ":打回重新审核");
+    annotationCombine.setComment(comment);
     return annotationCombineRepository.save(annotationCombine);
   }
 }
