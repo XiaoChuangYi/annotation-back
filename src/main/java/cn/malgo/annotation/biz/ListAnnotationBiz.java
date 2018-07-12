@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -40,11 +41,6 @@ public class ListAnnotationBiz
       throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, ListAnnotationCombineRequest listAnnotationCombineRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected PageVO<AnnotationCombineBratVO> doBiz(

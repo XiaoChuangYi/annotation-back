@@ -1,25 +1,24 @@
 package cn.malgo.annotation.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/** Created by cjl on 2018/5/30. */
+import javax.persistence.*;
+import java.util.Date;
+
 @Data
+@EqualsAndHashCode(of = {"id"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class UserAccount {
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;

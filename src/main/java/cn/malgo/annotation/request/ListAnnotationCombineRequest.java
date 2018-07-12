@@ -5,12 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/5/29. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ListAnnotationCombineRequest {
-
   private List<Integer> idList;
   private String term;
   private int pageIndex;

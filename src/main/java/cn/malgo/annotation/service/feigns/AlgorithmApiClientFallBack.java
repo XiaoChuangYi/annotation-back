@@ -1,19 +1,20 @@
 package cn.malgo.annotation.service.feigns;
 
-import com.alibaba.fastjson.JSON;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
+import com.alibaba.fastjson.JSON;
 import feign.hystrix.FallbackFactory;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/5/31. */
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 @Slf4j
 public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiClient> {
-
   @Override
   public AlgorithmApiClient create(Throwable throwable) {
     return new AlgorithmApiClient() {
@@ -37,6 +38,17 @@ public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiC
             JSON.toJSONString(updateAnnotationRequestList),
             throwable.getMessage());
         return null;
+      }
+
+      @Override
+      public List<List<String>> batchBlockSplitter(
+          final List<AutoAnnotationRequest> updateAnnotationRequestList) {
+        log.error("调用算法后台切分关联数据接口失败，request: " + updateAnnotationRequestList, throwable);
+
+        return updateAnnotationRequestList
+            .stream()
+            .map(request -> Collections.singletonList(request.getText()))
+            .collect(Collectors.toList());
       }
     };
   }

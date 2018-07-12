@@ -27,10 +27,6 @@ public class DeleteAnnotationBiz
   }
 
   @Override
-  protected void authorize(int userId, int role, DeleteAnnotationRequest deleteAnnotationRequest)
-      throws BusinessRuleException {}
-
-  @Override
   AnnotationCombineBratVO doInternalProcess(
       int role,
       AnnotationOperateService annotationOperateService,

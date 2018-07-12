@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.exception.BusinessRuleException;
@@ -31,10 +32,6 @@ public class ModifyUserPasswordBiz extends BaseBiz<ModifyPasswordRequest, UserAc
       throw new InvalidInputException("invalid-password", "密码为空");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, ModifyPasswordRequest modifyPasswordRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected UserAccount doBiz(ModifyPasswordRequest modifyPasswordRequest) {

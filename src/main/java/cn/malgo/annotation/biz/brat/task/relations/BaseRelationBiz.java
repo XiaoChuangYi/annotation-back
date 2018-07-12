@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -46,7 +46,7 @@ public abstract class BaseRelationBiz<REQ extends BaseAnnotationRequest, Annotat
           throw new BusinessRuleException("no-authorize-handle-current-record", "当前人员无权操作该条记录");
         }
       }
-      if (annotationCombine.getAnnotationType() != AnnotationTypeEnum.relation.getValue()) {
+      if (annotationCombine.getAnnotationType() != AnnotationTypeEnum.relation.ordinal()) {
         throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
       }
     }

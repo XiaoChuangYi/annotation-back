@@ -2,9 +2,9 @@ package cn.malgo.annotation.biz.brat.task.relations;
 
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
+import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.RelationOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
@@ -16,6 +16,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, AnnotationCombineBratVO> {
+
+  private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
+
+  public AddRelationBiz(CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+    this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
+  }
 
   @Override
   protected void validateRequest(AddRelationRequest addRelationRequest)
@@ -32,17 +38,17 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
   }
 
   @Override
-  protected void authorize(int userId, int role, AddRelationRequest addRelationRequest)
-      throws BusinessRuleException {}
-
-  @Override
   AnnotationCombineBratVO doInternalProcess(
       int role,
       RelationOperateService relationOperateService,
       AnnotationCombine annotationCombine,
       AddRelationRequest addRelationRequest) {
-    AnnotationCombineBratVO annotationCombineBratVO;
-    String annotation = relationOperateService.addRelation(addRelationRequest, role);
+    final AnnotationCombineBratVO annotationCombineBratVO;
+    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
+        addRelationRequest, role)) {
+      throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
+    }
+    final String annotation = relationOperateService.addRelation(addRelationRequest, role);
     if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
       annotationCombine.setReviewedAnnotation(annotation);
     }

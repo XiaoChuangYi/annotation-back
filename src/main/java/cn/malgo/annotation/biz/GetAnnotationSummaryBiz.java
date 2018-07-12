@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AnnotationSummary;
 import cn.malgo.annotation.exception.BusinessRuleException;
@@ -23,9 +24,6 @@ public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSumm
 
   @Override
   protected void validateRequest(Object o) throws InvalidInputException {}
-
-  @Override
-  protected void authorize(int userId, int role, Object o) throws BusinessRuleException {}
 
   @Override
   protected List<AnnotationSummaryVO> doBiz(Object o) {

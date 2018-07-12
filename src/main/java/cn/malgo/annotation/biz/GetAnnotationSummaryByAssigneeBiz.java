@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.dto.AnnotationSummary;
@@ -36,10 +37,6 @@ public class GetAnnotationSummaryByAssigneeBiz
       throw new InvalidInputException("invalid-user-id", "无效的用户id");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, SetUserStateRequest setUserStateRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected List<AnnotationSummaryVO> doBiz(

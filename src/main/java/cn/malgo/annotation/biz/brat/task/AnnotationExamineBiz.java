@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -9,21 +9,24 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
+import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/3. */
-@Component
-public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object> {
+import java.util.Optional;
 
+@Component
+public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
+  private final AnnotationBlockService annotationBlockService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
 
   public AnnotationExamineBiz(
-      AnnotationCombineRepository annotationCombineRepository,
-      ExtractAddAtomicTermService extractAddAtomicTermService) {
+      final AnnotationBlockService annotationBlockService,
+      final AnnotationCombineRepository annotationCombineRepository,
+      final ExtractAddAtomicTermService extractAddAtomicTermService) {
+    this.annotationBlockService = annotationBlockService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
   }
@@ -51,28 +54,36 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
   protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(annotationStateRequest.getId());
+
     if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      // 入库
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
+      final AnnotationCombine annotationCombine = optional.get();
+
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
+        // 原子词入库
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }
-      // state handle
+
       if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-        boolean changed =
+        final boolean equals =
             AnnotationConvert.compareAnnotation(
                 annotationCombine.getFinalAnnotation(), annotationCombine.getReviewedAnnotation());
-        if (changed) { // 相同
+
+        if (equals) {
           annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
-        } else { // 不同
+        } else {
           annotationCombine.setState(AnnotationCombineStateEnum.errorPass.name());
         }
-      }
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
+      } else if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
+      } else {
+        throw new BusinessRuleException(
+            "invalid-annotation-state", annotationCombine.getState() + "状态不可以被审核提交");
       }
-      annotationCombineRepository.save(annotationCombine);
+
+      // 更新block
+      annotationBlockService.saveAnnotation(annotationCombineRepository.save(annotationCombine));
     }
+
     return null;
   }
 }

@@ -2,7 +2,9 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
@@ -18,12 +20,9 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
       throw new NullPointerException("create annotation get null");
     }
 
-    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-      return new AnnotationFinal(annotationCombine);
-    }
-
     if (StringUtils.equalsAny(
         annotationCombine.getState(),
+        AnnotationCombineStateEnum.preExamine.name(),
         AnnotationCombineStateEnum.examinePass.name(),
         AnnotationCombineStateEnum.errorPass.name())) {
       return new AnnotationReviewed(annotationCombine);
@@ -33,18 +32,26 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
         "annotation factory get annotation with state: " + annotationCombine.getState());
   }
 
+  @Override
+  public Annotation create(final AnnotationTaskBlock block) {
+    if (block == null) {
+      throw new NullPointerException("create annotation get null");
+    }
+
+    switch (block.getState()) {
+      case ANNOTATED:
+      case FINISHED:
+        return new AnnotationBlock(block);
+    }
+
+    throw new IllegalArgumentException(
+        "annotation factory get annotation with state: " + block.getState());
+  }
+
   abstract static class BaseAnnotation implements Annotation {
-    @NonNull protected final AnnotationCombine annotationCombine;
     private AnnotationDocument document;
 
-    BaseAnnotation(final AnnotationCombine annotationCombine) {
-      this.annotationCombine = annotationCombine;
-    }
-
-    @Override
-    public int getId() {
-      return annotationCombine.getId();
-    }
+    protected abstract String getText();
 
     @Override
     public void setAnnotation(String annotation) {
@@ -54,7 +61,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     @Override
     public AnnotationDocument getDocument() {
       if (document == null) {
-        document = new AnnotationDocument(annotationCombine.getTerm());
+        document = new AnnotationDocument(getText());
         AnnotationDocumentManipulator.parseBratAnnotation(getAnnotation(), document);
       }
 
@@ -63,28 +70,51 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
 
     @Override
     public String toString() {
-      return this.getClass() + "@" + annotationCombine.getId();
+      return this.getClass() + "@" + getId();
     }
   }
 
-  static class AnnotationFinal extends BaseAnnotation {
-    AnnotationFinal(final AnnotationCombine annotationCombine) {
-      super(annotationCombine);
+  abstract static class BaseAnnotationCombine extends BaseAnnotation {
+    @NonNull protected final AnnotationCombine annotationCombine;
+
+    BaseAnnotationCombine(final AnnotationCombine annotationCombine) {
+      this.annotationCombine = annotationCombine;
     }
 
     @Override
-    public String getAnnotation() {
-      return annotationCombine.getFinalAnnotation();
+    public int getId() {
+      return annotationCombine.getId();
     }
 
     @Override
-    public void setAnnotation(String annotation) {
-      super.setAnnotation(annotation);
-      annotationCombine.setFinalAnnotation(annotation);
+    public AnnotationTypeEnum getAnnotationType() {
+      return AnnotationTypeEnum.getByValue(annotationCombine.getAnnotationType());
+    }
+
+    @Override
+    protected String getText() {
+      return annotationCombine.getTerm();
     }
   }
 
-  static class AnnotationReviewed extends BaseAnnotation {
+  //  static class AnnotationFinal extends BaseAnnotation {
+  //    AnnotationFinal(final AnnotationCombine annotationCombine) {
+  //      super(annotationCombine);
+  //    }
+  //
+  //    @Override
+  //    public String getAnnotation() {
+  //      return annotationCombine.getFinalAnnotation();
+  //    }
+  //
+  //    @Override
+  //    public void setAnnotation(String annotation) {
+  //      super.setAnnotation(annotation);
+  //      annotationCombine.setFinalAnnotation(annotation);
+  //    }
+  //  }
+
+  static class AnnotationReviewed extends BaseAnnotationCombine {
     AnnotationReviewed(AnnotationCombine annotationCombine) {
       super(annotationCombine);
     }
@@ -98,6 +128,41 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     public void setAnnotation(String annotation) {
       super.setAnnotation(annotation);
       annotationCombine.setReviewedAnnotation(annotation);
+    }
+  }
+
+  static class AnnotationBlock extends BaseAnnotation {
+    private final AnnotationTaskBlock block;
+
+    AnnotationBlock(final AnnotationTaskBlock block) {
+      this.block = block;
+    }
+
+    @Override
+    protected String getText() {
+      return block.getText();
+    }
+
+    @Override
+    public int getId() {
+      return block.getId();
+    }
+
+    @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return block.getAnnotationType();
+    }
+
+    @Override
+    public String getAnnotation() {
+      return block.getAnnotation();
+    }
+
+    @Override
+    public void setAnnotation(final String annotation) {
+      super.setAnnotation(annotation);
+
+      block.setAnnotation(annotation);
     }
   }
 }

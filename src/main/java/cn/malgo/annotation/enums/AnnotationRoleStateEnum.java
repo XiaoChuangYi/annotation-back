@@ -13,6 +13,14 @@ public enum AnnotationRoleStateEnum {
     this.role = role;
   }
 
+  public static AnnotationRoleStateEnum valueOf(int role) {
+    if (role <= 0 || role > values().length) {
+      return null;
+    }
+
+    return values()[role - 1];
+  }
+
   public int getRole() {
     return this.role;
   }

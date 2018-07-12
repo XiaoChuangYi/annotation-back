@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
@@ -62,8 +62,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
       annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
-      if (annotationCombine.getAnnotationType()
-          == AnnotationTypeEnum.wordPos.getValue()) { // 分词标注提交
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词标注提交
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }
       annotationCombineRepository.save(annotationCombine);

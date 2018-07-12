@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
@@ -26,10 +27,6 @@ public class CountAnnotationBiz extends BaseBiz<CountAnnotationRequest, Integer>
       throw new InvalidInputException("invalid-annotation-types", "参数annotationTypes当前值无效");
     }
   }
-
-  @Override
-  protected void authorize(int userId, int role, CountAnnotationRequest countAnnotationRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected Integer doBiz(CountAnnotationRequest countAnnotationRequest) {

@@ -4,6 +4,7 @@ import cn.malgo.annotation.exception.MalgoServiceException;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.utils.OpLoggerUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -26,7 +27,8 @@ public class SystemArchitecture {
    * A join point is in the service layer if the method is defined in a type in the
    * com.xyz.someapp.service package or any sub-package under that.
    */
-  @Pointcut("within(cn.malgo.annotation.biz..*)")
+  @Pointcut(
+      "within(cn.malgo.annotation.biz..*) && !within(cn.malgo.annotation.biz.task.ImportDocBiz)")
   public void inBusinessLayer() {}
 
   @Pointcut("inBusinessLayer()")
@@ -38,13 +40,17 @@ public class SystemArchitecture {
    * types are in sub-packages.
    */
   @Pointcut(
-      "execution(* cn.malgo.annotation.service.*.*(..)) && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..)) && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))&& !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
+      "execution(* cn.malgo.annotation.service.*.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
   private boolean isReadMethod(final String className) {
     return className.startsWith("List")
         || className.startsWith("Get")
         || className.startsWith("Search")
+        || className.startsWith("Import")
         || className.startsWith("Find");
   }
 
@@ -66,7 +72,7 @@ public class SystemArchitecture {
             args);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；请求参数：{}；", className, methodSignature.getName(), args);
       }
     }
@@ -109,7 +115,7 @@ public class SystemArchitecture {
             retValue);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；返回结果：{}；", className, methodSignature.getName(), retValue);
       }
     }

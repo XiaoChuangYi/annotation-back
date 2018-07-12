@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;

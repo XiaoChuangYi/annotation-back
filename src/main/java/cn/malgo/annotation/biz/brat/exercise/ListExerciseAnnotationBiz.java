@@ -1,7 +1,7 @@
 package cn.malgo.annotation.biz.brat.exercise;
 
 import com.alibaba.fastjson.JSONObject;
-import cn.malgo.annotation.biz.BaseBiz;
+import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.UserExerciseRepository;
 import cn.malgo.annotation.dto.AnnotationExercise;
 import cn.malgo.annotation.entity.AnnotationCombine;
@@ -49,11 +49,6 @@ public class ListExerciseAnnotationBiz
       throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于1");
     }
   }
-
-  @Override
-  protected void authorize(
-      int userId, int role, ListExerciseAnnotationRequest listExerciseAnnotationRequest)
-      throws BusinessRuleException {}
 
   @Override
   protected PageVO<ExerciseAnnotationBratVO> doBiz(
