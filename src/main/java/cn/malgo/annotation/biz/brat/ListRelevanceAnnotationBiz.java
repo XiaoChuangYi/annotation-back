@@ -16,6 +16,7 @@ import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.core.definition.Entity;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -49,16 +50,15 @@ public class ListRelevanceAnnotationBiz
   @Override
   protected List<AnnotationBlockBratVO> doBiz(
       int userId, int role, ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
-    // 获取blockId集合
-    log.info("开始获取blockId集合：{}", System.currentTimeMillis());
+    log.info("开始获取blockId集合：{}", new Date());
     final List<Integer> blockIdList =
         getBlockIdListByTaskId(listRelevanceAnnotationRequest.getTaskId());
-
+    log.info("开始获取RelationQueryPair集合：{}", new Date());
     final List<RelationQueryPair> relationQueryPairs = getRelationQueryPairs(blockIdList);
-
+    log.info("开始获取条件过滤RelationQueryPair集合：{}", new Date());
     final List<RelationQueryPair> relationQueryPairList =
         filterRelationQueryPairsCondition(relationQueryPairs, listRelevanceAnnotationRequest);
-
+    log.info("开始返回brat格式的RelationQueryPair集合：{}", new Date());
     return annotationTaskBlockRepository
         .findAllById(
             relationQueryPairList

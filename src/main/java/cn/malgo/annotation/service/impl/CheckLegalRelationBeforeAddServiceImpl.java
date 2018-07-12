@@ -12,6 +12,7 @@ import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.Entity;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -102,12 +103,13 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
   }
 
   private String getEntityType(String annotation, String entityTag) {
-    return AnnotationConvert.getEntitiesFromAnnotation(annotation)
-        .stream()
-        .filter(entity -> entity.getTag().equals(entityTag))
-        .findFirst()
-        .get()
-        .getType();
+    final Entity finalEntity =
+        AnnotationConvert.getEntitiesFromAnnotation(annotation)
+            .stream()
+            .filter(entity -> entity.getTag().equals(entityTag))
+            .findFirst()
+            .orElse(null);
+    return finalEntity == null ? "" : finalEntity.getType();
   }
 
   private boolean isLegal(String sourceType, String targetType, String relation) {
