@@ -100,7 +100,7 @@ public class AnnotationTaskBlockController extends BaseController {
 
   /** 五元组查询block关联查询 */
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
-  public Response<List<AnnotationTaskBlock>> listBlockRelation(
+  public Response<List<AnnotationBlockBratVO>> listBlockRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     return new Response<>(
