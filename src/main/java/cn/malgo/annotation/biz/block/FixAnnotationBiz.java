@@ -13,6 +13,7 @@ import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.exception.InternalServiceException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
@@ -23,7 +24,6 @@ import cn.malgo.core.definition.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -96,7 +96,7 @@ public class FixAnnotationBiz
     // 2: skip
     int action;
     if (data.getEntities() == null) {
-      action = 0;
+      throw new InternalServiceException("internal-server-error", "entities不应该为null");
     } else if (data.getEntities().size() == 0) {
       action = 2;
     } else {
@@ -105,11 +105,6 @@ public class FixAnnotationBiz
 
     try {
       switch (action) {
-        case 0:
-          blockService.resetBlock(
-              block, AnnotationBlockActionEnum.RE_EXAMINE, errorType.name() + ": " + word);
-          break;
-
         case 1:
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
@@ -143,8 +138,35 @@ public class FixAnnotationBiz
     }
   }
 
+  private Map<Integer, FixAnnotationResult> resetBlocks(
+      final Map<Integer, AnnotationTaskBlock> idMap,
+      final AnnotationErrorEnum errorType,
+      final String word) {
+    final String comment = errorType.name() + ": " + word;
+    return idMap
+        .entrySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> {
+                  final AnnotationTaskBlock block = entry.getValue();
+                  try {
+                    blockService.resetBlock(block, AnnotationBlockActionEnum.RE_EXAMINE, comment);
+                    return new FixAnnotationResult(true, null);
+
+                  } catch (IllegalArgumentException ex) {
+                    log.warn(
+                        "标注状态错误: {}, state: {}, ex: {}",
+                        block.getId(),
+                        block.getState(),
+                        ex.getMessage());
+                    return new FixAnnotationResult(false, "标注状态错误: " + block.getState());
+                  }
+                }));
+  }
+
   @Override
-  @Transactional
   protected List<FixAnnotationResult> doBiz(final FixAnnotationErrorRequest request) {
     final Map<Integer, AnnotationTaskBlock> idMap =
         blockRepository
@@ -159,6 +181,16 @@ public class FixAnnotationBiz
 
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
     final String word = request.getWord();
+
+    if (request.getEntities() == null) {
+      // 打回重审
+      final Map<Integer, FixAnnotationResult> resultMap = resetBlocks(idMap, errorType, word);
+      return request
+          .getAnnotations()
+          .stream()
+          .map(annotation -> resultMap.get(annotation.getId()))
+          .collect(Collectors.toList());
+    }
 
     // 这儿不要并行，因为同一个标注可能存在多次被修改的可能性，并行会导致错误，除非我们以标注为单位并行并收集结果
     return request
