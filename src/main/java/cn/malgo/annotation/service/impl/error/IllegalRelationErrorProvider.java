@@ -11,7 +11,6 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,17 +50,10 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
     final Set<RelationLimitRulePair> legalRules =
         rules
             .stream()
-            .flatMap(
+            .map(
                 rule ->
-                    StringUtils.equals(rule.getSource(), rule.getTarget())
-                        ? Stream.of(
-                            new RelationLimitRulePair(
-                                rule.getSource(), rule.getTarget(), rule.getRelationType()))
-                        : Stream.of(
-                            new RelationLimitRulePair(
-                                rule.getTarget(), rule.getSource(), rule.getRelationType()),
-                            new RelationLimitRulePair(
-                                rule.getSource(), rule.getTarget(), rule.getRelationType())))
+                    new RelationLimitRulePair(
+                        rule.getSource(), rule.getTarget(), rule.getRelationType()))
             .collect(Collectors.toSet());
 
     return postProcess(
