@@ -3,6 +3,7 @@ package cn.malgo.annotation.service.impl.error;
 import cn.malgo.annotation.dao.AnnotationFixLogRepository;
 import cn.malgo.annotation.dao.RelationLimitRuleRepository;
 import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.dto.WordTypeCount;
 import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorContext;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
@@ -71,6 +72,23 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
             .flatMap(annotation -> getIllegalRelations(legalRules, annotation))
             .collect(Collectors.toList()),
         this.batchSize);
+  }
+
+  @Override
+  protected AlgorithmAnnotationWordError getWordError(final String word) {
+    final String[] sourceAndTarget = word.split(" -> ");
+    if (sourceAndTarget.length == 2) {
+      return new AlgorithmAnnotationWordError(
+          word,
+          relationLimitRuleRepository
+              .findBySourceAndTarget(sourceAndTarget[0], sourceAndTarget[1])
+              .stream()
+              .map(
+                  relationLimitRule -> new WordTypeCount(relationLimitRule.getRelationType(), 0, 0))
+              .collect(Collectors.toList()));
+    }
+
+    return super.getWordError(word);
   }
 
   @Override
