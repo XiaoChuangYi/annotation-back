@@ -12,8 +12,6 @@ import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,18 +34,21 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
       int roleId) {
     final List<Entity> entities =
         AnnotationConvert.getEntitiesFromAnnotation(annotationTaskBlock.getAnnotation());
-    final List<String> entityTypes =
+    final String sourceType =
         entities
             .stream()
-            .filter(
-                x ->
-                    StringUtils.equalsAny(
-                        x.getTag(),
-                        addAnnotationGroupRequest.getSourceTag(),
-                        addAnnotationGroupRequest.getTargetTag()))
-            .map(entity -> entity.getType())
-            .collect(Collectors.toList());
-    return isLegal(entityTypes, addAnnotationGroupRequest.getRelation());
+            .filter(entity -> entity.getTag().equals(addAnnotationGroupRequest.getSourceTag()))
+            .findFirst()
+            .get()
+            .getType();
+    final String targetType =
+        entities
+            .stream()
+            .filter(entity -> entity.getTag().equals(addAnnotationGroupRequest.getTargetTag()))
+            .findFirst()
+            .get()
+            .getType();
+    return isLegal(sourceType, targetType, addAnnotationGroupRequest.getRelation());
   }
 
   @Override
@@ -62,34 +63,29 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
               roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
                   ? annotationCombine.getFinalAnnotation()
                   : annotationCombine.getReviewedAnnotation());
-
-      final List<String> entityTypes =
+      final String sourceType =
           entities
               .stream()
-              .filter(
-                  x ->
-                      StringUtils.equalsAny(
-                          x.getTag(),
-                          addRelationRequest.getSourceTag(),
-                          addRelationRequest.getTargetTag()))
-              .map(entity -> entity.getType())
-              .collect(Collectors.toList());
+              .filter(entity -> entity.getTag().equals(addRelationRequest.getSourceTag()))
+              .findFirst()
+              .get()
+              .getType();
+      final String targetType =
+          entities
+              .stream()
+              .filter(entity -> entity.getTag().equals(addRelationRequest.getTargetTag()))
+              .findFirst()
+              .get()
+              .getType();
 
-      return isLegal(entityTypes, addRelationRequest.getRelation());
+      return isLegal(sourceType, targetType, addRelationRequest.getRelation());
     }
     return false;
   }
 
-  private boolean isLegal(List<String> entityTypes, String relation) {
-    if (entityTypes.size() == 2) {
-      return relationLimitRuleRepository.isLegalRelation(
-          entityTypes.get(0).replace("-and", ""), entityTypes.get(1).replace("-and", ""), relation);
-    }
-    // 自己关联自己的情况
-    if (entityTypes.size() == 1) {
-      return relationLimitRuleRepository.isLegalRelation(
-          entityTypes.get(0).replace("-and", ""), entityTypes.get(0).replace("-and", ""), relation);
-    }
-    return false;
+  private boolean isLegal(String sourceType, String targetType, String relation) {
+
+    return relationLimitRuleRepository.isLegalRelation(
+        sourceType.replace("-and", ""), targetType.replace("-and", ""), relation);
   }
 }
