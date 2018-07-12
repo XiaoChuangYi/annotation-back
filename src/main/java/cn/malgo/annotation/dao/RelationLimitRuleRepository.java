@@ -13,10 +13,7 @@ public interface RelationLimitRuleRepository
   default boolean isLegalRelation(String source, String target, String relationType) {
     return findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(source, target, relationType)
             == null
-        ? (findBySourceEqualsAndTargetEqualsAndRelationTypeEquals(target, source, relationType)
-                == null
-            ? true
-            : false)
+        ? true
         : false;
   }
 }
