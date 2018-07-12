@@ -158,7 +158,8 @@ public class ListRelevanceAnnotationBiz
               if (StringUtils.isNotBlank(listRelevanceAnnotationRequest.getRelation())) {
                 return relationQueryPair
                     .getRelation()
-                    .equals(listRelevanceAnnotationRequest.getRelation());
+                    .toLowerCase()
+                    .equals(listRelevanceAnnotationRequest.getRelation().toLowerCase());
               } else {
                 return true;
               }
@@ -168,7 +169,8 @@ public class ListRelevanceAnnotationBiz
               if (StringUtils.isNotBlank(listRelevanceAnnotationRequest.getSourceType())) {
                 return relationQueryPair
                     .getSourceType()
-                    .equals(listRelevanceAnnotationRequest.getSourceType());
+                    .toLowerCase()
+                    .equals(listRelevanceAnnotationRequest.getSourceType().toLowerCase());
               } else {
                 return true;
               }
@@ -178,7 +180,8 @@ public class ListRelevanceAnnotationBiz
               if (StringUtils.isNotBlank(listRelevanceAnnotationRequest.getTargetType())) {
                 return relationQueryPair
                     .getTargetType()
-                    .equals(listRelevanceAnnotationRequest.getTargetType());
+                    .toLowerCase()
+                    .equals(listRelevanceAnnotationRequest.getTargetType().toLowerCase());
               } else {
                 return true;
               }
