@@ -71,7 +71,8 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
                               term,
                               entityList.getEntities().size() == 1 ? "单一实体" : "子图",
                               entityList.getPosition(),
-                              entityList.getAnnotation()))
+                              entityList.getAnnotation(),
+                              null))
                   .collect(Collectors.toList()),
               0);
         }
@@ -101,8 +102,9 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
     final AnnotationDocument document = annotation.getDocument();
     final String text = document.getText();
+    final String subString = text.substring(start, end);
 
-    if (entities.stream().anyMatch(entity -> !StringUtils.contains(text, entity.getTerm()))) {
+    if (entities.stream().anyMatch(entity -> !StringUtils.contains(subString, entity.getTerm()))) {
       throw new InvalidInputException(
           "invalid-fix-entities", "存在不包含在\"" + text + "\"中的entity，请检查表格");
     }
@@ -137,6 +139,12 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
     for (final FixAnnotationEntity entity : entities) {
       final int entityStart = text.indexOf(entity.getTerm(), start);
+
+      if (entityStart == -1 || entityStart + entity.getTerm().length() > end) {
+        throw new InvalidInputException(
+            "invalid-fix-entities", "存在不包含在\"" + text + "\"中的entity，请检查表格");
+      }
+
       createdEntities.add(
           new Entity(
               "T" + (oldEntitySize + createdEntities.size() + 1),
