@@ -19,7 +19,11 @@ public final class AlgorithmAnnotationWordError {
   @NonNull private final List<WordTypeCount> counts;
   private List<AlgorithmAnnotationErrorType> typeContext = new ArrayList<>();
 
-  public void addError(Annotation annotation, String type, BratPosition position) {
+  public void addError(
+      final Annotation annotation,
+      final String type,
+      final BratPosition position,
+      final Object info) {
     AlgorithmAnnotationErrorType target = null;
     for (AlgorithmAnnotationErrorType errorType : this.typeContext) {
       if (errorType.getType().equals(type)) {
@@ -33,6 +37,6 @@ public final class AlgorithmAnnotationWordError {
       this.typeContext.add(target);
     }
 
-    target.addAnnotation(annotation, position);
+    target.addAnnotation(annotation, position, info);
   }
 }

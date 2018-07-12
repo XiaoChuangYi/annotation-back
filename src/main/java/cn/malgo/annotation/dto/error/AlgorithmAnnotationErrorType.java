@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,8 @@ public final class AlgorithmAnnotationErrorType {
   @NonNull private String type;
   private List<AlgorithmAnnotationErrorContext> context = new ArrayList<>();
 
-  public void addAnnotation(Annotation annotation, BratPosition position) {
+  public void addAnnotation(
+      final Annotation annotation, final BratPosition position, final Object info) {
     AlgorithmAnnotationErrorContext target = null;
     for (AlgorithmAnnotationErrorContext errorContext : this.context) {
       if (annotation.getId() == errorContext.getAnnotation().getId()) {
@@ -31,6 +33,6 @@ public final class AlgorithmAnnotationErrorType {
       this.context.add(target);
     }
 
-    target.getIndex().add(position);
+    target.getIndex().add(Pair.of(position, info));
   }
 }

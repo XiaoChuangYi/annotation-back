@@ -70,7 +70,8 @@ public class IsolatedEntityErrorProvider extends BaseErrorProvider {
                         term,
                         type,
                         new BratPosition(entity.getStart(), entity.getEnd()),
-                        annotation));
+                        annotation,
+                        null));
               });
     }
 

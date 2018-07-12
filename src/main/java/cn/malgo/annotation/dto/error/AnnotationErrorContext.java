@@ -22,18 +22,21 @@ import java.util.stream.Collectors;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AnnotationErrorContext {
+public class AnnotationErrorContext implements FixAnnotationErrorContext {
   private static final Pattern SENTENCE_SPLITS = Pattern.compile("([,!。，！？?])");
 
   private int id;
   private int start;
   private int end;
+  private Object info;
   private JSONObject annotation;
 
-  public AnnotationErrorContext(final Annotation annotation, final BratPosition position) {
+  public AnnotationErrorContext(
+      final Annotation annotation, final BratPosition position, final Object info) {
     this.id = annotation.getId();
     this.start = position.getStart();
     this.end = position.getEnd();
+    this.info = info;
 
     final AnnotationDocument document = annotation.getDocument();
     int start = this.start;

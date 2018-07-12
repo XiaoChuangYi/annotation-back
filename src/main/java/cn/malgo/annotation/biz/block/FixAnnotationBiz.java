@@ -5,6 +5,7 @@ import cn.malgo.annotation.biz.base.TransactionalBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
+import cn.malgo.annotation.dto.error.FixAnnotationErrorContext;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.dto.error.FixAnnotationResult;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -80,8 +81,7 @@ public class FixAnnotationBiz
   private FixAnnotationResult fixAnnotation(
       final AnnotationErrorEnum errorType,
       final AnnotationTaskBlock block,
-      final int start,
-      final int end,
+      final FixAnnotationErrorContext context,
       final FixAnnotationErrorData data) {
     if (block == null) {
       return new FixAnnotationResult(false, "ID不存在");
@@ -121,7 +121,7 @@ public class FixAnnotationBiz
         case 1:
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
-              annotationErrorFactory.getProvider(errorType).fix(annotation, start, end, data);
+              annotationErrorFactory.getProvider(errorType).fix(annotation, context, data);
           fixedEntities.forEach(
               entity ->
                   annotationFixLogService.insertOrUpdate(
@@ -134,7 +134,10 @@ public class FixAnnotationBiz
 
         case 2:
           annotationFixLogService.insertOrUpdate(
-              block.getId(), start, end, AnnotationFixLogStateEnum.SKIPPED);
+              block.getId(),
+              context.getStart(),
+              context.getEnd(),
+              AnnotationFixLogStateEnum.SKIPPED);
           break;
       }
 
@@ -170,12 +173,7 @@ public class FixAnnotationBiz
         .stream()
         .map(
             annotation ->
-                fixAnnotation(
-                    errorType,
-                    idMap.get(annotation.getId()),
-                    annotation.getStart(),
-                    annotation.getEnd(),
-                    request))
+                fixAnnotation(errorType, idMap.get(annotation.getId()), annotation, request))
         .collect(Collectors.toList());
   }
 }

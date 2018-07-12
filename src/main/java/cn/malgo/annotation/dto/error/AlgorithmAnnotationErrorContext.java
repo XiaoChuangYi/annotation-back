@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,5 +16,5 @@ import java.util.List;
 @Getter
 public final class AlgorithmAnnotationErrorContext {
   @NonNull private Annotation annotation;
-  private List<BratPosition> index = new ArrayList<>();
+  private List<Pair<BratPosition, Object>> index = new ArrayList<>();
 }

@@ -3,6 +3,7 @@ package cn.malgo.annotation.service;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
 import cn.malgo.annotation.dto.error.FixAnnotationEntity;
+import cn.malgo.annotation.dto.error.FixAnnotationErrorContext;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
@@ -25,5 +26,11 @@ public interface AnnotationErrorProvider {
   default List<Entity> fix(Annotation annotation, int start, int end, FixAnnotationErrorData data)
       throws InvalidInputException {
     return fix(annotation, start, end, data.getEntities());
+  }
+
+  default List<Entity> fix(
+      Annotation annotation, FixAnnotationErrorContext context, FixAnnotationErrorData data)
+      throws InvalidInputException {
+    return fix(annotation, context.getStart(), context.getEnd(), data.getEntities());
   }
 }

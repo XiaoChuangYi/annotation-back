@@ -110,7 +110,11 @@ public class NewWordErrorProvider extends BaseErrorProvider {
           // 新词或者旧词新义
           results.add(
               new WordErrorWithPosition(
-                  term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
+                  term,
+                  type,
+                  new BratPosition(entity.getStart(), entity.getEnd()),
+                  annotation,
+                  null));
         }
       }
     }

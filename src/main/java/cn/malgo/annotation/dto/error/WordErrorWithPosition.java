@@ -10,4 +10,5 @@ public class WordErrorWithPosition implements AnnotationWithPosition {
   private final String type;
   private final BratPosition position;
   private final Annotation annotation;
+  private final Object info;
 }

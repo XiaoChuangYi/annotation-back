@@ -19,4 +19,12 @@ public class FixAnnotationErrorRequest implements FixAnnotationErrorData {
   private List<FixAnnotationRelationEntity> relations;
   // 关联对外实体index
   private int activeEntity = -1;
+  // 非法关联修复
+  private IllegalRelationRepairRequest illegalRelationRepair;
+
+  @Data
+  public static class IllegalRelationRepairRequest implements IllegalRelationRepairData {
+    private boolean reverse;
+    private String type;
+  }
 }

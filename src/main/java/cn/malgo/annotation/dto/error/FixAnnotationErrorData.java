@@ -9,4 +9,12 @@ public interface FixAnnotationErrorData {
   List<FixAnnotationRelationEntity> getRelations();
   // 关联对外实体index
   int getActiveEntity();
+  // 非法关联修复
+  IllegalRelationRepairData getIllegalRelationRepair();
+
+  interface IllegalRelationRepairData {
+    String getType();
+
+    boolean isReverse();
+  }
 }

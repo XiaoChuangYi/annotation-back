@@ -88,4 +88,31 @@ public class AnnotationDocument {
                 entity.intersectWith(start, end)
                     || (entity.getStart() >= start && entity.getEnd() <= end));
   }
+
+  public Entity getEntity(final String tag) {
+    return entities.stream().filter(entity -> entity.getTag().equals(tag)).findFirst().orElse(null);
+  }
+
+  public RelationEntity getRelation(final String tag) {
+    return relationEntities
+        .stream()
+        .filter(entity -> entity.getTag().equals(tag))
+        .findFirst()
+        .orElse(null);
+  }
+
+  public RelationEntity getRelation(final Entity source, final Entity target) {
+    if (source == null || target == null) {
+      throw new IllegalArgumentException("getRelation source or target is null");
+    }
+
+    return relationEntities
+        .stream()
+        .filter(
+            entity ->
+                entity.getSourceTag().equals(source.getTag())
+                    && entity.getTargetTag().equals(target.getTag()))
+        .findFirst()
+        .orElse(null);
+  }
 }

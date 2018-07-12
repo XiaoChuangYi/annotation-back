@@ -52,7 +52,11 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
             .computeIfAbsent(term, t -> new ArrayList<>())
             .add(
                 new WordErrorWithPosition(
-                    term, type, new BratPosition(entity.getStart(), entity.getEnd()), annotation));
+                    term,
+                    type,
+                    new BratPosition(entity.getStart(), entity.getEnd()),
+                    annotation,
+                    null));
       }
     }
 
@@ -150,7 +154,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
       if (!annotation.getDocument().hasEntityBetweenPosition(start, end)) {
         results.add(
             new WordErrorWithPosition(
-                targetTerm, "未标注实体", new BratPosition(start, end), annotation));
+                targetTerm, "未标注实体", new BratPosition(start, end), annotation, null));
       }
 
       index = end;

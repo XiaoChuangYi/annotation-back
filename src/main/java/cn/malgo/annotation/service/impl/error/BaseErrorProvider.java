@@ -64,7 +64,9 @@ public abstract class BaseErrorProvider implements AnnotationErrorProvider {
     entry
         .getValue()
         .forEach(
-            pair -> wordError.addError(pair.getAnnotation(), pair.getType(), pair.getPosition()));
+            pair ->
+                wordError.addError(
+                    pair.getAnnotation(), pair.getType(), pair.getPosition(), pair.getInfo()));
 
     return wordError;
   }
