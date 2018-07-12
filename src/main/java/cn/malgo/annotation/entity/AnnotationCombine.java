@@ -29,7 +29,7 @@ public class AnnotationCombine extends BaseEntity {
   private int isTask;
 
   @Column(name = "block_id")
-  private int blockId;
+  private Integer blockId;
 
   @Column(name = "comment", columnDefinition = "text")
   private String comment;

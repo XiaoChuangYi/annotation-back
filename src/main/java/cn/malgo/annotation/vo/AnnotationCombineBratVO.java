@@ -2,13 +2,12 @@ package cn.malgo.annotation.vo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
 import lombok.Data;
 
-/** Created by cjl on 2018/5/30. */
+import java.util.Date;
+
 @Data
 public class AnnotationCombineBratVO {
-
   private int id;
   private int assignee;
   private String state;
@@ -21,6 +20,9 @@ public class AnnotationCombineBratVO {
   private Date gmtModified;
 
   private String userName;
+
+  private Integer blockId;
+  private String comment;
 
   private JSONObject finalAnnotation;
   private JSONObject reviewedAnnotation;
