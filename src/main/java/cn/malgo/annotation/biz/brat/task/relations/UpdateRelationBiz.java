@@ -44,7 +44,7 @@ public class UpdateRelationBiz
       UpdateRelationRequest updateRelationRequest) {
     AnnotationCombineBratVO annotationCombineBratVO;
     if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
-        updateRelationRequest, role)) {
+        updateRelationRequest)) {
       throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
     }
     String annotation = relationOperateService.updateRelation(updateRelationRequest, role);

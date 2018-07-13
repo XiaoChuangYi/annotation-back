@@ -9,25 +9,21 @@ import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 
 public interface CheckLegalRelationBeforeAddService {
 
-  boolean checkRelationIsNotLegalBeforeAdd(AddRelationRequest addRelationRequest, int roleId);
+  boolean checkRelationIsNotLegalBeforeAdd(AddRelationRequest addRelationRequest);
 
   boolean checkRelationIsNotLegalBeforeAdd(
-      AddAnnotationGroupRequest addAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int roleId);
+      AddAnnotationGroupRequest addAnnotationGroupRequest, AnnotationTaskBlock annotationTaskBlock);
 
-  boolean checkRelationIsNotLegalBeforeUpdate(
-      UpdateRelationRequest updateRelationRequest, int roleId);
+  boolean checkRelationIsNotLegalBeforeUpdate(UpdateRelationRequest updateRelationRequest);
 
   boolean checkRelationIsNotLegalBeforeUpdate(
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int roleId);
+      AnnotationTaskBlock annotationTaskBlock);
 
   boolean checkRelationIsNotLegalBeforeUpdateEntity(
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
       AnnotationTaskBlock annotationTaskBlock);
 
   boolean checkRelationIsNotLegalBeforeUpdateEntity(
-      UpdateAnnotationRequest updateAnnotationRequest, int roleId);
+      UpdateAnnotationRequest updateAnnotationRequest);
 }

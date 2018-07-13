@@ -44,8 +44,7 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
       AnnotationCombine annotationCombine,
       AddRelationRequest addRelationRequest) {
     final AnnotationCombineBratVO annotationCombineBratVO;
-    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
-        addRelationRequest, role)) {
+    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(addRelationRequest)) {
       throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
     }
     final String annotation = relationOperateService.addRelation(addRelationRequest, role);

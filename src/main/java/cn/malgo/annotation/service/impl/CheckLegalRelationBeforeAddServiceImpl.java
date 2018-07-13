@@ -5,7 +5,9 @@ import cn.malgo.annotation.dao.RelationLimitRuleRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.RelationLimitRule;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
@@ -18,6 +20,7 @@ import cn.malgo.core.definition.Entity;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,8 +39,7 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
   @Override
   public boolean checkRelationIsNotLegalBeforeAdd(
       AddAnnotationGroupRequest addAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int roleId) {
+      AnnotationTaskBlock annotationTaskBlock) {
     return isLegal(
         getEntityType(
             annotationTaskBlock.getAnnotation(), addAnnotationGroupRequest.getSourceTag()),
@@ -49,8 +51,7 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
   @Override
   public boolean checkRelationIsNotLegalBeforeUpdate(
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int roleId) {
+      AnnotationTaskBlock annotationTaskBlock) {
     final RelationEntity relationEntity =
         AnnotationConvert.getRelationEntityFromAnnotation(
             annotationTaskBlock.getAnnotation(), updateAnnotationGroupRequest.getReTag());
@@ -62,14 +63,23 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
 
   @Override
   public boolean checkRelationIsNotLegalBeforeUpdateEntity(
-      UpdateAnnotationRequest updateAnnotationRequest, int roleId) {
+      UpdateAnnotationRequest updateAnnotationRequest) {
     final List<RelationLimitRule> relationLimitRules = relationLimitRuleRepository.findAll();
     AnnotationCombine annotationCombine =
         annotationCombineRepository.getOne(updateAnnotationRequest.getId());
-    final String annotation =
-        roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
-            ? annotationCombine.getFinalAnnotation()
-            : annotationCombine.getReviewedAnnotation();
+    String annotation = "";
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.preAnnotation.name(),
+        AnnotationCombineStateEnum.annotationProcessing.name())) {
+      annotation = annotationCombine.getFinalAnnotation();
+    }
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.abandon.name(),
+        AnnotationCombineStateEnum.preExamine.name())) {
+      annotation = annotationCombine.getReviewedAnnotation();
+    }
     final List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(annotation);
     final List<RelationLimitRulePair> sourceRelationLimitRulePairs =
         getSourceRelationLimitRulePairs(
@@ -186,24 +196,28 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
   }
 
   @Override
-  public boolean checkRelationIsNotLegalBeforeUpdate(
-      UpdateRelationRequest updateRelationRequest, int roleId) {
+  public boolean checkRelationIsNotLegalBeforeUpdate(UpdateRelationRequest updateRelationRequest) {
     final Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
+
+      String annotation = "";
+      if (StringUtils.equalsAny(
+          annotationCombine.getState(),
+          AnnotationCombineStateEnum.preAnnotation.name(),
+          AnnotationCombineStateEnum.annotationProcessing.name())) {
+        annotation = annotationCombine.getFinalAnnotation();
+      }
+      if (StringUtils.equalsAny(
+          annotationCombine.getState(),
+          AnnotationCombineStateEnum.abandon.name(),
+          AnnotationCombineStateEnum.preExamine.name())) {
+        annotation = annotationCombine.getReviewedAnnotation();
+      }
       final RelationEntity relationEntity =
           AnnotationConvert.getRelationEntityFromAnnotation(
-              roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
-                  ? annotationCombine.getFinalAnnotation()
-                  : annotationCombine.getReviewedAnnotation(),
-              updateRelationRequest.getReTag());
-
-      final String annotation =
-          roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
-              ? annotationCombine.getFinalAnnotation()
-              : annotationCombine.getReviewedAnnotation();
-
+              annotation, updateRelationRequest.getReTag());
       return isLegal(
           getEntityType(annotation, relationEntity.getSourceTag()),
           getEntityType(annotation, relationEntity.getTargetTag()),
@@ -213,16 +227,25 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
   }
 
   @Override
-  public boolean checkRelationIsNotLegalBeforeAdd(
-      AddRelationRequest addRelationRequest, int roleId) {
+  public boolean checkRelationIsNotLegalBeforeAdd(AddRelationRequest addRelationRequest) {
     final Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-      final String annotation =
-          roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
-              ? annotationCombine.getFinalAnnotation()
-              : annotationCombine.getReviewedAnnotation();
+
+      String annotation = "";
+      if (StringUtils.equalsAny(
+          annotationCombine.getState(),
+          AnnotationCombineStateEnum.preAnnotation.name(),
+          AnnotationCombineStateEnum.annotationProcessing.name())) {
+        annotation = annotationCombine.getFinalAnnotation();
+      }
+      if (StringUtils.equalsAny(
+          annotationCombine.getState(),
+          AnnotationCombineStateEnum.abandon.name(),
+          AnnotationCombineStateEnum.preExamine.name())) {
+        annotation = annotationCombine.getReviewedAnnotation();
+      }
       return isLegal(
           getEntityType(annotation, addRelationRequest.getSourceTag()),
           getEntityType(annotation, addRelationRequest.getTargetTag()),

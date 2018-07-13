@@ -48,7 +48,7 @@ public class UpdateAnnotationBiz
     AnnotationCombineBratVO annotationCombineBratVO;
     if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
-          updateAnnotationRequest, role)) {
+          updateAnnotationRequest)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
     }

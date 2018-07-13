@@ -59,7 +59,7 @@ public class UpdateBlockAnnotationBiz
       int role,
       AnnotationTaskBlock annotationTaskBlock,
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
-    checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock, role);
+    checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock);
     final String annotation =
         annotationWriteOperateService.updateMetaDataAnnotation(
             updateAnnotationGroupRequest,
@@ -72,8 +72,7 @@ public class UpdateBlockAnnotationBiz
 
   private void checkRuleBeforeUpdateRelation(
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int role) {
+      AnnotationTaskBlock annotationTaskBlock) {
     if (updateAnnotationGroupRequest.isUpdatingEntity()) {
       // 更新entity
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
@@ -83,7 +82,7 @@ public class UpdateBlockAnnotationBiz
     } else {
       // 更新relation
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
-          updateAnnotationGroupRequest, annotationTaskBlock, role)) {
+          updateAnnotationGroupRequest, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
     }

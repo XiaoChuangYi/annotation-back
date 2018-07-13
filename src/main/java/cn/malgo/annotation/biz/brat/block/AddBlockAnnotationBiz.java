@@ -68,7 +68,7 @@ public class AddBlockAnnotationBiz
   @Override
   AnnotationBlockBratVO doInternalProcess(
       int role, AnnotationTaskBlock annotationTaskBlock, AddAnnotationGroupRequest request) {
-    checkRuleBeforeAddRelation(request, annotationTaskBlock, role);
+    checkRuleBeforeAddRelation(request, annotationTaskBlock);
     final String annotation =
         annotationWriteOperateService.addMetaDataAnnotation(
             request,
@@ -80,11 +80,11 @@ public class AddBlockAnnotationBiz
   }
 
   private void checkRuleBeforeAddRelation(
-      AddAnnotationGroupRequest request, AnnotationTaskBlock annotationTaskBlock, int role) {
+      AddAnnotationGroupRequest request, AnnotationTaskBlock annotationTaskBlock) {
     if (!request.isAddEntity()) {
       // 新增relation
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
-          request, annotationTaskBlock, role)) {
+          request, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
       }
     }
