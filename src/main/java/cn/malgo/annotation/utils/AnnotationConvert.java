@@ -14,6 +14,7 @@ import cn.malgo.annotation.vo.AnnotationCombineBratVO;
 import cn.malgo.annotation.vo.ExerciseAnnotationBratVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Arrays;
@@ -27,6 +28,15 @@ import java.util.stream.IntStream;
 /** Created by cjl on 2018/5/24. */
 @Slf4j
 public class AnnotationConvert {
+
+  /** 同时获取entities和relationEntities */
+  public static List<Pair<List<RelationEntity>, List<Entity>>> getBothEntities(String annotation) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        annotation == null ? "" : annotation, annotationDocument);
+    return Arrays.asList(
+        Pair.of(annotationDocument.getRelationEntities(), annotationDocument.getEntities()));
+  }
 
   /** 获取指定标注的entities */
   public static List<Entity> getEntitiesFromAnnotation(String annotation) {
@@ -43,6 +53,27 @@ public class AnnotationConvert {
         annotation == null ? "" : annotation, annotationDocument);
     return annotationDocument
         .getEntities()
+        .stream()
+        .filter(entity -> entity.getTag().equals(tag))
+        .findFirst()
+        .get();
+  }
+
+  /** 获取指定标注的relationEntities */
+  public static List<RelationEntity> getRelationEntitiesFromAnnotation(String annotation) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        annotation == null ? "" : annotation, annotationDocument);
+    return annotationDocument.getRelationEntities();
+  }
+
+  /** 获取指定的relationEntity */
+  public static RelationEntity getRelationEntityFromAnnotation(String annotation, String tag) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        annotation == null ? "" : annotation, annotationDocument);
+    return annotationDocument
+        .getRelationEntities()
         .stream()
         .filter(x -> x.getTag().equals(tag))
         .findFirst()

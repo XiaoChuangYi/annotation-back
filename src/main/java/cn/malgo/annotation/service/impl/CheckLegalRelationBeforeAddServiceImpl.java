@@ -4,14 +4,20 @@ import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.RelationLimitRuleRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.entity.RelationLimitRule;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
+import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
+import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
+import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.annotation.utils.entity.RelationEntity;
 import cn.malgo.core.definition.Entity;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,23 +38,178 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
       AddAnnotationGroupRequest addAnnotationGroupRequest,
       AnnotationTaskBlock annotationTaskBlock,
       int roleId) {
+    return isLegal(
+        getEntityType(
+            annotationTaskBlock.getAnnotation(), addAnnotationGroupRequest.getSourceTag()),
+        getEntityType(
+            annotationTaskBlock.getAnnotation(), addAnnotationGroupRequest.getTargetTag()),
+        addAnnotationGroupRequest.getRelation());
+  }
+
+  @Override
+  public boolean checkRelationIsNotLegalBeforeUpdate(
+      UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
+      AnnotationTaskBlock annotationTaskBlock,
+      int roleId) {
+    final RelationEntity relationEntity =
+        AnnotationConvert.getRelationEntityFromAnnotation(
+            annotationTaskBlock.getAnnotation(), updateAnnotationGroupRequest.getReTag());
+    return isLegal(
+        getEntityType(annotationTaskBlock.getAnnotation(), relationEntity.getSourceTag()),
+        getEntityType(annotationTaskBlock.getAnnotation(), relationEntity.getTargetTag()),
+        updateAnnotationGroupRequest.getRelation());
+  }
+
+  @Override
+  public boolean checkRelationIsNotLegalBeforeUpdateEntity(
+      UpdateAnnotationRequest updateAnnotationRequest, int roleId) {
+    final List<RelationLimitRule> relationLimitRules = relationLimitRuleRepository.findAll();
+    AnnotationCombine annotationCombine =
+        annotationCombineRepository.getOne(updateAnnotationRequest.getId());
+    final String annotation =
+        roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
+            ? annotationCombine.getFinalAnnotation()
+            : annotationCombine.getReviewedAnnotation();
+    final List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(annotation);
+    final List<RelationLimitRulePair> sourceRelationLimitRulePairs =
+        getSourceRelationLimitRulePairs(
+            annotation,
+            updateAnnotationRequest.getTag(),
+            updateAnnotationRequest.getNewType(),
+            entities);
+    final boolean isIllegal = isIllegal(sourceRelationLimitRulePairs, relationLimitRules);
+    if (!isIllegal) {
+      // 作为target继续
+      final List<RelationLimitRulePair> targetRelationLimitRulePairs =
+          getTargetRelationLimitRulePairs(
+              annotation,
+              updateAnnotationRequest.getTag(),
+              updateAnnotationRequest.getNewType(),
+              entities);
+      return isIllegal(targetRelationLimitRulePairs, relationLimitRules);
+    }
+    return true;
+  }
+
+  private List<RelationLimitRulePair> getTargetRelationLimitRulePairs(
+      String annotation, String tag, String newType, List<Entity> entities) {
+    return AnnotationConvert.getRelationEntitiesFromAnnotation(annotation)
+        .stream()
+        .filter(relationEntity -> relationEntity.getTargetTag().equals(tag))
+        .collect(Collectors.toList())
+        .stream()
+        .map(
+            relationEntity ->
+                new RelationLimitRulePair(
+                    entities
+                        .stream()
+                        .filter(entity -> entity.getTag().equals(relationEntity.getSourceTag()))
+                        .findFirst()
+                        .get()
+                        .getType(),
+                    newType,
+                    relationEntity.getType()))
+        .collect(Collectors.toList());
+  }
+
+  private List<RelationLimitRulePair> getSourceRelationLimitRulePairs(
+      String annotation, String tag, String newType, List<Entity> entities) {
+    return AnnotationConvert.getRelationEntitiesFromAnnotation(annotation)
+        .stream()
+        .filter(relationEntity -> relationEntity.getSourceTag().equals(tag))
+        .collect(Collectors.toList())
+        .stream()
+        .map(
+            relationEntity ->
+                new RelationLimitRulePair(
+                    newType,
+                    entities
+                        .stream()
+                        .filter(entity -> entity.getTag().equals(relationEntity.getTargetTag()))
+                        .findFirst()
+                        .get()
+                        .getType(),
+                    relationEntity.getType()))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean checkRelationIsNotLegalBeforeUpdateEntity(
+      UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
+      AnnotationTaskBlock annotationTaskBlock) {
     final List<Entity> entities =
         AnnotationConvert.getEntitiesFromAnnotation(annotationTaskBlock.getAnnotation());
-    final String sourceType =
-        entities
-            .stream()
-            .filter(entity -> entity.getTag().equals(addAnnotationGroupRequest.getSourceTag()))
-            .findFirst()
-            .get()
-            .getType();
-    final String targetType =
-        entities
-            .stream()
-            .filter(entity -> entity.getTag().equals(addAnnotationGroupRequest.getTargetTag()))
-            .findFirst()
-            .get()
-            .getType();
-    return isLegal(sourceType, targetType, addAnnotationGroupRequest.getRelation());
+    final List<RelationLimitRule> relationLimitRules = relationLimitRuleRepository.findAll();
+
+    final List<RelationLimitRulePair> sourceRelationLimitRulePairs =
+        getSourceRelationLimitRulePairs(
+            annotationTaskBlock.getAnnotation(),
+            updateAnnotationGroupRequest.getTag(),
+            updateAnnotationGroupRequest.getNewType(),
+            entities);
+    final boolean isIllegal = isIllegal(sourceRelationLimitRulePairs, relationLimitRules);
+    if (!isIllegal) {
+      // 作为target继续
+      final List<RelationLimitRulePair> targetRelationLimitRulePairs =
+          getTargetRelationLimitRulePairs(
+              annotationTaskBlock.getAnnotation(),
+              updateAnnotationGroupRequest.getTag(),
+              updateAnnotationGroupRequest.getNewType(),
+              entities);
+      return isIllegal(targetRelationLimitRulePairs, relationLimitRules);
+    }
+    return true;
+  }
+
+  private boolean isIllegal(
+      final List<RelationLimitRulePair> relationLimitRulePairs,
+      final List<RelationLimitRule> relationLimitRules) {
+    return relationLimitRulePairs
+        .stream()
+        .anyMatch(
+            relationLimitRulePair ->
+                relationLimitRules
+                        .stream()
+                        .filter(
+                            relationLimitRule ->
+                                relationLimitRule
+                                        .getSource()
+                                        .equals(relationLimitRulePair.getSourceType())
+                                    && relationLimitRule
+                                        .getTarget()
+                                        .equals(relationLimitRulePair.getTargetType())
+                                    && relationLimitRule
+                                        .getRelationType()
+                                        .equals(relationLimitRulePair.getRelationType()))
+                        .count()
+                    == 0);
+  }
+
+  @Override
+  public boolean checkRelationIsNotLegalBeforeUpdate(
+      UpdateRelationRequest updateRelationRequest, int roleId) {
+    final Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(updateRelationRequest.getId());
+    if (optional.isPresent()) {
+      final AnnotationCombine annotationCombine = optional.get();
+      final RelationEntity relationEntity =
+          AnnotationConvert.getRelationEntityFromAnnotation(
+              roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
+                  ? annotationCombine.getFinalAnnotation()
+                  : annotationCombine.getReviewedAnnotation(),
+              updateRelationRequest.getReTag());
+
+      final String annotation =
+          roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
+              ? annotationCombine.getFinalAnnotation()
+              : annotationCombine.getReviewedAnnotation();
+
+      return isLegal(
+          getEntityType(annotation, relationEntity.getSourceTag()),
+          getEntityType(annotation, relationEntity.getTargetTag()),
+          updateRelationRequest.getRelation());
+    }
+    return false;
   }
 
   @Override
@@ -58,34 +219,39 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-      final List<Entity> entities =
-          AnnotationConvert.getEntitiesFromAnnotation(
-              roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
-                  ? annotationCombine.getFinalAnnotation()
-                  : annotationCombine.getReviewedAnnotation());
-      final String sourceType =
-          entities
-              .stream()
-              .filter(entity -> entity.getTag().equals(addRelationRequest.getSourceTag()))
-              .findFirst()
-              .get()
-              .getType();
-      final String targetType =
-          entities
-              .stream()
-              .filter(entity -> entity.getTag().equals(addRelationRequest.getTargetTag()))
-              .findFirst()
-              .get()
-              .getType();
-
-      return isLegal(sourceType, targetType, addRelationRequest.getRelation());
+      final String annotation =
+          roleId >= AnnotationRoleStateEnum.labelStaff.getRole()
+              ? annotationCombine.getFinalAnnotation()
+              : annotationCombine.getReviewedAnnotation();
+      return isLegal(
+          getEntityType(annotation, addRelationRequest.getSourceTag()),
+          getEntityType(annotation, addRelationRequest.getTargetTag()),
+          addRelationRequest.getRelation());
     }
     return false;
+  }
+
+  private String getEntityType(String annotation, String entityTag) {
+    final Entity finalEntity =
+        AnnotationConvert.getEntitiesFromAnnotation(annotation)
+            .stream()
+            .filter(entity -> entity.getTag().equals(entityTag))
+            .findFirst()
+            .orElse(null);
+    return finalEntity == null ? "" : finalEntity.getType();
   }
 
   private boolean isLegal(String sourceType, String targetType, String relation) {
 
     return relationLimitRuleRepository.isLegalRelation(
         sourceType.replace("-and", ""), targetType.replace("-and", ""), relation);
+  }
+
+  @lombok.Value
+  static class RelationLimitRulePair {
+
+    private final String sourceType;
+    private final String targetType;
+    private final String relationType;
   }
 }

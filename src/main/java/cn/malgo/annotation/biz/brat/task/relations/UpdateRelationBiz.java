@@ -3,9 +3,9 @@ package cn.malgo.annotation.biz.brat.task.relations;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
+import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.RelationOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
@@ -18,6 +18,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UpdateRelationBiz
     extends BaseRelationBiz<UpdateRelationRequest, AnnotationCombineBratVO> {
+
+  private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
+
+  public UpdateRelationBiz(CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+    this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
+  }
 
   @Override
   protected void validateRequest(UpdateRelationRequest updateRelationRequest)
@@ -37,6 +43,10 @@ public class UpdateRelationBiz
       AnnotationCombine annotationCombine,
       UpdateRelationRequest updateRelationRequest) {
     AnnotationCombineBratVO annotationCombineBratVO;
+    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
+        updateRelationRequest, role)) {
+      throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
+    }
     String annotation = relationOperateService.updateRelation(updateRelationRequest, role);
     if (role > 0 && role < AnnotationRoleStateEnum.labelStaff.getRole()) { // 管理员或者是审核人员级别
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {

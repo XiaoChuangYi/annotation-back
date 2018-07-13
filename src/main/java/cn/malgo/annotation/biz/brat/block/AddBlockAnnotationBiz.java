@@ -10,7 +10,6 @@ import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -34,38 +33,59 @@ public class AddBlockAnnotationBiz
 
   @Override
   protected void validateRequest(AddAnnotationGroupRequest addAnnotationGroupRequest)
-      throws InvalidInputException {}
+      throws InvalidInputException {
+    if (StringUtils.isAllBlank(
+        addAnnotationGroupRequest.getSourceTag(),
+        addAnnotationGroupRequest.getTargetTag(),
+        addAnnotationGroupRequest.getRelation())) {
+      if (StringUtils.isBlank(addAnnotationGroupRequest.getTerm())) {
+        throw new InvalidInputException("invalid-term", "term参数为空");
+      }
+      if (StringUtils.isBlank(addAnnotationGroupRequest.getType())) {
+        throw new InvalidInputException("invalid-annotation-type", "type参数为空");
+      }
+      if (addAnnotationGroupRequest.getStartPosition() < 0) {
+        throw new InvalidInputException("invalid-start-position", "无效的startPosition");
+      }
+      if (addAnnotationGroupRequest.getEndPosition() <= 0) {
+        throw new InvalidInputException("invalid-end-position", "无效的endPosition");
+      }
+    } else {
+      if (StringUtils.isBlank(addAnnotationGroupRequest.getSourceTag())) {
+        throw new InvalidInputException("invalid-source-tag", "参数sourceTag为空");
+      }
+      if (StringUtils.isBlank(addAnnotationGroupRequest.getTargetTag())) {
+        throw new InvalidInputException("invalid-target-tag", "参数targetTag为空");
+      }
+      if (StringUtils.isBlank(addAnnotationGroupRequest.getRelation())) {
+        throw new InvalidInputException("invalid-relation", "参数relation为空");
+      }
+    }
+  }
 
   @Override
   AnnotationBlockBratVO doInternalProcess(
       int role,
       AnnotationTaskBlock annotationTaskBlock,
       AddAnnotationGroupRequest addAnnotationGroupRequest) {
-    final Optional<AnnotationTaskBlock> optional =
-        annotationTaskBlockRepository.findById(addAnnotationGroupRequest.getId());
-    if (optional.isPresent()) {
-      checkRuleBeforeAddRelation(addAnnotationGroupRequest, annotationTaskBlock, role);
-      final AnnotationTaskBlock taskBlock = optional.get();
-      String annotation =
-          annotationWriteOperateService.addMetaDataAnnotation(
-              addAnnotationGroupRequest,
-              taskBlock.getAnnotation(),
-              taskBlock.getAnnotationType().ordinal());
-      annotationTaskBlock.setAnnotation(annotation);
-      annotationTaskBlockRepository.save(annotationTaskBlock);
-      AnnotationBlockBratVO annotationBlockBratVO =
-          AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
-      return annotationBlockBratVO;
-    }
-    return null;
+    checkRuleBeforeAddRelation(addAnnotationGroupRequest, annotationTaskBlock, role);
+    String annotation =
+        annotationWriteOperateService.addMetaDataAnnotation(
+            addAnnotationGroupRequest,
+            annotationTaskBlock.getAnnotation(),
+            annotationTaskBlock.getAnnotationType().ordinal());
+    annotationTaskBlock.setAnnotation(annotation);
+    annotationTaskBlockRepository.save(annotationTaskBlock);
+    AnnotationBlockBratVO annotationBlockBratVO =
+        AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
+    return annotationBlockBratVO;
   }
 
   private void checkRuleBeforeAddRelation(
       AddAnnotationGroupRequest addAnnotationGroupRequest,
       AnnotationTaskBlock annotationTaskBlock,
       int role) {
-    if (!StringUtils.equalsAny(
-        null,
+    if (!StringUtils.isAllBlank(
         addAnnotationGroupRequest.getRelation(),
         addAnnotationGroupRequest.getSourceTag(),
         addAnnotationGroupRequest.getTargetTag())) {
