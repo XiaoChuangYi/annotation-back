@@ -40,10 +40,7 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 addAnnotationGroupRequest.getTerm());
         break;
       case relation:
-        if (StringUtils.isAllBlank(
-            addAnnotationGroupRequest.getRelation(),
-            addAnnotationGroupRequest.getSourceTag(),
-            addAnnotationGroupRequest.getTargetTag())) {
+        if (addAnnotationGroupRequest.isAddEntity()) {
           annotation =
               AnnotationConvert.addRelationEntitiesAnnotation(
                   oldAnnotation,
@@ -59,6 +56,7 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                   addAnnotationGroupRequest.getTargetTag(),
                   addAnnotationGroupRequest.getRelation());
         }
+
         break;
     }
     return annotation;
@@ -102,42 +100,34 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
 
   @Override
   public String updateMetaDataAnnotation(
-      UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
-      String oldAnnotation,
-      int annotationType) {
+      UpdateAnnotationGroupRequest request, String oldAnnotation, int annotationType) {
     String annotation = "";
     switch (AnnotationTypeEnum.getByValue(annotationType)) {
       case wordPos:
         annotation =
             AnnotationConvert.handleCrossAnnotation(
                 oldAnnotation,
-                updateAnnotationGroupRequest.getTerm(),
-                updateAnnotationGroupRequest.getNewType(),
-                updateAnnotationGroupRequest.getStartPosition(),
-                updateAnnotationGroupRequest.getEndPosition());
+                request.getTerm(),
+                request.getNewType(),
+                request.getStartPosition(),
+                request.getEndPosition());
         break;
       case sentence:
         annotation =
             AnnotationConvert.updateEntitiesAnnotation(
-                oldAnnotation,
-                updateAnnotationGroupRequest.getTag(),
-                updateAnnotationGroupRequest.getNewType());
+                oldAnnotation, request.getTag(), request.getNewType());
         break;
       case relation:
-        if (StringUtils.isAllBlank(
-            updateAnnotationGroupRequest.getReTag(), updateAnnotationGroupRequest.getRelation())) {
+        if (request.isUpdatingEntity()) {
           annotation =
               AnnotationConvert.updateEntitiesAnnotation(
-                  oldAnnotation,
-                  updateAnnotationGroupRequest.getTag(),
-                  updateAnnotationGroupRequest.getNewType());
+                  oldAnnotation, request.getTag(), request.getNewType());
         } else {
           annotation =
               AnnotationConvert.updateRelationAnnotation(
-                  oldAnnotation,
-                  updateAnnotationGroupRequest.getReTag(),
-                  updateAnnotationGroupRequest.getRelation());
+                  oldAnnotation, request.getReTag(), request.getRelation());
         }
+
         break;
     }
     return annotation;

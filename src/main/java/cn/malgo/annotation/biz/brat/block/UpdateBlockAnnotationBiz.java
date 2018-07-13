@@ -34,12 +34,12 @@ public class UpdateBlockAnnotationBiz
   @Override
   protected void validateRequest(UpdateAnnotationGroupRequest updateAnnotationGroupRequest)
       throws InvalidInputException {
-    if (StringUtils.isAllBlank(
-        updateAnnotationGroupRequest.getReTag(), updateAnnotationGroupRequest.getRelation())) {
+    if (updateAnnotationGroupRequest.isUpdatingEntity()) {
       // 更新entity校验
       if (StringUtils.isBlank(updateAnnotationGroupRequest.getTag())) {
         throw new InvalidInputException("invalid-tag", "参数tag不能为空");
       }
+
       if (StringUtils.isBlank(updateAnnotationGroupRequest.getNewType())) {
         throw new InvalidInputException("invalid-new-type", "参数newType不能为空");
       }
@@ -47,6 +47,7 @@ public class UpdateBlockAnnotationBiz
       if (StringUtils.isBlank(updateAnnotationGroupRequest.getReTag())) {
         throw new InvalidInputException("invalid-reTag", "参数reTag为空");
       }
+
       if (StringUtils.isBlank(updateAnnotationGroupRequest.getRelation())) {
         throw new InvalidInputException("invalid-relation", "参数relation为空");
       }
@@ -73,17 +74,16 @@ public class UpdateBlockAnnotationBiz
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
       AnnotationTaskBlock annotationTaskBlock,
       int role) {
-    if (!StringUtils.isAllBlank(
-        updateAnnotationGroupRequest.getRelation(), updateAnnotationGroupRequest.getReTag())) {
-      // 更新relation
-      if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
-          updateAnnotationGroupRequest, annotationTaskBlock, role)) {
-        throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
-      }
-    } else {
+    if (updateAnnotationGroupRequest.isUpdatingEntity()) {
       // 更新entity
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
           updateAnnotationGroupRequest, annotationTaskBlock)) {
+        throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
+      }
+    } else {
+      // 更新relation
+      if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
+          updateAnnotationGroupRequest, annotationTaskBlock, role)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
     }

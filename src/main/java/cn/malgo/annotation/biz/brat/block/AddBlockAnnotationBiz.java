@@ -23,9 +23,9 @@ public class AddBlockAnnotationBiz
   private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
 
   public AddBlockAnnotationBiz(
-      AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      AnnotationWriteOperateService annotationWriteOperateService,
-      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationWriteOperateService annotationWriteOperateService,
+      final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationWriteOperateService = annotationWriteOperateService;
     this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
@@ -34,19 +34,19 @@ public class AddBlockAnnotationBiz
   @Override
   protected void validateRequest(AddAnnotationGroupRequest addAnnotationGroupRequest)
       throws InvalidInputException {
-    if (StringUtils.isAllBlank(
-        addAnnotationGroupRequest.getSourceTag(),
-        addAnnotationGroupRequest.getTargetTag(),
-        addAnnotationGroupRequest.getRelation())) {
+    if (addAnnotationGroupRequest.isAddEntity()) {
       if (StringUtils.isBlank(addAnnotationGroupRequest.getTerm())) {
         throw new InvalidInputException("invalid-term", "term参数为空");
       }
+
       if (StringUtils.isBlank(addAnnotationGroupRequest.getType())) {
         throw new InvalidInputException("invalid-annotation-type", "type参数为空");
       }
+
       if (addAnnotationGroupRequest.getStartPosition() < 0) {
         throw new InvalidInputException("invalid-start-position", "无效的startPosition");
       }
+
       if (addAnnotationGroupRequest.getEndPosition() <= 0) {
         throw new InvalidInputException("invalid-end-position", "无效的endPosition");
       }
@@ -54,9 +54,11 @@ public class AddBlockAnnotationBiz
       if (StringUtils.isBlank(addAnnotationGroupRequest.getSourceTag())) {
         throw new InvalidInputException("invalid-source-tag", "参数sourceTag为空");
       }
+
       if (StringUtils.isBlank(addAnnotationGroupRequest.getTargetTag())) {
         throw new InvalidInputException("invalid-target-tag", "参数targetTag为空");
       }
+
       if (StringUtils.isBlank(addAnnotationGroupRequest.getRelation())) {
         throw new InvalidInputException("invalid-relation", "参数relation为空");
       }
@@ -65,33 +67,24 @@ public class AddBlockAnnotationBiz
 
   @Override
   AnnotationBlockBratVO doInternalProcess(
-      int role,
-      AnnotationTaskBlock annotationTaskBlock,
-      AddAnnotationGroupRequest addAnnotationGroupRequest) {
-    checkRuleBeforeAddRelation(addAnnotationGroupRequest, annotationTaskBlock, role);
-    String annotation =
+      int role, AnnotationTaskBlock annotationTaskBlock, AddAnnotationGroupRequest request) {
+    checkRuleBeforeAddRelation(request, annotationTaskBlock, role);
+    final String annotation =
         annotationWriteOperateService.addMetaDataAnnotation(
-            addAnnotationGroupRequest,
+            request,
             annotationTaskBlock.getAnnotation(),
             annotationTaskBlock.getAnnotationType().ordinal());
     annotationTaskBlock.setAnnotation(annotation);
     annotationTaskBlockRepository.save(annotationTaskBlock);
-    AnnotationBlockBratVO annotationBlockBratVO =
-        AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
-    return annotationBlockBratVO;
+    return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
   }
 
   private void checkRuleBeforeAddRelation(
-      AddAnnotationGroupRequest addAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock,
-      int role) {
-    if (!StringUtils.isAllBlank(
-        addAnnotationGroupRequest.getRelation(),
-        addAnnotationGroupRequest.getSourceTag(),
-        addAnnotationGroupRequest.getTargetTag())) {
+      AddAnnotationGroupRequest request, AnnotationTaskBlock annotationTaskBlock, int role) {
+    if (!request.isAddEntity()) {
       // 新增relation
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
-          addAnnotationGroupRequest, annotationTaskBlock, role)) {
+          request, annotationTaskBlock, role)) {
         throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
       }
     }
