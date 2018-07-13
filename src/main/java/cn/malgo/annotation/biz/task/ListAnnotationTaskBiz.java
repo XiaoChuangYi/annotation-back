@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.task;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
@@ -9,9 +10,12 @@ import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +30,13 @@ public class ListAnnotationTaskBiz
     extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTaskVO>> {
 
   private final AnnotationTaskRepository annotationTaskRepository;
+  private final AnnotationTaskDocRepository annotationTaskDocRepository;
 
-  public ListAnnotationTaskBiz(AnnotationTaskRepository annotationTaskRepository) {
+  public ListAnnotationTaskBiz(
+      AnnotationTaskRepository annotationTaskRepository,
+      AnnotationTaskDocRepository annotationTaskDocRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
+    this.annotationTaskDocRepository = annotationTaskDocRepository;
   }
 
   private static Specification<AnnotationTask> queryAnnotationTaskCondition(
@@ -70,8 +78,34 @@ public class ListAnnotationTaskBiz
   protected PageVO<AnnotationTaskVO> doBiz(
       int userId, int role, ListAnnotationTaskRequest listAnnotationTaskRequest) {
     final int pageIndex = listAnnotationTaskRequest.getPageIndex() - 1;
-    return annotationTaskRepository.listAnnotationTasks(
-        queryAnnotationTaskCondition(listAnnotationTaskRequest),
-        PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
+    final Page<AnnotationTask> page =
+        annotationTaskRepository.findAll(
+            queryAnnotationTaskCondition(listAnnotationTaskRequest),
+            PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
+    final PageVO<AnnotationTaskVO> pageVO = new PageVO(page, false);
+    final List<AnnotationTaskVO> annotationTaskVOList =
+        page.getContent()
+            .stream()
+            .map(
+                annotationTask ->
+                    new AnnotationTaskVO(
+                        annotationTask.getId(),
+                        annotationTask.getCreatedTime(),
+                        annotationTask.getLastModified(),
+                        annotationTask.getName(),
+                        annotationTask.getState().name(),
+                        annotationTaskDocRepository
+                            .findAllByTask(annotationTask)
+                            .stream()
+                            .map(annotationTaskDoc -> annotationTaskDoc.getDoc())
+                            .count(),
+                        annotationTask
+                            .getTaskDocs()
+                            .stream()
+                            .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
+                            .count()))
+            .collect(Collectors.toList());
+    pageVO.setDataList(annotationTaskVOList);
+    return pageVO;
   }
 }
