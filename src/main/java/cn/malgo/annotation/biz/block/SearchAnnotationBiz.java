@@ -60,11 +60,12 @@ public class SearchAnnotationBiz
       return Collections.emptyList();
     }
 
-    final Predicate<String> term = Pattern.compile(request.getTerm()).asPredicate();
+    final Predicate<String> term =
+        Pattern.compile(request.getTerm(), Pattern.CASE_INSENSITIVE).asPredicate();
     final Predicate<String> type =
         StringUtils.isBlank(request.getType())
             ? (s) -> true
-            : Pattern.compile(request.getType()).asPredicate();
+            : Pattern.compile(request.getType(), Pattern.CASE_INSENSITIVE).asPredicate();
 
     final List<AnnotationErrorContext> results =
         annotations
