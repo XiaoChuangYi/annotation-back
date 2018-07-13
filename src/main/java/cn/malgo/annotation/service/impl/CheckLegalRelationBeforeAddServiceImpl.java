@@ -6,8 +6,6 @@ import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.RelationLimitRule;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
@@ -116,8 +114,9 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
                         .filter(entity -> entity.getTag().equals(relationEntity.getSourceTag()))
                         .findFirst()
                         .get()
-                        .getType(),
-                    newType,
+                        .getType()
+                        .replace("-and", ""),
+                    newType.replace("-and", ""),
                     relationEntity.getType()))
         .collect(Collectors.toList());
   }
@@ -132,13 +131,14 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
         .map(
             relationEntity ->
                 new RelationLimitRulePair(
-                    newType,
+                    newType.replace("-and", ""),
                     entities
                         .stream()
                         .filter(entity -> entity.getTag().equals(relationEntity.getTargetTag()))
                         .findFirst()
                         .get()
-                        .getType(),
+                        .getType()
+                        .replace("-and", ""),
                     relationEntity.getType()))
         .collect(Collectors.toList());
   }
