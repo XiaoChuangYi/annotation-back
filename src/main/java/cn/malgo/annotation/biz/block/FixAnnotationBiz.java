@@ -79,8 +79,8 @@ public class FixAnnotationBiz
 
   private FixAnnotationResult fixAnnotation(
       final AnnotationErrorEnum errorType,
-      final String word,
       final AnnotationTaskBlock block,
+      final boolean saveToFixLog,
       final FixAnnotationErrorContext context,
       final FixAnnotationErrorData data) {
     if (block == null) {
@@ -109,13 +109,17 @@ public class FixAnnotationBiz
           final Annotation annotation = annotationFactory.create(block);
           final List<Entity> fixedEntities =
               annotationErrorFactory.getProvider(errorType).fix(annotation, context, data);
-          fixedEntities.forEach(
-              entity ->
-                  annotationFixLogService.insertOrUpdate(
-                      annotation.getId(),
-                      entity.getStart(),
-                      entity.getEnd(),
-                      AnnotationFixLogStateEnum.FIXED));
+
+          if (saveToFixLog) {
+            fixedEntities.forEach(
+                entity ->
+                    annotationFixLogService.insertOrUpdate(
+                        annotation.getId(),
+                        entity.getStart(),
+                        entity.getEnd(),
+                        AnnotationFixLogStateEnum.FIXED));
+          }
+
           blockRepository.save(block);
           break;
 
@@ -198,7 +202,12 @@ public class FixAnnotationBiz
         .stream()
         .map(
             annotation ->
-                fixAnnotation(errorType, word, idMap.get(annotation.getId()), annotation, request))
+                fixAnnotation(
+                    errorType,
+                    idMap.get(annotation.getId()),
+                    request.isSaveToFixLog(),
+                    annotation,
+                    request))
         .collect(Collectors.toList());
   }
 }

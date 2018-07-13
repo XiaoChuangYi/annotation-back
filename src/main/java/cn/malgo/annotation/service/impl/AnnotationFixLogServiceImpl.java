@@ -43,7 +43,7 @@ public class AnnotationFixLogServiceImpl implements AnnotationFixLogService {
           ex);
 
       fixLog = repository.findByAnnotationIdAndStartAndEnd(annotationId, start, end);
-      if (!state.equals(fixLog.getState())) {
+      if (!state.name().equals(fixLog.getState())) {
         fixLog.setState(state.name());
         fixLog = repository.save(fixLog);
       }

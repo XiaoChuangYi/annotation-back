@@ -42,10 +42,6 @@ public class SearchAnnotationBiz
 
   @Override
   protected void validateRequest(SearchAnnotationRequest request) throws InvalidInputException {
-    if (request.getAnnotationType() != 0) {
-      throw new InvalidInputException("invalid-annotation-type", "目前仅支持分词纠错");
-    }
-
     if (StringUtils.isBlank(request.getTerm())) {
       throw new InvalidInputException("invalid-search-term", "term必须有值");
     }
@@ -87,7 +83,7 @@ public class SearchAnnotationBiz
                                 new AnnotationErrorContext(
                                     annotation,
                                     new BratPosition(entity.getStart(), entity.getEnd()),
-                                    null)))
+                                    entity.getTerm())))
             .collect(Collectors.toList());
 
     log.info("search annotations results {}", results.size());
