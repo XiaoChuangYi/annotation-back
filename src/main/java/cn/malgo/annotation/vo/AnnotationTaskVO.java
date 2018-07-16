@@ -15,15 +15,13 @@ public class AnnotationTaskVO {
   private Date lastModifiedTime;
   private String name;
   private String state;
-  private long docQuantity;
-  private long blockQuantity;
 
-  public AnnotationTaskVO(
-      int id, Date createdTime, Date lastModifiedTime, String name, String state) {
-    this.id = id;
-    this.createdTime = createdTime;
-    this.lastModifiedTime = lastModifiedTime;
-    this.name = name;
-    this.state = state;
-  }
+  //  public AnnotationTaskVO(
+  //      int id, Date createdTime, Date lastModifiedTime, String name, String state) {
+  //    this.id = id;
+  //    this.createdTime = createdTime;
+  //    this.lastModifiedTime = lastModifiedTime;
+  //    this.name = name;
+  //    this.state = state;
+  //  }
 }

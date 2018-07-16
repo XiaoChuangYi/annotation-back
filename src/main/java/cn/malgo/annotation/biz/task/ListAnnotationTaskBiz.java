@@ -93,17 +93,7 @@ public class ListAnnotationTaskBiz
                         annotationTask.getCreatedTime(),
                         annotationTask.getLastModified(),
                         annotationTask.getName(),
-                        annotationTask.getState().name(),
-                        annotationTaskDocRepository
-                            .findAllByTask(annotationTask)
-                            .stream()
-                            .map(annotationTaskDoc -> annotationTaskDoc.getDoc())
-                            .count(),
-                        annotationTask
-                            .getTaskDocs()
-                            .stream()
-                            .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
-                            .count()))
+                        annotationTask.getState().name()))
             .collect(Collectors.toList());
     pageVO.setDataList(annotationTaskVOList);
     return pageVO;

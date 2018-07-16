@@ -52,13 +52,7 @@ public interface AnnotationTaskRepository
                         annotationTask.getCreatedTime(),
                         annotationTask.getLastModified(),
                         annotationTask.getName(),
-                        annotationTask.getState().name(),
-                        0,
-                        annotationTask
-                            .getTaskDocs()
-                            .stream()
-                            .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
-                            .count()))
+                        annotationTask.getState().name()))
             .collect(Collectors.toList());
     pageVO.setDataList(annotationTaskVOList);
     return pageVO;

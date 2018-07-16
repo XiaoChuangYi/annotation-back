@@ -65,7 +65,15 @@ public class ListTaskDetailsBiz extends BaseBiz<ListTaskDetailRequest, Annotatio
     }
     annotationTaskDetailVO =
         new AnnotationTaskDetailVO(
-            annotationTask.getName(), annotationTask.getState().name(), originalDocVOList);
+            annotationTask.getName(),
+            annotationTask.getState().name(),
+            originalDocVOList,
+            originalDocVOList.size(),
+            annotationTask
+                .getTaskDocs()
+                .stream()
+                .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
+                .count());
     return annotationTaskDetailVO;
   }
 }
