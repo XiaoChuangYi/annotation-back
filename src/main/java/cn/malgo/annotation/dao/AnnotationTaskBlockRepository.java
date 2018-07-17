@@ -1,13 +1,17 @@
 package cn.malgo.annotation.dao;
 
+import cn.malgo.annotation.dto.AnnotationEstimate;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import org.springframework.data.jpa.repository.Query;
 
 public interface AnnotationTaskBlockRepository
     extends JpaRepository<AnnotationTaskBlock, Integer>,
