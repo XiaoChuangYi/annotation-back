@@ -1,83 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>annotation-service</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+  <artifactId>annotation-service</artifactId>
+  <version>2.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
-    <name>annotation-service</name>
-    <description>Annotation Backend service</description>
+  <name>annotation-service</name>
+  <description>Annotation Backend service</description>
 
-    <parent>
-        <groupId>cn.malgo</groupId>
-        <artifactId>java-service-parent</artifactId>
-        <version>1.1.4</version>
-    </parent>
+  <parent>
+    <groupId>cn.malgo</groupId>
+    <artifactId>java-service-parent</artifactId>
+    <version>1.1.4</version>
+  </parent>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-        <spring-cloud.version>Finchley.M8</spring-cloud.version>
-        <malgo.base-definition.version>2.1.0-SNAPSHOT</malgo.base-definition.version>
-        <malgo.common-utils.version>2.1.0-SNAPSHOT</malgo.common-utils.version>
-        <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>Finchley.M8</spring-cloud.version>
+    <malgo.base-definition.version>2.1.0-SNAPSHOT</malgo.base-definition.version>
+    <malgo.common-utils.version>2.1.0-SNAPSHOT</malgo.common-utils.version>
+    <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
+  </properties>
 
+  <dependencies>
+    <dependency>
+      <groupId>cn.malgo.core</groupId>
+      <artifactId>base-definition</artifactId>
+      <version>${malgo.base-definition.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>cn.malgo.common</groupId>
+      <artifactId>common-utils</artifactId>
+      <version>${malgo.common-utils.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-hystrix</artifactId>
+      <version>1.3.1.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mybatis.spring.boot</groupId>
+      <artifactId>mybatis-spring-boot-starter</artifactId>
+      <version>1.3.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.197</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>cn.malgo.core</groupId>
-            <artifactId>base-definition</artifactId>
-            <version>${malgo.base-definition.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>cn.malgo.common</groupId>
-            <artifactId>common-utils</artifactId>
-            <version>${malgo.common-utils.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-hystrix</artifactId>
-            <version>1.3.1.RELEASE</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.197</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+  </dependencyManagement>
 </project>
