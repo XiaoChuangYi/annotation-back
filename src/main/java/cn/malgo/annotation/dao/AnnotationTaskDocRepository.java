@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Comparator;
+import org.springframework.data.jpa.repository.Query;
 
 public interface AnnotationTaskDocRepository extends JpaRepository<AnnotationTaskDoc, Integer> {
   default AnnotationTaskDoc updateState(final AnnotationTaskDoc taskDoc) {
@@ -32,4 +33,9 @@ public interface AnnotationTaskDocRepository extends JpaRepository<AnnotationTas
   List<AnnotationTaskDoc> findAllByDoc(final OriginalDoc originalDoc);
 
   List<AnnotationTaskDoc> findAllByTask(final AnnotationTask annotationTask);
+
+  @Query(
+      value = "select doc_id from annotation_task_doc where task_id = ?1",
+      nativeQuery = true)
+  List<Integer> findDocIdByTaskId(int taskId);
 }
