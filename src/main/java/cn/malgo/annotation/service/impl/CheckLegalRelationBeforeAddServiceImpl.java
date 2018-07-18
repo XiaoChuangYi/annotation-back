@@ -13,7 +13,7 @@ import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.Entity;
 import java.util.List;
 import java.util.Optional;

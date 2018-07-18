@@ -14,7 +14,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import lombok.extern.slf4j.Slf4j;

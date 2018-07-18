@@ -1,7 +1,7 @@
 package cn.malgo.annotation.utils;
 
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.Entity;
 
 import java.util.List;

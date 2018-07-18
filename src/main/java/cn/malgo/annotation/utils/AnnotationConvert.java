@@ -9,7 +9,7 @@ import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.UserExercise;
 import cn.malgo.annotation.exception.BratParseException;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
 import cn.malgo.annotation.vo.ExerciseAnnotationBratVO;
 import lombok.extern.slf4j.Slf4j;

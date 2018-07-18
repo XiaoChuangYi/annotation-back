@@ -1,11 +1,13 @@
 package cn.malgo.annotation.utils;
 
+import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.core.definition.Document;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
+import cn.malgo.core.definition.utils.DocumentManipulator;
 import cn.malgo.core.definition.utils.EntityManipulator;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -21,64 +23,10 @@ public class AnnotationDocumentManipulator {
    * 以及entity的标注提取出来并封装到entity对象
    */
   public static void parseBratAnnotation(String anno, AnnotationDocument document) {
-    List<String> records = Arrays.asList(anno.split("\n"));
-    // 封装DB中的relation格式的数据到实体集合
-    List<RelationEntity> relationEntities =
-        records
-            .stream()
-            .filter((s) -> s.startsWith("R"))
-            .map(
-                (s) -> {
-                  String[] tabs = s.split("\\s");
-                  if (tabs.length != 4) {
-                    log.warn(
-                        "invalid annotation text: {}, annotation: {}", document.getText(), anno);
-                    throw new IllegalArgumentException(
-                        "invalid annotation text: " + document.getText() + ", annotation: " + anno);
-                  }
-
-                  String tag = tabs[0];
-                  String type = tabs[1];
-                  String[] sourceGroups = tabs[2].split(":");
-                  String source = sourceGroups[0];
-                  String sourceTag = sourceGroups[1];
-                  String[] targetGroups = tabs[3].split(":");
-                  String target = targetGroups[0];
-                  String targetTag = targetGroups[1];
-                  return new RelationEntity(tag, type, sourceTag, targetTag, source, target);
-                })
-            .collect(Collectors.toList());
-    document.setRelationEntities(relationEntities);
-    // 封装DB中的entity格式的数据到实体集合
-    List<Entity> entities =
-        records
-            .stream()
-            .filter((s) -> s.startsWith("T"))
-            .map(
-                (s) -> {
-                  final String[] tabs = s.split("\\s", 5);
-
-                  if (tabs.length != 5 && tabs.length != 4) {
-                    log.warn(
-                        "invalid annotation text: {}, annotation: {}", document.getText(), anno);
-                    throw new IllegalArgumentException(
-                        "invalid annotation text: " + document.getText() + ", annotation: " + anno);
-                  }
-
-                  final int start = Integer.parseInt(tabs[2]);
-                  final int end = Integer.parseInt(tabs[3]);
-                  String term;
-                  if (tabs.length == 4) {
-                    // term为空格，尝试用start，end取值
-                    term = document.getText().substring(start, end);
-                  } else {
-                    term = tabs[4];
-                  }
-
-                  return new Entity(tabs[0], start, end, tabs[1], term);
-                })
-            .collect(Collectors.toList());
-    document.setEntities(entities);
+    final Document doc = new Document(document.getText());
+    DocumentManipulator.parseBratAnnotations(anno, doc);
+    document.setEntities(doc.getEntities());
+    document.setRelationEntities(doc.getRelationEntities());
   }
 
   /** 直接转换成文本格式的数据，用来保存到数据库 */

@@ -2,6 +2,7 @@ package cn.malgo.annotation.utils.entity;
 
 import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import lombok.AllArgsConstructor;
 import lombok.Data;

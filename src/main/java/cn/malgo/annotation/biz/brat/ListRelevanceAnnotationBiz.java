@@ -11,7 +11,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.core.definition.Entity;
 import java.util.Arrays;
