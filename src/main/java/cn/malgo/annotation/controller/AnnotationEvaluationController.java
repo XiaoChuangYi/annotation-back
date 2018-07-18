@@ -2,12 +2,12 @@ package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.GetDocByTaskBiz;
 import cn.malgo.annotation.request.GetDocByTaskRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.biz.AnnotationEstimateQueryBiz;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
-import java.util.List;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 public class AnnotationEvaluationController extends BaseController {
+
   private final GetDocByTaskBiz getDocByTaskBiz;
   private final AnnotationEstimateQueryBiz annotationEstimateQueryBiz;
 
@@ -30,7 +31,7 @@ public class AnnotationEvaluationController extends BaseController {
   }
 
   @RequestMapping(value = "/query-annotation-estimate", method = RequestMethod.GET)
-  public Response<List<AnnotationEstimateVO>> queryAnnotationEstimate(
+  public Response<PageVO<AnnotationEstimateVO>> queryAnnotationEstimate(
       AnnotationEstimateQueryRequest annotationEstimateQueryRequest) {
     return new Response<>(
         annotationEstimateQueryBiz.process(

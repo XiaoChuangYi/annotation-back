@@ -30,13 +30,9 @@ public class ListAnnotationTaskBiz
     extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTaskVO>> {
 
   private final AnnotationTaskRepository annotationTaskRepository;
-  private final AnnotationTaskDocRepository annotationTaskDocRepository;
 
-  public ListAnnotationTaskBiz(
-      AnnotationTaskRepository annotationTaskRepository,
-      AnnotationTaskDocRepository annotationTaskDocRepository) {
+  public ListAnnotationTaskBiz(AnnotationTaskRepository annotationTaskRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
-    this.annotationTaskDocRepository = annotationTaskDocRepository;
   }
 
   private static Specification<AnnotationTask> queryAnnotationTaskCondition(
@@ -55,6 +51,9 @@ public class ListAnnotationTaskBiz
               && !param.getTaskStates().contains(null)) {
             predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskStates()));
           }
+          if (param.getTaskId() > 0) {
+            predicates.add(criteriaBuilder.in(root.get("id")).value(param.getTaskId()));
+          }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
   }
@@ -62,9 +61,6 @@ public class ListAnnotationTaskBiz
   @Override
   protected void validateRequest(ListAnnotationTaskRequest listAnnotationTaskRequest)
       throws InvalidInputException {
-    if (listAnnotationTaskRequest == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
-    }
     if (listAnnotationTaskRequest.getPageIndex() <= 0) {
       throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
     }
@@ -93,7 +89,16 @@ public class ListAnnotationTaskBiz
                         annotationTask.getCreatedTime(),
                         annotationTask.getLastModified(),
                         annotationTask.getName(),
-                        annotationTask.getState().name()))
+                        annotationTask.getState().name(),
+                        annotationTask.getTotalBranchNum(),
+                        annotationTask.getTotalWordNum(),
+                        annotationTask.getAnnotatedWordNum(),
+                        annotationTask.getRestWordNum(),
+                        annotationTask.getAnnotatedBranchNum(),
+                        annotationTask.getRestBranchNum(),
+                        annotationTask.getInConformity(),
+                        annotationTask.getAbandonBranchNum(),
+                        annotationTask.getAnnotatedWordNum()))
             .collect(Collectors.toList());
     pageVO.setDataList(annotationTaskVOList);
     return pageVO;

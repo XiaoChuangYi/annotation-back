@@ -1,5 +1,6 @@
 package cn.malgo.annotation.mapper;
 
+import cn.malgo.annotation.dto.AnnotationOverview;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import java.util.Date;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface AnnotationEvaluateInterface {
       @Param("task_id") int taskId,
       @Param("gmt_modified") Date gmtModified,
       @Param("assignee") int assignee);
+
+  List<AnnotationOverview> listAnnotationOverviewSummary(@Param("task_id") int taskId);
 }

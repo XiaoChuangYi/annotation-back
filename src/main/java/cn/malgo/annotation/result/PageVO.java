@@ -17,6 +17,11 @@ public class PageVO<T> {
     this.setDataList(page.getContent());
   }
 
+  public PageVO(com.github.pagehelper.Page<T> page) {
+    this.setTotal(page.getTotal());
+    this.setDataList(page.getResult());
+  }
+
   public PageVO(Page<T> page, boolean setData) {
     this.setTotal(page.getTotalElements());
     if (setData) {

@@ -31,6 +31,7 @@ import java.util.List;
 @ToString(exclude = {"taskDocs"})
 @JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
 public class AnnotationTask {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Getter
@@ -84,4 +85,49 @@ public class AnnotationTask {
   public AnnotationTask(int id) {
     this.id = id;
   }
+
+  @Column(name = "total_word_num", nullable = false)
+  @Getter
+  @Setter
+  private int totalWordNum = 0;
+
+  @Column(name = "annotated_word_num", nullable = false)
+  @Getter
+  @Setter
+  private int annotatedWordNum = 0;
+
+  @Column(name = "rest_word_num", nullable = false)
+  @Getter
+  @Setter
+  private int restWordNum = 0;
+
+  @Column(name = "total_branch_num", nullable = false)
+  @Getter
+  @Setter
+  private int totalBranchNum = 0;
+
+  @Column(name = "annotated_branch_num", nullable = false)
+  @Getter
+  @Setter
+  private int annotatedBranchNum = 0;
+
+  @Column(name = "rest_branch_num", nullable = false)
+  @Getter
+  @Setter
+  private int restBranchNum = 0;
+
+  @Column(name = "in_conformity", nullable = false)
+  @Getter
+  @Setter
+  private double inConformity = 0;
+
+  @Column(name = "abandon_branch_num", nullable = false)
+  @Getter
+  @Setter
+  private int abandonBranchNum = 0;
+
+  @Column(name = "abandon_word_num", nullable = false)
+  @Getter
+  @Setter
+  private int abandonWordNum = 0;
 }

@@ -86,4 +86,85 @@
     GROUP BY main.assignee
   </select>
 
+
+  <resultMap type="cn.malgo.annotation.dto.AnnotationOverview" id="listOverview">
+    <result column="task_id" property="taskId"/>
+    <result column="task_name" property="taskName"/>
+    <result column="total_branch" property="totalBranch"/>
+    <result column="total_word_num" property="totalWordNum"/>
+    <result column="annotated_branch" property="annotatedBranch"/>
+    <result column="annotated_word_num" property="annotatedWordNum"/>
+    <result column="rest_branch" property="restBranch"/>
+    <result column="rest_word_num" property="restWordNum"/>
+    <result column="in_conformity" property="inConformity"/>
+    <result column="abandon_branch" property="abandonBranch"/>
+    <result column="abandon_word_num" property="abandonWordNum"/>
+  </resultMap>
+
+
+  <select id="listAnnotationOverviewSummary" resultMap="listOverview">
+    SELECT
+    task_id,
+    name AS task_name,
+    sum(finish_word_num) AS annotated_word_num,
+    sum(rest_word_num) AS rest_word_num,
+    sum(finish_branch) AS annotated_branch,
+    sum(rest_branch) AS rest_branch,
+    sum(total_branch) AS total_branch,
+    sum(total_word_num) AS total_word_num,
+    sum(abandon_branch) AS abandon_branch,
+    sum(abandon_word_num) AS abandon_word_num,
+    ifnull(
+    1 - (sum(examine_pass_branch) / sum(total_examine_branch)), 0) AS in_conformity
+    FROM (
+    SELECT
+    task_id,
+    task.name,
+    sum(ifnull(CASE
+    WHEN anno.state IN ('preExamine')
+    THEN length(term)
+    END, 0)) AS finish_word_num,
+    sum(ifnull(CASE
+    WHEN anno.state IN ('annotationProcessing', 'preAnnotation')
+    THEN length(term)
+    END, 0)) AS rest_word_num,
+    ifnull(CASE WHEN anno.state IN ('preExamine')
+    THEN COUNT(anno.id)
+    END, 0) AS finish_branch,
+    ifnull(CASE
+    WHEN anno.state IN ('annotationProcessing', 'preAnnotation')
+    THEN count(anno.id)
+    END, 0) AS rest_branch,
+    ifnull(CASE WHEN anno.state IN ('examinePass')
+    THEN count(anno.id) END, 0) AS examine_pass_branch,
+    ifnull(CASE WHEN anno.state IN
+    ('examinePass', 'abandon', 'innerAnnotation', 'errorPass')
+    THEN count(anno.id) END, 0) AS total_examine_branch,
+    ifnull(
+    CASE WHEN anno.state IN ('preExamine', 'annotationProcessing', 'preAnnotation')
+    THEN count(anno.id) END, 0) AS total_branch,
+    sum(ifnull(CASE WHEN anno.state IN
+    ('preExamine', 'annotationProcessing', 'preAnnotation')
+    THEN length(term) END, 0)) AS total_word_num,
+    ifnull(CASE WHEN  anno.state IN ('abandon')
+    THEN count(anno.id) END ,0) as abandon_branch,
+    sum(ifnull(CASE WHEN anno.state IN
+    ('abandon')
+    THEN length(term) END, 0)) AS abandon_word_num
+    FROM annotation_task_doc taskDoc
+    LEFT JOIN annotation_task_doc_block taskDocBlock
+    ON taskDoc.id = taskDocBlock.task_doc_id
+    LEFT JOIN annotation_task_block block
+    ON taskDocBlock.block_id = block.id
+    INNER JOIN annotation_combine anno
+    ON anno.annotation_type = block.annotation_type AND anno.term = block.text
+    INNER JOIN annotation_task task
+    ON taskDoc.task_id = task.id
+    WHERE 1=1
+    <if test="task_id!=null and task_id!=0">
+      AND task_id=${task_id}
+    </if>
+    GROUP BY task.id ,anno.state)as main GROUP BY task_id
+  </select>
+
 </mapper>

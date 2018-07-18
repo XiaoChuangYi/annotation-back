@@ -8,6 +8,7 @@ import lombok.Value;
 public class ListAnnotationTaskRequest {
   int pageIndex;
   int pageSize;
+  int taskId;
   String name;
   List<AnnotationTaskState> taskStates;
 }
