@@ -4,14 +4,12 @@ import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
-import cn.malgo.annotation.mapper.AnnotationEvaluateInterface;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,11 +18,7 @@ import org.springframework.stereotype.Component;
 public class AnnotationEstimateQueryBiz
     extends BaseBiz<AnnotationEstimateQueryRequest, PageVO<AnnotationEstimateVO>> {
 
-  private final AnnotationEvaluateInterface annotationEvaluateInterface;
-
-  public AnnotationEstimateQueryBiz(AnnotationEvaluateInterface annotationEvaluateInterface) {
-    this.annotationEvaluateInterface = annotationEvaluateInterface;
-  }
+  public AnnotationEstimateQueryBiz() {}
 
   @Override
   protected void validateRequest(AnnotationEstimateQueryRequest annotationEstimateQueryRequest)
@@ -41,17 +35,12 @@ public class AnnotationEstimateQueryBiz
   }
 
   @Override
-  @Cacheable(cacheNames = "summary")
   public PageVO<AnnotationEstimateVO> doBiz(
       int userId, int role, AnnotationEstimateQueryRequest annotationEstimateQueryRequest) {
     final Page<AnnotationEstimateVO> page =
         PageHelper.startPage(
             annotationEstimateQueryRequest.getPageIndex(),
             annotationEstimateQueryRequest.getPageSize());
-    annotationEvaluateInterface.listAnnotationEstimateSummary(
-        annotationEstimateQueryRequest.getTaskId(),
-        annotationEstimateQueryRequest.getWorkDay(),
-        annotationEstimateQueryRequest.getAssignee());
     final PageVO<AnnotationEstimateVO> pageVO = new PageVO(page);
     log.info("测试缓存：" + System.currentTimeMillis());
     return pageVO;

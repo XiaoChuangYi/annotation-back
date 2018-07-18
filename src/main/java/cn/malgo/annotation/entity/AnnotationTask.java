@@ -86,48 +86,48 @@ public class AnnotationTask {
     this.id = id;
   }
 
-  @Column(name = "total_word_num", nullable = false)
+  @Column(name = "total_word_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int totalWordNum = 0;
+  private int totalWordNum = 0; // 批次总字数
 
-  @Column(name = "annotated_word_num", nullable = false)
+  @Column(name = "annotated_word_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int annotatedWordNum = 0;
+  private int annotatedWordNum = 0; // 批次已标注总字数
 
-  @Column(name = "rest_word_num", nullable = false)
+  @Column(name = "rest_word_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int restWordNum = 0;
+  private int restWordNum = 0; // 批次剩余标注总字数
 
-  @Column(name = "total_branch_num", nullable = false)
+  @Column(name = "total_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int totalBranchNum = 0;
+  private int totalBranchNum = 0; // 批次总条数
 
-  @Column(name = "annotated_branch_num", nullable = false)
+  @Column(name = "annotated_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int annotatedBranchNum = 0;
+  private int annotatedBranchNum = 0; // 批次已标注条数
 
-  @Column(name = "rest_branch_num", nullable = false)
+  @Column(name = "rest_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int restBranchNum = 0;
+  private int restBranchNum = 0; // 批次剩余条数
 
-  @Column(name = "in_conformity", nullable = false)
+  @Column(name = "in_conformity", nullable = false, columnDefinition = "double default 0")
   @Getter
   @Setter
-  private double inConformity = 0;
+  private double inConformity = 0; // 批次不一致率
 
-  @Column(name = "abandon_branch_num", nullable = false)
+  @Column(name = "abandon_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int abandonBranchNum = 0;
+  private int abandonBranchNum = 0; // 批次已放弃条数
 
-  @Column(name = "abandon_word_num", nullable = false)
+  @Column(name = "abandon_word_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
   @Setter
-  private int abandonWordNum = 0;
+  private int abandonWordNum = 0; // 批次已放弃字数
 }
