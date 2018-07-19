@@ -2,12 +2,16 @@ package cn.malgo.annotation.biz.doc;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.result.PageVO;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,12 +27,17 @@ import java.util.List;
 public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalDoc>> {
 
   private final OriginalDocRepository originalDocRepository;
+  private final AnnotationTaskDocRepository annotationTaskDocRepository;
 
-  public ListOriginalDocBiz(OriginalDocRepository originalDocRepository) {
+  public ListOriginalDocBiz(
+      OriginalDocRepository originalDocRepository,
+      AnnotationTaskDocRepository annotationTaskDocRepository) {
     this.originalDocRepository = originalDocRepository;
+    this.annotationTaskDocRepository = annotationTaskDocRepository;
   }
 
-  private static Specification<OriginalDoc> queryOriginalDocCondition(ListDocRequest param) {
+  private static Specification<OriginalDoc> queryOriginalDocCondition(
+      ListDocRequest param, List<Integer> docIds) {
     return (Specification<OriginalDoc>)
         (root, criteriaQuery, criteriaBuilder) -> {
           // todo 还会有其它的过滤条件
@@ -51,9 +60,10 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
                     root.get("source"), String.format("%%%s%%", param.getSource())));
           }
           if (param.getMinTextLength() != 0) {
-            predicates.add(
-                criteriaBuilder.ge(
-                    criteriaBuilder.length(root.get("text")), param.getMinTextLength()));
+            predicates.add(criteriaBuilder.ge(root.get("textLength"), param.getMinTextLength()));
+          }
+          if (docIds.size() > 0) {
+            predicates.add(criteriaBuilder.in(root.get("id")).value(docIds));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
@@ -75,9 +85,21 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
   @Override
   protected PageVO<OriginalDoc> doBiz(int userId, int role, ListDocRequest listDocRequest) {
     final int pageIndex = listDocRequest.getPageIndex() - 1;
+    List<Integer> docIdList = Collections.emptyList();
+    if (listDocRequest.getTaskId() > 0) {
+      docIdList =
+          annotationTaskDocRepository
+              .findAllByTask(new AnnotationTask(listDocRequest.getTaskId()))
+              .stream()
+              .map(annotationTaskDoc -> annotationTaskDoc.getDoc().getId())
+              .collect(Collectors.toList());
+    }
+    if (listDocRequest.getDocId() > 0) {
+      docIdList.add(listDocRequest.getDocId());
+    }
     Page<OriginalDoc> page =
         originalDocRepository.findAll(
-            queryOriginalDocCondition(listDocRequest),
+            queryOriginalDocCondition(listDocRequest, docIdList),
             PageRequest.of(pageIndex, listDocRequest.getPageSize()));
     PageVO<OriginalDoc> pageVO = new PageVO(page, false);
     pageVO.setDataList(page.getContent());

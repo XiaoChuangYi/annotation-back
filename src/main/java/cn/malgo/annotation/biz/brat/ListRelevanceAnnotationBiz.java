@@ -5,6 +5,7 @@ import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
@@ -75,17 +76,16 @@ public class ListRelevanceAnnotationBiz
     return annotationTaskDocRepository
         .findAllByTask(new AnnotationTask(taskId))
         .stream()
+        .flatMap(x -> x.getBlocks().stream())
+        .map(annotationTaskDocBlock -> annotationTaskDocBlock.getBlock())
         .filter(
-            annotationTaskDoc ->
-                annotationTaskDoc.getAnnotationType() == AnnotationTypeEnum.relation
+            annotationTaskBlock ->
+                annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation
                     && StringUtils.equalsAny(
-                        annotationTaskDoc.getState().name(),
+                        annotationTaskBlock.getState().name(),
                         AnnotationTaskState.ANNOTATED.name(),
                         AnnotationTaskState.FINISHED.name()))
-        .flatMap(x -> x.getBlocks().stream())
-        .collect(Collectors.toList())
-        .stream()
-        .map(annotationTaskDocBlock -> annotationTaskDocBlock.getId().getBlockId())
+        .map(annotationTaskBlock -> annotationTaskBlock.getId())
         .collect(Collectors.toList());
   }
 

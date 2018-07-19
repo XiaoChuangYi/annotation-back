@@ -11,4 +11,6 @@ public class ListDocRequest {
   private String source; // 文档来源
   private String text; // 文档内容
   private String type; // 文档类型
+  private int docId; // 文档id
+  private int taskId;
 }

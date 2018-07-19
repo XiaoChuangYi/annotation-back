@@ -62,6 +62,11 @@ public class OriginalDoc {
   @NonNull
   private String text;
 
+  @Column(name = "text_length", nullable = false, columnDefinition = "Int(11)")
+  @Getter
+  @Setter
+  private int textLength;
+
   @Column(name = "type", nullable = false, length = 16)
   @Getter
   @Setter
