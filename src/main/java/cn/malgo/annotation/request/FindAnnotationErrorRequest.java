@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class FindAnnotationErrorRequest {
   private int errorType;
-  private int taskId;
+  private long taskId;
 }

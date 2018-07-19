@@ -1,16 +1,17 @@
 package cn.malgo.annotation.vo;
 
-import java.util.Date;
+import cn.malgo.annotation.entity.AnnotationTask;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class AnnotationTaskVO {
-
-  private int id;
+  private long id;
   private Date createdTime;
   private Date lastModifiedTime;
   private String name;
@@ -24,11 +25,27 @@ public class AnnotationTaskVO {
   private double inConformity; // 批次不一致性
 
   public AnnotationTaskVO(
-      int id, Date createdTime, Date lastModifiedTime, String name, String state) {
+      long id, Date createdTime, Date lastModifiedTime, String name, String state) {
     this.id = id;
     this.createdTime = createdTime;
     this.lastModifiedTime = lastModifiedTime;
     this.name = name;
     this.state = state;
+  }
+
+  public AnnotationTaskVO(AnnotationTask task) {
+    this(
+        task.getId(),
+        task.getCreatedTime(),
+        task.getLastModified(),
+        task.getName(),
+        task.getState().name(),
+        task.getTotalBranchNum(),
+        task.getTotalWordNum(),
+        task.getAnnotatedBranchNum(),
+        task.getAnnotatedWordNum(),
+        task.getRestBranchNum(),
+        task.getRestWordNum(),
+        task.getInConformity());
   }
 }

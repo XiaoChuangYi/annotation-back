@@ -1,25 +1,18 @@
 package cn.malgo.annotation.entity;
 
-import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import cn.malgo.service.entity.BaseEntity;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import javax.persistence.*;
+
 @Entity
-@Data
+@EntityListeners(AuditingEntityListener.class)
+@ToString(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Table(
     name = "annotation_staff_evaluate",
     indexes = {
@@ -28,32 +21,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
           columnList = "task_id,assignee,work_day",
           unique = true)
     })
-@EntityListeners(AuditingEntityListener.class)
-public class AnnotationStaffEvaluate {
+public class AnnotationStaffEvaluate extends BaseEntity {
+  @Column(name = "task_id", nullable = false, columnDefinition = "bigint(20) default 0")
+  private long taskId;
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private int id;
-
-  @Column(name = "gmt_created", updatable = false, nullable = false)
-  @CreatedDate
-  private Date gmtCreated;
-
-  @Column(name = "gmt_modified", nullable = false)
-  @LastModifiedDate
-  private Date gmtModified;
-
-  @Column(name = "task_id", nullable = false, columnDefinition = "int(11) default 0")
-  private int taskId;
-
-  @Column(name = "task_name", nullable = false, columnDefinition = "varchar(1024)")
+  @Column(name = "task_name", nullable = false, length = 1024)
   private String taskName;
-
-  @Column(name = "assignee", nullable = false, columnDefinition = "int(11) default 0")
-  private int assignee;
 
   @Column(name = "work_day", columnDefinition = "Date")
   private java.sql.Date workDay;
+
+  @Column(name = "assignee", nullable = false, columnDefinition = "bigint(20) default 0")
+  private long assignee;
 
   @Column(name = "total_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   private int totalBranchNum; // 批次总条数
@@ -89,9 +68,9 @@ public class AnnotationStaffEvaluate {
   private int abandonWordNum;
 
   public AnnotationStaffEvaluate(
-      int taskId,
+      long taskId,
       String taskName,
-      int assignee,
+      long assignee,
       java.sql.Date workDay,
       int totalBranchNum,
       int totalWordNum,

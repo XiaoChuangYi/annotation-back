@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class DeleteAnnotationGroupRequest implements BaseAnnotationRequest {
-  private int id;
+  private long id;
   private String tag;
   private int startPosition;
   private int endPosition;

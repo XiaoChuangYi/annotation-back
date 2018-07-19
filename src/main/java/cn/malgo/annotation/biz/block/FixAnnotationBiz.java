@@ -1,7 +1,6 @@
 package cn.malgo.annotation.biz.block;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.TransactionalBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
@@ -12,15 +11,16 @@ import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationFixLogStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.InternalServiceException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.InternalServerException;
+import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
 
@@ -96,7 +96,7 @@ public class FixAnnotationBiz
     // 2: skip
     int action;
     if (data.getEntities() == null) {
-      throw new InternalServiceException("internal-server-error", "entities不应该为null");
+      throw new InternalServerException("entities不应该为null");
     } else if (data.getEntities().size() == 0) {
       action = 2;
     } else {
@@ -134,16 +134,16 @@ public class FixAnnotationBiz
 
       return new FixAnnotationResult(true, null);
     } catch (IllegalArgumentException ex) {
-      log.warn("标注状态错误: {}, state: {}, ex: {}", block.getId(), block.getState(), ex.getMessage());
-      return new FixAnnotationResult(false, "标注状态错误: " + block.getState());
+      log.warn("修复标注出错: {}, state: {}, ex: {}", block.getId(), block.getState(), ex.getMessage());
+      return new FixAnnotationResult(false, "修复标注出错: " + block.getState());
     } catch (Exception ex) {
       log.error("修复标注出错: " + block.getId(), ex);
       return new FixAnnotationResult(false, "修复标注出错: " + ex.getMessage());
     }
   }
 
-  private Map<Integer, FixAnnotationResult> resetBlocks(
-      final Map<Integer, AnnotationTaskBlock> idMap,
+  private Map<Long, FixAnnotationResult> resetBlocks(
+      final Map<Long, AnnotationTaskBlock> idMap,
       final AnnotationErrorEnum errorType,
       final String word) {
     final String comment = errorType.name() + ": " + word;
@@ -158,7 +158,6 @@ public class FixAnnotationBiz
                   try {
                     blockService.resetBlock(block, AnnotationBlockActionEnum.RE_EXAMINE, comment);
                     return new FixAnnotationResult(true, null);
-
                   } catch (IllegalArgumentException ex) {
                     log.warn(
                         "标注状态错误: {}, state: {}, ex: {}",
@@ -172,7 +171,7 @@ public class FixAnnotationBiz
 
   @Override
   protected List<FixAnnotationResult> doBiz(final FixAnnotationErrorRequest request) {
-    final Map<Integer, AnnotationTaskBlock> idMap =
+    final Map<Long, AnnotationTaskBlock> idMap =
         blockRepository
             .findAllById(
                 request
@@ -188,7 +187,7 @@ public class FixAnnotationBiz
 
     if (request.getEntities() == null) {
       // 打回重审
-      final Map<Integer, FixAnnotationResult> resultMap = resetBlocks(idMap, errorType, word);
+      final Map<Long, FixAnnotationResult> resultMap = resetBlocks(idMap, errorType, word);
       return request
           .getAnnotations()
           .stream()

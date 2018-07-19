@@ -1,7 +1,7 @@
 package cn.malgo.annotation.interceptor;
 
-import cn.malgo.annotation.dto.UserDetails;
-import cn.malgo.annotation.result.Response;
+import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import com.alibaba.fastjson.JSON;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.HandlerInterceptor;

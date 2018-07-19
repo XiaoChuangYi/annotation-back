@@ -4,15 +4,15 @@ import cn.malgo.annotation.biz.task.ListAnnotationTaskBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBlockBiz;
 import cn.malgo.annotation.biz.task.ListTaskDetailsBiz;
 import cn.malgo.annotation.controller.BaseController;
-import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.request.task.ListTaskDetailRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.annotation.vo.AnnotationTaskDetailVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
+import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,9 +23,9 @@ public class AnnotationTaskController extends BaseController {
   private final ListTaskDetailsBiz listTaskDetailsBiz;
 
   public AnnotationTaskController(
-      ListAnnotationTaskBiz listAnnotationTaskBiz,
-      ListAnnotationTaskBlockBiz listAnnotationTaskBlockBiz,
-      ListTaskDetailsBiz listTaskDetailsBiz) {
+      final ListAnnotationTaskBiz listAnnotationTaskBiz,
+      final ListAnnotationTaskBlockBiz listAnnotationTaskBlockBiz,
+      final ListTaskDetailsBiz listTaskDetailsBiz) {
     this.listAnnotationTaskBiz = listAnnotationTaskBiz;
     this.listAnnotationTaskBlockBiz = listAnnotationTaskBlockBiz;
     this.listTaskDetailsBiz = listTaskDetailsBiz;
@@ -43,7 +43,7 @@ public class AnnotationTaskController extends BaseController {
   @RequestMapping(value = "/list-task-details/{id}", method = RequestMethod.GET)
   public Response<AnnotationTaskDetailVO> listTaskDetails(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
-      @PathVariable("id") int id) {
+      @PathVariable("id") long id) {
 
     return new Response<>(listTaskDetailsBiz.process(new ListTaskDetailRequest(id), userAccount));
   }

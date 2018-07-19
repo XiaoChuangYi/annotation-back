@@ -1,21 +1,20 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.biz.base.BaseBiz;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
+import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.request.ListAnnotationCombineRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.AnnotationCombineService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
-import java.util.List;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/5/30. */
 @Component
 @Slf4j
 public class ListAnnotationBiz
@@ -44,16 +43,16 @@ public class ListAnnotationBiz
 
   @Override
   protected PageVO<AnnotationCombineBratVO> doBiz(
-      int userId, int role, ListAnnotationCombineRequest annotationCombineQuery) {
-    annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
-      annotationCombineQuery.setUserId(userId);
+      ListAnnotationCombineRequest request, UserDetails user) {
+    request.setPageIndex(request.getPageIndex() - 1);
+
+    if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
+      request.setUserId(user.getId());
     }
-    Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);
-    List<AnnotationCombineBratVO> annotationCombineBratVOList =
-        AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent());
-    PageVO pageVO = new PageVO(page, false);
-    pageVO.setDataList(annotationCombineBratVOList);
-    return pageVO;
+
+    final Page<AnnotationCombine> page = annotationCombineService.listAnnotationCombine(request);
+    return new PageVO<>(
+        page.getTotalElements(),
+        AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent()));
   }
 }

@@ -4,5 +4,5 @@ import lombok.Value;
 
 @Value
 public class AnnotationStateRequest {
-  private int id;
+  private long id;
 }

@@ -5,13 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/5/31. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateAnnotationAlgorithm {
-
-  private int id;
+public class UpdateAnnotationAlgorithmRequest {
+  private long id;
   private String text;
   private String autoAnnotation;
   private String manualAnnotation;

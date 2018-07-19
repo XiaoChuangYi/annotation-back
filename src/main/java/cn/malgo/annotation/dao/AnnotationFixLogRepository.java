@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public interface AnnotationFixLogRepository
     extends JpaRepository<AnnotationFixLog, Integer>, JpaSpecificationExecutor<AnnotationFixLog> {
-  AnnotationFixLog findByAnnotationIdAndStartAndEnd(int annotationId, int start, int end);
+  AnnotationFixLog findByAnnotationIdAndStartAndEnd(long annotationId, int start, int end);
 
   @Query(
       value = "select * from annotation_fix_log where unique_combined_id in ?1",

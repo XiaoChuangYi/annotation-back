@@ -8,19 +8,17 @@ import cn.malgo.annotation.biz.brat.task.entities.UpdateAnnotationBiz;
 import cn.malgo.annotation.biz.brat.task.relations.AddRelationBiz;
 import cn.malgo.annotation.biz.brat.task.relations.DeleteRelationBiz;
 import cn.malgo.annotation.biz.brat.task.relations.UpdateRelationBiz;
-import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.request.brat.*;
-import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.RelationLimitRuleVO;
+import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-/** Created by cjl on 2018/5/31. */
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationBratController extends BaseController {
-
   private final GetAutoAnnotationBiz getAutoAnnotationBiz;
   private final AddAnnotationBiz addAnnotationBiz;
   private final UpdateAnnotationBiz updateAnnotationBiz;
@@ -52,11 +50,10 @@ public class AnnotationBratController extends BaseController {
   /** 获取算法服务的预标注结果 */
   @RequestMapping(value = "/get-auto-annotation", method = RequestMethod.GET)
   public Response getAutoAnnotation(
-      @RequestParam("id") int id,
+      @RequestParam("id") long id,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
-        getAutoAnnotationBiz.process(
-            new GetAutoAnnotationRequest(id), userAccount.getId(), userAccount.getRoleId()));
+        getAutoAnnotationBiz.process(new GetAutoAnnotationRequest(id), userAccount));
   }
 
   /** 标注entities处理，新增标注的接口，不过算法api */
@@ -66,7 +63,7 @@ public class AnnotationBratController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         addAnnotationBiz.process(
-            addAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+            addAnnotationRequest, userAccount));
   }
 
   /** entities处理，更新标注 ，不过算法api */
@@ -76,7 +73,7 @@ public class AnnotationBratController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         updateAnnotationBiz.process(
-            updateAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+            updateAnnotationRequest, userAccount));
   }
 
   /** entities处理，删除标注，不过算法api */
@@ -86,7 +83,7 @@ public class AnnotationBratController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         deleteAnnotationBiz.process(
-            deleteAnnotationRequest, userAccount.getId(), userAccount.getRoleId()));
+            deleteAnnotationRequest, userAccount));
   }
 
   /** 普通人员，新增关联标注 */
@@ -95,7 +92,7 @@ public class AnnotationBratController extends BaseController {
       @RequestBody AddRelationRequest addRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
-        addRelationBiz.process(addRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+        addRelationBiz.process(addRelationRequest, userAccount));
   }
 
   /** 审核人员 删除关联标注 */
@@ -105,7 +102,7 @@ public class AnnotationBratController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         deleteRelationBiz.process(
-            deleteRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+            deleteRelationRequest, userAccount));
   }
 
   /** 更新关联标注 */
@@ -115,7 +112,7 @@ public class AnnotationBratController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(
         updateRelationBiz.process(
-            updateRelationRequest, userAccount.getId(), userAccount.getRoleId()));
+            updateRelationRequest, userAccount));
   }
 
   /** 关联标注限制规则列表 */

@@ -1,22 +1,24 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
-import java.sql.Date;
-import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.exception.NotFoundException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/3. */
-@Component
-public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object> {
+import java.util.Date;
+import java.util.Optional;
 
+@Component
+@RequirePermission(Permissions.ANNOTATE)
+public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object> {
   private final AnnotationCombineRepository annotationCombineRepository;
 
   public AnnotationAbandonBiz(AnnotationCombineRepository annotationCombineRepository) {
@@ -35,37 +37,32 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
   }
 
   @Override
-  protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
-      throws BusinessRuleException {
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
-      Optional<AnnotationCombine> optional =
-          annotationCombineRepository.findById(annotationStateRequest.getId());
-      if (optional.isPresent()) {
-        AnnotationCombine annotationCombine = optional.get();
-        if (userId != annotationCombine.getAssignee()) {
-          throw new BusinessRuleException("no-permission-handle-current-record", "当前用户没有权限操作该条记录！");
-        }
-        if (!StringUtils.equalsAny(
-            annotationCombine.getState(),
-            AnnotationCombineStateEnum.preAnnotation.name(),
-            AnnotationCombineStateEnum.annotationProcessing.name())) {
-          throw new BusinessRuleException("current-annotation-state-error", "当前记录无法直接设定为'放弃'状态！");
-        }
-      }
-    }
-  }
+  protected Object doBiz(AnnotationStateRequest request, UserDetails user) {
+    final Optional<AnnotationCombine> optional =
+        annotationCombineRepository.findById(request.getId());
 
-  @Override
-  protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
+      final AnnotationCombine annotationCombine = optional.get();
+
+      switch (annotationCombine.getStateEnum()) {
+        case preAnnotation:
+        case annotationProcessing:
+          if (annotationCombine.getAssignee() != user.getId()) {
+            throw new BusinessRuleException("permission-denied", "当前用户没有权限操作该条记录！");
+          }
+
+          break;
+
+        default:
+          throw new BusinessRuleException("invalid-state", "当前记录无法直接设定为'放弃'状态！");
+      }
+
       annotationCombine.setState(AnnotationCombineStateEnum.abandon.name());
-      annotationCombine.setCommitTimestamp(new Date(new java.util.Date().getTime()));
+      annotationCombine.setCommitTimestamp(new Date());
       annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
       annotationCombineRepository.save(annotationCombine);
     }
-    return null;
+
+    throw new NotFoundException("annotation-not-found", request.getId() + "不存在");
   }
 }

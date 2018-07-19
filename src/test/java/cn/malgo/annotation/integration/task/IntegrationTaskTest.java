@@ -14,6 +14,7 @@ import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
+import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,8 +62,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
             taskAndDoc.getLeft().getId(),
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.wordPos.ordinal()),
-        0,
-        1);
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -121,16 +121,14 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
             taskAndDoc.getLeft().getId(),
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.wordPos.ordinal()),
-        0,
-        1);
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     addDocsToTaskBiz.process(
         new AddDocsToTaskRequest(
             taskAndDoc.getLeft().getId(),
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.relation.ordinal()),
-        0,
-        1);
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -218,7 +216,9 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   }
 
   private Pair<AnnotationTask, OriginalDoc> createTaskAndDoc() {
-    final AnnotationTask task = createTaskBiz.process(new CreateTaskRequest("test-task"), 0, 1);
+    final AnnotationTask task =
+        createTaskBiz.process(
+            new CreateTaskRequest("test-task"), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);
@@ -237,8 +237,8 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   }
 
   private void checkStateAfterAddingDoc(
-      final int taskId,
-      final int docId,
+      final long taskId,
+      final long docId,
       final int annotationSize,
       final int docSize,
       final AnnotationTaskState taskState,
@@ -286,7 +286,9 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
     TestTransaction.end();
 
     TestTransaction.start();
-    annotationExamineBiz.process(new AnnotationStateRequest(annotationCombine.getId()), 0, 1);
+    annotationExamineBiz.process(
+        new AnnotationStateRequest(annotationCombine.getId()),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
   }

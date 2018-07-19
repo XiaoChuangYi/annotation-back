@@ -1,19 +1,20 @@
 package cn.malgo.annotation.request;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ListAnnotationCombineRequest {
-  private List<Integer> idList;
+  private List<Long> idList;
   private String term;
   private int pageIndex;
   private int pageSize;
   private List<String> states;
-  private int userId;
+  private long userId;
   private List<Integer> annotationTypes;
 }

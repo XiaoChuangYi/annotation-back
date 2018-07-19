@@ -3,7 +3,7 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AnnotationTaskDoc;
@@ -68,7 +68,7 @@ public class TaskDocServiceImplTest {
 
               @Override
               public List<AutoAnnotation> batchUpdateAnnotationTokenizePos(
-                  final List<UpdateAnnotationAlgorithm> updateAnnotationRequestList) {
+                  final List<UpdateAnnotationAlgorithmRequest> updateAnnotationRequestList) {
                 return null;
               }
 

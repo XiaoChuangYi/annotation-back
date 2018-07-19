@@ -1,24 +1,21 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dto.NewTerm;
-import cn.malgo.core.definition.Entity;
 import cn.malgo.annotation.dao.AtomicTermRepository;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
+import cn.malgo.annotation.dto.NewTerm;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AtomicTerm;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import cn.malgo.core.definition.Entity;
 import org.springframework.stereotype.Service;
 
-/** Created by cjl on 2018/6/13. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermService {
-
   private final AtomicTermRepository atomicTermRepository;
 
   public ExtractAddAtomicTermServiceImpl(AtomicTermRepository atomicTermRepository) {
@@ -26,53 +23,47 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
   }
 
   @Override
-  public UpdateAnnotationAlgorithm extractAndAddAtomicTerm(AnnotationCombine annotationCombine) {
+  public UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(
+      AnnotationCombine annotationCombine) {
     String manualAnnotation = annotationCombine.getManualAnnotation();
     List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(manualAnnotation);
     List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
-    Iterator<Entity> iterator = entities.iterator();
-    while (iterator.hasNext()) {
-      Entity current = iterator.next();
-      if (atomicTermList
-                  .stream()
-                  .filter(
-                      atomicTerm ->
-                          current.getType().equals(atomicTerm.getAnnotationType())
-                              && current.getTerm().equals(atomicTerm.getTerm()))
-                  .count()
-              > 0
-          || current.getType().endsWith("-unconfirmed")) {
-        iterator.remove();
-      }
-    }
+    entities.removeIf(
+        current ->
+            current.getType().endsWith("-unconfirmed")
+                || atomicTermList
+                    .stream()
+                    .anyMatch(
+                        atomicTerm ->
+                            current.getType().equals(atomicTerm.getAnnotationType())
+                                && current.getTerm().equals(atomicTerm.getTerm())));
     // todo,当然还有其它的过滤规则
-    UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
+    UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
+        new UpdateAnnotationAlgorithmRequest();
     if (entities.size() > 0) {
       List<NewTerm> newTermList =
-          IntStream.range(0, entities.size())
-              .mapToObj(
-                  (int i) -> new NewTerm(entities.get(i).getTerm(), entities.get(i).getType()))
+          entities
+              .stream()
+              .map(entity -> new NewTerm(entity.getTerm(), entity.getType()))
               .collect(Collectors.toList());
-      updateAnnotationAlgorithm.setNewTerms(newTermList);
+      updateAnnotationAlgorithmRequest.setNewTerms(newTermList);
       List<AtomicTerm> atomicTerms =
-          IntStream.range(0, entities.size())
-              .mapToObj(
-                  (int i) ->
-                      new AtomicTerm(
-                          entities.get(i).getTerm(),
-                          entities.get(i).getType(),
-                          annotationCombine.getId()))
+          entities
+              .stream()
+              .map(
+                  entity ->
+                      new AtomicTerm(entity.getTerm(), entity.getType(), annotationCombine.getId()))
               .collect(Collectors.toList());
       if (atomicTerms.stream().distinct().collect(Collectors.toList()).size() > 0) {
         atomicTermRepository.saveAll(atomicTerms.stream().distinct().collect(Collectors.toList()));
       }
     } else {
-      updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
+      updateAnnotationAlgorithmRequest.setNewTerms(new ArrayList<>());
     }
-    updateAnnotationAlgorithm.setId(annotationCombine.getId());
-    updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
-    updateAnnotationAlgorithm.setManualAnnotation(manualAnnotation);
+    updateAnnotationAlgorithmRequest.setId(annotationCombine.getId());
+    updateAnnotationAlgorithmRequest.setText(annotationCombine.getTerm());
+    updateAnnotationAlgorithmRequest.setManualAnnotation(manualAnnotation);
 
-    return updateAnnotationAlgorithm;
+    return updateAnnotationAlgorithmRequest;
   }
 }

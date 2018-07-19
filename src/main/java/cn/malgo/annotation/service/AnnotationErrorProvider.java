@@ -6,7 +6,7 @@ import cn.malgo.annotation.dto.error.FixAnnotationEntity;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorContext;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
+import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.core.definition.Entity;
 import org.apache.commons.lang3.NotImplementedException;
 

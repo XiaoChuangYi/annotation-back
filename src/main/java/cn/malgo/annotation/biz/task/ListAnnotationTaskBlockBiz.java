@@ -1,16 +1,17 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class ListAnnotationTaskBlockBiz
     extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlockResponse>> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
@@ -54,7 +55,7 @@ public class ListAnnotationTaskBlockBiz
                             .collect(Collectors.toList())));
           }
 
-          if (request.getAnnotationTypes() != null && request.getAnnotationTypes().size() > 0) {;
+          if (request.getAnnotationTypes() != null && request.getAnnotationTypes().size() > 0) {
             predicates.add(
                 criteriaBuilder
                     .in(root.get("annotationType"))
@@ -106,13 +107,12 @@ public class ListAnnotationTaskBlockBiz
 
   @Override
   protected PageVO<AnnotationTaskBlockResponse> doBiz(
-      int userId, int role, ListAnnotationTaskBlockRequest request) {
-    final int pageIndex = request.getPageIndex() - 1;
+      ListAnnotationTaskBlockRequest request, UserDetails user) {
     return new PageVO<>(
         annotationTaskBlockRepository
             .findAll(
                 queryAnnotationTaskBlockCondition(request),
-                PageRequest.of(pageIndex, request.getPageSize()))
+                PageRequest.of(request.getPageIndex() - 1, request.getPageSize()))
             .map(AnnotationTaskBlockResponse::new));
   }
 }

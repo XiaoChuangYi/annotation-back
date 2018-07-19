@@ -2,20 +2,19 @@ package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "annotation_task_doc",
     indexes = {
@@ -24,31 +23,11 @@ import java.util.List;
     })
 @AllArgsConstructor
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(of = "id")
-@ToString(exclude = {"task", "doc", "blocks"})
-@JSONType(ignores = {"createdTime", "lastModified", "task", "doc", "blocks"})
-public class AnnotationTaskDoc {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Getter
-  private int id;
-
-  @CreatedDate
-  @Column(
-      name = "created_time",
-      updatable = false,
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  private Timestamp createdTime;
-
-  @LastModifiedDate
-  @Column(
-      name = "last_modified",
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  private Timestamp lastModified;
-
+@ToString(
+    exclude = {"task", "doc", "blocks"},
+    callSuper = true)
+@JSONType(ignores = {"task", "doc", "blocks"})
+public class AnnotationTaskDoc extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "task_id")
   @Setter(AccessLevel.PACKAGE)
@@ -92,7 +71,7 @@ public class AnnotationTaskDoc {
 
   public AnnotationTaskDocBlock addBlock(final AnnotationTaskBlock block, final int order) {
     if (block.getAnnotationType() != this.getAnnotationType()) {
-      throw new IllegalArgumentException("invalid annotation type: " + block.getAnnotationType());
+      throw new IllegalArgumentException("标注类型错误: " + block.getAnnotationType());
     }
 
     final AnnotationTaskDocBlock taskDocBlock = new AnnotationTaskDocBlock(this, block, order);

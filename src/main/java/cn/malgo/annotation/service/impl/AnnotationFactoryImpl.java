@@ -29,7 +29,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     throw new IllegalArgumentException(
-        "annotation factory get annotation with state: " + annotationCombine.getState());
+        "标注状态错误: " + annotationCombine.getState());
   }
 
   @Override
@@ -45,7 +45,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     throw new IllegalArgumentException(
-        "annotation factory get annotation with state: " + block.getState());
+        "标注状态错误: " + block.getState());
   }
 
   abstract static class BaseAnnotation implements Annotation {
@@ -82,7 +82,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     @Override
-    public int getId() {
+    public long getId() {
       return annotationCombine.getId();
     }
 
@@ -144,7 +144,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     @Override
-    public int getId() {
+    public long getId() {
       return block.getId();
     }
 

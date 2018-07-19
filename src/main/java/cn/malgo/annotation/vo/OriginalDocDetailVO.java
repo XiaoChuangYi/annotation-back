@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 public class OriginalDocDetailVO {
-  private int docId;
+  private long docId;
   private Date docCreatedTime;
   private List<AnnotationTaskVO> annotationTaskVOList;
 }

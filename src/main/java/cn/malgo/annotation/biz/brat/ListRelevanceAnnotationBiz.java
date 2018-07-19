@@ -1,32 +1,33 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.BaseBiz;
-import cn.malgo.annotation.controller.task.AnnotationTaskController;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
-import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.entity.AnnotationTaskDocBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.core.definition.Entity;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import cn.malgo.core.definition.RelationEntity;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.entity.BaseEntity;
+import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Component
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListRelevanceAnnotationBiz
     extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationBlockBratVO>> {
@@ -57,9 +58,9 @@ public class ListRelevanceAnnotationBiz
 
   @Override
   protected PageVO<AnnotationBlockBratVO> doBiz(
-      int userId, int role, ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
+      ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     log.info("开始获取blockId集合：{}", new Date());
-    final List<Integer> blockIdList =
+    final List<Long> blockIdList =
         getBlockIdListByTaskId(listRelevanceAnnotationRequest.getTaskId());
     log.info("开始获取RelationQueryPair集合：{}", new Date());
     final List<RelationQueryPair> relationQueryPairs = getRelationQueryPairs(blockIdList);
@@ -75,7 +76,7 @@ public class ListRelevanceAnnotationBiz
         annotationTaskBlockRepository.findAllById(
             relationQueryPairList
                 .stream()
-                .map(relationQueryPair -> relationQueryPair.getBlockId())
+                .map(RelationQueryPair::getBlockId)
                 .collect(Collectors.toList()));
     PageVO<AnnotationBlockBratVO> pageVO = new PageVO<>();
     pageVO.setTotal(annotationTaskBlockList.size());
@@ -84,19 +85,17 @@ public class ListRelevanceAnnotationBiz
             .stream()
             .skip(skip)
             .limit(limit)
-            .map(
-                annotationTaskBlock ->
-                    AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock))
+            .map(AnnotationConvert::convert2AnnotationBlockBratVO)
             .collect(Collectors.toList()));
     return pageVO;
   }
 
-  private List<Integer> getBlockIdListByTaskId(int taskId) {
+  private List<Long> getBlockIdListByTaskId(long taskId) {
     return annotationTaskDocRepository
-        .findAllByTask(new AnnotationTask(taskId))
+        .findByTask_Id(taskId)
         .stream()
         .flatMap(x -> x.getBlocks().stream())
-        .map(annotationTaskDocBlock -> annotationTaskDocBlock.getBlock())
+        .map(AnnotationTaskDocBlock::getBlock)
         .filter(
             annotationTaskBlock ->
                 annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation
@@ -104,24 +103,23 @@ public class ListRelevanceAnnotationBiz
                         annotationTaskBlock.getState().name(),
                         AnnotationTaskState.ANNOTATED.name(),
                         AnnotationTaskState.FINISHED.name()))
-        .map(annotationTaskBlock -> annotationTaskBlock.getId())
+        .map(BaseEntity::getId)
         .collect(Collectors.toList());
   }
 
-  private List<RelationQueryPair> getRelationQueryPairs(List<Integer> blockIdList) {
+  private List<RelationQueryPair> getRelationQueryPairs(List<Long> blockIdList) {
     return annotationTaskBlockRepository
         .findAllById(blockIdList)
         .stream()
         .flatMap(
             annotationTaskBlock ->
-                Arrays.asList(
-                        new BlockRelationPair(
-                            annotationTaskBlock.getId(),
-                            AnnotationConvert.getEntitiesFromAnnotation(
-                                annotationTaskBlock.getAnnotation()),
-                            AnnotationConvert.getRelationEntitiesFromAnnotation(
-                                annotationTaskBlock.getAnnotation())))
-                    .stream())
+                Stream.of(
+                    new BlockRelationPair(
+                        annotationTaskBlock.getId(),
+                        AnnotationConvert.getEntitiesFromAnnotation(
+                            annotationTaskBlock.getAnnotation()),
+                        AnnotationConvert.getRelationEntitiesFromAnnotation(
+                            annotationTaskBlock.getAnnotation()))))
         .flatMap(
             pair ->
                 pair.getRelationEntities()
@@ -229,8 +227,7 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class RelationQueryPair {
-
-    private final int blockId;
+    private final long blockId;
     private final String sourceTerm;
     private final String sourceType;
     private final String targetTerm;
@@ -240,8 +237,7 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class BlockRelationPair {
-
-    private final int blockId;
+    private final long blockId;
     private final List<Entity> entities;
     private final List<RelationEntity> relationEntities;
   }

@@ -32,7 +32,7 @@ public class AnnotationErrorFactoryImpl implements AnnotationErrorFactory {
   @Override
   public AnnotationErrorProvider getProvider(final AnnotationErrorEnum errorEnum) {
     if (!providerMap.containsKey(errorEnum)) {
-      throw new IllegalArgumentException("invalid-error-enum: " + errorEnum);
+      throw new IllegalArgumentException("不存在的错误类型: " + errorEnum);
     }
 
     return providerMap.get(errorEnum);

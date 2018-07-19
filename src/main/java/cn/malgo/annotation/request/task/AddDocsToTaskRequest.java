@@ -6,7 +6,7 @@ import java.util.Set;
 
 @Value
 public class AddDocsToTaskRequest {
-  private final int id;
-  private final Set<Integer> docIds;
+  private final long id;
+  private final Set<Long> docIds;
   private final int annotationType;
 }

@@ -89,7 +89,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
       final int end,
       final List<FixAnnotationEntity> entities) {
     if (entities.size() != 1) {
-      throw new IllegalArgumentException("ENTITY_MULTIPLE_TYPE 修复只接受一个修复对象，实际得到: " + entities);
+      throw new IllegalArgumentException("ENTITY_MULTIPLE_TYPE 修复只接受一个修复对象，实际得到: " + entities.size());
     }
 
     final FixAnnotationEntity fixEntity = entities.get(0);

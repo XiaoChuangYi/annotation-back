@@ -15,10 +15,10 @@ import java.io.Serializable;
 @ToString
 public class AnnotationTaskDocBlockId implements Serializable {
   @Column(name = "task_doc_id", nullable = false)
-  private int taskDocId;
+  private long taskDocId;
 
   @Column(name = "block_id", nullable = false)
-  private int blockId;
+  private long blockId;
 
   @Column(name = "block_order", nullable = false, updatable = false)
   private int order;

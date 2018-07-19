@@ -4,7 +4,7 @@ import lombok.Value;
 
 @Value
 public class ListRelevanceAnnotationRequest {
-  private int taskId;
+  private long taskId;
   private int pageIndex;
   private int pageSize;
   private String sourceType;

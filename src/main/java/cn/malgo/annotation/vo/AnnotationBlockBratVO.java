@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 public class AnnotationBlockBratVO {
-  private int id;
+  private long id;
   private JSONObject annotation;
   private int annotationType;
   private Date createdTime;

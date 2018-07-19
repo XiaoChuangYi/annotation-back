@@ -1,13 +1,15 @@
 package cn.malgo.annotation.biz.brat.block;
 
-import cn.malgo.annotation.biz.base.BaseBiz;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
-import java.util.Optional;
-import javax.annotation.Resource;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.Optional;
 
 @Component
 public abstract class BaseBlockAnnotationBiz<
@@ -24,14 +26,15 @@ public abstract class BaseBlockAnnotationBiz<
   }
 
   @Override
-  protected AnnotationBlockBratVO doBiz(int userId, int role, REQ req) {
-    Optional<AnnotationTaskBlock> optional = annotationTaskBlockRepository.findById(req.getId());
-    if (optional.isPresent()) {
-      return this.doInternalProcess(role, optional.get(), req);
-    }
-    return null;
+  protected AnnotationBlockBratVO doBiz(REQ req, UserDetails user) {
+    final Optional<AnnotationTaskBlock> optional =
+        annotationTaskBlockRepository.findById(req.getId());
+
+    return optional
+        .map(annotationTaskBlock -> this.doInternalProcess(annotationTaskBlock, req))
+        .orElse(null);
   }
 
   abstract AnnotationBlockBratVO doInternalProcess(
-      int role, AnnotationTaskBlock annotationTaskBlock, REQ req);
+      AnnotationTaskBlock annotationTaskBlock, REQ req);
 }

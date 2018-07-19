@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 public class AnnotationDocument {
   private String text;
   private List<RelationEntity> relationEntities;

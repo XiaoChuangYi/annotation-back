@@ -5,10 +5,9 @@ import lombok.Data;
 
 @Data
 public class AnnotationEstimateQueryRequest {
-
   private int pageIndex;
   private int pageSize;
-  private int taskId;
+  private long taskId;
   private Date workDay;
-  private int assignee;
+  private long assignee;
 }

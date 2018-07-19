@@ -6,8 +6,8 @@ import lombok.Value;
 
 @Value
 public class AnnotationEstimateVO {
-  private int taskId;
-  private int assignee;
+  private long taskId;
+  private long assignee;
   private String accountName;
   private String taskName;
 

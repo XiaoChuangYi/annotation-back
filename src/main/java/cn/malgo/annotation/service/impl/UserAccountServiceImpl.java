@@ -1,13 +1,14 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.UserAccountRepository;
-import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.entity.UserAccount;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.LogOutRequest;
 import cn.malgo.annotation.request.LoginRequest;
 import cn.malgo.annotation.service.UserAccountService;
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -112,7 +113,25 @@ public class UserAccountServiceImpl implements UserAccountService {
 
   @Value
   public static class DefaultUserDetails implements Serializable, UserDetails {
-    private final int id;
+    public static final UserDetails ADMIN = new DefaultUserDetails(0, 1);
+
+    private final long id;
     private final int roleId;
+
+    @Override
+    public boolean hasPermission(final String permission) {
+      switch (permission) {
+        case Permissions.ANNOTATE:
+          return true;
+
+        case Permissions.EXAMINE:
+          return roleId <= 2;
+
+        case Permissions.ADMIN:
+          return roleId == 1;
+      }
+
+      return false;
+    }
   }
 }

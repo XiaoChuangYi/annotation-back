@@ -3,12 +3,12 @@ package cn.malgo.annotation.controller.task;
 import cn.malgo.annotation.biz.task.AddDocsToTaskBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.controller.BaseController;
-import cn.malgo.annotation.dto.UserDetails;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
-import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AddDocsToTaskResponse;
+import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

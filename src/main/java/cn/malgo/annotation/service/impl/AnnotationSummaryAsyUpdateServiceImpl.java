@@ -4,28 +4,22 @@ import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
-import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.entity.*;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationEvaluateStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.service.AnnotationSummaryAsyncUpdateService;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -115,11 +109,10 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                         final AnnotationStaffEvaluate annotationStaffEvaluate =
                             annotationStaffEvaluates.get(k);
                         AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
-                            annotationStaffEvaluateRepository
-                                .findByTaskIdEqualsAndAssigneeEqualsAndWorkDayEquals(
-                                    annotationStaffEvaluate.getTaskId(),
-                                    annotationStaffEvaluate.getAssignee(),
-                                    annotationStaffEvaluate.getWorkDay());
+                            annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
+                                annotationStaffEvaluate.getTaskId(),
+                                annotationStaffEvaluate.getAssignee(),
+                                annotationStaffEvaluate.getWorkDay());
                         if (updateAnnotationStaffEvaluate == null) {
                           final AnnotationStaffEvaluate current =
                               annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
@@ -145,7 +138,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
 
   private List<AnnotationStaffEvaluate> getAnnotationStaffEvaluates(
       final List<AnnotationCombine> annotationCombines, final AnnotationTask task) {
-    Map<Pair<Integer, java.sql.Date>, List<AnnotationCombine>> map =
+    final Map<Pair<Long, Date>, List<AnnotationCombine>> map =
         annotationCombines
             .stream()
             .collect(
@@ -154,6 +147,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                         Pair.of(
                             annotationCombine.getAssignee(),
                             annotationCombine.getCommitTimestamp())));
+
     return map.keySet()
         .stream()
         .map(
@@ -161,8 +155,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                 new AnnotationStaffEvaluate(
                     task.getId(),
                     task.getName(),
+                    new java.sql.Date(key.getRight().getTime()),
                     key.getLeft(),
-                    key.getRight(),
                     getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.total_branch),
                     getWordNum(annotationCombines, AnnotationEvaluateStateEnum.total_word),
                     getBranchNum(map.get(key), AnnotationEvaluateStateEnum.annotated_branch),
@@ -175,18 +169,18 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
         .collect(Collectors.toList());
   }
 
-  private List<AnnotationTaskBlock> getBlocks(final int taskId) {
+  private List<AnnotationTaskBlock> getBlocks(final long taskId) {
     return annotationTaskDocRepository
-        .findAllByTask(new AnnotationTask(taskId))
+        .findByTask_Id(taskId)
         .stream()
         .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
-        .map(annotationTaskDocBlock -> annotationTaskDocBlock.getBlock())
+        .map(AnnotationTaskDocBlock::getBlock)
         .collect(Collectors.toList());
   }
 
-  private List<Integer> getBlocksId(final int taskId) {
+  private List<Long> getBlocksId(final long taskId) {
     return annotationTaskDocRepository
-        .findAllByTask(new AnnotationTask(taskId))
+        .findByTask_Id(taskId)
         .stream()
         .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
         .map(annotationTaskDocBlock -> annotationTaskDocBlock.getId().getBlockId())
@@ -284,10 +278,11 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                 AnnotationCombineStateEnum.annotationProcessing.name());
         break;
       case annotated_branch: // 获取当前批次的已标注的条数
-        annotationStateList = Arrays.asList(AnnotationCombineStateEnum.preExamine.name());
+        annotationStateList =
+            Collections.singletonList(AnnotationCombineStateEnum.preExamine.name());
         break;
       case abandon_branch: // 获取当前批次放弃的条数
-        annotationStateList = Arrays.asList(AnnotationCombineStateEnum.abandon.name());
+        annotationStateList = Collections.singletonList(AnnotationCombineStateEnum.abandon.name());
         break;
     }
     if (annotationStateList.size() > 0) {
@@ -315,7 +310,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                 AnnotationCombineStateEnum.preExamine.name());
         break;
       case annotated_word: // 获取当前批次的已标注的总字数
-        annotationStateList = Arrays.asList(AnnotationCombineStateEnum.preExamine.name());
+        annotationStateList =
+            Collections.singletonList(AnnotationCombineStateEnum.preExamine.name());
         break;
       case rest_word: // 获取当前批次剩余的字数
         annotationStateList =
@@ -324,7 +320,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                 AnnotationCombineStateEnum.annotationProcessing.name());
         break;
       case abandon_word: // 获取当前批次放弃的字数
-        annotationStateList = Arrays.asList(AnnotationCombineStateEnum.abandon.name());
+        annotationStateList = Collections.singletonList(AnnotationCombineStateEnum.abandon.name());
         break;
     }
     if (annotationCombines.size() > 0) {

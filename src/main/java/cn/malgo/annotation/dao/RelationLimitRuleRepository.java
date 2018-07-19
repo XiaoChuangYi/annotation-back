@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.List;
 
 public interface RelationLimitRuleRepository
-    extends JpaRepository<RelationLimitRule, Integer>, JpaSpecificationExecutor {
+    extends JpaRepository<RelationLimitRule, Long>, JpaSpecificationExecutor {
 
   RelationLimitRule findBySourceAndTargetAndRelationType(
       String source, String target, String relationType);

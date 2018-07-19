@@ -11,7 +11,7 @@ import lombok.Value;
 
 @Value
 public class AnnotationTaskBlockResponse {
-  private final int id;
+  private final long id;
 
   private final String text;
 

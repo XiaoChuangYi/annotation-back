@@ -1,16 +1,22 @@
 package cn.malgo.annotation.result;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
-/** Created by cjl on 2018/4/16. */
-@Data
+import java.util.List;
+
 @NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class PageVO<T> {
   private long total;
   private List<T> dataList;
+
+  public PageVO(long total) {
+    this.total = total;
+  }
 
   public PageVO(Page<T> page) {
     this.setTotal(page.getTotalElements());

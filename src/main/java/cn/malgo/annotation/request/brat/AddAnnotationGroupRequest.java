@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 @AllArgsConstructor
 public class AddAnnotationGroupRequest implements BaseAnnotationRequest {
-  private int id;
+  private long id;
   private String term;
   private String type;
   private int startPosition;

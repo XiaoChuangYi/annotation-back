@@ -1,12 +1,12 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.TransactionalBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ImportDocRequest;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class ImportDocBiz extends TransactionalBiz<ImportDocRequest, List<OriginalDoc>> {
   private static final List<Pair<Predicate<String>, String>> TYPE_PATTERNS =
       Arrays.asList(

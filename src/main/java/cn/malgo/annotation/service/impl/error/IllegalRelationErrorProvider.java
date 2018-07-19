@@ -11,7 +11,7 @@ import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.entity.RelationLimitRule;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
+import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.RelationEntity;

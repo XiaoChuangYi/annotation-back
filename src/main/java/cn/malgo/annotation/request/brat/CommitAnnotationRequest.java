@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class CommitAnnotationRequest {
-  private int id;
+  private long id;
   private String autoAnnotation;
 }

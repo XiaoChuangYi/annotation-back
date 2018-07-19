@@ -2,18 +2,17 @@ package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "annotation_task_block",
     indexes = {
@@ -24,33 +23,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(of = "id")
-@ToString(exclude = {"taskDocs"})
-@JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
-public class AnnotationTaskBlock {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Getter
-  private int id;
-
-  @CreatedDate
-  @Column(
-      name = "created_time",
-      updatable = false,
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  @Getter
-  private Timestamp createdTime;
-
-  @LastModifiedDate
-  @Column(
-      name = "last_modified",
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  @Getter
-  private Timestamp lastModified;
-
+@ToString(
+    exclude = {"taskDocs"},
+    callSuper = true)
+@JSONType(ignores = {"taskDocs"})
+public class AnnotationTaskBlock extends BaseEntity {
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter

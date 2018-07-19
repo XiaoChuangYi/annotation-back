@@ -4,14 +4,14 @@ import cn.malgo.annotation.dao.AnnotationFixLogRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.*;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
-import cn.malgo.annotation.exception.InternalServiceException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
+import cn.malgo.service.exception.InternalServerException;
+import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -183,8 +183,8 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
           } else if (oldEntityMap.containsKey(relation.getTargetTag())) {
             relation.setTargetTag(activeTag);
           } else {
-            throw new InternalServiceException(
-                "invalid-relations", "outside inside relations不包含source和target");
+            throw new InternalServerException(
+                "invalid-relations: outside inside relations不包含source和target");
           }
         });
 

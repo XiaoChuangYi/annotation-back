@@ -11,6 +11,7 @@ import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.service.TaskDocService;
 import cn.malgo.annotation.service.impl.TaskDocServiceImpl;
+import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -33,7 +34,7 @@ public class AddDocsToTaskBizTest {
     originalDoc = new OriginalDoc("test-doc", "test-text", "", "");
 
     taskRepository = Mockito.mock(AnnotationTaskRepository.class);
-    Mockito.when(taskRepository.getOne(Mockito.anyInt())).thenReturn(annotationTask);
+    Mockito.when(taskRepository.getOne(Mockito.anyLong())).thenReturn(annotationTask);
 
     docRepository = Mockito.mock(OriginalDocRepository.class);
     Mockito.when(docRepository.findAllById(Mockito.any()))
@@ -50,7 +51,9 @@ public class AddDocsToTaskBizTest {
     Assert.assertEquals(annotationTask.getState(), AnnotationTaskState.CREATED);
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
-    addDocsToTaskBiz.process(new AddDocsToTaskRequest(1, Collections.singleton(1), 0), 0, 1);
+    addDocsToTaskBiz.process(
+        new AddDocsToTaskRequest(1, Collections.singleton(1L), 0),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     Assert.assertEquals(annotationTask.getState(), AnnotationTaskState.DOING);
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
@@ -63,7 +66,9 @@ public class AddDocsToTaskBizTest {
     Assert.assertEquals(annotationTask.getState(), AnnotationTaskState.CREATED);
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
-    addDocsToTaskBiz.process(new AddDocsToTaskRequest(1, Collections.singleton(1), 0), 0, 1);
+    addDocsToTaskBiz.process(
+        new AddDocsToTaskRequest(1, Collections.singleton(1L), 0),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     Assert.assertEquals(annotationTask.getState(), AnnotationTaskState.ANNOTATED);
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
@@ -74,7 +79,9 @@ public class AddDocsToTaskBizTest {
     mockAddDocToTask(0);
 
     annotationTask.setState(AnnotationTaskState.DOING);
-    addDocsToTaskBiz.process(new AddDocsToTaskRequest(1, Collections.singleton(1), 0), 0, 1);
+    addDocsToTaskBiz.process(
+        new AddDocsToTaskRequest(1, Collections.singleton(1L), 0),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     Assert.assertEquals(annotationTask.getState(), AnnotationTaskState.DOING);
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);

@@ -4,5 +4,5 @@ import lombok.Value;
 
 @Value
 public class ListDocDetailRequest {
-  private int id;
+  private Long id;
 }

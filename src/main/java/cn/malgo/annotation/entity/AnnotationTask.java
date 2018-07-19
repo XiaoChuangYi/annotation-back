@@ -2,57 +2,33 @@ package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "annotation_task",
     indexes = {
       @Index(name = "idx_name", columnList = "name"),
       @Index(name = "idx_state", columnList = "state"),
     })
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @RequiredArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(of = "id")
-@ToString(exclude = {"taskDocs"})
-@JSONType(ignores = {"createdTime", "lastModified", "taskDocs"})
-public class AnnotationTask {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Getter
-  private int id;
-
-  @CreatedDate
-  @Column(
-      name = "created_time",
-      updatable = false,
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  @Getter
-  private Timestamp createdTime;
-
-  @LastModifiedDate
-  @Column(
-      name = "last_modified",
-      nullable = false,
-      columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  @Getter
-  private Timestamp lastModified;
-
+@ToString(
+    exclude = {"taskDocs"},
+    callSuper = true)
+@JSONType(ignores = {"taskDocs"})
+public class AnnotationTask extends BaseEntity {
   @Column(name = "name", nullable = false, length = 128)
   @Getter
   @Setter
@@ -73,17 +49,6 @@ public class AnnotationTask {
       orphanRemoval = true)
   @Getter
   private List<AnnotationTaskDoc> taskDocs = new ArrayList<>();
-
-  public AnnotationTaskDoc addDoc(final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
-    final AnnotationTaskDoc taskDoc = new AnnotationTaskDoc(this, doc, annotationType);
-    this.taskDocs.add(taskDoc);
-    doc.getTasks().add(taskDoc);
-    return taskDoc;
-  }
-
-  public AnnotationTask(int id) {
-    this.id = id;
-  }
 
   @Column(name = "total_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter
@@ -119,4 +84,11 @@ public class AnnotationTask {
   @Getter
   @Setter
   private double inConformity = 0; // 批次不一致率
+
+  public AnnotationTaskDoc addDoc(final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
+    final AnnotationTaskDoc taskDoc = new AnnotationTaskDoc(this, doc, annotationType);
+    this.taskDocs.add(taskDoc);
+    doc.getTasks().add(taskDoc);
+    return taskDoc;
+  }
 }

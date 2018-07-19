@@ -11,30 +11,17 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface AnnotationCombineRepository
-    extends JpaRepository<AnnotationCombine, Integer>, JpaSpecificationExecutor {
+    extends JpaRepository<AnnotationCombine, Long>, JpaSpecificationExecutor<AnnotationCombine> {
 
-  default List<AnnotationCombine> findAllByIdInAndIsTaskEquals(List<Integer> idList) {
-    return findAllByIdInAndIsTaskEquals(idList, 0);
-  }
+    List<AnnotationCombine> findAllByBlockIdIn(List<Long> blockIdList);
 
-  List<AnnotationCombine> findAllByBlockIdIn(List<Integer> blockIdList);
-
-  List<AnnotationCombine> findAllByIdInAndIsTaskEquals(List<Integer> idList, int task);
-
-  List<AnnotationCombine> findAllByAnnotationTypeInAndStateEqualsAndIsTaskEquals(
-      List<Integer> annotationTypeList, String state, Pageable pageable, int task);
+  List<AnnotationCombine> findAllByAnnotationTypeInAndStateEquals(
+      List<Integer> annotationTypeList, String state, Pageable pageable);
 
   @Query(
-      value =
-          "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 group by ac.state",
+      value = "select ac.state, count(ac.id) as num from annotation_combine ac group by ac.state",
       nativeQuery = true)
   List<AnnotationSummary> findByStateGroup();
-
-  @Query(
-      value =
-          "select ac.state, count(ac.id) as num from annotation_combine ac where ac.is_task = 0 and ac.assignee= ?1 group by ac.state",
-      nativeQuery = true)
-  List<AnnotationSummary> findByAssigneeAndStateGroup(int assignee);
 
   Integer countAllByAnnotationTypeInAndStateEquals(List<Integer> annotationTypes, String state);
 

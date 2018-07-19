@@ -1,22 +1,25 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.base.TransactionalBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@RequirePermission(Permissions.EXAMINE)
 public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
   private final AnnotationBlockService annotationBlockService;
   private final AnnotationCombineRepository annotationCombineRepository;
@@ -37,21 +40,14 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
     if (annotationStateRequest == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
+
     if (annotationStateRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }
   }
 
   @Override
-  protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
-      throws BusinessRuleException {
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
-      throw new BusinessRuleException("no-privilege-handle-current-record", "当前用户无权限进行该操作!");
-    }
-  }
-
-  @Override
-  protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
+  protected Object doBiz(AnnotationStateRequest annotationStateRequest, UserDetails user) {
     Optional<AnnotationCombine> optional =
         annotationCombineRepository.findById(annotationStateRequest.getId());
 
@@ -77,7 +73,7 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
         annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
       } else {
         throw new BusinessRuleException(
-            "invalid-annotation-state", annotationCombine.getState() + "状态不可以被审核提交");
+            "invalid-state", annotationCombine.getState() + "状态不可以被审核提交");
       }
 
       // 更新block

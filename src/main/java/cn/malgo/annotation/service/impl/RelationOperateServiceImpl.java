@@ -1,117 +1,76 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.DeleteRelationRequest;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.RelationOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/** Created by cjl on 2018/5/31. */
+import java.util.function.Function;
+
 @Service("task-relation")
 public class RelationOperateServiceImpl implements RelationOperateService {
-
+  private final AnnotationFactory factory;
   private final AnnotationCombineRepository annotationCombineRepository;
 
   @Autowired
-  public RelationOperateServiceImpl(AnnotationCombineRepository annotationCombineRepository) {
+  public RelationOperateServiceImpl(
+      AnnotationFactory factory, AnnotationCombineRepository annotationCombineRepository) {
+    this.factory = factory;
     this.annotationCombineRepository = annotationCombineRepository;
   }
 
-  @Override
-  public String addRelation(AddRelationRequest addRelationRequest, int roleId) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(addRelationRequest.getId());
-    if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
-        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      }
-      String annotation;
-      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
-        annotation =
-            AnnotationConvert.addRelationsAnnotation(
-                annotationCombine.getFinalAnnotation(),
-                addRelationRequest.getSourceTag(),
-                addRelationRequest.getTargetTag(),
-                addRelationRequest.getRelation());
-        annotationCombine.setFinalAnnotation(annotation);
-      } else {
-        annotation =
-            AnnotationConvert.addRelationsAnnotation(
-                annotationCombine.getReviewedAnnotation(),
-                addRelationRequest.getSourceTag(),
-                addRelationRequest.getTargetTag(),
-                addRelationRequest.getRelation());
-        annotationCombine.setReviewedAnnotation(annotation);
-      }
-      annotationCombineRepository.save(annotationCombine);
-      return annotation;
+  private Annotation process(
+      AnnotationCombine annotationCombine, Function<Annotation, String> operator) {
+    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+      annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
     }
-    return "";
+
+    final Annotation annotation = this.factory.create(annotationCombine);
+    annotation.setAnnotation(operator.apply(annotation));
+    annotationCombineRepository.save(annotationCombine);
+    return annotation;
   }
 
   @Override
-  public String updateRelation(UpdateRelationRequest updateRelationRequest, int roleId) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(updateRelationRequest.getId());
-    if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
-        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      }
-      String annotation;
-      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
-        annotation =
-            AnnotationConvert.updateRelationAnnotation(
-                annotationCombine.getFinalAnnotation(),
-                updateRelationRequest.getReTag(),
-                updateRelationRequest.getRelation());
-        annotationCombine.setFinalAnnotation(annotation);
-      } else {
-        annotation =
-            AnnotationConvert.updateRelationAnnotation(
-                annotationCombine.getReviewedAnnotation(),
-                updateRelationRequest.getReTag(),
-                updateRelationRequest.getRelation());
-        annotationCombine.setReviewedAnnotation(annotation);
-      }
-      annotationCombineRepository.save(annotationCombine);
-      return annotation;
-    }
-    return "";
+  public String addRelation(
+      final AnnotationCombine annotationCombine, final AddRelationRequest request) {
+    return process(
+            annotationCombine,
+            (annotation) ->
+                AnnotationConvert.addRelationsAnnotation(
+                    annotation.getAnnotation(),
+                    request.getSourceTag(),
+                    request.getTargetTag(),
+                    request.getRelation()))
+        .getAnnotation();
   }
 
   @Override
-  public String deleteRelation(DeleteRelationRequest deleteRelationRequest, int roleId) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(deleteRelationRequest.getId());
-    if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
-        annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
-      }
-      String annotation;
-      if (roleId >= AnnotationRoleStateEnum.labelStaff.getRole()) {
-        annotation =
-            AnnotationConvert.deleteRelationsAnnotation(
-                annotationCombine.getFinalAnnotation(), deleteRelationRequest.getReTag());
-        annotationCombine.setFinalAnnotation(annotation);
-      } else {
-        annotation =
-            AnnotationConvert.deleteRelationsAnnotation(
-                annotationCombine.getReviewedAnnotation(), deleteRelationRequest.getReTag());
-        annotationCombine.setReviewedAnnotation(annotation);
-      }
-      annotationCombineRepository.save(annotationCombine);
-      return annotation;
-    }
-    return "";
+  public String updateRelation(AnnotationCombine annotationCombine, UpdateRelationRequest request) {
+
+    return process(
+            annotationCombine,
+            (annotation) ->
+                AnnotationConvert.updateRelationAnnotation(
+                    annotation.getAnnotation(), request.getReTag(), request.getRelation()))
+        .getAnnotation();
+  }
+
+  @Override
+  public String deleteRelation(AnnotationCombine annotationCombine, DeleteRelationRequest request) {
+    return process(
+            annotationCombine,
+            annotation ->
+                AnnotationConvert.deleteRelationsAnnotation(
+                    annotation.getAnnotation(), request.getReTag()))
+        .getAnnotation();
   }
 }

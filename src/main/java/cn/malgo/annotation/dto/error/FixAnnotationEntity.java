@@ -1,9 +1,11 @@
 package cn.malgo.annotation.dto.error;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Value
+@Data
+@AllArgsConstructor
 public class FixAnnotationEntity {
-  private final String type;
-  private final String term;
+  private String type;
+  private String term;
 }

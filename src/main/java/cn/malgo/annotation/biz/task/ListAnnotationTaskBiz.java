@@ -1,30 +1,29 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
-import java.util.stream.Collectors;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListAnnotationTaskBiz
     extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTaskVO>> {
@@ -39,22 +38,25 @@ public class ListAnnotationTaskBiz
       ListAnnotationTaskRequest param) {
     return (Specification<AnnotationTask>)
         (root, criteriaQuery, criteriaBuilder) -> {
-          // todo 还会有其它的过滤条件
           List<Predicate> predicates = new ArrayList<>();
+
           if (StringUtils.isNotBlank(param.getName())) {
             predicates.add(
                 criteriaBuilder.like(
                     root.get("name"), String.format("%s%s%s", "%", param.getName(), "%")));
           }
+
           if (param.getTaskStates() != null
               && param.getTaskStates().size() > 0
               && !param.getTaskStates().contains(null)) {
             predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskStates()));
           }
+
           if (param.getTaskId() > 0) {
             predicates.add(criteriaBuilder.in(root.get("id")).value(param.getTaskId()));
           }
-          return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+
+          return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
 
@@ -64,41 +66,21 @@ public class ListAnnotationTaskBiz
     if (listAnnotationTaskRequest.getPageIndex() <= 0) {
       throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
     }
+
     if (listAnnotationTaskRequest.getPageSize() <= 0) {
       throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
     }
-    // todo ,其它过滤条件的校验暂定
   }
 
   @Override
-  protected PageVO<AnnotationTaskVO> doBiz(
-      int userId, int role, ListAnnotationTaskRequest listAnnotationTaskRequest) {
-    final int pageIndex = listAnnotationTaskRequest.getPageIndex() - 1;
+  protected PageVO<AnnotationTaskVO> doBiz(ListAnnotationTaskRequest request, UserDetails user) {
     final Page<AnnotationTask> page =
         annotationTaskRepository.findAll(
-            queryAnnotationTaskCondition(listAnnotationTaskRequest),
-            PageRequest.of(pageIndex, listAnnotationTaskRequest.getPageSize()));
-    final PageVO<AnnotationTaskVO> pageVO = new PageVO(page, false);
-    final List<AnnotationTaskVO> annotationTaskVOList =
-        page.getContent()
-            .stream()
-            .map(
-                annotationTask ->
-                    new AnnotationTaskVO(
-                        annotationTask.getId(),
-                        annotationTask.getCreatedTime(),
-                        annotationTask.getLastModified(),
-                        annotationTask.getName(),
-                        annotationTask.getState().name(),
-                        annotationTask.getTotalBranchNum(),
-                        annotationTask.getTotalWordNum(),
-                        annotationTask.getAnnotatedBranchNum(),
-                        annotationTask.getAnnotatedWordNum(),
-                        annotationTask.getRestBranchNum(),
-                        annotationTask.getRestWordNum(),
-                        annotationTask.getInConformity()))
-            .collect(Collectors.toList());
-    pageVO.setDataList(annotationTaskVOList);
-    return pageVO;
+            queryAnnotationTaskCondition(request),
+            PageRequest.of(request.getPageIndex() - 1, request.getPageSize()));
+
+    return new PageVO<>(
+        page.getTotalElements(),
+        page.getContent().stream().map(AnnotationTaskVO::new).collect(Collectors.toList()));
   }
 }

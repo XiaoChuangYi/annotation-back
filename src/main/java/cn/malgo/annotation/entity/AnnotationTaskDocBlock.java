@@ -1,26 +1,25 @@
 package cn.malgo.annotation.entity;
 
-import com.alibaba.fastjson.annotation.JSONType;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
     name = "annotation_task_doc_block",
     indexes = {
       @Index(name = "idx_order", columnList = "block_order"),
     })
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = {"taskDoc", "block"})
-@JSONType(ignores = {"createdTime", "lastModified", "taskDoc", "block"})
-@Data
+@Getter
+@Setter
 public class AnnotationTaskDocBlock {
   @EmbeddedId private AnnotationTaskDocBlockId id;
 
@@ -30,14 +29,14 @@ public class AnnotationTaskDocBlock {
       updatable = false,
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  private Timestamp createdTime;
+  private Date createdTime;
 
   @LastModifiedDate
   @Column(
       name = "last_modified",
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-  private Timestamp lastModified;
+  private Date lastModified;
 
   @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)
   @MapsId("taskDocId")

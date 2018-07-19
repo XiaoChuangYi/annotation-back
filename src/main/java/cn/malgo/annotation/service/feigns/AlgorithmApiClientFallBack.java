@@ -2,7 +2,7 @@ package cn.malgo.annotation.service.feigns;
 
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import com.alibaba.fastjson.JSON;
 import feign.hystrix.FallbackFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiC
 
       @Override
       public List<AutoAnnotation> batchUpdateAnnotationTokenizePos(
-          List<UpdateAnnotationAlgorithm> updateAnnotationRequestList) {
+          List<UpdateAnnotationAlgorithmRequest> updateAnnotationRequestList) {
         log.error(
             "调用算法后台预标注接口：{}请求数据为：{}；失败原因：{};",
             "/api/batch-update-tokenize-pos",

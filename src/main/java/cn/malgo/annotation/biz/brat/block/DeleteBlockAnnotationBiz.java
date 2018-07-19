@@ -1,19 +1,19 @@
 package cn.malgo.annotation.biz.brat.block;
 
-import cn.malgo.annotation.annotation.RequireRole;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.exception.InvalidInputException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class DeleteBlockAnnotationBiz
     extends BaseBlockAnnotationBiz<DeleteAnnotationGroupRequest, AnnotationBlockBratVO> {
 
@@ -38,7 +38,6 @@ public class DeleteBlockAnnotationBiz
 
   @Override
   AnnotationBlockBratVO doInternalProcess(
-      int role,
       AnnotationTaskBlock annotationTaskBlock,
       DeleteAnnotationGroupRequest deleteAnnotationGroupRequest) {
     final String annotation =

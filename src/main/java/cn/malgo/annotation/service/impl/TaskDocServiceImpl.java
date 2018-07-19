@@ -27,7 +27,6 @@ import java.util.stream.IntStream;
 public class TaskDocServiceImpl implements TaskDocService {
   private static final int MINIMUM_WORD_BLOCK_LENGTH = 10;
 
-  private final AlgorithmApiClient algorithmApiClient;
   private final AnnotationTaskDocRepository taskDocRepository;
   private final AnnotationBlockService annotationBlockService;
 
@@ -37,7 +36,6 @@ public class TaskDocServiceImpl implements TaskDocService {
       final AlgorithmApiClient algorithmApiClient,
       final AnnotationTaskDocRepository taskDocRepository,
       final AnnotationBlockService annotationBlockService) {
-    this.algorithmApiClient = algorithmApiClient;
     this.taskDocRepository = taskDocRepository;
     this.annotationBlockService = annotationBlockService;
 

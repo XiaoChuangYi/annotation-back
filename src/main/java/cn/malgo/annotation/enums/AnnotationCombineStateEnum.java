@@ -1,6 +1,5 @@
 package cn.malgo.annotation.enums;
 
-/** Created by cjl on 2018/5/30. */
 public enum AnnotationCombineStateEnum {
   unDistributed("未分配"),
   preAnnotation("待标注"),

@@ -3,10 +3,10 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.FixAnnotationEntity;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.service.impl.error.NewWordErrorProvider;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.service.exception.InvalidInputException;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -141,7 +141,7 @@ public class NewWordErrorProviderTest {
     }
 
     @Override
-    public int getId() {
+    public long getId() {
       return 0;
     }
 

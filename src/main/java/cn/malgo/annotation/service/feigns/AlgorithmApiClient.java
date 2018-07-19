@@ -2,7 +2,7 @@ package cn.malgo.annotation.service.feigns;
 
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +25,7 @@ public interface AlgorithmApiClient {
   /** 批量更新分词和词性标注 */
   @RequestMapping(method = RequestMethod.POST, value = "/api/batch-update-tokenize-pos")
   List<AutoAnnotation> batchUpdateAnnotationTokenizePos(
-      @RequestBody List<UpdateAnnotationAlgorithm> updateAnnotationRequestList);
+      @RequestBody List<UpdateAnnotationAlgorithmRequest> updateAnnotationRequestList);
 
   /** 批量切分关联数据为短句API */
   @RequestMapping(method = RequestMethod.POST, value = "/api/batch-block-splitter")

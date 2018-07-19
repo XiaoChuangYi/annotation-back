@@ -17,11 +17,11 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 @Order(HIGHEST_PRECEDENCE + 10)
 @Slf4j
 public class DevDefaultUserConfig implements WebMvcConfigurer {
-  private final int defaultUserId;
+  private final long defaultUserId;
   private final UserAccountRepository userAccountRepository;
 
   public DevDefaultUserConfig(
-      @Value("${malgo.dev.default-user}") final int defaultUserId,
+      @Value("${malgo.dev.default-user}") final long defaultUserId,
       final UserAccountRepository userAccountRepository) {
     this.defaultUserId = defaultUserId;
     this.userAccountRepository = userAccountRepository;

@@ -1,17 +1,18 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.TransactionalBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class CreateTaskBiz extends TransactionalBiz<CreateTaskRequest, AnnotationTask> {
   private final AnnotationTaskRepository taskRepository;
 
@@ -27,7 +28,7 @@ public class CreateTaskBiz extends TransactionalBiz<CreateTaskRequest, Annotatio
   }
 
   @Override
-  protected AnnotationTask doBiz(CreateTaskRequest request) {
+  protected AnnotationTask doBiz(CreateTaskRequest request, UserDetails user) {
     return taskRepository.save(new AnnotationTask(request.getName()));
   }
 }

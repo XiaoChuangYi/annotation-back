@@ -1,20 +1,20 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.dto.AnnotationSummary;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.vo.AnnotationSummaryVO;
-import java.util.List;
-import java.util.stream.Collectors;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/5/30. */
-@Component
-public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSummaryVO>> {
+import java.util.List;
+import java.util.stream.Collectors;
 
+@Component
+@RequirePermission(Permissions.ADMIN)
+public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSummaryVO>> {
   private final AnnotationCombineRepository annotationCombineRepository;
 
   @Autowired
@@ -27,12 +27,10 @@ public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSumm
 
   @Override
   protected List<AnnotationSummaryVO> doBiz(Object o) {
-    List<AnnotationSummary> annotationSummaryList = annotationCombineRepository.findByStateGroup();
-    List<AnnotationSummaryVO> finalAnnotationSummaryVOList =
-        annotationSummaryList
-            .stream()
-            .map(x -> new AnnotationSummaryVO(x.getState(), x.getNum()))
-            .collect(Collectors.toList());
-    return finalAnnotationSummaryVOList;
+    return annotationCombineRepository
+        .findByStateGroup()
+        .stream()
+        .map(x -> new AnnotationSummaryVO(x.getState(), x.getNum()))
+        .collect(Collectors.toList());
   }
 }

@@ -1,21 +1,22 @@
 package cn.malgo.annotation.biz.brat.block;
 
-import cn.malgo.annotation.annotation.RequireRole;
-import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import java.util.Optional;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
-@RequireRole(AnnotationRoleStateEnum.admin)
+@RequirePermission(Permissions.ADMIN)
 public class GetAnnotationBlockBiz
     extends BaseBiz<GetAutoAnnotationRequest, AnnotationBlockBratVO> {
 
@@ -34,8 +35,7 @@ public class GetAnnotationBlockBiz
   }
 
   @Override
-  protected AnnotationBlockBratVO doBiz(
-      int userId, int role, GetAutoAnnotationRequest baseAnnotationRequest) {
+  protected AnnotationBlockBratVO doBiz(GetAutoAnnotationRequest baseAnnotationRequest) {
     Optional<AnnotationTaskBlock> optional =
         annotationTaskBlockRepository.findById(baseAnnotationRequest.getId());
     if (optional.isPresent()) {

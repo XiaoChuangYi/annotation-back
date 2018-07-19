@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class AnnotationOverview {
-
-  private int taskId;
+  private long taskId;
   private String taskName;
   private int totalBranch; // 批次总条数
   private int totalWordNum; // 批次总字数

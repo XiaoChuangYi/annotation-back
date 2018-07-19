@@ -19,13 +19,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @ToString(exclude = "annotation")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class AnnotationErrorContext implements FixAnnotationErrorContext {
   private static final Pattern SENTENCE_SPLITS = Pattern.compile("([,!。，！？?])");
 
-  private int id;
+  private long id;
   private int start;
   private int end;
   private Object info;
