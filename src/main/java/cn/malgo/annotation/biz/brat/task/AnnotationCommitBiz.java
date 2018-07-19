@@ -9,6 +9,7 @@ import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
+import java.sql.Date;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,6 +63,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
       annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
+      annotationCombine.setCommitTimestamp(new Date(new java.util.Date().getTime()));
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词标注提交
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }

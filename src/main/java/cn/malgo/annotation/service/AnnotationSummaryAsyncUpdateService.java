@@ -6,4 +6,6 @@ import java.util.List;
 public interface AnnotationSummaryAsyncUpdateService {
 
   List<AnnotationTask> asyncUpdateAnnotationOverview();
+
+  List<AnnotationTask> asyncUpdateAnnotationEvaluate();
 }

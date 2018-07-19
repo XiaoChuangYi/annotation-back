@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.exception.BusinessRuleException;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
+import java.sql.Date;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -61,6 +62,7 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
     if (optional.isPresent()) {
       AnnotationCombine annotationCombine = optional.get();
       annotationCombine.setState(AnnotationCombineStateEnum.abandon.name());
+      annotationCombine.setCommitTimestamp(new Date(new java.util.Date().getTime()));
       annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
       annotationCombineRepository.save(annotationCombine);
     }

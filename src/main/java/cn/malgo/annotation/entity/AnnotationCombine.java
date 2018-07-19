@@ -1,5 +1,6 @@
 package cn.malgo.annotation.entity;
 
+import java.sql.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,6 +34,9 @@ public class AnnotationCombine extends BaseEntity {
 
   @Column(name = "comment", columnDefinition = "text")
   private String comment;
+
+  @Column(name = "commit_timestamp", columnDefinition = "Date default '1000-01-01'")
+  private Date commitTimestamp;
 
   @Transient private String userName;
 }

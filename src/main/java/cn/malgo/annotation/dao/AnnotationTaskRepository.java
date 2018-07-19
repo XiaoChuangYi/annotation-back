@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.Comparator;
 
 public interface AnnotationTaskRepository
-    extends JpaRepository<AnnotationTask, Integer>, JpaSpecificationExecutor {
+    extends JpaRepository<AnnotationTask, Integer>, JpaSpecificationExecutor<AnnotationTask> {
 
   default AnnotationTask updateState(final AnnotationTask task) {
     if (task.getTaskDocs().size() == 0) {

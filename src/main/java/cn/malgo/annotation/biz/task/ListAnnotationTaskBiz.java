@@ -92,13 +92,11 @@ public class ListAnnotationTaskBiz
                         annotationTask.getState().name(),
                         annotationTask.getTotalBranchNum(),
                         annotationTask.getTotalWordNum(),
-                        annotationTask.getAnnotatedWordNum(),
-                        annotationTask.getRestWordNum(),
                         annotationTask.getAnnotatedBranchNum(),
+                        annotationTask.getAnnotatedWordNum(),
                         annotationTask.getRestBranchNum(),
-                        annotationTask.getInConformity(),
-                        annotationTask.getAbandonBranchNum(),
-                        annotationTask.getAnnotatedWordNum()))
+                        annotationTask.getRestWordNum(),
+                        annotationTask.getInConformity()))
             .collect(Collectors.toList());
     pageVO.setDataList(annotationTaskVOList);
     return pageVO;

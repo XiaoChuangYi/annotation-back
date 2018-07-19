@@ -1,20 +1,26 @@
 package cn.malgo.annotation.vo;
 
-import java.util.Date;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Date;
+import lombok.Value;
 
-@Data
+@Value
 public class AnnotationEstimateVO {
   private int taskId;
   private int assignee;
   private String accountName;
-  private Date gmtModified;
   private String taskName;
+
+  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+  private Date workDay;
+
   private int totalBranch;
   private int totalWordNum;
-  private int finishWordNum;
-  private int restWordNum;
-  private int finishBranch;
+  private int currentAnnotatedBranch;
+  private int currentAnnotatedWordNum;
   private int restBranch;
+  private int restWordNum;
+  private int currentAbandonBranch;
+  private int currentAbandonWordNum;
   private double inConformity;
 }

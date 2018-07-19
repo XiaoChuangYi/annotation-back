@@ -8,6 +8,7 @@ import cn.malgo.annotation.biz.AnnotationEstimateQueryBiz;
 import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
+import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class AnnotationEvaluationController extends BaseController {
   }
 
   @RequestMapping(value = "/query-annotation-estimate", method = RequestMethod.GET)
-  public Response<PageVO<AnnotationEstimateVO>> queryAnnotationEstimate(
+  public Response<AnnotationStaffEvaluateVO> queryAnnotationEstimate(
       AnnotationEstimateQueryRequest annotationEstimateQueryRequest) {
     return new Response<>(
         annotationEstimateQueryBiz.process(
