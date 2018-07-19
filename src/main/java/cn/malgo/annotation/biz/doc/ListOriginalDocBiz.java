@@ -95,6 +95,7 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
               .collect(Collectors.toList());
     }
     if (listDocRequest.getDocId() > 0) {
+      docIdList.clear();
       docIdList.add(listDocRequest.getDocId());
     }
     Page<OriginalDoc> page =
