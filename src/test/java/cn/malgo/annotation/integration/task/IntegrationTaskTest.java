@@ -15,6 +15,7 @@ import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.task.AddDocsToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
+import cn.malgo.annotation.vo.AnnotationTaskVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,7 +54,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
    */
   @Test
   public void testTaskProcessSingleDoc() {
-    final Pair<AnnotationTask, OriginalDoc> taskAndDoc = createTaskAndDoc();
+    final Pair<AnnotationTaskVO, OriginalDoc> taskAndDoc = createTaskAndDoc();
 
     TestTransaction.start();
 
@@ -112,7 +113,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
    */
   @Test
   public void testTaskProcessMultipleDoc() {
-    final Pair<AnnotationTask, OriginalDoc> taskAndDoc = createTaskAndDoc();
+    final Pair<AnnotationTaskVO, OriginalDoc> taskAndDoc = createTaskAndDoc();
 
     TestTransaction.start();
 
@@ -215,14 +216,14 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         new AnnotationTaskState[] {AnnotationTaskState.ANNOTATED});
   }
 
-  private Pair<AnnotationTask, OriginalDoc> createTaskAndDoc() {
-    final AnnotationTask task =
+  private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
+    final AnnotationTaskVO task =
         createTaskBiz.process(
             new CreateTaskRequest("test-task"), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);
-    assertEquals(task.getState(), AnnotationTaskState.CREATED);
+    assertEquals(task.getState(), AnnotationTaskState.CREATED.name());
 
     final OriginalDoc doc = docRepository.save(new OriginalDoc("test-doc", SAMPLE_TEXT, "", ""));
 
