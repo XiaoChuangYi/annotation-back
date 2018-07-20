@@ -85,7 +85,7 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
   @Override
   protected PageVO<OriginalDoc> doBiz(int userId, int role, ListDocRequest listDocRequest) {
     final int pageIndex = listDocRequest.getPageIndex() - 1;
-    List<Integer> docIdList = Collections.emptyList();
+    List<Integer> docIdList = new ArrayList<>();
     if (listDocRequest.getTaskId() > 0) {
       docIdList =
           annotationTaskDocRepository
