@@ -16,6 +16,7 @@ import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
@@ -100,7 +101,7 @@ public class AnnotationTaskBlockController extends BaseController {
 
   /** 五元组查询block关联查询 */
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
-  public Response<List<AnnotationBlockBratVO>> listBlockRelation(
+  public Response<PageVO<AnnotationBlockBratVO>> listBlockRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     return new Response<>(

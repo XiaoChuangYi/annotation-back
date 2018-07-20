@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.brat;
 
 import cn.malgo.annotation.annotation.RequireRole;
 import cn.malgo.annotation.biz.base.BaseBiz;
+import cn.malgo.annotation.controller.task.AnnotationTaskController;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Component;
 @RequireRole(AnnotationRoleStateEnum.admin)
 @Slf4j
 public class ListRelevanceAnnotationBiz
-    extends BaseBiz<ListRelevanceAnnotationRequest, List<AnnotationBlockBratVO>> {
+    extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationBlockBratVO>> {
 
   private final AnnotationTaskDocRepository annotationTaskDocRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
@@ -45,10 +47,16 @@ public class ListRelevanceAnnotationBiz
     if (listRelevanceAnnotationRequest.getTaskId() <= 0) {
       throw new InvalidInputException("invalid-task-id", "无效的taskId");
     }
+    if (listRelevanceAnnotationRequest.getPageIndex() <= 0) {
+      throw new InvalidInputException("invalid-page-index", "无效的pageIndex");
+    }
+    if (listRelevanceAnnotationRequest.getPageSize() <= 0) {
+      throw new InvalidInputException("invalid-page-size", "无效的pageSize");
+    }
   }
 
   @Override
-  protected List<AnnotationBlockBratVO> doBiz(
+  protected PageVO<AnnotationBlockBratVO> doBiz(
       int userId, int role, ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     log.info("开始获取blockId集合：{}", new Date());
     final List<Integer> blockIdList =
@@ -59,17 +67,28 @@ public class ListRelevanceAnnotationBiz
     final List<RelationQueryPair> relationQueryPairList =
         filterRelationQueryPairsCondition(relationQueryPairs, listRelevanceAnnotationRequest);
     log.info("开始返回brat格式的RelationQueryPair集合：{}", new Date());
-    return annotationTaskBlockRepository
-        .findAllById(
+    final int skip =
+        (listRelevanceAnnotationRequest.getPageIndex() - 1)
+            * listRelevanceAnnotationRequest.getPageSize();
+    final int limit = listRelevanceAnnotationRequest.getPageSize();
+    final List<AnnotationTaskBlock> annotationTaskBlockList =
+        annotationTaskBlockRepository.findAllById(
             relationQueryPairList
                 .stream()
                 .map(relationQueryPair -> relationQueryPair.getBlockId())
-                .collect(Collectors.toList()))
-        .stream()
-        .map(
-            annotationTaskBlock ->
-                AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock))
-        .collect(Collectors.toList());
+                .collect(Collectors.toList()));
+    PageVO<AnnotationBlockBratVO> pageVO = new PageVO<>();
+    pageVO.setTotal(annotationTaskBlockList.size());
+    pageVO.setDataList(
+        annotationTaskBlockList
+            .stream()
+            .skip(skip)
+            .limit(limit)
+            .map(
+                annotationTaskBlock ->
+                    AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock))
+            .collect(Collectors.toList()));
+    return pageVO;
   }
 
   private List<Integer> getBlockIdListByTaskId(int taskId) {
