@@ -1,7 +1,7 @@
 package cn.malgo.annotation.vo;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,10 +13,10 @@ public class AnnotationCombineBratVO {
   private String state;
   private int annotationType;
 
-  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date createdTime;
 
-  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date lastModified;
 
   private String userName;

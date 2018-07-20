@@ -72,6 +72,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
       }
       annotationCombineRepository.save(annotationCombine);
+      return null;
     }
 
     throw new NotFoundException("annotation-not-found", request.getId() + "不存在");

@@ -61,6 +61,7 @@ public class AnnotationAbandonBiz extends BaseBiz<AnnotationStateRequest, Object
       annotationCombine.setCommitTimestamp(new Date());
       annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
       annotationCombineRepository.save(annotationCombine);
+      return null;
     }
 
     throw new NotFoundException("annotation-not-found", request.getId() + "不存在");

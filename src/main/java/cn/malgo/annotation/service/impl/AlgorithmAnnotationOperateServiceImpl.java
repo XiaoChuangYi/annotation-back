@@ -46,12 +46,13 @@ public class AlgorithmAnnotationOperateServiceImpl implements AnnotationOperateS
             new ArrayList<>());
     log.info("过算法后台，最终输入参数：{}", updateAnnotationAlgorithmRequest);
     List<AutoAnnotation> finalAnnotationList =
-        algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithmRequest);
+        algorithmApiService.listRecombineAnnotationThroughAlgorithm(
+            updateAnnotationAlgorithmRequest);
 
     if (finalAnnotationList != null
         && finalAnnotationList.size() > 0
         && finalAnnotationList.get(0) != null) {
-      if (annotation.getStateEnum() == AnnotationCombineStateEnum.preAnnotation) {
+      if (annotation.getStateEnum() == AnnotationCombineStateEnum.annotationProcessing) {
         annotation.setFinalAnnotation(finalAnnotationList.get(0).getAnnotation());
       } else {
         annotation.setReviewedAnnotation(finalAnnotationList.get(0).getAnnotation());

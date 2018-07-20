@@ -1,6 +1,6 @@
 package cn.malgo.annotation.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.alibaba.fastjson.annotation.JSONField;
 import java.sql.Date;
 import lombok.Value;
 
@@ -11,7 +11,7 @@ public class AnnotationEstimateVO {
   private String accountName;
   private String taskName;
 
-  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+  @JSONField(format = "yyyy-MM-dd")
   private Date workDay;
 
   private int totalBranch;

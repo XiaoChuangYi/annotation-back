@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -77,7 +78,10 @@ public class ListAnnotationTaskBiz
     final Page<AnnotationTask> page =
         annotationTaskRepository.findAll(
             queryAnnotationTaskCondition(request),
-            PageRequest.of(request.getPageIndex() - 1, request.getPageSize()));
+            PageRequest.of(
+                request.getPageIndex() - 1,
+                request.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdTime")));
 
     return new PageVO<>(
         page.getTotalElements(),

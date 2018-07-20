@@ -1,5 +1,6 @@
 package cn.malgo.annotation.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -29,6 +30,7 @@ public class AnnotationTaskDocBlock {
       updatable = false,
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date createdTime;
 
   @LastModifiedDate
@@ -36,6 +38,7 @@ public class AnnotationTaskDocBlock {
       name = "last_modified",
       nullable = false,
       columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date lastModified;
 
   @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)

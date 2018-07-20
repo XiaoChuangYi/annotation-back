@@ -2,6 +2,7 @@ package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.service.entity.BaseEntity;
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -63,6 +64,7 @@ public class AnnotationCombine extends BaseEntity {
   private String comment;
 
   @Column(name = "commit_timestamp", columnDefinition = "TIMESTAMP NULL")
+  @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date commitTimestamp;
 
   @Transient private String userName;
