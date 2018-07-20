@@ -17,8 +17,7 @@ public class AnnotationTaskBlockResponse {
 
   private final JSONObject annotation;
 
-  @JSONField(serialzeFeatures = SerializerFeature.WriteEnumUsingName)
-  private final AnnotationTaskState state;
+  private final String state;
 
   private final AnnotationTypeEnum annotationType;
 
@@ -28,7 +27,7 @@ public class AnnotationTaskBlockResponse {
     this.annotation =
         AnnotationConvert.convertAnnotation2BratFormat(
             block.getText(), block.getAnnotation(), block.getAnnotationType().ordinal());
-    this.state = block.getState();
+    this.state = block.getState().name();
     this.annotationType = block.getAnnotationType();
   }
 }

@@ -39,7 +39,6 @@ public class AnnotationTask extends BaseEntity {
   @Column(name = "state", nullable = false, length = 16)
   @Getter
   @Setter
-  @JSONField(serialzeFeatures = SerializerFeature.WriteEnumUsingName)
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
 
   @OneToMany(
