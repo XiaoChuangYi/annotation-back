@@ -2,143 +2,128 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.entity.*;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
+import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationEvaluateStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.service.AnnotationSummaryAsyncUpdateService;
+import cn.malgo.service.entity.BaseEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
-public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryAsyncUpdateService {
-
+public class AnnotationSummaryAsyUpdateServiceImpl {
   private final AnnotationTaskRepository annotationTaskRepository;
-  private final AnnotationTaskDocRepository annotationTaskDocRepository;
+  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
       final AnnotationTaskRepository annotationTaskRepository,
-      final AnnotationTaskDocRepository annotationTaskDocRepository,
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationCombineRepository annotationCombineRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
-    this.annotationTaskDocRepository = annotationTaskDocRepository;
+    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationCombineRepository = annotationCombineRepository;
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
   }
 
   /** 0 0/5 * * * ? 秒 分 时 天(月) 月 天(星期) 天(月),天(星期)互斥，任意一个为? 当前的corn表达式的意思时每隔5分钟触发一次 */
-  @Override
   @Scheduled(cron = "0 0/10 * * * ?")
   @Transactional
-  public List<AnnotationTask> asyncUpdateAnnotationOverview() {
+  public void asyncUpdateAnnotationOverview() {
+    log.info("asyncUpdateAnnotationOverview, time: {}", new Date());
+
     try {
-      final List<AnnotationTask> annotationTasks = annotationTaskRepository.findAll();
-      log.info("now time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-      IntStream.range(0, annotationTasks.size())
-          .forEach(
-              i -> {
-                final AnnotationTask annotationTask = annotationTasks.get(i);
-                final List<AnnotationTaskBlock> annotationTaskBlocks =
-                    getBlocks(annotationTask.getId());
-                annotationTask.setTotalBranchNum(
-                    getOverviewBranchNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.total_branch));
-
-                annotationTask.setAnnotatedBranchNum(
-                    getOverviewBranchNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.annotated_branch));
-
-                annotationTask.setRestBranchNum(
-                    getOverviewBranchNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.rest_branch));
-
-                annotationTask.setTotalWordNum(
-                    getOverviewWordNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.total_word));
-
-                annotationTask.setAnnotatedWordNum(
-                    getOverviewWordNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.annotated_word));
-
-                annotationTask.setRestWordNum(
-                    getOverviewWordNum(
-                        annotationTaskBlocks, AnnotationEvaluateStateEnum.rest_word));
-
-                annotationTask.setInConformity(0);
-              });
-      return annotationTaskRepository.saveAll(annotationTasks);
+      final List<AnnotationTask> annotationTasks =
+          getTasks().stream().map(this::refreshTaskNumbers).collect(Collectors.toList());
+      annotationTaskRepository.saveAll(annotationTasks);
     } catch (Exception ex) {
       log.info("定时任务，更新task表，发生异常:{}", ex.getMessage());
     }
-    return null;
   }
 
-  @Override
+  @NotNull
+  private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {
+    final List<AnnotationTaskBlock> annotationTaskBlocks = getBlocks(annotationTask.getId());
+
+    annotationTask.setTotalBranchNum(
+        getOverviewBranchNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.TOTAL));
+
+    annotationTask.setAnnotatedBranchNum(
+        getOverviewBranchNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.ANNOTATED));
+
+    annotationTask.setRestBranchNum(
+        getOverviewBranchNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.REST));
+
+    annotationTask.setTotalWordNum(
+        getOverviewWordNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.TOTAL));
+
+    annotationTask.setAnnotatedWordNum(
+        getOverviewWordNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.ANNOTATED));
+
+    annotationTask.setRestWordNum(
+        getOverviewWordNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.REST));
+
+    annotationTask.setInConformity(0);
+    return annotationTask;
+  }
+
   @Scheduled(cron = "0 0/10 * * * ?")
   @Transactional
-  public List<AnnotationTask> asyncUpdateAnnotationEvaluate() {
-    final List<AnnotationTask> annotationTasks = annotationTaskRepository.findAll();
-    log.info("now time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-    IntStream.range(0, annotationTasks.size())
-        .forEach(
-            i -> {
-              final AnnotationTask annotationTask = annotationTasks.get(i);
-              final List<AnnotationCombine> annotationCombines =
-                  annotationCombineRepository.findAllByBlockIdIn(
-                      getBlocksId(annotationTask.getId()));
-              final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
-                  getAnnotationStaffEvaluates(annotationCombines, annotationTask);
-              IntStream.range(0, annotationStaffEvaluates.size())
-                  .forEach(
-                      k -> {
-                        final AnnotationStaffEvaluate annotationStaffEvaluate =
-                            annotationStaffEvaluates.get(k);
-                        AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
-                            annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
-                                annotationStaffEvaluate.getTaskId(),
-                                annotationStaffEvaluate.getAssignee(),
-                                annotationStaffEvaluate.getWorkDay());
-                        if (updateAnnotationStaffEvaluate == null) {
-                          final AnnotationStaffEvaluate current =
-                              annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
-                          log.info("新增annotationStaffEvaluate，id为：{}", current.getId());
-                        } else {
-                          BeanUtils.copyProperties(
-                              annotationStaffEvaluate,
-                              updateAnnotationStaffEvaluate,
-                              "id",
-                              "taskId",
-                              "taskName",
-                              "workDay",
-                              "assignee");
-                          annotationStaffEvaluateRepository.save(updateAnnotationStaffEvaluate);
-                          log.info(
-                              "更新annotationStaffEvaluate，id为：{}",
-                              updateAnnotationStaffEvaluate.getId());
-                        }
-                      });
-            });
-    return null;
+  public void asyncUpdateAnnotationEvaluate() {
+    log.info("asyncUpdateAnnotationEvaluate time: {}", new Date());
+    final List<AnnotationTask> annotationTasks = getTasks();
+    annotationTasks.forEach(
+        annotationTask -> {
+          final List<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
+          final List<AnnotationCombine> annotationCombines =
+              annotationCombineRepository.findAllByBlockIdIn(
+                  blocks.stream().map(BaseEntity::getId).collect(Collectors.toList()));
+          final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
+              getAnnotationStaffEvaluates(annotationCombines, annotationTask);
+          annotationStaffEvaluates.forEach(
+              annotationStaffEvaluate -> {
+                final AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
+                    annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
+                        annotationStaffEvaluate.getTaskId(),
+                        annotationStaffEvaluate.getAssignee(),
+                        annotationStaffEvaluate.getWorkDay());
+
+                if (updateAnnotationStaffEvaluate == null) {
+                  final AnnotationStaffEvaluate current =
+                      annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
+                  log.info("新增annotationStaffEvaluate，id为：{}", current.getId());
+                } else {
+                  BeanUtils.copyProperties(
+                      annotationStaffEvaluate, updateAnnotationStaffEvaluate, "id");
+                  annotationStaffEvaluateRepository.save(updateAnnotationStaffEvaluate);
+                  log.info(
+                      "更新annotationStaffEvaluate，id为：{}", updateAnnotationStaffEvaluate.getId());
+                }
+              });
+        });
   }
 
   private List<AnnotationStaffEvaluate> getAnnotationStaffEvaluates(
       final List<AnnotationCombine> annotationCombines, final AnnotationTask task) {
-    final Map<Pair<Long, Date>, List<AnnotationCombine>> map =
+    final Map<Pair<Long, java.sql.Date>, List<AnnotationCombine>> map =
         annotationCombines
             .stream()
             .collect(
@@ -146,192 +131,87 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
                     annotationCombine ->
                         Pair.of(
                             annotationCombine.getAssignee(),
-                            annotationCombine.getCommitTimestamp())));
+                            annotationCombine.getCommitTimestamp() == null
+                                ? new java.sql.Date(new Date().getTime())
+                                : new java.sql.Date(
+                                    annotationCombine.getCommitTimestamp().getTime()))));
 
-    return map.keySet()
+    final int totalBranchNum = getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.TOTAL);
+    final int totalWordNum = getWordNum(annotationCombines, AnnotationEvaluateStateEnum.TOTAL);
+    final int restBranchNum = getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.REST);
+    final int restWordNum = getWordNum(annotationCombines, AnnotationEvaluateStateEnum.REST);
+
+    return map.entrySet()
         .stream()
         .map(
-            key ->
+            entry ->
                 new AnnotationStaffEvaluate(
                     task.getId(),
                     task.getName(),
-                    new java.sql.Date(key.getRight().getTime()),
-                    key.getLeft(),
-                    getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.total_branch),
-                    getWordNum(annotationCombines, AnnotationEvaluateStateEnum.total_word),
-                    getBranchNum(map.get(key), AnnotationEvaluateStateEnum.annotated_branch),
-                    getWordNum(map.get(key), AnnotationEvaluateStateEnum.annotated_word),
-                    getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.rest_branch),
-                    getWordNum(annotationCombines, AnnotationEvaluateStateEnum.rest_word),
+                    entry.getKey().getRight(),
+                    entry.getKey().getLeft(),
+                    totalBranchNum,
+                    totalWordNum,
+                    getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                    getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                    restBranchNum,
+                    restWordNum,
                     0,
-                    getBranchNum(map.get(key), AnnotationEvaluateStateEnum.abandon_branch),
-                    getWordNum(map.get(key), AnnotationEvaluateStateEnum.abandon_word)))
+                    getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.ABANDON),
+                    getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.ABANDON)))
         .collect(Collectors.toList());
+  }
+
+  private List<AnnotationTask> getTasks() {
+    return annotationTaskRepository.findByStateNotIn(
+        Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.FINISHED));
   }
 
   private List<AnnotationTaskBlock> getBlocks(final long taskId) {
-    return annotationTaskDocRepository
-        .findByTask_Id(taskId)
-        .stream()
-        .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
-        .map(AnnotationTaskDocBlock::getBlock)
-        .collect(Collectors.toList());
-  }
-
-  private List<Long> getBlocksId(final long taskId) {
-    return annotationTaskDocRepository
-        .findByTask_Id(taskId)
-        .stream()
-        .flatMap(annotationTaskDoc -> annotationTaskDoc.getBlocks().stream())
-        .map(annotationTaskDocBlock -> annotationTaskDocBlock.getId().getBlockId())
-        .collect(Collectors.toList());
+    return annotationTaskBlockRepository.findByTaskDocs_TaskDoc_Task_IdEquals(taskId);
   }
 
   private int getOverviewWordNum(
       final List<AnnotationTaskBlock> annotationTaskBlocks,
-      final AnnotationEvaluateStateEnum annotationEvaluateStateEnum) {
-    List<String> annotationTaskStateList = Collections.emptyList();
-    switch (annotationEvaluateStateEnum) {
-      case total_word:
-        annotationTaskStateList =
-            Arrays.asList(
-                AnnotationTaskState.CREATED.name(),
-                AnnotationTaskState.DOING.name(),
-                AnnotationTaskState.FINISHED.name(),
-                AnnotationTaskState.ANNOTATED.name());
-        break;
-      case rest_word:
-        annotationTaskStateList =
-            Arrays.asList(AnnotationTaskState.CREATED.name(), AnnotationTaskState.DOING.name());
-        break;
-      case annotated_word:
-        annotationTaskStateList =
-            Arrays.asList(
-                AnnotationTaskState.FINISHED.name(), AnnotationTaskState.ANNOTATED.name());
-        break;
-    }
-    if (annotationTaskStateList.size() > 0) {
-      final List<String> finalAnnotationTaskStateList = annotationTaskStateList;
-      return annotationTaskBlocks
-          .stream()
-          .filter(
-              annotationTaskBlock ->
-                  finalAnnotationTaskStateList.contains(annotationTaskBlock.getState().name()))
-          .mapToInt(value -> value.getText().length())
-          .sum();
-    }
-    return 0;
+      final AnnotationEvaluateStateEnum state) {
+    return annotationTaskBlocks
+        .stream()
+        .filter(
+            annotationTaskBlock -> state.getBlockStates().contains(annotationTaskBlock.getState()))
+        .mapToInt(value -> value.getText().length())
+        .sum();
   }
 
   private int getOverviewBranchNum(
       final List<AnnotationTaskBlock> annotationTaskBlocks,
-      final AnnotationEvaluateStateEnum annotationEvaluateStateEnum) {
-    List<String> annotationTaskStateList = Collections.emptyList();
-    switch (annotationEvaluateStateEnum) {
-      case total_branch:
-        annotationTaskStateList =
-            Arrays.asList(
-                AnnotationTaskState.CREATED.name(),
-                AnnotationTaskState.DOING.name(),
-                AnnotationTaskState.FINISHED.name(),
-                AnnotationTaskState.ANNOTATED.name());
-        break;
-      case annotated_branch:
-        annotationTaskStateList =
-            Arrays.asList(
-                AnnotationTaskState.FINISHED.name(), AnnotationTaskState.ANNOTATED.name());
-        break;
-      case rest_branch:
-        annotationTaskStateList =
-            Arrays.asList(AnnotationTaskState.CREATED.name(), AnnotationTaskState.DOING.name());
-        break;
-    }
-    if (annotationTaskStateList.size() > 0) {
-      final List<String> finalAnnotationTaskStateList = annotationTaskStateList;
-      return annotationTaskBlocks
-          .stream()
-          .filter(
-              annotationTaskBlock ->
-                  finalAnnotationTaskStateList.contains(annotationTaskBlock.getState().name()))
-          .collect(Collectors.toList())
-          .size();
-    }
-    return 0;
+      final AnnotationEvaluateStateEnum state) {
+    return annotationTaskBlocks
+        .stream()
+        .filter(
+            annotationTaskBlock -> state.getBlockStates().contains(annotationTaskBlock.getState()))
+        .collect(Collectors.toList())
+        .size();
   }
 
   private int getBranchNum(
-      final List<AnnotationCombine> annotationCombines,
-      final AnnotationEvaluateStateEnum annotationEvaluateStateEnum) {
-    List<String> annotationStateList = Collections.emptyList();
-    switch (annotationEvaluateStateEnum) {
-      case total_branch: // 获取当前批次的总条数
-        annotationStateList =
-            Arrays.asList(
-                AnnotationCombineStateEnum.preAnnotation.name(),
-                AnnotationCombineStateEnum.annotationProcessing.name(),
-                AnnotationCombineStateEnum.preExamine.name());
-        break;
-      case rest_branch: // 获取当前批次的剩下的条数
-        annotationStateList =
-            Arrays.asList(
-                AnnotationCombineStateEnum.preAnnotation.name(),
-                AnnotationCombineStateEnum.annotationProcessing.name());
-        break;
-      case annotated_branch: // 获取当前批次的已标注的条数
-        annotationStateList =
-            Collections.singletonList(AnnotationCombineStateEnum.preExamine.name());
-        break;
-      case abandon_branch: // 获取当前批次放弃的条数
-        annotationStateList = Collections.singletonList(AnnotationCombineStateEnum.abandon.name());
-        break;
-    }
-    if (annotationStateList.size() > 0) {
-      final List<String> finalAnnotationStateList = annotationStateList;
-      return annotationCombines
-          .stream()
-          .filter(
-              annotationCombine -> finalAnnotationStateList.contains(annotationCombine.getState()))
-          .collect(Collectors.toList())
-          .size();
-    }
-    return 0;
+      final List<AnnotationCombine> annotationCombines, final AnnotationEvaluateStateEnum state) {
+    return annotationCombines
+        .stream()
+        .filter(
+            annotationCombine ->
+                state.getAnnotationStates().contains(annotationCombine.getStateEnum()))
+        .collect(Collectors.toList())
+        .size();
   }
 
   private int getWordNum(
-      final List<AnnotationCombine> annotationCombines,
-      final AnnotationEvaluateStateEnum annotationEvaluateStateEnum) {
-    List<String> annotationStateList = Collections.emptyList();
-    switch (annotationEvaluateStateEnum) {
-      case total_word: // 获取当前批次的总字数
-        annotationStateList =
-            Arrays.asList(
-                AnnotationCombineStateEnum.preAnnotation.name(),
-                AnnotationCombineStateEnum.annotationProcessing.name(),
-                AnnotationCombineStateEnum.preExamine.name());
-        break;
-      case annotated_word: // 获取当前批次的已标注的总字数
-        annotationStateList =
-            Collections.singletonList(AnnotationCombineStateEnum.preExamine.name());
-        break;
-      case rest_word: // 获取当前批次剩余的字数
-        annotationStateList =
-            Arrays.asList(
-                AnnotationCombineStateEnum.preAnnotation.name(),
-                AnnotationCombineStateEnum.annotationProcessing.name());
-        break;
-      case abandon_word: // 获取当前批次放弃的字数
-        annotationStateList = Collections.singletonList(AnnotationCombineStateEnum.abandon.name());
-        break;
-    }
-    if (annotationCombines.size() > 0) {
-      final List<String> finalAnnotationStateList = annotationStateList;
-      return annotationCombines
-          .stream()
-          .filter(
-              annotationCombine -> finalAnnotationStateList.contains(annotationCombine.getState()))
-          .mapToInt(value -> value.getTerm().length())
-          .sum();
-    }
-    return 0;
+      final List<AnnotationCombine> annotationCombines, final AnnotationEvaluateStateEnum state) {
+    return annotationCombines
+        .stream()
+        .filter(
+            annotationCombine ->
+                state.getAnnotationStates().contains(annotationCombine.getStateEnum()))
+        .mapToInt(value -> value.getTerm().length())
+        .sum();
   }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Comparator;
+import java.util.List;
 
 public interface AnnotationTaskRepository
     extends JpaRepository<AnnotationTask, Long>, JpaSpecificationExecutor<AnnotationTask> {
@@ -29,4 +30,6 @@ public interface AnnotationTaskRepository
 
     return task;
   }
+
+  List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
 }
