@@ -12,17 +12,13 @@ import cn.malgo.annotation.enums.AnnotationEvaluateStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.service.entity.BaseEntity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -121,44 +117,65 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
         });
   }
 
+  private String getDate(Date timestamp) {
+    final Calendar calendar = Calendar.getInstance();
+    if (timestamp != null) {
+      calendar.setTime(timestamp);
+    }
+
+    return calendar.get(Calendar.YEAR)
+        + "-"
+        + (calendar.get(Calendar.MONTH) + 1)
+        + "-"
+        + calendar.get(Calendar.DATE);
+  }
+
   private List<AnnotationStaffEvaluate> getAnnotationStaffEvaluates(
       final List<AnnotationCombine> annotationCombines, final AnnotationTask task) {
-    final Map<Pair<Long, java.sql.Date>, List<AnnotationCombine>> map =
-        annotationCombines
-            .stream()
-            .collect(
-                Collectors.groupingBy(
-                    annotationCombine ->
-                        Pair.of(
-                            annotationCombine.getAssignee(),
-                            annotationCombine.getCommitTimestamp() == null
-                                ? new java.sql.Date(new Date().getTime())
-                                : new java.sql.Date(
-                                    annotationCombine.getCommitTimestamp().getTime()))));
+    final Map<Long, List<AnnotationCombine>> assigneeMap =
+        annotationCombines.stream().collect(Collectors.groupingBy(AnnotationCombine::getAssignee));
 
-    final int totalBranchNum = getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.TOTAL);
-    final int totalWordNum = getWordNum(annotationCombines, AnnotationEvaluateStateEnum.TOTAL);
-    final int restBranchNum = getBranchNum(annotationCombines, AnnotationEvaluateStateEnum.REST);
-    final int restWordNum = getWordNum(annotationCombines, AnnotationEvaluateStateEnum.REST);
-
-    return map.entrySet()
+    return assigneeMap
+        .entrySet()
         .stream()
-        .map(
-            entry ->
-                new AnnotationStaffEvaluate(
-                    task.getId(),
-                    task.getName(),
-                    entry.getKey().getRight(),
-                    entry.getKey().getLeft(),
-                    totalBranchNum,
-                    totalWordNum,
-                    getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
-                    getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
-                    restBranchNum,
-                    restWordNum,
-                    0,
-                    getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.ABANDON),
-                    getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.ABANDON)))
+        .flatMap(
+            entry -> {
+              final int totalBranchNum =
+                  getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.TOTAL);
+              final int totalWordNum =
+                  getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.TOTAL);
+              final int restBranchNum =
+                  getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
+              final int restWordNum =
+                  getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
+
+              return entry
+                  .getValue()
+                  .stream()
+                  .collect(Collectors.groupingBy(ann -> getDate(ann.getCommitTimestamp())))
+                  .entrySet()
+                  .stream()
+                  .map(
+                      dateEntry ->
+                          new AnnotationStaffEvaluate(
+                              task.getId(),
+                              task.getName(),
+                              entry.getKey(),
+                              java.sql.Date.valueOf(dateEntry.getKey()),
+                              totalBranchNum,
+                              totalWordNum,
+                              getBranchNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                              getWordNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                              restBranchNum,
+                              restWordNum,
+                              0,
+                              getBranchNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ABANDON),
+                              getWordNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ABANDON)));
+            })
         .collect(Collectors.toList());
   }
 
