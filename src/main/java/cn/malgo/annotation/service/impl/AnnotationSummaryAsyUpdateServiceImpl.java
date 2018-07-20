@@ -49,7 +49,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
 
   /** 0 0/5 * * * ? 秒 分 时 天(月) 月 天(星期) 天(月),天(星期)互斥，任意一个为? 当前的corn表达式的意思时每隔5分钟触发一次 */
   @Override
-  //  @Scheduled(cron = "0 0/5 * * * ?")
+  @Scheduled(cron = "0 0/5 * * * ?")
   @Transactional
   public List<AnnotationTask> asyncUpdateAnnotationOverview() {
     try {
@@ -95,7 +95,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryA
   }
 
   @Override
-  @Scheduled(cron = "0 0/2 * * * ?")
+  @Scheduled(cron = "0 0/5 * * * ?")
   @Transactional
   public List<AnnotationTask> asyncUpdateAnnotationEvaluate() {
     final List<AnnotationTask> annotationTasks = annotationTaskRepository.findAll();
