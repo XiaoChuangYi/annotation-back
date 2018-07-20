@@ -91,11 +91,9 @@ public class ListRelevanceAnnotationBiz
   }
 
   private List<Long> getBlockIdListByTaskId(long taskId) {
-    return annotationTaskDocRepository
-        .findByTask_Id(taskId)
+    return annotationTaskBlockRepository
+        .findByTaskDocs_TaskDoc_Task_IdEquals(taskId)
         .stream()
-        .flatMap(x -> x.getBlocks().stream())
-        .map(AnnotationTaskDocBlock::getBlock)
         .filter(
             annotationTaskBlock ->
                 annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation
@@ -227,6 +225,7 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class RelationQueryPair {
+
     private final long blockId;
     private final String sourceTerm;
     private final String sourceType;
@@ -237,6 +236,7 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class BlockRelationPair {
+
     private final long blockId;
     private final List<Entity> entities;
     private final List<RelationEntity> relationEntities;

@@ -20,9 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.Predicate;
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,21 +45,17 @@ public class AnnotationEstimateQueryBiz
       AnnotationEstimateQueryRequest param) {
     return (Specification<AnnotationStaffEvaluate>)
         (root, criteriaQuery, criteriaBuilder) -> {
-          final List<Predicate> predicates = new ArrayList<>();
-
+          List<Predicate> predicates = new ArrayList<>();
           if (param.getWorkDay() != null) {
             predicates.add(criteriaBuilder.equal(root.get("workDay"), param.getWorkDay()));
           }
-
           if (param.getAssignee() > 0) {
             predicates.add(criteriaBuilder.in(root.get("assignee")).value(param.getAssignee()));
           }
-
           if (param.getTaskId() > 0) {
             predicates.add(criteriaBuilder.in(root.get("taskId")).value(param.getTaskId()));
           }
-
-          return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+          return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
         };
   }
 
@@ -90,18 +83,6 @@ public class AnnotationEstimateQueryBiz
         annotationStaffEvaluateRepository.findAll(
             queryAnnotationStaffEvaluateCondition(annotationEstimateQueryRequest),
             PageRequest.of(pageIndex, annotationEstimateQueryRequest.getPageSize()));
-    if (page.getContent().size() == 0 && annotationEstimateQueryRequest.getWorkDay() != null) {
-      try {
-        annotationEstimateQueryRequest.setWorkDay(
-            new Date(new SimpleDateFormat("yyyy-MM-dd").parse("1000-01-01").getTime()));
-      } catch (ParseException e) {
-        log.info("time parse exception,{}", e.getMessage());
-      }
-      page =
-          annotationStaffEvaluateRepository.findAll(
-              queryAnnotationStaffEvaluateCondition(annotationEstimateQueryRequest),
-              PageRequest.of(pageIndex, annotationEstimateQueryRequest.getPageSize()));
-    }
     final PageVO<AnnotationEstimateVO> pageVO = new PageVO<>(page.getTotalElements());
     final List<AnnotationStaffEvaluate> annotationStaffEvaluates = page.getContent();
     CurrentTaskOverviewPair currentTaskOverviewPair = null;
@@ -153,6 +134,7 @@ public class AnnotationEstimateQueryBiz
 
   @Value
   public static class CurrentTaskOverviewPair {
+
     private final int taskTotalBranch;
     private final int taskTotalWordNum;
     private final double taskInConformity;

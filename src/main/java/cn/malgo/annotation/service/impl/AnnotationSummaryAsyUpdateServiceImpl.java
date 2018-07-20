@@ -41,7 +41,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
   }
 
   /** 0 0/5 * * * ? 秒 分 时 天(月) 月 天(星期) 天(月),天(星期)互斥，任意一个为? 当前的corn表达式的意思时每隔5分钟触发一次 */
-  @Scheduled(cron = "0 0/10 * * * ?")
+  @Scheduled(cron = "0 0/5 * * * ?")
   @Transactional
   public void asyncUpdateAnnotationOverview() {
     log.info("asyncUpdateAnnotationOverview, time: {}", new Date());
@@ -81,7 +81,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
     return annotationTask;
   }
 
-  @Scheduled(cron = "0 0/10 * * * ?")
+  @Scheduled(cron = "0 0/5 * * * ?")
   @Transactional
   public void asyncUpdateAnnotationEvaluate() {
     log.info("asyncUpdateAnnotationEvaluate time: {}", new Date());
