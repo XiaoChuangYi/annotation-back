@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,8 +50,8 @@ public class SearchAnnotationBiz
 
   @Override
   protected List<AnnotationErrorContext> doBiz(SearchAnnotationRequest request) {
-    final List<AnnotationTaskBlock> annotations =
-        blockRepository.findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+    final Set<AnnotationTaskBlock> annotations =
+        blockRepository.findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
             AnnotationTypeEnum.getByValue(request.getAnnotationType()),
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
             request.getTaskId());

@@ -57,7 +57,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
 
   @NotNull
   private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {
-    final List<AnnotationTaskBlock> annotationTaskBlocks = getBlocks(annotationTask.getId());
+    final Set<AnnotationTaskBlock> annotationTaskBlocks = getBlocks(annotationTask.getId());
 
     annotationTask.setTotalBranchNum(
         getOverviewBranchNum(annotationTaskBlocks, AnnotationEvaluateStateEnum.TOTAL));
@@ -88,10 +88,10 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
     final List<AnnotationTask> annotationTasks = getTasks();
     annotationTasks.forEach(
         annotationTask -> {
-          final List<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
+          final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
           final List<AnnotationCombine> annotationCombines =
               annotationCombineRepository.findAllByBlockIdIn(
-                  blocks.stream().map(BaseEntity::getId).collect(Collectors.toList()));
+                  blocks.stream().map(BaseEntity::getId).collect(Collectors.toSet()));
           final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
               getAnnotationStaffEvaluates(annotationCombines, annotationTask);
           annotationStaffEvaluates.forEach(
@@ -184,12 +184,12 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
         Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.FINISHED));
   }
 
-  private List<AnnotationTaskBlock> getBlocks(final long taskId) {
+  private Set<AnnotationTaskBlock> getBlocks(final long taskId) {
     return annotationTaskBlockRepository.findByTaskDocs_TaskDoc_Task_IdEquals(taskId);
   }
 
   private int getOverviewWordNum(
-      final List<AnnotationTaskBlock> annotationTaskBlocks,
+      final Collection<AnnotationTaskBlock> annotationTaskBlocks,
       final AnnotationEvaluateStateEnum state) {
     return annotationTaskBlocks
         .stream()
@@ -200,7 +200,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
   }
 
   private int getOverviewBranchNum(
-      final List<AnnotationTaskBlock> annotationTaskBlocks,
+      final Collection<AnnotationTaskBlock> annotationTaskBlocks,
       final AnnotationEvaluateStateEnum state) {
     return annotationTaskBlocks
         .stream()

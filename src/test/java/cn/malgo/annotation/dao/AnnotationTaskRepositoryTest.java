@@ -47,7 +47,7 @@ public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpr
     assertEquals(taskBlockRepository.count(), 1);
     assertEquals(
         taskBlockRepository
-            .findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+            .findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
                 AnnotationTypeEnum.wordPos,
                 Collections.singletonList(AnnotationTaskState.CREATED),
                 task.getId())

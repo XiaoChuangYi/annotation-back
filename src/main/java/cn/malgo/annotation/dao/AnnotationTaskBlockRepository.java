@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
+import java.util.Set;
 
 public interface AnnotationTaskBlockRepository
     extends JpaRepository<AnnotationTaskBlock, Long>,
@@ -22,14 +23,14 @@ public interface AnnotationTaskBlockRepository
    * @param taskId {@link cn.malgo.annotation.entity.AnnotationTask#id}
    * @return 所有属于某个Task的Block
    */
-  List<AnnotationTaskBlock> findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+  Set<AnnotationTaskBlock> findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
       AnnotationTypeEnum annotationType, List<AnnotationTaskState> states, long taskId);
 
   /**
    * @param taskId {@link cn.malgo.annotation.entity.AnnotationTask#id}
    * @return 所有属于某个Task的Block
    */
-  List<AnnotationTaskBlock> findByTaskDocs_TaskDoc_Task_IdEquals(long taskId);
+  Set<AnnotationTaskBlock> findByTaskDocs_TaskDoc_Task_IdEquals(long taskId);
 
   default Pair<AnnotationTaskBlock, Boolean> getOrCreateBlock(
       final AnnotationTypeEnum annotationType, final String text) {

@@ -8,11 +8,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Set;
 
 public interface AnnotationCombineRepository
     extends JpaRepository<AnnotationCombine, Long>, JpaSpecificationExecutor<AnnotationCombine> {
 
-  List<AnnotationCombine> findAllByBlockIdIn(List<Long> blockIdList);
+  List<AnnotationCombine> findAllByBlockIdIn(Set<Long> blockIdList);
 
   List<AnnotationCombine> findAllByAnnotationTypeInAndStateEquals(
       List<Integer> annotationTypeList, String state, Pageable pageable);

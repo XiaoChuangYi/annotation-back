@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -55,8 +56,8 @@ public class FindAnnotationErrorBiz
   protected List<AnnotationWordError> doBiz(FindAnnotationErrorRequest request) {
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
 
-    final List<AnnotationTaskBlock> blocks =
-        blockRepository.findByAnnotationTypeEqualsAndStateInAndTaskDocs_TaskDoc_Task_IdEquals(
+    final Set<AnnotationTaskBlock> blocks =
+        blockRepository.findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
             errorType.getAnnotationType(),
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
             request.getTaskId());

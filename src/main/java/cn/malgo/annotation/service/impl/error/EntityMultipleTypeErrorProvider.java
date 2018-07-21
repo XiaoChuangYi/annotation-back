@@ -35,7 +35,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
 
   @Override
   public List<AlgorithmAnnotationWordError> find(final List<Annotation> annotations) {
-    log.info("start finding relation errors");
+    log.info("start finding errors");
 
     final Map<String, List<WordErrorWithPosition>> wordLists = new HashMap<>();
 
@@ -78,7 +78,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
             .findFirst()
             .orElse(Collections.emptyList());
 
-    log.info("get potential relation error list: {}", results.size());
+    log.info("get potential error list: {}", results.size());
     return postProcess(results, 0);
   }
 
@@ -89,7 +89,8 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
       final int end,
       final List<FixAnnotationEntity> entities) {
     if (entities.size() != 1) {
-      throw new IllegalArgumentException("ENTITY_MULTIPLE_TYPE 修复只接受一个修复对象，实际得到: " + entities.size());
+      throw new IllegalArgumentException(
+          "ENTITY_MULTIPLE_TYPE 修复只接受一个修复对象，实际得到: " + entities.size());
     }
 
     final FixAnnotationEntity fixEntity = entities.get(0);
