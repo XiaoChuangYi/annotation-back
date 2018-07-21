@@ -1,10 +1,17 @@
 package cn.malgo.annotation.entity;
 
 import cn.malgo.service.entity.BaseEntity;
-import lombok.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -58,41 +65,15 @@ public class AnnotationStaffEvaluate extends BaseEntity {
   @Column(name = "rest_word_num", nullable = false, columnDefinition = "int(11) default 0")
   private int restWordNum;
 
-  @Column(name = "in_conformity", nullable = false, columnDefinition = "double default 0")
-  private double inConformity;
-
   @Column(name = "abandon_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   private int abandonBranchNum;
 
   @Column(name = "abandon_word_num", nullable = false, columnDefinition = "int(11) default 0")
   private int abandonWordNum;
 
-  public AnnotationStaffEvaluate(
-      long taskId,
-      String taskName,
-      long assignee,
-      java.sql.Date workDay,
-      int totalBranchNum,
-      int totalWordNum,
-      int currentDayAnnotatedBranchNum,
-      int currentDayAnnotatedWordNum,
-      int restBranchNum,
-      int restWordNum,
-      double inConformity,
-      int abandonBranchNum,
-      int abandonWordNum) {
-    this.taskId = taskId;
-    this.taskName = taskName;
-    this.assignee = assignee;
-    this.workDay = workDay;
-    this.totalBranchNum = totalBranchNum;
-    this.totalWordNum = totalWordNum;
-    this.currentDayAnnotatedBranchNum = currentDayAnnotatedBranchNum;
-    this.currentDayAnnotatedWordNum = currentDayAnnotatedWordNum;
-    this.restBranchNum = restBranchNum;
-    this.restWordNum = restWordNum;
-    this.inConformity = inConformity;
-    this.abandonBranchNum = abandonBranchNum;
-    this.abandonWordNum = abandonWordNum;
-  }
+  @Column(name = "precision_rate", nullable = false, columnDefinition = "double default 0")
+  private double precisionRate = 0; // 准确率
+
+  @Column(name = "recall_rate", nullable = false, columnDefinition = "double default 0")
+  private double recallRate = 0; // 召回率
 }

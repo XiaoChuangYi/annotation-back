@@ -2,8 +2,10 @@ package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
@@ -12,18 +14,17 @@ import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.persistence.criteria.Predicate;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
-
-import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -33,12 +34,15 @@ public class AnnotationEstimateQueryBiz
 
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
   private final UserAccountRepository userAccountRepository;
+  private final AnnotationTaskRepository taskRepository;
 
   public AnnotationEstimateQueryBiz(
-      UserAccountRepository userAccountRepository,
-      AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository) {
+      final UserAccountRepository userAccountRepository,
+      final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
+      final AnnotationTaskRepository taskRepository) {
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
     this.userAccountRepository = userAccountRepository;
+    this.taskRepository = taskRepository;
   }
 
   private static Specification<AnnotationStaffEvaluate> queryAnnotationStaffEvaluateCondition(
@@ -85,9 +89,9 @@ public class AnnotationEstimateQueryBiz
             PageRequest.of(pageIndex, annotationEstimateQueryRequest.getPageSize()));
     final PageVO<AnnotationEstimateVO> pageVO = new PageVO<>(page.getTotalElements());
     final List<AnnotationStaffEvaluate> annotationStaffEvaluates = page.getContent();
-    CurrentTaskOverviewPair currentTaskOverviewPair = null;
+    final AnnotationTask task = taskRepository.getOne(annotationEstimateQueryRequest.getTaskId());
     if (annotationStaffEvaluates.size() > 0) {
-      Map<Long, String> userMap =
+      final Map<Long, String> userMap =
           userAccountRepository
               .findAll()
               .stream()
@@ -111,32 +115,25 @@ public class AnnotationEstimateQueryBiz
                           annotationStaffEvaluate.getRestWordNum(),
                           annotationStaffEvaluate.getAbandonBranchNum(),
                           annotationStaffEvaluate.getAbandonWordNum(),
-                          annotationStaffEvaluate.getInConformity()))
+                          annotationStaffEvaluate.getPrecisionRate(),
+                          annotationStaffEvaluate.getRecallRate()))
               .collect(Collectors.toList()));
-      // 当前批次的总条数，总字数，批次的不一致率
-      currentTaskOverviewPair =
-          new CurrentTaskOverviewPair(
-              annotationStaffEvaluates
-                  .stream()
-                  .mapToInt(AnnotationStaffEvaluate::getTotalBranchNum)
-                  .sum(),
-              annotationStaffEvaluates
-                  .stream()
-                  .mapToInt(AnnotationStaffEvaluate::getTotalWordNum)
-                  .sum(),
-              annotationStaffEvaluates
-                  .stream()
-                  .mapToDouble(AnnotationStaffEvaluate::getInConformity)
-                  .sum());
     }
-    return new AnnotationStaffEvaluateVO(pageVO, currentTaskOverviewPair);
+
+    return new AnnotationStaffEvaluateVO(
+        pageVO,
+        new CurrentTaskOverviewPair(
+            task.getTotalBranchNum(),
+            task.getTotalWordNum(),
+            task.getPrecisionRate(),
+            task.getRecallRate()));
   }
 
   @Value
   public static class CurrentTaskOverviewPair {
-
     private final int taskTotalBranch;
     private final int taskTotalWordNum;
-    private final double taskInConformity;
+    private final double taskPreciseRate;
+    private final double taskRecallRate;
   }
 }

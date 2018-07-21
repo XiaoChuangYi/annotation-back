@@ -79,10 +79,15 @@ public class AnnotationTask extends BaseEntity {
   @Setter
   private int restWordNum = 0; // 批次剩余标注总字数
 
-  @Column(name = "in_conformity", nullable = false, columnDefinition = "double default 0")
+  @Column(name = "precision_rate", nullable = false, columnDefinition = "double default 0")
   @Getter
   @Setter
-  private double inConformity = 0; // 批次不一致率
+  private double precisionRate = 0; // 批次准确率
+
+  @Column(name = "recall_rate", nullable = false, columnDefinition = "double default 0")
+  @Getter
+  @Setter
+  private double recallRate = 0; // 批次召回率
 
   public AnnotationTaskDoc addDoc(final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
     final AnnotationTaskDoc taskDoc = new AnnotationTaskDoc(this, doc, annotationType);

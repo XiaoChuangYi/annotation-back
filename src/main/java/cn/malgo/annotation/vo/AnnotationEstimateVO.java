@@ -22,5 +22,7 @@ public class AnnotationEstimateVO {
   private int restWordNum;
   private int currentAbandonBranch;
   private int currentAbandonWordNum;
-  private double inConformity;
+
+  private double preciseRate;
+  private double recallRate;
 }

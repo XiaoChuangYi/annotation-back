@@ -2,11 +2,10 @@ package cn.malgo.annotation.vo;
 
 import cn.malgo.annotation.entity.AnnotationTask;
 import com.alibaba.fastjson.annotation.JSONField;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,7 +27,8 @@ public class AnnotationTaskVO {
   private int finishWordNum; // 已标注字数
   private int restBranch; // 剩余条数
   private int restWordNum; // 剩余标注字数
-  private double inConformity; // 批次不一致性
+  private double preciseRate;
+  private double recallRate;
 
   public AnnotationTaskVO(
       long id, Date createdTime, Date lastModifiedTime, String name, String state) {
@@ -52,6 +52,7 @@ public class AnnotationTaskVO {
         task.getAnnotatedWordNum(),
         task.getRestBranchNum(),
         task.getRestWordNum(),
-        task.getInConformity());
+        task.getPrecisionRate(),
+        task.getRecallRate());
   }
 }
