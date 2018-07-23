@@ -4,6 +4,7 @@ import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
 public interface AnnotationBlockService {
@@ -37,4 +38,6 @@ public interface AnnotationBlockService {
       final AnnotationTaskBlock block,
       final AnnotationBlockActionEnum action,
       final String comment);
+
+  void saveAnnotationAll(final List<AnnotationCombine> annotationCombines);
 }

@@ -3,74 +3,71 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
-import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequirePermission(Permissions.EXAMINE)
-public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
+@Slf4j
+public class AnnotationBatchExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
 
-  private final AnnotationBlockService annotationBlockService;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
   private final AnnotationExamineService annotationExamineService;
+  private final AnnotationBlockService annotationBlockService;
 
-  public AnnotationExamineBiz(
-      final AnnotationBlockService annotationBlockService,
+  public AnnotationBatchExamineBiz(
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService,
-      final AnnotationExamineService annotationExamineService) {
-    this.annotationBlockService = annotationBlockService;
+      final AnnotationExamineService annotationExamineService,
+      final AnnotationBlockService annotationBlockService) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.annotationExamineService = annotationExamineService;
+    this.annotationBlockService = annotationBlockService;
   }
 
   @Override
   protected void validateRequest(AnnotationStateRequest annotationStateRequest)
       throws InvalidInputException {
-    if (annotationStateRequest == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
-    }
-
-    if (annotationStateRequest.getId() <= 0) {
-      throw new InvalidInputException("invalid-id", "无效的id");
+    if (annotationStateRequest.getIds().size() == 0) {
+      throw new InvalidInputException("invalid-id-list", "参数ids为空");
     }
   }
 
   @Override
   protected Object doBiz(AnnotationStateRequest annotationStateRequest, UserDetails user) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(annotationStateRequest.getId());
-
-    if (optional.isPresent()) {
-      final AnnotationCombine annotationCombine = optional.get();
-
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
-        // 原子词入库
-        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
-      }
-      if (annotationExamineService.singleAnnotationExamine(annotationCombine).intValue() > 0) {
+    final List<AnnotationCombine> annotationCombines =
+        annotationCombineRepository.findAllById(annotationStateRequest.getIds());
+    if (annotationCombines.size() > 0) {
+      extractAddAtomicTermService.batchExtractAndAddAtomicTerm(annotationCombines);
+      final List<Long> forbidList =
+          annotationExamineService.batchAnnotationExamine(annotationCombines);
+      // 批量保存到block表
+      annotationBlockService.saveAnnotationAll(
+          annotationCombineRepository.saveAll(annotationCombines));
+      if (forbidList.size() > 0) {
         throw new BusinessRuleException(
-            "invalid-state", annotationCombine.getState() + "状态不可以被审核提交");
+            "some-annotation-invalid-state",
+            String.format(
+                "id为({%s})的标注的状态不可以被审核提交",
+                forbidList
+                    .stream()
+                    .map(x -> String.valueOf(x.intValue()))
+                    .collect(Collectors.joining(","))));
       }
-      // 更新block
-      annotationBlockService.saveAnnotation(annotationCombineRepository.save(annotationCombine));
     }
-
     return null;
   }
 }

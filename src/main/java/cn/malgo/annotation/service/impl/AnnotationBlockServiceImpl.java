@@ -9,6 +9,7 @@ import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationBlockService;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
+
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskDocRepository annotationTaskDocRepository;
@@ -77,6 +79,51 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     block.setState(AnnotationTaskState.ANNOTATED);
 
     updateTaskAndDocState(annotationTaskBlockRepository.save(block));
+  }
+
+  @Override
+  public void saveAnnotationAll(List<AnnotationCombine> annotationCombines) {
+    final List<Long> blockIds =
+        annotationCombines
+            .stream()
+            .map(annotationCombine -> annotationCombine.getBlockId())
+            .collect(Collectors.toList());
+    final List<AnnotationTaskBlock> annotationTaskBlocks =
+        annotationTaskBlockRepository.findAllById(blockIds);
+    if (annotationCombines.size() != annotationTaskBlocks.size()) {
+      log.warn("some annotation ids are invalid {}", blockIds);
+      return;
+    }
+    Map<Long, String> map =
+        annotationCombines
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    AnnotationCombine::getBlockId, AnnotationCombine::getReviewedAnnotation));
+    annotationTaskBlocks
+        .stream()
+        .map(
+            annotationTaskBlock -> {
+              annotationTaskBlock.setAnnotation(map.get(annotationTaskBlock.getId()));
+              annotationTaskBlock.setState(AnnotationTaskState.ANNOTATED);
+              return annotationTaskBlock;
+            })
+        .collect(Collectors.toList());
+
+    batchUpdateTaskAndDocState(annotationTaskBlockRepository.saveAll(annotationTaskBlocks));
+  }
+
+  private void batchUpdateTaskAndDocState(final List<AnnotationTaskBlock> blocks) {
+    final List<AnnotationTaskDocBlock> taskDocBlocks =
+        annotationTaskDocBlockRepository.findAllByBlockIn(blocks);
+    taskDocBlocks.forEach(
+        taskDocBlock -> annotationTaskDocRepository.updateState(taskDocBlock.getTaskDoc()));
+
+    taskDocBlocks
+        .stream()
+        .map(taskDocBlock -> taskDocBlock.getTaskDoc().getTask())
+        .collect(Collectors.toSet())
+        .forEach(annotationTaskRepository::updateState);
   }
 
   @Override

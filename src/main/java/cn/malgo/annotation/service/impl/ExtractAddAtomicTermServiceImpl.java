@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermService {
+
   private final AtomicTermRepository atomicTermRepository;
 
   public ExtractAddAtomicTermServiceImpl(AtomicTermRepository atomicTermRepository) {
@@ -37,7 +38,6 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
                         atomicTerm ->
                             current.getType().equals(atomicTerm.getAnnotationType())
                                 && current.getTerm().equals(atomicTerm.getTerm())));
-    // todo,当然还有其它的过滤规则
     UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
         new UpdateAnnotationAlgorithmRequest();
     if (entities.size() > 0) {
@@ -65,5 +65,38 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
     updateAnnotationAlgorithmRequest.setManualAnnotation(manualAnnotation);
 
     return updateAnnotationAlgorithmRequest;
+  }
+
+  @Override
+  public void batchExtractAndAddAtomicTerm(List<AnnotationCombine> combineList) {
+    final List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
+    final List<AtomicTerm> finalAtomicTerms =
+        combineList
+            .stream()
+            .flatMap(
+                annotationCombine -> {
+                  List<Entity> entities =
+                      AnnotationConvert.getEntitiesFromAnnotation(
+                          annotationCombine.getManualAnnotation());
+                  entities.removeIf(
+                      current ->
+                          current.getType().endsWith("-unconfirmed")
+                              || atomicTermList
+                                  .stream()
+                                  .anyMatch(
+                                      atomicTerm ->
+                                          current.getType().equals(atomicTerm.getAnnotationType())
+                                              && current.getTerm().equals(atomicTerm.getTerm())));
+                  return entities
+                      .stream()
+                      .map(
+                          entity ->
+                              new AtomicTerm(
+                                  entity.getTerm(), entity.getType(), annotationCombine.getId()))
+                      .collect(Collectors.toList())
+                      .stream();
+                })
+            .collect(Collectors.toList());
+    atomicTermRepository.saveAll(finalAtomicTerms.stream().distinct().collect(Collectors.toList()));
   }
 }

@@ -9,5 +9,8 @@ import java.util.List;
 
 public interface AnnotationTaskDocBlockRepository
     extends JpaRepository<AnnotationTaskDocBlock, AnnotationTaskDocBlockId> {
+
   List<AnnotationTaskDocBlock> findByBlockEquals(AnnotationTaskBlock block);
+
+  List<AnnotationTaskDocBlock> findAllByBlockIn(List<AnnotationTaskBlock> annotationTaskBlocks);
 }

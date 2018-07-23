@@ -2,9 +2,7 @@ package cn.malgo.annotation.biz.brat;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDocBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
@@ -32,13 +30,9 @@ import java.util.stream.Stream;
 public class ListRelevanceAnnotationBiz
     extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationBlockBratVO>> {
 
-  private final AnnotationTaskDocRepository annotationTaskDocRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
-  public ListRelevanceAnnotationBiz(
-      AnnotationTaskDocRepository annotationTaskDocRepository,
-      AnnotationTaskBlockRepository annotationTaskBlockRepository) {
-    this.annotationTaskDocRepository = annotationTaskDocRepository;
+  public ListRelevanceAnnotationBiz(AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
