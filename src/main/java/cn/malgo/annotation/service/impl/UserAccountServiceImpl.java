@@ -9,7 +9,6 @@ import cn.malgo.annotation.service.UserAccountService;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import lombok.Data;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -25,6 +24,7 @@ import java.util.List;
 
 @Service
 public class UserAccountServiceImpl implements UserAccountService {
+
   private final UserAccountRepository userAccountRepository;
 
   public UserAccountServiceImpl(UserAccountRepository userAccountRepository) {
@@ -112,9 +112,10 @@ public class UserAccountServiceImpl implements UserAccountService {
     return null;
   }
 
-  @Data
+  @Value
   public static class DefaultUserDetails implements Serializable, UserDetails {
-    public static final UserDetails ADMIN = new DefaultUserDetails(0, 1);
+
+    public static final UserDetails ADMIN = new DefaultUserDetails(0L, 1);
 
     private final long id;
     private final int roleId;
