@@ -5,6 +5,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
 import cn.malgo.service.exception.InvalidInputException;
@@ -18,10 +19,13 @@ public class UpdateAnnotationBiz
     extends BaseAnnotationBiz<UpdateAnnotationRequest, AnnotationCombineBratVO> {
 
   private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   public UpdateAnnotationBiz(
-      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+      final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService,
+      final CheckRelationEntityService checkRelationEntityService) {
     this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -45,8 +49,11 @@ public class UpdateAnnotationBiz
           updateAnnotationRequest)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
+      if (checkRelationEntityService.checkRelationEntityBeforeUpdate(
+          updateAnnotationRequest, annotationCombine)) {
+        throw new InvalidInputException("in-conformity-association-rules", "不符合关联规则，无法更新");
+      }
     }
-
     annotationOperateService.updateAnnotation(annotationCombine, updateAnnotationRequest);
     return AnnotationConvert.convert2AnnotationCombineBratVO(annotationCombine);
   }
