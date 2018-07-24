@@ -32,6 +32,14 @@ public interface AnnotationTaskBlockRepository
    */
   Set<AnnotationTaskBlock> findByTaskDocs_TaskDoc_Task_IdEquals(long taskId);
 
+  /**
+   * @param taskId {@link cn.malgo.annotation.entity.AnnotationTask#id}
+   * @param states Block状态
+   * @return 所有属于某个Task的Block
+   */
+  Set<AnnotationTaskBlock> findByStateInAndTaskDocs_TaskDoc_Task_Id(
+      List<AnnotationTaskState> states, long taskId);
+
   default Pair<AnnotationTaskBlock, Boolean> getOrCreateBlock(
       final AnnotationTypeEnum annotationType, final String text) {
     final AnnotationTaskBlock block =
