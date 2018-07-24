@@ -28,28 +28,26 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
             .map(entity -> new EntityPair(entity.getStart(), entity.getEnd(), entity.getType()))
             .collect(Collectors.toList());
     return entities
-            .stream()
-            .filter(
-                entity -> {
-                  final boolean cross =
-                      !(entity.getStart() >= addAnnotationRequest.getEndPosition()
-                          || entity.getEnd() <= addAnnotationRequest.getStartPosition());
-                  if (cross) {
-                    if (entityPairs.contains(
-                        new EntityPair(
-                            addAnnotationRequest.getStartPosition(),
-                            addAnnotationRequest.getEndPosition(),
-                            addAnnotationRequest.getType()))) {
-                      return false;
-                    } else {
-                      return true;
-                    }
-                  } else {
-                    return false;
-                  }
-                })
-            .count()
-        > 0;
+        .stream()
+        .anyMatch(
+            entity -> {
+              final boolean cross =
+                  !(entity.getStart() >= addAnnotationRequest.getEndPosition()
+                      || entity.getEnd() <= addAnnotationRequest.getStartPosition());
+              if (cross) {
+                if (entityPairs.contains(
+                    new EntityPair(
+                        addAnnotationRequest.getStartPosition(),
+                        addAnnotationRequest.getEndPosition(),
+                        addAnnotationRequest.getType()))) {
+                  return false;
+                } else {
+                  return true;
+                }
+              } else {
+                return false;
+              }
+            });
   }
 
   @Override
@@ -74,14 +72,12 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
         return false;
       }
       return entities
-              .stream()
-              .filter(
-                  entity ->
-                      entity.getStart() == current.getStart()
-                          && entity.getEnd() == current.getEnd()
-                          && entity.getType() == updateAnnotationRequest.getNewType())
-              .count()
-          == 0;
+          .stream()
+          .noneMatch(
+              entity ->
+                  entity.getStart() == current.getStart()
+                      && entity.getEnd() == current.getEnd()
+                      && entity.getType() == updateAnnotationRequest.getNewType());
     }
     return false;
   }
