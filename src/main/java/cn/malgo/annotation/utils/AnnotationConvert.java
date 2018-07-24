@@ -21,6 +21,23 @@ import java.util.stream.IntStream;
 
 @Slf4j
 public class AnnotationConvert {
+
+  /** 判断当前标注实体是否交叉 */
+  public static boolean isCrossAnnotation(String annotation) {
+    final List<Entity> entitiesLeft = getEntitiesFromAnnotation(annotation);
+    final List<Entity> entitiesRight = getEntitiesFromAnnotation(annotation);
+    return entitiesLeft
+        .stream()
+        .anyMatch(
+            entityLeft ->
+                entitiesRight
+                    .stream()
+                    .anyMatch(
+                        entityRight ->
+                            !(entityRight.getStart() >= entityLeft.getEnd()
+                                || entityRight.getEnd() <= entityLeft.getStart())));
+  }
+
   /** 获取指定标注的entities */
   public static List<Entity> getEntitiesFromAnnotation(String annotation) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
@@ -322,10 +339,10 @@ public class AnnotationConvert {
   /** relation界面新增entities */
   public static String addRelationEntitiesAnnotation(
       String oldAnnotation, String type, int startPosition, int endPosition, String term) {
+    String newTag = getEntityNewTag(oldAnnotation);
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
-    String newTag = getEntityNewTag(oldAnnotation);
     annotationDocument
         .getEntities()
         .add(new Entity(newTag, startPosition, endPosition, type, term));
