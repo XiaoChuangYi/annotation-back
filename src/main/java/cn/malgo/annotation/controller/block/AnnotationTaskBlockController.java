@@ -1,12 +1,14 @@
 package cn.malgo.annotation.controller.block;
 
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
+import cn.malgo.annotation.biz.brat.ListOverlapEntityBiz;
 import cn.malgo.annotation.biz.brat.ListRelevanceAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.DeleteBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.GetAnnotationBlockBiz;
 import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
 import cn.malgo.annotation.controller.BaseController;
+import cn.malgo.annotation.request.ListOverlapEntityRequest;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
@@ -25,12 +27,14 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v2/block")
 public class AnnotationTaskBlockController extends BaseController {
+
   private final AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz;
   private final GetAnnotationBlockBiz getAnnotationBlockBiz;
   private final AddBlockAnnotationBiz addBlockAnnotationBiz;
   private final DeleteBlockAnnotationBiz deleteBlockAnnotationBiz;
   private final UpdateBlockAnnotationBiz updateBlockAnnotationBiz;
   private final ListRelevanceAnnotationBiz listRelevanceAnnotationBiz;
+  private final ListOverlapEntityBiz listOverlapEntityBiz;
 
   public AnnotationTaskBlockController(
       AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz,
@@ -38,13 +42,15 @@ public class AnnotationTaskBlockController extends BaseController {
       AddBlockAnnotationBiz addBlockAnnotationBiz,
       DeleteBlockAnnotationBiz deleteBlockAnnotationBiz,
       UpdateBlockAnnotationBiz updateBlockAnnotationBiz,
-      ListRelevanceAnnotationBiz listRelevanceAnnotationBiz) {
+      ListRelevanceAnnotationBiz listRelevanceAnnotationBiz,
+      ListOverlapEntityBiz listOverlapEntityBiz) {
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
     this.addBlockAnnotationBiz = addBlockAnnotationBiz;
     this.deleteBlockAnnotationBiz = deleteBlockAnnotationBiz;
     this.updateBlockAnnotationBiz = updateBlockAnnotationBiz;
     this.listRelevanceAnnotationBiz = listRelevanceAnnotationBiz;
+    this.listOverlapEntityBiz = listOverlapEntityBiz;
   }
 
   /** ANNOTATED或FINISHED状态的block可以被打回重新标注或审核 */
@@ -99,5 +105,13 @@ public class AnnotationTaskBlockController extends BaseController {
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     return new Response<>(
         listRelevanceAnnotationBiz.process(listRelevanceAnnotationRequest, userAccount));
+  }
+
+  /** overlap entity block查询 */
+  @RequestMapping(value = "/list-overlap-entity-block", method = RequestMethod.GET)
+  public Response<PageVO<AnnotationBlockBratVO>> listOverlapEntityBlock(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      ListOverlapEntityRequest listOverlapEntityRequest) {
+    return new Response<>(listOverlapEntityBiz.process(listOverlapEntityRequest, userAccount));
   }
 }
