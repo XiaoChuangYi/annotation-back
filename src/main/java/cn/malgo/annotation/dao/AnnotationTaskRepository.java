@@ -1,8 +1,11 @@
 package cn.malgo.annotation.dao;
 
 import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -32,4 +35,7 @@ public interface AnnotationTaskRepository
   }
 
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
+
+  @EntityGraph(value = "graph.annotation", type = EntityGraphType.FETCH)
+  AnnotationTask findAllById(Long taskId);
 }

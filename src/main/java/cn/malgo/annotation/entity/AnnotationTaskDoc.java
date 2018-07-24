@@ -3,9 +3,7 @@ package cn.malgo.annotation.entity;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
-import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 

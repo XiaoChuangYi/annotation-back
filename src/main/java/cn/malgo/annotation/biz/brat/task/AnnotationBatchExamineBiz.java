@@ -3,7 +3,7 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.request.AnnotationStateRequest;
+import cn.malgo.annotation.request.AnnotationStateBatchRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
@@ -20,7 +20,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequirePermission(Permissions.EXAMINE)
 @Slf4j
-public class AnnotationBatchExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
+public class AnnotationBatchExamineBiz
+    extends TransactionalBiz<AnnotationStateBatchRequest, Object> {
 
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
@@ -39,17 +40,16 @@ public class AnnotationBatchExamineBiz extends TransactionalBiz<AnnotationStateR
   }
 
   @Override
-  protected void validateRequest(AnnotationStateRequest annotationStateRequest)
-      throws InvalidInputException {
-    if (annotationStateRequest.getIds().size() == 0) {
+  protected void validateRequest(AnnotationStateBatchRequest request) throws InvalidInputException {
+    if (request.getIds().size() == 0) {
       throw new InvalidInputException("invalid-id-list", "参数ids为空");
     }
   }
 
   @Override
-  protected Object doBiz(AnnotationStateRequest annotationStateRequest, UserDetails user) {
+  protected Object doBiz(AnnotationStateBatchRequest request, UserDetails user) {
     final List<AnnotationCombine> annotationCombines =
-        annotationCombineRepository.findAllById(annotationStateRequest.getIds());
+        annotationCombineRepository.findAllById(request.getIds());
     if (annotationCombines.size() > 0) {
       extractAddAtomicTermService.batchExtractAndAddAtomicTerm(annotationCombines);
       final List<Long> forbidList =

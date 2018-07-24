@@ -28,6 +28,7 @@ import java.util.List;
     callSuper = true)
 @JSONType(ignores = {"taskDocs"})
 public class AnnotationTaskBlock extends BaseEntity {
+
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter

@@ -4,6 +4,6 @@ import java.util.List;
 import lombok.Value;
 
 @Value
-public class AnnotationStateRequest {
-  private long id;
+public class AnnotationStateBatchRequest {
+  private List<Long> ids;
 }

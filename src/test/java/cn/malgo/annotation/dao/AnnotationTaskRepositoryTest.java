@@ -7,6 +7,7 @@ import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -25,6 +26,12 @@ public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpr
   @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
 
   @Test
+  public void testEntityGraph() {
+    taskBlockRepository.findByTaskDocs_TaskDoc_Task_IdEquals(3L);
+  }
+
+  @Test
+  @Ignore
   public void testCreateTask() {
     final OriginalDoc doc =
         docRepository.save(new OriginalDoc("test-name", "test-text", "UNKNOWN", "UNKNOWN"));

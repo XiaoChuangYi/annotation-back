@@ -5,6 +5,7 @@ import cn.malgo.annotation.biz.brat.task.AnnotationAbandonBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationBatchExamineBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
+import cn.malgo.annotation.request.AnnotationStateBatchRequest;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.AnnotationStateResetRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
@@ -72,8 +73,9 @@ public class AnnotationStateController extends BaseController {
   /** 批量审核 */
   @RequestMapping(value = "/batch-examine-annotation", method = RequestMethod.POST)
   public Response batchExamineAnnotation(
-      @RequestBody AnnotationStateRequest annotationStateRequest,
+      @RequestBody AnnotationStateBatchRequest annotationStateBatchRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(annotationBatchExamineBiz.process(annotationStateRequest, userAccount));
+    return new Response<>(
+        annotationBatchExamineBiz.process(annotationStateBatchRequest, userAccount));
   }
 }
