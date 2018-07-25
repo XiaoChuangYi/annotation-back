@@ -18,7 +18,6 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 public class OriginalDocBlockId implements Serializable {
-
   @Column(name = "doc_id", nullable = false)
   private long docId;
 
