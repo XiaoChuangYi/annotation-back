@@ -2,6 +2,8 @@ package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.*;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
+import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
+import cn.malgo.annotation.request.AnnotationRecycleRequest;
 import cn.malgo.annotation.request.CountAnnotationRequest;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationCombineRequest;
@@ -17,12 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationCombineController extends BaseController {
+
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
   private final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz;
   private final CountAnnotationBiz countAnnotationBiz;
   private final ListAnTypeBiz listAnTypeBiz;
+  private final PreAnnotationRecycleBiz preAnnotationRecycleBiz;
 
   public AnnotationCombineController(
       final ListAnnotationBiz listAnnotationBiz,
@@ -30,13 +34,15 @@ public class AnnotationCombineController extends BaseController {
       final GetAnnotationSummaryBiz getAnnotationSummaryBiz,
       final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz,
       final CountAnnotationBiz countAnnotationBiz,
-      final ListAnTypeBiz listAnTypeBiz) {
+      final ListAnTypeBiz listAnTypeBiz,
+      final PreAnnotationRecycleBiz preAnnotationRecycleBiz) {
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.getAnnotationSummaryBiz = getAnnotationSummaryBiz;
     this.randomDesignateAnnotationBiz = randomDesignateAnnotationBiz;
     this.countAnnotationBiz = countAnnotationBiz;
     this.listAnTypeBiz = listAnTypeBiz;
+    this.preAnnotationRecycleBiz = preAnnotationRecycleBiz;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -84,5 +90,14 @@ public class AnnotationCombineController extends BaseController {
   public Response listType(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(listAnTypeBiz.process(null, userAccount));
+  }
+
+  /** 待标注回收功能 */
+  @RequestMapping(value = "/annotation-recycle/{id}", method = RequestMethod.GET)
+  public Response annotationRecycle(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @PathVariable("id") long id) {
+    return new Response<>(
+        preAnnotationRecycleBiz.process(new AnnotationRecycleRequest(id), userAccount));
   }
 }
