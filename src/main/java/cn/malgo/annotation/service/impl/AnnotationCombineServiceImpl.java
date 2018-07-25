@@ -69,8 +69,11 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
                 criteriaBuilder.greaterThanOrEqualTo(root.get("createdTime"), param.getLeftDate()));
           }
           if (param.getRightDate() != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(param.getRightDate());
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
             predicates.add(
-                criteriaBuilder.lessThanOrEqualTo(root.get("createdTime"), param.getRightDate()));
+                criteriaBuilder.lessThanOrEqualTo(root.get("createdTime"), calendar.getTime()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
