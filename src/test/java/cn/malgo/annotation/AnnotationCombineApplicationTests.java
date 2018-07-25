@@ -1,5 +1,8 @@
 package cn.malgo.annotation;
 
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AtomicTerm;
 import com.alibaba.fastjson.JSON;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
@@ -8,6 +11,7 @@ import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.request.ListAnnotationCombineRequest;
 import cn.malgo.annotation.service.AnnotationCombineService;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,13 @@ import java.util.List;
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
   @Autowired private AnnotationCombineService annotationCombineService;
   @Autowired private AnnotationCombineRepository annotationCombineRepository;
+  @Autowired private AnnotationTaskRepository taskRepository;
+
+  @Test
+  public void testEntityGraph() {
+    final List<AnnotationTask> annotationTasks = taskRepository.findAll();
+    log.info("annotationTasks：" + annotationTasks);
+  }
 
   @Test(enabled = false)
   public void testAnnotationCombine() {

@@ -26,16 +26,31 @@ public class AnnotationConvert {
   public static boolean isCrossAnnotation(String annotation) {
     final List<Entity> entitiesLeft = getEntitiesFromAnnotation(annotation);
     final List<Entity> entitiesRight = getEntitiesFromAnnotation(annotation);
+    // 排除掉自己和自己的比较
     return entitiesLeft
         .stream()
         .anyMatch(
             entityLeft ->
                 entitiesRight
                     .stream()
+                    .filter(entityRight -> !entityRight.getTag().equals(entityLeft.getTag()))
                     .anyMatch(
-                        entityRight ->
-                            !(entityRight.getStart() >= entityLeft.getEnd()
-                                || entityRight.getEnd() <= entityLeft.getStart())));
+                        entityRight -> {
+                          final boolean cross =
+                              !(entityRight.getStart() >= entityLeft.getEnd()
+                                  || entityRight.getEnd() <= entityLeft.getStart());
+                          if (cross) {
+                            if (entityRight.getStart() == entityLeft.getStart()
+                                && entityRight.getEnd() == entityLeft.getEnd()
+                                && entityRight.getType().equals(entityLeft.getType())) {
+                              return false;
+                            } else {
+                              return true;
+                            }
+                          } else {
+                            return false;
+                          }
+                        }));
   }
 
   /** 获取指定标注的entities */

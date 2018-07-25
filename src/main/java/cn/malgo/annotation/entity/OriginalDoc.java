@@ -3,6 +3,8 @@ package cn.malgo.annotation.entity;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -31,6 +33,7 @@ import java.util.List;
 @Setter
 @JSONType(ignores = {"tasks"})
 public class OriginalDoc extends BaseEntity {
+
   @Column(name = "name", nullable = false, length = 512)
   @NonNull
   private String name;
@@ -62,4 +65,11 @@ public class OriginalDoc extends BaseEntity {
       cascade = CascadeType.ALL,
       orphanRemoval = true)
   private List<AnnotationTaskDoc> tasks = new ArrayList<>();
+
+  //  @OneToMany(fetch = FetchType.LAZY,
+  //      mappedBy = "doc",
+  //      cascade = CascadeType.ALL,
+  //      orphanRemoval = true
+  //  )
+  //  private Set<OriginalDocBlock> docBlocks = new HashSet<>();
 }

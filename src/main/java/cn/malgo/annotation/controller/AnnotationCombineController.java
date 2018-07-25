@@ -98,12 +98,11 @@ public class AnnotationCombineController extends BaseController {
   }
 
   /** 待标注回收功能 */
-  @RequestMapping(value = "/annotation-recycle/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/annotation-recycle", method = RequestMethod.POST)
   public Response annotationRecycle(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
-      @PathVariable("id") long id) {
-    return new Response<>(
-        preAnnotationRecycleBiz.process(new AnnotationRecycleRequest(id), userAccount));
+      @RequestBody AnnotationRecycleRequest annotationRecycleRequest) {
+    return new Response<>(preAnnotationRecycleBiz.process(annotationRecycleRequest, userAccount));
   }
 
   /** 审核放弃 */
