@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @RequirePermission(Permissions.ADMIN)
 public class FindAnnotationErrorBiz
     extends BaseBiz<FindAnnotationErrorRequest, List<AnnotationWordError>> {
+
   private final AnnotationFactory annotationFactory;
   private final AnnotationErrorFactory annotationErrorFactory;
   private final AnnotationTaskBlockRepository blockRepository;

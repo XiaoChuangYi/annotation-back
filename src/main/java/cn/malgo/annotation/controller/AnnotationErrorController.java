@@ -11,6 +11,7 @@ import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.vo.AnnotationErrorVO;
 import cn.malgo.annotation.vo.FixAnnotationResponse;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationErrorController extends BaseController {
+
   private final FindAnnotationErrorBiz findAnnotationErrorBiz;
   private final FixAnnotationBiz fixAnnotationBiz;
   private final SearchAnnotationBiz searchAnnotationBiz;
@@ -40,8 +42,15 @@ public class AnnotationErrorController extends BaseController {
       FindAnnotationErrorRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     final List<AnnotationWordError> errors = findAnnotationErrorBiz.process(request, userAccount);
+    if (errors.size() != 0 && request.getErrorIndex() >= errors.size()) {
+      throw new BusinessRuleException("index-exceed", "索引超出数据范围");
+    }
     return new Response<>(
-        new AnnotationErrorVO(errors != null && errors.size() > 0 ? errors.subList(0, 1) : errors));
+        new AnnotationErrorVO(
+            errors != null && errors.size() > 0
+                ? errors.subList(request.getErrorIndex(), (request.getErrorIndex() + 1))
+                : errors,
+            errors.size()));
   }
 
   @RequestMapping(value = "/annotation/search", method = RequestMethod.GET)

@@ -15,4 +15,5 @@ import java.util.List;
 @AllArgsConstructor
 public class AnnotationErrorVO {
   private List<AnnotationWordError> errors;
+  private int total;
 }
