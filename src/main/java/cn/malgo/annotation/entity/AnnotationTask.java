@@ -1,7 +1,6 @@
 package cn.malgo.annotation.entity;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
 import java.util.ArrayList;
@@ -37,9 +36,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @ToString(
-    exclude = {"taskDocs"},
+    exclude = {"taskBlocks"},
     callSuper = true)
-@JSONType(ignores = {"taskDocs"})
+@JSONType(ignores = {"taskBlocks"})
 public class AnnotationTask extends BaseEntity {
 
   @Column(name = "name", nullable = false, length = 128)
@@ -53,14 +52,6 @@ public class AnnotationTask extends BaseEntity {
   @Getter
   @Setter
   private AnnotationTaskState state = AnnotationTaskState.CREATED;
-
-  @OneToMany(
-      fetch = FetchType.LAZY,
-      mappedBy = "task",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
-  @Getter
-  private List<AnnotationTaskDoc> taskDocs = new ArrayList<>();
 
   @OneToMany(
       fetch = FetchType.LAZY,
@@ -110,10 +101,10 @@ public class AnnotationTask extends BaseEntity {
   @Setter
   private double recallRate = 0; // 批次召回率
 
-  public AnnotationTaskDoc addDoc(final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
-    final AnnotationTaskDoc taskDoc = new AnnotationTaskDoc(this, doc, annotationType);
-    this.taskDocs.add(taskDoc);
-    doc.getTasks().add(taskDoc);
-    return taskDoc;
+  public TaskBlock addBlock(final AnnotationTaskBlock block) {
+    final TaskBlock taskBlock = new TaskBlock(this, block);
+    taskBlocks.add(taskBlock);
+    //    block.getTaskBlocks().add(taskBlock);
+    return taskBlock;
   }
 }

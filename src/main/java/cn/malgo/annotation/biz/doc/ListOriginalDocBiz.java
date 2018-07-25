@@ -1,35 +1,30 @@
 package cn.malgo.annotation.biz.doc;
 
 import cn.malgo.annotation.constants.Permissions;
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.entity.BaseEntity;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalDoc>> {
   private final OriginalDocRepository originalDocRepository;
-  private final AnnotationTaskDocRepository annotationTaskDocRepository;
 
-  public ListOriginalDocBiz(
-      final OriginalDocRepository originalDocRepository,
-      final AnnotationTaskDocRepository annotationTaskDocRepository) {
+  public ListOriginalDocBiz(final OriginalDocRepository originalDocRepository) {
     this.originalDocRepository = originalDocRepository;
-    this.annotationTaskDocRepository = annotationTaskDocRepository;
   }
 
   private static Specification<OriginalDoc> queryOriginalDocCondition(
@@ -80,24 +75,24 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
   }
 
   @Override
-  protected PageVO<OriginalDoc> doBiz(ListDocRequest listDocRequest) {
-    final int pageIndex = listDocRequest.getPageIndex() - 1;
+  protected PageVO<OriginalDoc> doBiz(ListDocRequest request) {
+    final int pageIndex = request.getPageIndex() - 1;
     final List<Long> docIdList = new ArrayList<>();
 
-    if (listDocRequest.getTaskId() > 0 && listDocRequest.getDocId() <= 0) {
+    if (request.getTaskId() > 0 && request.getDocId() <= 0) {
       docIdList.addAll(
-          annotationTaskDocRepository
-              .findByTask_Id(listDocRequest.getTaskId())
+          originalDocRepository
+              .findByBlocks_Block_TaskBlocks_Task_IdEquals(request.getTaskId())
               .stream()
-              .map(annotationTaskDoc -> annotationTaskDoc.getDoc().getId())
+              .map(BaseEntity::getId)
               .collect(Collectors.toList()));
-    } else if (listDocRequest.getDocId() > 0) {
-      docIdList.add(listDocRequest.getDocId());
+    } else if (request.getDocId() > 0) {
+      docIdList.add(request.getDocId());
     }
 
     return new PageVO<>(
         originalDocRepository.findAll(
-            queryOriginalDocCondition(listDocRequest, docIdList),
-            PageRequest.of(pageIndex, listDocRequest.getPageSize())));
+            queryOriginalDocCondition(request, docIdList),
+            PageRequest.of(pageIndex, request.getPageSize())));
   }
 }

@@ -51,7 +51,7 @@ public class ListOverlapEntityBiz
         (listOverlapEntityRequest.getPageIndex() - 1) * listOverlapEntityRequest.getPageSize();
     final int limit = listOverlapEntityRequest.getPageSize();
     final Set<AnnotationTaskBlock> annotationTaskBlocks =
-        annotationTaskBlockRepository.findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
+        annotationTaskBlockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
             AnnotationTypeEnum.relation,
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
             listOverlapEntityRequest.getTaskId());

@@ -1,42 +1,44 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
+import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
-import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.service.AnnotationBlockService;
-import cn.malgo.annotation.service.TaskDocService;
+import cn.malgo.annotation.service.OriginalDocService;
 import cn.malgo.annotation.service.feigns.AlgorithmApiClient;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.Synchronized;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 @Service
 @Transactional
 @Slf4j
-public class TaskDocServiceImpl implements TaskDocService {
+public class OriginalDocServiceImpl implements OriginalDocService {
   private static final int MINIMUM_WORD_BLOCK_LENGTH = 10;
 
-  private final AnnotationTaskDocRepository taskDocRepository;
+  private final OriginalDocRepository docRepository;
   private final AnnotationBlockService annotationBlockService;
 
   private final Map<AnnotationTypeEnum, BlockSplitter> splitters;
 
-  public TaskDocServiceImpl(
+  public OriginalDocServiceImpl(
       final AlgorithmApiClient algorithmApiClient,
-      final AnnotationTaskDocRepository taskDocRepository,
+      final OriginalDocRepository docRepository,
       final AnnotationBlockService annotationBlockService) {
-    this.taskDocRepository = taskDocRepository;
+    this.docRepository = docRepository;
     this.annotationBlockService = annotationBlockService;
 
     splitters = new HashMap<>();
@@ -61,22 +63,22 @@ public class TaskDocServiceImpl implements TaskDocService {
 
   @Override
   @Synchronized
-  public AddDocResult addDocToTask(
-      final AnnotationTask task, final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
-    final AnnotationTaskDoc taskDoc = task.addDoc(doc, annotationType);
-
+  public Pair<OriginalDoc, Integer> createBlocks(
+      final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
     if (splitters.containsKey(annotationType)) {
       final List<String> blocks = splitters.get(annotationType).split(doc);
       final Pair<List<AnnotationTaskBlock>, Integer> result = createBlocks(annotationType, blocks);
       IntStream.range(0, result.getLeft().size())
-          .forEach(index -> taskDoc.addBlock(result.getLeft().get(index), index));
-      return new AddDocResult(taskDocRepository.updateState(taskDoc), result.getRight());
+          .forEach(index -> doc.addBlock(result.getLeft().get(index), index));
+      doc.setState(OriginalDocState.PROCESSING);
+      return Pair.of(docRepository.save(doc), result.getRight());
     }
 
     final Pair<AnnotationTaskBlock, Boolean> result =
-        annotationBlockService.getOrCreateAnnotation(annotationType, doc.getText());
-    taskDoc.addBlock(result.getLeft(), 0);
-    return new AddDocResult(taskDocRepository.updateState(taskDoc), result.getRight() ? 1 : 0);
+        annotationBlockService.getOrCreateAnnotation(annotationType, doc.getText(), false);
+    doc.addBlock(result.getLeft(), 0);
+    doc.setState(OriginalDocState.PROCESSING);
+    return Pair.of(docRepository.save(doc), result.getRight() ? 1 : 0);
   }
 
   private Pair<List<AnnotationTaskBlock>, Integer> createBlocks(
@@ -88,7 +90,9 @@ public class TaskDocServiceImpl implements TaskDocService {
             .collect(
                 Collectors.toMap(
                     block -> block,
-                    block -> annotationBlockService.getOrCreateAnnotation(annotationType, block)));
+                    block ->
+                        annotationBlockService.getOrCreateAnnotation(
+                            annotationType, block, false)));
 
     return Pair.of(
         blocks.stream().map(block -> results.get(block).getLeft()).collect(Collectors.toList()),
@@ -115,11 +119,5 @@ public class TaskDocServiceImpl implements TaskDocService {
 
   interface BlockSplitter {
     List<String> split(final OriginalDoc doc);
-  }
-
-  @Value
-  public static final class AddDocResult {
-    private final AnnotationTaskDoc taskDoc;
-    private final int createdBlocks;
   }
 }

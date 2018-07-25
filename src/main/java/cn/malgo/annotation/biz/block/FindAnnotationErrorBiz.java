@@ -58,7 +58,7 @@ public class FindAnnotationErrorBiz
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
 
     final Set<AnnotationTaskBlock> blocks =
-        blockRepository.findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
+        blockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
             errorType.getAnnotationType(),
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
             request.getTaskId());

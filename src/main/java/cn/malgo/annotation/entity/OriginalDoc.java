@@ -3,14 +3,26 @@ package cn.malgo.annotation.entity;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
-import java.util.HashSet;
-import java.util.Set;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Index;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -27,11 +39,11 @@ import java.util.List;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @ToString(
-    exclude = {"tasks"},
+    exclude = {"blocks"},
     callSuper = true)
 @Getter
 @Setter
-@JSONType(ignores = {"tasks"})
+@JSONType(ignores = {"blocks"})
 public class OriginalDoc extends BaseEntity {
 
   @Column(name = "name", nullable = false, length = 512)
@@ -64,12 +76,12 @@ public class OriginalDoc extends BaseEntity {
       mappedBy = "doc",
       cascade = CascadeType.ALL,
       orphanRemoval = true)
-  private List<AnnotationTaskDoc> tasks = new ArrayList<>();
-
-  @OneToMany(
-      fetch = FetchType.LAZY,
-      mappedBy = "doc",
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
   private List<OriginalDocBlock> blocks = new ArrayList<>();
+
+  public OriginalDocBlock addBlock(final AnnotationTaskBlock block, int order) {
+    final OriginalDocBlock docBlock = new OriginalDocBlock(this, block, order);
+    this.blocks.add(docBlock);
+    //    block.getDocBlocks().add(docBlock);
+    return docBlock;
+  }
 }

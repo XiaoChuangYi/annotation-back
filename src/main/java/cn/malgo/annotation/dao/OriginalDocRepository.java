@@ -7,6 +7,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface OriginalDocRepository
     extends JpaRepository<OriginalDoc, Long>, JpaSpecificationExecutor<OriginalDoc> {
-
-  Set<OriginalDoc> findByTasks_Task_IdEquals(long taskId);
+  Set<OriginalDoc> findByBlocks_Block_TaskBlocks_Task_IdEquals(long taskId);
 }

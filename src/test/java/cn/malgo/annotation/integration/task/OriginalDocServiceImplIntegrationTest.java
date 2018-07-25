@@ -1,14 +1,12 @@
 package cn.malgo.annotation.integration.task;
 
-import cn.malgo.annotation.dao.*;
-import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.enums.OriginalDocState;
-import cn.malgo.annotation.service.TaskDocService;
+import cn.malgo.annotation.service.OriginalDocService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -20,34 +18,29 @@ import org.testng.annotations.Test;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class TaskDocServiceImplIntegrationTest
+public class OriginalDocServiceImplIntegrationTest
     extends AbstractTransactionalTestNGSpringContextTests {
-  @Autowired private TaskDocService taskDocService;
-  @Autowired private AnnotationTaskRepository taskRepository;
-  @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
-  @Autowired private AnnotationTaskDocRepository taskDocRepository;
+  @Autowired private OriginalDocService originalDocService;
   @Autowired private OriginalDocRepository docRepository;
+  @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
 
   @BeforeMethod()
   public void setUp() {
-    taskRepository.save(new AnnotationTask("test-task"));
     docRepository.save(new OriginalDoc("test-doc", "test", "", ""));
   }
 
   @Test
-  public void testAddDocsToTask() {
-    final AnnotationTask task = taskRepository.findAll().get(0);
+  public void testCreateBlocks() {
     final OriginalDoc doc = docRepository.findAll().get(0);
-    taskDocService.addDocToTask(task, doc, AnnotationTypeEnum.wordPos);
-
+    originalDocService.createBlocks(doc, AnnotationTypeEnum.wordPos);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
     TestTransaction.start();
     Assert.assertEquals(countRowsInTable("annotation_task_block"), 1);
-    Assert.assertEquals(countRowsInTable("annotation_task_doc"), 1);
-    Assert.assertEquals(countRowsInTable("annotation_task_doc_block"), 1);
-    Assert.assertEquals(taskDocRepository.findAll().get(0).getState(), AnnotationTaskState.DOING);
+    Assert.assertEquals(countRowsInTable("original_doc_block"), 1);
+    Assert.assertEquals(
+        taskBlockRepository.findAll().get(0).getState(), AnnotationTaskState.CREATED);
     TestTransaction.end();
   }
 }

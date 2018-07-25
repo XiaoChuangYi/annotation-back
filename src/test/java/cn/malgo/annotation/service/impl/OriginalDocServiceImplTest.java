@@ -1,17 +1,21 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationTaskDocRepository;
+import static org.mockito.ArgumentMatchers.eq;
+
+import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
-import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDoc;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.feigns.AlgorithmApiClient;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -19,11 +23,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-public class TaskDocServiceImplTest {
+public class OriginalDocServiceImplTest {
   private static final String SAMPLE_TEXT = "这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长";
 
   private static final Answer<Pair<AnnotationTaskBlock, Boolean>> BLOCK_ANSWER =
@@ -35,30 +35,25 @@ public class TaskDocServiceImplTest {
         return Pair.of(block, true);
       };
 
-  private AnnotationTaskDocRepository mockTaskDocRepository;
-  //  private AnnotationTaskDocBlockRepository mockTaskDocBlockRepository;
+  private OriginalDocRepository mockDocRepository;
   private AnnotationBlockService mockBlockService;
-  private TaskDocServiceImpl taskDocService;
-  private AnnotationTask task;
+  private OriginalDocServiceImpl docService;
   private OriginalDoc doc;
 
   @BeforeMethod
   public void init() {
-    mockTaskDocRepository = Mockito.mock(AnnotationTaskDocRepository.class);
-    Mockito.when(mockTaskDocRepository.updateState(Mockito.any())).thenCallRealMethod();
-    Mockito.when(mockTaskDocRepository.save(Mockito.any()))
+    mockDocRepository = Mockito.mock(OriginalDocRepository.class);
+    Mockito.when(mockDocRepository.save(Mockito.any()))
         .thenAnswer(invocation -> invocation.getArguments()[0]);
 
-    //    mockTaskDocBlockRepository = Mockito.mock(AnnotationTaskDocBlockRepository.class);
-    //    Mockito.when(mockTaskDocRepository.save(Mockito.any()))
-    //            .thenAnswer(invocation -> invocation.getArguments()[0]);
-
     mockBlockService = Mockito.mock(AnnotationBlockService.class);
-    Mockito.when(mockBlockService.getOrCreateAnnotation(Mockito.any(), Mockito.anyString()))
+    Mockito.when(
+            mockBlockService.getOrCreateAnnotation(
+                Mockito.any(), Mockito.anyString(), Mockito.anyBoolean()))
         .thenAnswer(BLOCK_ANSWER);
 
-    taskDocService =
-        new TaskDocServiceImpl(
+    docService =
+        new OriginalDocServiceImpl(
             new AlgorithmApiClient() {
               @Override
               public List<AutoAnnotation> listCasePrepareAnnotation(
@@ -81,42 +76,37 @@ public class TaskDocServiceImplTest {
                     .collect(Collectors.toList());
               }
             },
-            mockTaskDocRepository,
+            mockDocRepository,
             mockBlockService);
-    task = new AnnotationTask("test-task");
     doc = new OriginalDoc("test-doc", SAMPLE_TEXT, "", "");
   }
 
   @Test
   public void testAddRelationTask() {
-    final TaskDocServiceImpl.AddDocResult result =
-        taskDocService.addDocToTask(task, doc, AnnotationTypeEnum.relation);
+    final Pair<OriginalDoc, Integer> result =
+        docService.createBlocks(doc, AnnotationTypeEnum.relation);
 
     // check blocks
-    Assert.assertEquals(task.getTaskDocs().size(), 1);
-    Assert.assertEquals(task.getTaskDocs().get(0), result.getTaskDoc());
-    Assert.assertEquals(result.getTaskDoc().getBlocks().size(), 1);
-    Assert.assertEquals(result.getTaskDoc().getBlocks().get(0).getBlock().getText(), SAMPLE_TEXT);
+    Assert.assertEquals(doc.getBlocks().size(), 1);
+    Assert.assertEquals(doc, result.getLeft());
+    Assert.assertEquals(doc.getBlocks().size(), 1);
+    Assert.assertEquals(doc.getBlocks().get(0).getBlock().getText(), SAMPLE_TEXT);
 
     // check states
-    Assert.assertEquals(result.getTaskDoc().getState(), AnnotationTaskState.DOING);
-    Assert.assertEquals(
-        result.getTaskDoc().getBlocks().get(0).getBlock().getState(), AnnotationTaskState.DOING);
+    Assert.assertEquals(doc.getState(), OriginalDocState.PROCESSING);
+    Assert.assertEquals(doc.getBlocks().get(0).getBlock().getState(), AnnotationTaskState.DOING);
 
-    Mockito.verify(mockBlockService).getOrCreateAnnotation(Mockito.any(), Mockito.anyString());
+    Mockito.verify(mockBlockService)
+        .getOrCreateAnnotation(AnnotationTypeEnum.relation, SAMPLE_TEXT, false);
   }
 
   @Test
   public void testAddWordTask() {
-    final TaskDocServiceImpl.AddDocResult result =
-        taskDocService.addDocToTask(task, doc, AnnotationTypeEnum.wordPos);
-    final AnnotationTaskDoc taskDoc = result.getTaskDoc();
-    Assert.assertEquals(task.getTaskDocs().size(), 1);
-    Assert.assertEquals(task.getTaskDocs().get(0), taskDoc);
-    Assert.assertEquals(taskDoc.getBlocks().size(), 2);
-    Assert.assertEquals(taskDoc.getBlocks().get(0).getBlock().getText(), "这是第一句话，这是第二句话");
-    Assert.assertEquals(taskDoc.getBlocks().get(1).getBlock().getText(), "这是第三句话而且足够长足够长足够长足够长足够长");
+    docService.createBlocks(doc, AnnotationTypeEnum.wordPos);
+    Assert.assertEquals(doc.getBlocks().size(), 2);
+    Assert.assertEquals(doc.getBlocks().get(0).getBlock().getText(), "这是第一句话，这是第二句话");
+    Assert.assertEquals(doc.getBlocks().get(1).getBlock().getText(), "这是第三句话而且足够长足够长足够长足够长足够长");
     Mockito.verify(mockBlockService, Mockito.times(2))
-        .getOrCreateAnnotation(Mockito.any(), Mockito.anyString());
+        .getOrCreateAnnotation(eq(AnnotationTypeEnum.wordPos), Mockito.anyString(), eq(false));
   }
 }

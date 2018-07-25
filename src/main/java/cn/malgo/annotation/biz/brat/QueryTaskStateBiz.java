@@ -13,7 +13,6 @@ import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +45,11 @@ public class QueryTaskStateBiz extends BaseBiz<TerminateTaskRequest, TaskStateVO
   @Override
   protected TaskStateVO doBiz(TerminateTaskRequest terminateTaskRequest, UserDetails user) {
     final Set<AnnotationTaskBlock> annotationTaskBlocks =
-        annotationTaskBlockRepository.findByStateInAndTaskDocs_TaskDoc_Task_Id(
-            Arrays.asList(AnnotationTaskState.DOING), terminateTaskRequest.getTaskId());
+        annotationTaskBlockRepository.findByStateInAndTaskBlocks_Task_Id(
+            Collections.singletonList(AnnotationTaskState.DOING), terminateTaskRequest.getTaskId());
     final Map<OriginalDocState, List<OriginalDoc>> map =
         originalDocRepository
-            .findByTasks_Task_IdEquals(terminateTaskRequest.getTaskId())
+            .findByBlocks_Block_TaskBlocks_Task_IdEquals(terminateTaskRequest.getTaskId())
             .stream()
             .collect(Collectors.groupingBy(OriginalDoc::getState));
     return new TaskStateVO(

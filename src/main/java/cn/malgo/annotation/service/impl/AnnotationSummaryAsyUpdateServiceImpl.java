@@ -311,7 +311,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
   }
 
   private Set<AnnotationTaskBlock> getBlocks(final long taskId) {
-    return annotationTaskBlockRepository.findByTaskDocs_TaskDoc_Task_IdEquals(taskId);
+    return annotationTaskBlockRepository.findByTaskBlocks_Task_IdEquals(taskId);
   }
 
   private int getOverviewWordNum(

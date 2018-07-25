@@ -51,7 +51,7 @@ public class SearchAnnotationBiz
   @Override
   protected List<AnnotationErrorContext> doBiz(SearchAnnotationRequest request) {
     final Set<AnnotationTaskBlock> annotations =
-        blockRepository.findByAnnotationTypeAndStateInAndTaskDocs_TaskDoc_Task_Id(
+        blockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
             AnnotationTypeEnum.getByValue(request.getAnnotationType()),
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
             request.getTaskId());

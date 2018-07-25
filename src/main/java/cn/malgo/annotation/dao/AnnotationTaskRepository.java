@@ -1,29 +1,30 @@
 package cn.malgo.annotation.dao;
 
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.AnnotationTaskDoc;
+import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.entity.TaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface AnnotationTaskRepository
     extends JpaRepository<AnnotationTask, Long>, JpaSpecificationExecutor<AnnotationTask> {
   default AnnotationTask updateState(final AnnotationTask task) {
-    if (task.getTaskDocs().size() == 0) {
+    final List<TaskBlock> taskBlocks = task.getTaskBlocks();
+
+    if (taskBlocks.size() == 0) {
       return task;
     }
 
     final AnnotationTaskState state =
-        task.getTaskDocs()
+        task.getTaskBlocks()
             .stream()
-            .min(Comparator.comparing(AnnotationTaskDoc::getState))
+            .min(Comparator.comparing(taskBlock -> taskBlock.getBlock().getState()))
             .get()
+            .getBlock()
             .getState();
 
     if (state != task.getState()) {
@@ -35,4 +36,6 @@ public interface AnnotationTaskRepository
   }
 
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
+
+  Set<AnnotationTask> findByTaskBlocks_Block_DocBlocks_DocEquals(OriginalDoc doc);
 }

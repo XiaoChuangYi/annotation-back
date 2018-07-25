@@ -18,7 +18,6 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 public class TaskBlockId implements Serializable {
-
   @Column(name = "task_id", nullable = false)
   private long taskId;
 

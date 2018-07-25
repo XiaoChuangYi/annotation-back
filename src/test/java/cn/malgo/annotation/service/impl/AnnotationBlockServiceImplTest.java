@@ -40,8 +40,7 @@ public class AnnotationBlockServiceImplTest {
         .thenAnswer(invocation -> invocation.getArguments()[0]);
 
     blockService =
-        new AnnotationBlockServiceImpl(
-            mockAnnotationRepository, mockBlockRepository, null, null, null);
+        new AnnotationBlockServiceImpl(mockAnnotationRepository, mockBlockRepository, null);
   }
 
   @Test
@@ -53,9 +52,9 @@ public class AnnotationBlockServiceImplTest {
         .thenAnswer(BLOCK_ANSWER);
 
     final Pair<AnnotationTaskBlock, Boolean> result1 =
-        blockService.getOrCreateAnnotation(AnnotationTypeEnum.wordPos, "test");
+        blockService.getOrCreateAnnotation(AnnotationTypeEnum.wordPos, "test", true);
     final Pair<AnnotationTaskBlock, Boolean> result2 =
-        blockService.getOrCreateAnnotation(AnnotationTypeEnum.wordPos, "test");
+        blockService.getOrCreateAnnotation(AnnotationTypeEnum.wordPos, "test", true);
 
     Assert.assertTrue(result1.getRight());
     Assert.assertFalse(result2.getRight());

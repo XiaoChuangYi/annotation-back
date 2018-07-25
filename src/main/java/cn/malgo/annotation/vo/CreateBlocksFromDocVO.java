@@ -1,10 +1,12 @@
 package cn.malgo.annotation.vo;
 
 import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.entity.OriginalDoc;
+import java.util.List;
 import lombok.Value;
 
 @Value
-public class AddDocsToTaskResponse {
-  private final AnnotationTask annotationTask;
+public class CreateBlocksFromDocVO {
+  private final List<OriginalDoc> docs;
   private final int createdBlocks;
 }

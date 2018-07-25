@@ -13,10 +13,13 @@ public interface AnnotationBlockService {
    *
    * @param annotationType 标注类型
    * @param text 文本
+   * @param createAnnotationCombine 是否创建AnnotationCombine
    * @return Block以及是否是新建的
    */
   Pair<AnnotationTaskBlock, Boolean> getOrCreateAnnotation(
-      final AnnotationTypeEnum annotationType, final String text);
+      final AnnotationTypeEnum annotationType,
+      final String text,
+      final boolean createAnnotationCombine);
 
   void saveAnnotation(final AnnotationCombine annotationCombine);
 
@@ -26,7 +29,7 @@ public interface AnnotationBlockService {
    *
    * @param block block
    */
-  void updateTaskAndDocState(final AnnotationTaskBlock block);
+  void updateTaskState(final AnnotationTaskBlock block);
 
   /**
    * 重置block到标注系统中，变为待分配或待审核状态
