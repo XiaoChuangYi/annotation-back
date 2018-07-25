@@ -4,12 +4,26 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Index;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -47,6 +61,14 @@ public class AnnotationTask extends BaseEntity {
       orphanRemoval = true)
   @Getter
   private List<AnnotationTaskDoc> taskDocs = new ArrayList<>();
+
+  @OneToMany(
+      fetch = FetchType.LAZY,
+      mappedBy = "task",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @Getter
+  private List<TaskBlock> taskBlocks = new ArrayList<>();
 
   @Column(name = "total_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter

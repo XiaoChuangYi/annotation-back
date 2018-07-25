@@ -66,10 +66,10 @@ public class OriginalDoc extends BaseEntity {
       orphanRemoval = true)
   private List<AnnotationTaskDoc> tasks = new ArrayList<>();
 
-  //  @OneToMany(fetch = FetchType.LAZY,
-  //      mappedBy = "doc",
-  //      cascade = CascadeType.ALL,
-  //      orphanRemoval = true
-  //  )
-  //  private Set<OriginalDocBlock> docBlocks = new HashSet<>();
+  @OneToMany(
+      fetch = FetchType.LAZY,
+      mappedBy = "doc",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  private List<OriginalDocBlock> blocks = new ArrayList<>();
 }

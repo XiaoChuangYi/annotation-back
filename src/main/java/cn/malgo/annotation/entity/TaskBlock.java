@@ -25,7 +25,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @Setter
 public class TaskBlock {
-
   @EmbeddedId private TaskBlockId id;
 
   @CreatedDate
@@ -45,7 +44,8 @@ public class TaskBlock {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date lastModified;
 
-  @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @MapsId("taskId")
   @JoinColumn(name = "task_id")
   private AnnotationTask task;
 

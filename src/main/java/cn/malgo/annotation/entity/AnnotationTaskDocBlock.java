@@ -41,7 +41,7 @@ public class AnnotationTaskDocBlock {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date lastModified;
 
-  @ManyToOne(fetch = FetchType.EAGER /*, cascade = { CascadeType.MERGE }*/)
+  @ManyToOne(fetch = FetchType.LAZY /*, cascade = { CascadeType.MERGE }*/)
   @MapsId("taskDocId")
   @JoinColumn(name = "task_doc_id")
   private AnnotationTaskDoc taskDoc;

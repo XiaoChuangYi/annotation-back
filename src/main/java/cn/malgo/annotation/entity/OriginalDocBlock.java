@@ -22,11 +22,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-@ToString(exclude = {"task", "block"})
+@ToString(exclude = {"doc", "block"})
 @Getter
 @Setter
 public class OriginalDocBlock {
-
   @EmbeddedId private OriginalDocBlockId id;
 
   @CreatedDate
@@ -47,6 +46,7 @@ public class OriginalDocBlock {
   private Date lastModified;
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @MapsId("docId")
   @JoinColumn(name = "doc_id")
   private OriginalDoc doc;
 

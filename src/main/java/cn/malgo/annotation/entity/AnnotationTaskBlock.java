@@ -24,9 +24,9 @@ import java.util.List;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @ToString(
-    exclude = {"taskDocs"},
+    exclude = {"taskDocs", "taskBlocks"},
     callSuper = true)
-@JSONType(ignores = {"taskDocs"})
+@JSONType(ignores = {"taskDocs", "taskBlocks"})
 public class AnnotationTaskBlock extends BaseEntity {
 
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
@@ -57,4 +57,8 @@ public class AnnotationTaskBlock extends BaseEntity {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "block", orphanRemoval = true)
   @Getter
   private List<AnnotationTaskDocBlock> taskDocs = new ArrayList<>();
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "block", orphanRemoval = true)
+  @Getter
+  private List<TaskBlock> taskBlocks = new ArrayList<>();
 }
