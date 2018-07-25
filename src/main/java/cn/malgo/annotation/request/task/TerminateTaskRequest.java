@@ -4,6 +4,5 @@ import lombok.Value;
 
 @Value
 public class TerminateTaskRequest {
-
-  private Long taskId;
+  private long taskId;
 }

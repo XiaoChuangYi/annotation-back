@@ -1,9 +1,11 @@
 package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.*;
+import cn.malgo.annotation.biz.brat.AnnotationExamineResetBiz;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
+import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.CountAnnotationRequest;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationCombineRequest;
@@ -27,6 +29,7 @@ public class AnnotationCombineController extends BaseController {
   private final CountAnnotationBiz countAnnotationBiz;
   private final ListAnTypeBiz listAnTypeBiz;
   private final PreAnnotationRecycleBiz preAnnotationRecycleBiz;
+  private final AnnotationExamineResetBiz annotationExamineResetBiz;
 
   public AnnotationCombineController(
       final ListAnnotationBiz listAnnotationBiz,
@@ -35,7 +38,8 @@ public class AnnotationCombineController extends BaseController {
       final RandomDesignateAnnotationBiz randomDesignateAnnotationBiz,
       final CountAnnotationBiz countAnnotationBiz,
       final ListAnTypeBiz listAnTypeBiz,
-      final PreAnnotationRecycleBiz preAnnotationRecycleBiz) {
+      final PreAnnotationRecycleBiz preAnnotationRecycleBiz,
+      final AnnotationExamineResetBiz annotationExamineResetBiz) {
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.getAnnotationSummaryBiz = getAnnotationSummaryBiz;
@@ -43,6 +47,7 @@ public class AnnotationCombineController extends BaseController {
     this.countAnnotationBiz = countAnnotationBiz;
     this.listAnTypeBiz = listAnTypeBiz;
     this.preAnnotationRecycleBiz = preAnnotationRecycleBiz;
+    this.annotationExamineResetBiz = annotationExamineResetBiz;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -99,5 +104,13 @@ public class AnnotationCombineController extends BaseController {
       @PathVariable("id") long id) {
     return new Response<>(
         preAnnotationRecycleBiz.process(new AnnotationRecycleRequest(id), userAccount));
+  }
+
+  /** 审核放弃 */
+  @RequestMapping(value = "/annotation-examine-abandon", method = RequestMethod.POST)
+  public Response<AnnotationCombineBratVO> annotationExamineAbandon(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody AnnotationStateRequest annotationStateRequest) {
+    return new Response<>(annotationExamineResetBiz.process(annotationStateRequest, userAccount));
   }
 }
