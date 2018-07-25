@@ -9,6 +9,8 @@ import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationCombineRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationCombineService;
+import java.util.Calendar;
+import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
     return (Specification<AnnotationCombine>)
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
-//          predicates.add(criteriaBuilder.equal(root.get("isTask"), 0));
+          //          predicates.add(criteriaBuilder.equal(root.get("isTask"), 0));
           if (param.getIdList() != null && param.getIdList().size() > 0) {
             predicates.add(criteriaBuilder.in(root.get("id")).value(param.getIdList()));
           }
@@ -62,6 +64,14 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
           if (param.getUserId() > 0) {
             predicates.add(criteriaBuilder.equal(root.get("assignee"), param.getUserId()));
           }
+          if (param.getLeftDate() != null) {
+            predicates.add(
+                criteriaBuilder.greaterThanOrEqualTo(root.get("createdTime"), param.getLeftDate()));
+          }
+          if (param.getRightDate() != null) {
+            predicates.add(
+                criteriaBuilder.lessThanOrEqualTo(root.get("createdTime"), param.getRightDate()));
+          }
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
@@ -76,8 +86,8 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
             PageRequest.of(
                 listAnnotationCombineRequest.getPageIndex(),
                 listAnnotationCombineRequest.getPageSize(),
-                Direction.ASC,
-                "id"));
+                Direction.DESC,
+                "createdTime"));
     Map<Long, String> userMap;
     if (page.getTotalElements() > 0) {
       userMap =

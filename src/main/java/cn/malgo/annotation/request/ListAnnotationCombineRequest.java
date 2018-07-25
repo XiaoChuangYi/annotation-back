@@ -1,5 +1,6 @@
 package cn.malgo.annotation.request;
 
+import java.sql.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,6 @@ public class ListAnnotationCombineRequest {
   private List<String> states;
   private long userId;
   private List<Integer> annotationTypes;
+  private Date leftDate;
+  private Date rightDate;
 }
