@@ -62,11 +62,8 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
           if (param.getMinTextLength() != 0) {
             predicates.add(criteriaBuilder.ge(root.get("textLength"), param.getMinTextLength()));
           }
-
-          if (docIds.size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("id")).value(docIds));
-          }
-
+          predicates.add(
+              criteriaBuilder.in(root.get("id")).value(docIds.size() == 0 ? null : docIds));
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
