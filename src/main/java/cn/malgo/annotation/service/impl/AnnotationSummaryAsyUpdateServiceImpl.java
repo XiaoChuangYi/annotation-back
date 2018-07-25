@@ -36,8 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 public class AnnotationSummaryAsyUpdateServiceImpl {
-  private static final String CRON_STR = "0 0/5 * * * ?";
-  //  private static final String CRON_STR = "0/30 * * * * ?";
+  //  private static final String CRON_STR = "0 0/5 * * * ?";
+  private static final String CRON_STR = "0 0/20 * * * ?";
 
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;

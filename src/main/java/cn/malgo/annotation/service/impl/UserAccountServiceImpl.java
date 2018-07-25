@@ -10,6 +10,7 @@ import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +24,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Service
+@Slf4j
 public class UserAccountServiceImpl implements UserAccountService {
 
   private final UserAccountRepository userAccountRepository;
@@ -69,9 +71,10 @@ public class UserAccountServiceImpl implements UserAccountService {
     if ("disable".equals(param.getState())) {
       throw new BusinessRuleException("account-disabled", "当前账户被冻结，请联系管理员");
     }
-
     HttpSession session = servletRequest.getSession();
-    session.setAttribute("userAccount", new DefaultUserDetails(param.getId(), param.getRoleId()));
+    final DefaultUserDetails defaultUserDetails =
+        new DefaultUserDetails(param.getId(), param.getRoleId());
+    session.setAttribute("userAccount", defaultUserDetails);
     session.setMaxInactiveInterval(0);
     Cookie cookie = new Cookie("userId", param.getId() + param.getAccountName());
     cookie.setMaxAge(1 * 60 * 60);

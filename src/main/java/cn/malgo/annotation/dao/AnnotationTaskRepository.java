@@ -35,7 +35,4 @@ public interface AnnotationTaskRepository
   }
 
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
-
-  @EntityGraph(value = "graph.annotation", type = EntityGraphType.FETCH)
-  AnnotationTask findAllById(Long taskId);
 }
