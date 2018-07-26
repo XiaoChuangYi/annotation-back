@@ -22,6 +22,8 @@ import java.util.stream.IntStream;
 @Slf4j
 public class AnnotationConvert {
 
+  private static final String SPECIAL_TYPE = "Anchor";
+
   /** 判断当前标注实体是否交叉 */
   public static boolean isCrossAnnotation(String annotation) {
     final List<Entity> entitiesLeft = getEntitiesFromAnnotation(annotation);
@@ -43,6 +45,11 @@ public class AnnotationConvert {
                             if (entityRight.getStart() == entityLeft.getStart()
                                 && entityRight.getEnd() == entityLeft.getEnd()
                                 && entityRight.getType().equals(entityLeft.getType())) {
+                              return false;
+                            } else if (entityRight.getStart() == entityLeft.getStart()
+                                && entityRight.getEnd() == entityLeft.getEnd()
+                                && StringUtils.equalsAny(
+                                    SPECIAL_TYPE, entityRight.getType(), entityLeft.getType())) {
                               return false;
                             } else {
                               return true;

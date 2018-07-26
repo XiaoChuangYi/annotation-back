@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class CheckRelationEntityServiceImpl implements CheckRelationEntityService {
 
+  private static final String SPECIAL_TYPE = "Anchor";
+
   @Override
   public boolean checkRelationEntityBeforeAdd(
       AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
@@ -27,6 +29,9 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
             .stream()
             .map(entity -> new EntityPair(entity.getStart(), entity.getEnd(), entity.getType()))
             .collect(Collectors.toList());
+    if (SPECIAL_TYPE.equals(addAnnotationRequest.getType())) {
+      return false;
+    }
     return entities
         .stream()
         .anyMatch(
@@ -52,13 +57,10 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
 
   @Override
   public boolean checkRelationEntityBeforeUpdate(
-      UpdateAnnotationRequest updateAnnotationRequest, AnnotationCombine annotationCombine) {
+      UpdateAnnotationRequest request, AnnotationCombine annotationCombine) {
     final List<Entity> entities = getEntities(annotationCombine);
     Optional<Entity> optional =
-        entities
-            .stream()
-            .filter(entity -> entity.getTag().equals(updateAnnotationRequest.getTag()))
-            .findFirst();
+        entities.stream().filter(entity -> entity.getTag().equals(request.getTag())).findFirst();
     if (optional.isPresent()) {
       final Entity current = optional.get();
       if (entities
@@ -71,13 +73,42 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
           == 1) {
         return false;
       }
+      // 更新为Anchor，不限制
+      if (StringUtils.equals(SPECIAL_TYPE, request.getNewType())) {
+        return false;
+      }
+      // 由Anchor更新为其它类型
+      if (StringUtils.equals(current.getType(), SPECIAL_TYPE)
+          && entities
+                  .stream()
+                  .filter(
+                      entity ->
+                          !entity.getType().equals(SPECIAL_TYPE)
+                              && entity.getStart() == current.getStart()
+                              && entity.getEnd() == current.getEnd())
+                  .count()
+              == 0) {
+        return false;
+      }
+
+      if (StringUtils.equals(current.getType(), SPECIAL_TYPE)
+          && entities
+              .stream()
+              .filter(
+                  entity ->
+                      !entity.getType().equals(SPECIAL_TYPE)
+                          && entity.getStart() == current.getStart()
+                          && entity.getEnd() == current.getEnd())
+              .allMatch(entity -> entity.getType().equals(request.getNewType()))) {
+        return false;
+      }
       return entities
           .stream()
           .noneMatch(
               entity ->
                   entity.getStart() == current.getStart()
                       && entity.getEnd() == current.getEnd()
-                      && entity.getType() == updateAnnotationRequest.getNewType());
+                      && entity.getType() == request.getNewType());
     }
     return false;
   }
