@@ -5,7 +5,6 @@ import static org.testng.Assert.assertEquals;
 import cn.malgo.annotation.AnnotationCombineApplication;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.dao.TaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
