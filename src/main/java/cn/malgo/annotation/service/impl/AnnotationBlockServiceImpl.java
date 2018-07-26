@@ -14,6 +14,7 @@ import cn.malgo.annotation.service.AnnotationBlockService;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,10 +23,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
-
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskRepository annotationTaskRepository;
+
+  private final Map<String, Long> cachedBlockIds = new ConcurrentHashMap<>(100000);
 
   public AnnotationBlockServiceImpl(
       final AnnotationCombineRepository annotationCombineRepository,
@@ -34,6 +36,10 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     this.annotationCombineRepository = annotationCombineRepository;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationTaskRepository = annotationTaskRepository;
+
+    for (AnnotationTaskBlock block : annotationTaskBlockRepository.findAll()) {
+      cachedBlockIds.put(block.getText(), block.getId());
+    }
   }
 
   @Override
@@ -41,8 +47,13 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
       final AnnotationTypeEnum annotationType,
       final String text,
       final boolean createAnnotationCombine) {
+    if (cachedBlockIds.containsKey(text)) {
+      return Pair.of(annotationTaskBlockRepository.getOne(cachedBlockIds.get(text)), false);
+    }
+
     final Pair<AnnotationTaskBlock, Boolean> result =
         annotationTaskBlockRepository.getOrCreateBlock(annotationType, text);
+    cachedBlockIds.put(text, result.getLeft().getId());
 
     if (createAnnotationCombine && result.getRight()) {
       final AnnotationCombine annotationCombine = new AnnotationCombine();
