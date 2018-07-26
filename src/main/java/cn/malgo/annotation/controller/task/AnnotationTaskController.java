@@ -1,6 +1,5 @@
 package cn.malgo.annotation.controller.task;
 
-import cn.malgo.annotation.biz.brat.QueryTaskStateBiz;
 import cn.malgo.annotation.biz.task.AddBlocksToTaskBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBiz;
@@ -19,7 +18,6 @@ import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.annotation.vo.AnnotationTaskDetailVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
-import cn.malgo.annotation.vo.TaskStateVO;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,7 +36,6 @@ public class AnnotationTaskController extends BaseController {
   private final ListAnnotationTaskBlockBiz listAnnotationTaskBlockBiz;
   private final ListTaskDetailsBiz listTaskDetailsBiz;
   private final TerminateTaskBiz terminateTaskBiz;
-  private final QueryTaskStateBiz queryTaskStateBiz;
   private final RefreshTaskSummaryBiz refreshTaskSummaryBiz;
 
   public AnnotationTaskController(
@@ -48,7 +45,6 @@ public class AnnotationTaskController extends BaseController {
       final ListAnnotationTaskBlockBiz listAnnotationTaskBlockBiz,
       final ListTaskDetailsBiz listTaskDetailsBiz,
       final TerminateTaskBiz terminateTaskBiz,
-      final QueryTaskStateBiz queryTaskStateBiz,
       final RefreshTaskSummaryBiz refreshTaskSummaryBiz) {
     this.createTaskBiz = createTaskBiz;
     this.addBlocksToTaskBiz = addBlocksToTaskBiz;
@@ -56,7 +52,6 @@ public class AnnotationTaskController extends BaseController {
     this.listAnnotationTaskBlockBiz = listAnnotationTaskBlockBiz;
     this.listTaskDetailsBiz = listTaskDetailsBiz;
     this.terminateTaskBiz = terminateTaskBiz;
-    this.queryTaskStateBiz = queryTaskStateBiz;
     this.refreshTaskSummaryBiz = refreshTaskSummaryBiz;
   }
 
@@ -106,14 +101,6 @@ public class AnnotationTaskController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody TerminateTaskRequest terminateTaskRequest) {
     return new Response<>(terminateTaskBiz.process(terminateTaskRequest, userAccount));
-  }
-
-  /** 查询批次状态 */
-  @RequestMapping(value = "/get-task-state", method = RequestMethod.GET)
-  public Response<TaskStateVO> getTaskState(
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
-      TerminateTaskRequest terminateTaskRequest) {
-    return new Response<>(queryTaskStateBiz.process(terminateTaskRequest, userAccount));
   }
 
   @RequestMapping(value = "/refresh-task-summary", method = RequestMethod.POST)
