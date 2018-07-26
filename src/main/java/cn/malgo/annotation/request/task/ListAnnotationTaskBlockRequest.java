@@ -6,6 +6,7 @@ import java.util.List;
 
 @Value
 public class ListAnnotationTaskBlockRequest {
+  private int taskId;
   private int pageIndex;
   private int pageSize;
   private String text;

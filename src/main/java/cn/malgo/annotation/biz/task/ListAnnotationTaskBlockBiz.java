@@ -2,7 +2,10 @@ package cn.malgo.annotation.biz.task;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.entity.TaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
@@ -12,7 +15,11 @@ import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
+import java.util.Set;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -27,9 +34,11 @@ import java.util.stream.Collectors;
 @RequirePermission(Permissions.ADMIN)
 public class ListAnnotationTaskBlockBiz
     extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlockResponse>> {
+
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
-  public ListAnnotationTaskBlockBiz(AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+  public ListAnnotationTaskBlockBiz(
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
@@ -38,11 +47,15 @@ public class ListAnnotationTaskBlockBiz
     return (Specification<AnnotationTaskBlock>)
         (root, criteriaQuery, criteriaBuilder) -> {
           final List<Predicate> predicates = new ArrayList<>();
-
+          if (request.getTaskId() != 0) {
+            Join<AnnotationTask, TaskBlock> joinA = root.join("taskBlocks", JoinType.LEFT);
+            predicates.add(criteriaBuilder.equal(joinA.get("task").get("id"), request.getTaskId()));
+          }
           if (request.getId() != null && request.getId() != 0) {
+            //            Join<AnnotationTaskBlock, TaskBlock> joinB = root.join("taskBlocks",
+            // JoinType.LEFT);
             predicates.add(criteriaBuilder.equal(root.get("id"), request.getId()));
           }
-
           if (request.getStates() != null && request.getStates().size() > 0) {
             predicates.add(
                 criteriaBuilder
@@ -71,14 +84,15 @@ public class ListAnnotationTaskBlockBiz
             if (request.getRegexMode() == null || !request.getRegexMode()) {
               predicates.add(
                   criteriaBuilder.like(
-                      root.get("text"), String.format("%%%s%%", request.getText())));
+                      root.get("AnnotationTaskDoc").get("text"),
+                      String.format("%%%s%%", request.getText())));
             } else {
               predicates.add(
                   criteriaBuilder.equal(
                       criteriaBuilder.function(
                           "rlike",
                           Integer.class,
-                          root.get("text"),
+                          root.get("AnnotationTaskDoc").get("text"),
                           criteriaBuilder.literal(
                               Pattern.compile(".*" + request.getText() + ".*").toString())),
                       1));
@@ -92,8 +106,8 @@ public class ListAnnotationTaskBlockBiz
   @Override
   protected void validateRequest(ListAnnotationTaskBlockRequest request)
       throws InvalidInputException {
-    if (request == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
+    if (request.getTaskId() < 0) {
+      throw new InvalidInputException("invalid-task-id", "无效的参数taskId");
     }
 
     if (request.getPageIndex() <= 0) {
