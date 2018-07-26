@@ -1,15 +1,20 @@
 package cn.malgo.annotation.biz.task;
 
 import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,12 +23,15 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
 
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final AnnotationCombineRepository annotationCombineRepository;
 
   public AddBlocksToTaskBiz(
       final AnnotationTaskRepository annotationTaskRepository,
-      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationCombineRepository annotationCombineRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.annotationCombineRepository = annotationCombineRepository;
   }
 
   @Override
@@ -39,6 +47,7 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
   @Override
   protected Object doBiz(AddBlocksToTaskRequest request, UserDetails user) {
     final AnnotationTask annotationTask = annotationTaskRepository.getOne(request.getTaskId());
+    final List<AnnotationCombine> annotationCombines = new ArrayList<>();
     annotationTaskBlockRepository
         .findAllById(request.getBlockIds())
         .stream()
@@ -48,8 +57,21 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
                   || annotationTaskBlock.getState() == AnnotationTaskState.FINISHED) {
                 annotationTaskBlock.setState(AnnotationTaskState.DOING);
               }
+              final AnnotationCombine annotationCombine = new AnnotationCombine();
+              annotationCombine.setTerm(annotationTaskBlock.getText());
+              annotationCombine.setAnnotationType(
+                  annotationTaskBlock.getAnnotationType().ordinal());
+              annotationCombine.setAssignee(0);
+              annotationCombine.setManualAnnotation(annotationTaskBlock.getAnnotation());
+              annotationCombine.setFinalAnnotation(annotationTaskBlock.getAnnotation());
+              annotationCombine.setReviewedAnnotation(annotationTaskBlock.getAnnotation());
+              annotationCombine.setState(AnnotationCombineStateEnum.unDistributed.name());
+              annotationCombine.setBlockId(annotationTaskBlock.getId());
+              annotationCombine.setComment("added-from-block");
+              annotationCombines.add(annotationCombine);
               annotationTask.addBlock(annotationTaskBlock);
             });
+    annotationCombineRepository.saveAll(annotationCombines);
     return annotationTaskRepository.updateState(annotationTask);
   }
 }
