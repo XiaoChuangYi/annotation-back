@@ -44,7 +44,7 @@ public class AnnotationBlockServiceImplTest {
         new AnnotationBlockServiceImpl(mockAnnotationRepository, mockBlockRepository, null);
   }
 
-  @Test
+  @Test(enabled = false)
   public void testDuplicateBlock() {
     Mockito.when(
             mockBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
