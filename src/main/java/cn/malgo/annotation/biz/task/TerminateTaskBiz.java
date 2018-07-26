@@ -12,28 +12,25 @@ import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Object> {
-
   private final AnnotationTaskRepository annotationTaskRepository;
-  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final TaskBlockRepository taskBlockRepository;
+  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
   public TerminateTaskBiz(
       final AnnotationTaskRepository annotationTaskRepository,
-      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final TaskBlockRepository taskBlockRepository) {
+      final TaskBlockRepository taskBlockRepository,
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationTaskRepository = annotationTaskRepository;
-    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.taskBlockRepository = taskBlockRepository;
+    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
   @Override
@@ -41,39 +38,34 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
       throws InvalidInputException {}
 
   @Override
-  protected Object doBiz(TerminateTaskRequest terminateTaskRequest, UserDetails user) {
+  protected Object doBiz(TerminateTaskRequest request, UserDetails user) {
     final Optional<AnnotationTask> optional =
-        annotationTaskRepository.findById(terminateTaskRequest.getTaskId());
+        annotationTaskRepository.findById(request.getTaskId());
     if (optional.isPresent()) {
       final AnnotationTask annotationTask = optional.get();
+      final AnnotationTaskState state = annotationTask.getState();
+      if (state == AnnotationTaskState.FINISHED || state == AnnotationTaskState.CREATED) {
+        throw new InvalidInputException("invalid-task-state", state + "不可以被结束");
+      }
+
       annotationTask.setState(AnnotationTaskState.FINISHED);
       annotationTaskRepository.save(annotationTask);
 
       final Set<AnnotationTaskBlock> blockSet =
           annotationTaskBlockRepository.findByStateInAndTaskBlocks_Task_Id(
-              Collections.singletonList(AnnotationTaskState.ANNOTATED),
-              terminateTaskRequest.getTaskId());
-      annotationTaskBlockRepository.saveAll(
-          blockSet
-              .stream()
-              .map(
-                  block -> {
-                    block.setState(AnnotationTaskState.FINISHED);
-                    return block;
-                  })
-              .collect(Collectors.toSet()));
+              Collections.singletonList(AnnotationTaskState.ANNOTATED), request.getTaskId());
 
-      final Set<AnnotationTaskBlock> deleteBlockSet =
-          annotationTaskBlockRepository.findByStateInAndTaskBlocks_Task_Id(
-              Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.CREATED),
-              terminateTaskRequest.getTaskId());
-      // delete all doing/created blocks in this task
-      taskBlockRepository.deleteAll(
-          deleteBlockSet
-              .stream()
-              .flatMap(annotationTaskBlock -> annotationTaskBlock.getTaskBlocks().stream())
-              .collect(Collectors.toList()));
+      blockSet.forEach(
+          block -> {
+            block.setState(AnnotationTaskState.FINISHED);
+            annotationTaskBlockRepository.save(block);
+          });
+
+      taskBlockRepository.deleteInBatch(
+          taskBlockRepository.findByTask_IdAndBlock_StateIn(
+              request.getTaskId(), Collections.singletonList(AnnotationTaskState.DOING)));
     }
+
     return null;
   }
 }

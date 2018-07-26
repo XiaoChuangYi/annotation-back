@@ -10,15 +10,15 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import java.util.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
 
 @SpringBootTest(classes = AnnotationCombineApplication.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpringContextTests {
-
   @Autowired private AnnotationTaskRepository taskRepository;
-  @Autowired private OriginalDocRepository docRepository;
   @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
 
   @Test

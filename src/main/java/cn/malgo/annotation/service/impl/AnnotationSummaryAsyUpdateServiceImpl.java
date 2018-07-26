@@ -3,7 +3,6 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
@@ -13,9 +12,9 @@ import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationEvaluateStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.service.AnnotationFactory;
+import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.service.entity.BaseEntity;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -29,50 +28,61 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
-public class AnnotationSummaryAsyUpdateServiceImpl {
+public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryService {
   //  private static final String CRON_STR = "0 0/5 * * * ?";
   private static final String CRON_STR = "0 0/20 * * * ?";
 
-  private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationCombineRepository annotationCombineRepository;
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
   private final AnnotationFactory annotationFactory;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
-      final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationCombineRepository annotationCombineRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
       final AnnotationFactory annotationFactory) {
-    this.annotationTaskRepository = annotationTaskRepository;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationCombineRepository = annotationCombineRepository;
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
     this.annotationFactory = annotationFactory;
   }
 
-  /** 0 0/5 * * * ? 秒 分 时 天(月) 月 天(星期) 天(月),天(星期)互斥，任意一个为? 当前的corn表达式的意思时每隔5分钟触发一次 */
-  @Scheduled(cron = AnnotationSummaryAsyUpdateServiceImpl.CRON_STR)
-  @Transactional
-  public void asyncUpdateAnnotationOverview() {
-    log.info("asyncUpdateAnnotationOverview, start: {}", new Date());
+  @NotNull
+  @Override
+  public AnnotationTask updateTaskSummary(final AnnotationTask annotationTask) {
+    final AnnotationTask task = refreshTaskNumbers(annotationTask);
 
-    try {
-      final List<AnnotationTask> annotationTasks =
-          getTasks().stream().map(this::refreshTaskNumbers).collect(Collectors.toList());
-      annotationTaskRepository.saveAll(annotationTasks);
-    } catch (Exception ex) {
-      log.info("定时任务，更新task表，发生异常:{}", ex.getMessage());
-    }
+    final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
+    final Map<Long, Annotation> blockMap = getBlockMap(blocks);
+    final List<AnnotationCombine> annotationCombines =
+        annotationCombineRepository.findAllByBlockIdIn(
+            blocks.stream().map(BaseEntity::getId).collect(Collectors.toSet()));
+    final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
+        getAnnotationStaffEvaluates(blockMap, annotationCombines, annotationTask);
+    annotationStaffEvaluates.forEach(
+        annotationStaffEvaluate -> {
+          final AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
+              annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
+                  annotationStaffEvaluate.getTaskId(),
+                  annotationStaffEvaluate.getAssignee(),
+                  annotationStaffEvaluate.getWorkDay());
 
-    log.info("asyncUpdateAnnotationOverview, end: {}", new Date());
+          if (updateAnnotationStaffEvaluate == null) {
+            final AnnotationStaffEvaluate current =
+                annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
+            log.info("新增annotationStaffEvaluate，id为：{}", current.getId());
+          } else {
+            BeanUtils.copyProperties(annotationStaffEvaluate, updateAnnotationStaffEvaluate, "id");
+            annotationStaffEvaluateRepository.save(updateAnnotationStaffEvaluate);
+            log.info("更新annotationStaffEvaluate，id为：{}", updateAnnotationStaffEvaluate.getId());
+          }
+        });
+    return task;
   }
 
   private Map<String, EntitySummary> getEntityMap(final Annotation annotation) {
@@ -141,7 +151,6 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
         || state == AnnotationCombineStateEnum.innerAnnotation;
   }
 
-  @NotNull
   private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {
     final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
     final Map<Long, Annotation> blockMap = getBlockMap(blocks);
@@ -187,46 +196,6 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
     return Pair.of(
         values.stream().mapToDouble(Pair::getLeft).average().orElse(1),
         values.stream().mapToDouble(Pair::getRight).average().orElse(1));
-  }
-
-  @Scheduled(cron = AnnotationSummaryAsyUpdateServiceImpl.CRON_STR)
-  @Transactional
-  public void asyncUpdateAnnotationEvaluate() {
-    log.info("asyncUpdateAnnotationEvaluate, start: {}", new Date());
-
-    final List<AnnotationTask> annotationTasks = getTasks();
-    annotationTasks.forEach(
-        annotationTask -> {
-          final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
-          final Map<Long, Annotation> blockMap = getBlockMap(blocks);
-          final List<AnnotationCombine> annotationCombines =
-              annotationCombineRepository.findAllByBlockIdIn(
-                  blocks.stream().map(BaseEntity::getId).collect(Collectors.toSet()));
-          final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
-              getAnnotationStaffEvaluates(blockMap, annotationCombines, annotationTask);
-          annotationStaffEvaluates.forEach(
-              annotationStaffEvaluate -> {
-                final AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
-                    annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
-                        annotationStaffEvaluate.getTaskId(),
-                        annotationStaffEvaluate.getAssignee(),
-                        annotationStaffEvaluate.getWorkDay());
-
-                if (updateAnnotationStaffEvaluate == null) {
-                  final AnnotationStaffEvaluate current =
-                      annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
-                  log.info("新增annotationStaffEvaluate，id为：{}", current.getId());
-                } else {
-                  BeanUtils.copyProperties(
-                      annotationStaffEvaluate, updateAnnotationStaffEvaluate, "id");
-                  annotationStaffEvaluateRepository.save(updateAnnotationStaffEvaluate);
-                  log.info(
-                      "更新annotationStaffEvaluate，id为：{}", updateAnnotationStaffEvaluate.getId());
-                }
-              });
-        });
-
-    log.info("asyncUpdateAnnotationEvaluate, end: {}", new Date());
   }
 
   private Map<Long, Annotation> getBlockMap(Set<AnnotationTaskBlock> blocks) {
@@ -303,11 +272,6 @@ public class AnnotationSummaryAsyUpdateServiceImpl {
                       });
             })
         .collect(Collectors.toList());
-  }
-
-  private List<AnnotationTask> getTasks() {
-    return annotationTaskRepository.findByStateNotIn(
-        Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.FINISHED));
   }
 
   private Set<AnnotationTaskBlock> getBlocks(final long taskId) {
