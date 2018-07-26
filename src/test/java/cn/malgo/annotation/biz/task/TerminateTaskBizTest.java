@@ -16,12 +16,14 @@ import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.TestTransaction;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @SpringBootTest(classes = AnnotationCombineApplication.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringContextTests {
   @Autowired private AnnotationTaskRepository annotationTaskRepository;
   @Autowired private AnnotationTaskBlockRepository annotationTaskBlockRepository;
@@ -29,7 +31,7 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
 
   private long taskId;
 
-  @BeforeClass
+  @BeforeMethod()
   public void init() {
     final AnnotationTaskBlock taskBlock1 =
         new AnnotationTaskBlock("test1", "", AnnotationTypeEnum.wordPos);
@@ -47,12 +49,17 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
     task.addBlock(blocks.get(1));
     task.setState(AnnotationTaskState.DOING);
     taskId = annotationTaskRepository.save(task).getId();
+
+    TestTransaction.flagForCommit();
+    TestTransaction.end();
   }
 
   @Test
   public void testTerminateTask() {
+    assertEquals(countRowsInTable("annotation_task"), 1);
     assertEquals(countRowsInTable("task_block"), 2);
 
+    TestTransaction.start();
     terminateTaskBiz.process(new TerminateTaskRequest(taskId), DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
