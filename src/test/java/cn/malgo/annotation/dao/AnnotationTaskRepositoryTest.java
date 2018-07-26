@@ -16,9 +16,7 @@ import org.testng.annotations.Test;
 
 @SpringBootTest(classes = AnnotationCombineApplication.class)
 public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpringContextTests {
-
   @Autowired private AnnotationTaskRepository taskRepository;
-  @Autowired private OriginalDocRepository docRepository;
   @Autowired private AnnotationTaskBlockRepository taskBlockRepository;
 
   @Test

@@ -50,4 +50,6 @@ public interface AnnotationTaskBlockRepository
 
   List<AnnotationTaskBlock> findAllByStateInAndIdIn(
       List<AnnotationTaskState> stateList, List<Long> ids);
+
+  List<AnnotationTaskBlock> findAllByStateIn(List<AnnotationTaskState> stateList);
 }
