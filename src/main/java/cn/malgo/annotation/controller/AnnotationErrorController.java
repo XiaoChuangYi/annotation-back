@@ -14,10 +14,13 @@ import cn.malgo.annotation.vo.FixAnnotationResponse;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2")

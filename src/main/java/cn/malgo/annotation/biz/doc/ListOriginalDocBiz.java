@@ -12,6 +12,7 @@ import cn.malgo.service.entity.BaseEntity;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
@@ -69,8 +70,11 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
           if (param.getMinTextLength() != 0) {
             predicates.add(criteriaBuilder.ge(root.get("textLength"), param.getMinTextLength()));
           }
-          predicates.add(
-              criteriaBuilder.in(root.get("id")).value(docIds.size() == 0 ? null : docIds));
+
+          if (docIds.size() > 0) {
+            predicates.add(criteriaBuilder.in(root.get("id")).value(docIds));
+          }
+
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
@@ -98,6 +102,10 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
               .stream()
               .map(BaseEntity::getId)
               .collect(Collectors.toList()));
+
+      if (docIdList.size() == 0) {
+        return new PageVO<>(0, Collections.emptyList());
+      }
     } else if (request.getDocId() > 0) {
       docIdList.add(request.getDocId());
     }
