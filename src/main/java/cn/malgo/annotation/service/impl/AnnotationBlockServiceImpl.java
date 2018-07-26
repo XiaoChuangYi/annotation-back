@@ -52,7 +52,10 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     }
 
     final Pair<AnnotationTaskBlock, Boolean> result =
-        annotationTaskBlockRepository.getOrCreateBlock(annotationType, text);
+        Pair.of(
+            annotationTaskBlockRepository.save(new AnnotationTaskBlock(text, "", annotationType)),
+            true);
+    //        annotationTaskBlockRepository.getOrCreateBlock(annotationType, text);
     cachedBlockIds.put(text, result.getLeft().getId());
 
     if (createAnnotationCombine && result.getRight()) {
