@@ -25,7 +25,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <spring-cloud.version>Finchley.M8</spring-cloud.version>
+    <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
     <malgo.base-definition.version>2.1.0-SNAPSHOT</malgo.base-definition.version>
     <malgo.common-utils.version>2.1.0-SNAPSHOT</malgo.common-utils.version>
     <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
