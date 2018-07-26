@@ -13,6 +13,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.feigns.AlgorithmApiClient;
+import cn.malgo.core.definition.Document;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,6 +75,11 @@ public class OriginalDocServiceImplTest {
                     .stream()
                     .map(request -> Collections.singletonList(request.getText()))
                     .collect(Collectors.toList());
+              }
+
+              @Override
+              public List<Document> batchNer(final List<AutoAnnotationRequest> texts) {
+                return null;
               }
             },
             mockDocRepository,

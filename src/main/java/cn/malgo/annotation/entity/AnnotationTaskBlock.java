@@ -18,7 +18,6 @@ import java.util.List;
     indexes = {
       @Index(name = "idx_annotation_type", columnList = "annotation_type"),
       @Index(name = "idx_state", columnList = "state"),
-      //      @Index(name = "idx_unique_text", columnList = "annotation_type,text", unique = true),
     })
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,7 +25,7 @@ import java.util.List;
 @ToString(
     exclude = {"docBlocks", "taskBlocks"},
     callSuper = true)
-@JSONType(ignores = {"docBlocks", "taskBlocks"})
+@JSONType(ignores = {"docBlocks", "taskBlocks", "nerResult"})
 public class AnnotationTaskBlock extends BaseEntity {
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
@@ -39,6 +38,11 @@ public class AnnotationTaskBlock extends BaseEntity {
   @Setter
   @NonNull
   private String annotation;
+
+  @Column(name = "ner_result", columnDefinition = "MEDIUMTEXT")
+  @Getter
+  @Setter
+  private String nerResult;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "state", nullable = false, length = 16)

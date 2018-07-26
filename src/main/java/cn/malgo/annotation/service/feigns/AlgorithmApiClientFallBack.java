@@ -3,6 +3,7 @@ package cn.malgo.annotation.service.feigns;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
+import cn.malgo.core.definition.Document;
 import cn.malgo.service.exception.DependencyServiceException;
 import com.alibaba.fastjson.JSON;
 import feign.hystrix.FallbackFactory;
@@ -41,6 +42,13 @@ public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiC
       @Override
       public List<List<String>> batchBlockSplitter(final List<AutoAnnotationRequest> request) {
         final String msg = "调用算法后台切分关联数据接口失败，request: " + request;
+        log.error(msg, throwable);
+        throw new DependencyServiceException(msg, throwable);
+      }
+
+      @Override
+      public List<Document> batchNer(final List<AutoAnnotationRequest> texts) {
+        final String msg = "调用算法后台切分关联数据接口失败，request: " + texts;
         log.error(msg, throwable);
         throw new DependencyServiceException(msg, throwable);
       }
