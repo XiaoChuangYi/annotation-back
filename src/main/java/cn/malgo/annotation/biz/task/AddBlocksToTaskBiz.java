@@ -53,10 +53,7 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
         .stream()
         .forEach(
             annotationTaskBlock -> {
-              if (annotationTaskBlock.getState() == AnnotationTaskState.ANNOTATED
-                  || annotationTaskBlock.getState() == AnnotationTaskState.FINISHED) {
-                annotationTaskBlock.setState(AnnotationTaskState.DOING);
-              }
+              annotationTaskBlock.setState(AnnotationTaskState.DOING);
               final AnnotationCombine annotationCombine = new AnnotationCombine();
               annotationCombine.setTerm(annotationTaskBlock.getText());
               annotationCombine.setAnnotationType(
@@ -67,7 +64,10 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
               annotationCombine.setReviewedAnnotation(annotationTaskBlock.getAnnotation());
               annotationCombine.setState(AnnotationCombineStateEnum.unDistributed.name());
               annotationCombine.setBlockId(annotationTaskBlock.getId());
-              annotationCombine.setComment("added-from-block");
+              annotationCombine.setComment(
+                  String.format(
+                      "[block:{%d}] add to [task:{%d}]",
+                      annotationTaskBlock.getId(), annotationTask.getId()));
               annotationCombines.add(annotationCombine);
               annotationTask.addBlock(annotationTaskBlock);
             });
