@@ -1,11 +1,9 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.request.ListUserAccountRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.UserAccountService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class ListUserAccountBiz extends BaseBiz<ListUserAccountRequest, PageVO<UserAccount>> {
   private final UserAccountService userAccountService;
 
