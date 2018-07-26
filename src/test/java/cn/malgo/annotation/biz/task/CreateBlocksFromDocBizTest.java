@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.task;
 
+import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.OriginalDocState;

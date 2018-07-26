@@ -29,7 +29,7 @@ public class SystemArchitecture {
    * com.xyz.someapp.service package or any sub-package under that.
    */
   @Pointcut(
-      "within(cn.malgo.annotation.biz..*) && !within(cn.malgo.annotation.biz.task.ImportDocBiz)")
+      "within(cn.malgo.annotation.biz..*) && !within(cn.malgo.annotation.biz.doc.ImportDocBiz)")
   public void inBusinessLayer() {}
 
   @Pointcut("inBusinessLayer()")

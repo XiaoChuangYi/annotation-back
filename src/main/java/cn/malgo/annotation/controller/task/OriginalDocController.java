@@ -1,25 +1,32 @@
 package cn.malgo.annotation.controller.task;
 
+import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
+import cn.malgo.annotation.biz.doc.ImportDocBiz;
+import cn.malgo.annotation.biz.doc.ListDocDetailsBiz;
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
-import cn.malgo.annotation.biz.task.ImportDocBiz;
-import cn.malgo.annotation.biz.task.ListDocDetailsBiz;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.request.doc.ListDocDetailRequest;
 import cn.malgo.annotation.request.doc.ListDocRequest;
+import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.vo.CreateBlocksFromDocVO;
 import cn.malgo.annotation.vo.OriginalDocDetailVO;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2/doc")
@@ -27,16 +34,19 @@ import java.util.List;
 public class OriginalDocController extends BaseController {
   private final String secretKey;
   private final ImportDocBiz importDocBiz;
+  private final CreateBlocksFromDocBiz createBlocksFromDocBiz;
   private final ListOriginalDocBiz listOriginalDocBiz;
   private final ListDocDetailsBiz listDocDetailsBiz;
 
   public OriginalDocController(
       @Value("${malgo.internal.secret-key}") String secretKey,
       final ImportDocBiz importDocBiz,
+      final CreateBlocksFromDocBiz createBlocksFromDocBiz,
       final ListOriginalDocBiz listOriginalDocBiz,
       final ListDocDetailsBiz listDocDetailsBiz) {
     this.secretKey = secretKey;
     this.importDocBiz = importDocBiz;
+    this.createBlocksFromDocBiz = createBlocksFromDocBiz;
     this.listOriginalDocBiz = listOriginalDocBiz;
     this.listDocDetailsBiz = listDocDetailsBiz;
   }
@@ -51,6 +61,13 @@ public class OriginalDocController extends BaseController {
     }
 
     return new Response<>(importDocBiz.process(request, permission -> true));
+  }
+
+  @RequestMapping(value = "/create-blocks", method = RequestMethod.POST)
+  public Response<CreateBlocksFromDocVO> createBlocks(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody CreateBlocksFromDocRequest request) {
+    return new Response<>(createBlocksFromDocBiz.process(request, userAccount));
   }
 
   /** 原始文本查询 */

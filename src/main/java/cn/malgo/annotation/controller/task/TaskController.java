@@ -1,12 +1,9 @@
 package cn.malgo.annotation.controller.task;
 
-import cn.malgo.annotation.biz.task.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.controller.BaseController;
-import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
-import cn.malgo.annotation.vo.CreateBlocksFromDocVO;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;

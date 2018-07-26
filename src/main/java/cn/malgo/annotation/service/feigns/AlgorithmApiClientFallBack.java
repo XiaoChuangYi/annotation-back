@@ -3,14 +3,12 @@ package cn.malgo.annotation.service.feigns;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
+import cn.malgo.service.exception.DependencyServiceException;
 import com.alibaba.fastjson.JSON;
 import feign.hystrix.FallbackFactory;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -41,14 +39,10 @@ public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiC
       }
 
       @Override
-      public List<List<String>> batchBlockSplitter(
-          final List<AutoAnnotationRequest> updateAnnotationRequestList) {
-        log.error("调用算法后台切分关联数据接口失败，request: " + updateAnnotationRequestList, throwable);
-
-        return updateAnnotationRequestList
-            .stream()
-            .map(request -> Collections.singletonList(request.getText()))
-            .collect(Collectors.toList());
+      public List<List<String>> batchBlockSplitter(final List<AutoAnnotationRequest> request) {
+        final String msg = "调用算法后台切分关联数据接口失败，request: " + request;
+        log.error(msg, throwable);
+        throw new DependencyServiceException(msg, throwable);
       }
     };
   }

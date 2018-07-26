@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz.doc;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.service.annotation.RequirePermission;
@@ -10,6 +11,7 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.entity.BaseEntity;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
@@ -52,6 +54,16 @@ public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalD
             predicates.add(
                 criteriaBuilder.like(
                     root.get("source"), String.format("%%%s%%", param.getSource())));
+          }
+
+          if (param.getStates() != null && param.getStates().length != 0) {
+            predicates.add(
+                criteriaBuilder
+                    .in(root.get("state"))
+                    .value(
+                        Arrays.stream(param.getStates())
+                            .map(OriginalDocState::valueOf)
+                            .collect(Collectors.toList())));
           }
 
           if (param.getMinTextLength() != 0) {

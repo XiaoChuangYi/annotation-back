@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -31,6 +30,7 @@ public class OriginalDocServiceImpl implements OriginalDocService {
 
   private final OriginalDocRepository docRepository;
   private final AnnotationBlockService annotationBlockService;
+  private final Object LOCK = new Object();
 
   private final Map<AnnotationTypeEnum, BlockSplitter> splitters;
 
@@ -62,23 +62,27 @@ public class OriginalDocServiceImpl implements OriginalDocService {
   }
 
   @Override
-  @Synchronized
   public Pair<OriginalDoc, Integer> createBlocks(
       final OriginalDoc doc, final AnnotationTypeEnum annotationType) {
     if (splitters.containsKey(annotationType)) {
       final List<String> blocks = splitters.get(annotationType).split(doc);
-      final Pair<List<AnnotationTaskBlock>, Integer> result = createBlocks(annotationType, blocks);
-      IntStream.range(0, result.getLeft().size())
-          .forEach(index -> doc.addBlock(result.getLeft().get(index), index));
-      doc.setState(OriginalDocState.PROCESSING);
-      return Pair.of(docRepository.save(doc), result.getRight());
+      synchronized (LOCK) {
+        final Pair<List<AnnotationTaskBlock>, Integer> result =
+            createBlocks(annotationType, blocks);
+        IntStream.range(0, result.getLeft().size())
+            .forEach(index -> doc.addBlock(result.getLeft().get(index), index));
+        doc.setState(OriginalDocState.PROCESSING);
+        return Pair.of(docRepository.save(doc), result.getRight());
+      }
     }
 
-    final Pair<AnnotationTaskBlock, Boolean> result =
-        annotationBlockService.getOrCreateAnnotation(annotationType, doc.getText(), false);
-    doc.addBlock(result.getLeft(), 0);
-    doc.setState(OriginalDocState.PROCESSING);
-    return Pair.of(docRepository.save(doc), result.getRight() ? 1 : 0);
+    synchronized (LOCK) {
+      final Pair<AnnotationTaskBlock, Boolean> result =
+          annotationBlockService.getOrCreateAnnotation(annotationType, doc.getText(), false);
+      doc.addBlock(result.getLeft(), 0);
+      doc.setState(OriginalDocState.PROCESSING);
+      return Pair.of(docRepository.save(doc), result.getRight() ? 1 : 0);
+    }
   }
 
   private Pair<List<AnnotationTaskBlock>, Integer> createBlocks(

@@ -1,4 +1,4 @@
-package cn.malgo.annotation.biz.task;
+package cn.malgo.annotation.biz.doc;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;

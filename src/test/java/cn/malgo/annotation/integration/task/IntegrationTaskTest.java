@@ -1,7 +1,7 @@
 package cn.malgo.annotation.integration.task;
 
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
-import cn.malgo.annotation.biz.task.CreateBlocksFromDocBiz;
+import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
@@ -25,8 +25,6 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.IntStream;
 
 import static org.testng.Assert.*;
 
