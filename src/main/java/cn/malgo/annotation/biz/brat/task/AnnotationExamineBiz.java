@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.service.annotation.RequirePermission;
@@ -27,16 +28,19 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
   private final AnnotationExamineService annotationExamineService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   public AnnotationExamineBiz(
       final AnnotationBlockService annotationBlockService,
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService,
-      final AnnotationExamineService annotationExamineService) {
+      final AnnotationExamineService annotationExamineService,
+      final CheckRelationEntityService checkRelationEntityService) {
     this.annotationBlockService = annotationBlockService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.annotationExamineService = annotationExamineService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -58,7 +62,10 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
 
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
+          && checkRelationEntityService.hasIsolatedAnchor(annotationCombine)) {
+        throw new BusinessRuleException("has-isolated-anchor-type", "含有孤立锚点，无法提交！");
+      }
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
         // 原子词入库
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);

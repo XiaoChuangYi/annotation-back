@@ -6,6 +6,7 @@ import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
@@ -22,15 +23,19 @@ import java.util.Optional;
 @Component
 @RequirePermission(Permissions.ANNOTATE)
 public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object> {
+
   private final AnnotationCombineRepository annotationCombineRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   @Autowired
   public AnnotationCommitBiz(
       AnnotationCombineRepository annotationCombineRepository,
-      ExtractAddAtomicTermService extractAddAtomicTermService) {
+      ExtractAddAtomicTermService extractAddAtomicTermService,
+      CheckRelationEntityService checkRelationEntityService) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -51,7 +56,10 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
 
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-
+      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
+          && checkRelationEntityService.hasIsolatedAnchor(annotationCombine)) {
+        throw new BusinessRuleException("has-isolated-anchor-type", "含有孤立锚点，无法提交！");
+      }
       switch (annotationCombine.getStateEnum()) {
         case preAnnotation:
         case annotationProcessing:

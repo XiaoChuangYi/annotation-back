@@ -8,14 +8,17 @@ import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class CheckRelationEntityServiceImpl implements CheckRelationEntityService {
 
   private static final String SPECIAL_TYPE = "Anchor";
@@ -23,7 +26,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
   @Override
   public boolean checkRelationEntityBeforeAdd(
       AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
-    final List<Entity> entities = getEntities(annotationCombine);
+    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
     final List<EntityPair> entityPairs =
         entities
             .stream()
@@ -58,7 +61,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
   @Override
   public boolean checkRelationEntityBeforeUpdate(
       UpdateAnnotationRequest request, AnnotationCombine annotationCombine) {
-    final List<Entity> entities = getEntities(annotationCombine);
+    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
     Optional<Entity> optional =
         entities.stream().filter(entity -> entity.getTag().equals(request.getTag())).findFirst();
     if (optional.isPresent()) {
@@ -113,7 +116,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
     return false;
   }
 
-  private List<Entity> getEntities(final AnnotationCombine annotationCombine) {
+  private AnnotationDocument getAnnotationDocument(final AnnotationCombine annotationCombine) {
     String annotation = "";
     if (StringUtils.equalsAny(
         annotationCombine.getState(),
@@ -129,7 +132,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
     }
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(annotation, annotationDocument);
-    return annotationDocument.getEntities();
+    return annotationDocument;
   }
 
   @Value
@@ -138,5 +141,33 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
     private final int start;
     private final int end;
     private final String type;
+  }
+
+  @Override
+  public boolean hasIsolatedAnchor(AnnotationCombine annotationCombine) {
+    // todo 找出type为Anchor的标签，然后去relation中查找
+    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
+    final List<RelationEntity> relationEntities =
+        getAnnotationDocument(annotationCombine).getRelationEntities();
+    final List<Entity> specialEntities =
+        entities
+            .stream()
+            .filter(entity -> StringUtils.equals(entity.getType(), SPECIAL_TYPE))
+            .collect(Collectors.toList());
+    if (specialEntities.size() > 0) {
+      return specialEntities
+          .stream()
+          .anyMatch(
+              entity ->
+                  relationEntities
+                      .stream()
+                      .noneMatch(
+                          relationEntity ->
+                              StringUtils.equalsAny(
+                                  entity.getTag(),
+                                  relationEntity.getSourceTag(),
+                                  relationEntity.getTargetTag())));
+    }
+    return false;
   }
 }

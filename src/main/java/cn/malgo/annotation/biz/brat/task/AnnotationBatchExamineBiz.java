@@ -3,9 +3,11 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.AnnotationStateBatchRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
@@ -27,16 +29,19 @@ public class AnnotationBatchExamineBiz
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
   private final AnnotationExamineService annotationExamineService;
   private final AnnotationBlockService annotationBlockService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   public AnnotationBatchExamineBiz(
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService,
       final AnnotationExamineService annotationExamineService,
-      final AnnotationBlockService annotationBlockService) {
+      final AnnotationBlockService annotationBlockService,
+      final CheckRelationEntityService checkRelationEntityService) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.annotationExamineService = annotationExamineService;
     this.annotationBlockService = annotationBlockService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -51,6 +56,17 @@ public class AnnotationBatchExamineBiz
     final List<AnnotationCombine> annotationCombines =
         annotationCombineRepository.findAllById(request.getIds());
     if (annotationCombines.size() > 0) {
+      annotationCombines
+          .stream()
+          .forEach(
+              annotationCombine -> {
+                if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
+                    && checkRelationEntityService.hasIsolatedAnchor(annotationCombine)) {
+                  throw new BusinessRuleException(
+                      "has-isolated-anchor-type",
+                      String.format("标注id:%d含有孤立锚点，无法提交！", annotationCombine.getId()));
+                }
+              });
       extractAddAtomicTermService.batchExtractAndAddAtomicTerm(annotationCombines);
       final List<Long> forbidList =
           annotationExamineService.batchAnnotationExamine(annotationCombines);
