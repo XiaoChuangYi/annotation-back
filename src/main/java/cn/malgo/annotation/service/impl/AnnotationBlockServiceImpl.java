@@ -38,7 +38,14 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     this.annotationTaskRepository = annotationTaskRepository;
 
     for (AnnotationTaskBlock block : annotationTaskBlockRepository.findAll()) {
-      cachedBlockIds.put(block.getText(), block.getId());
+      if (block.getAnnotationType() == AnnotationTypeEnum.relation) {
+        cachedBlockIds.computeIfPresent(
+            block.getText(),
+            (text, oldId) -> {
+              log.error("{}, {} has same text", oldId, block.getId());
+              return oldId;
+            });
+      }
     }
   }
 
