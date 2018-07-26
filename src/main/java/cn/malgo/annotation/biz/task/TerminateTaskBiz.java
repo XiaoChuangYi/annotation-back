@@ -8,6 +8,7 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
+import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
@@ -23,14 +24,17 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
   private final AnnotationTaskRepository annotationTaskRepository;
   private final TaskBlockRepository taskBlockRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final AnnotationSummaryService annotationSummaryService;
 
   public TerminateTaskBiz(
       final AnnotationTaskRepository annotationTaskRepository,
       final TaskBlockRepository taskBlockRepository,
-      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationSummaryService annotationSummaryService) {
     this.annotationTaskRepository = annotationTaskRepository;
     this.taskBlockRepository = taskBlockRepository;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.annotationSummaryService = annotationSummaryService;
   }
 
   @Override
@@ -64,6 +68,8 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
       taskBlockRepository.deleteInBatch(
           taskBlockRepository.findByTask_IdAndBlock_StateIn(
               request.getTaskId(), Collections.singletonList(AnnotationTaskState.DOING)));
+
+      annotationSummaryService.updateTaskSummary(annotationTask);
     }
 
     return null;
