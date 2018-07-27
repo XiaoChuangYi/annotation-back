@@ -51,7 +51,7 @@ public class AddAnnotationBiz
       AddAnnotationRequest addAnnotationRequest) {
     if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
       if (checkRelationEntityService.checkRelationEntityBeforeAdd(
-          addAnnotationRequest, annotationCombine)) {
+          addAnnotationRequest, getAnnotation(annotationCombine))) {
         throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
       }
     }

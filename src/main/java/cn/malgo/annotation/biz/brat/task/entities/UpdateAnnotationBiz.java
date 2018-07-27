@@ -50,7 +50,7 @@ public class UpdateAnnotationBiz
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
       if (checkRelationEntityService.checkRelationEntityBeforeUpdate(
-          updateAnnotationRequest, annotationCombine)) {
+          updateAnnotationRequest, getAnnotation(annotationCombine))) {
         throw new InvalidInputException("in-conformity-association-rules", "不符合关联规则，无法更新");
       }
     }

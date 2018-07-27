@@ -2,10 +2,12 @@ package cn.malgo.annotation.biz.brat.task.entities;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationOperateService;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.BusinessRuleException;
@@ -13,11 +15,10 @@ import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.exception.NotFoundException;
 import cn.malgo.service.model.UserDetails;
+import java.util.Optional;
+import javax.annotation.Resource;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.annotation.Resource;
-import java.util.Optional;
 
 public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, AnnotationCombineBratVO>
     extends BaseBiz<REQ, AnnotationCombineBratVO> {
@@ -35,6 +36,8 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
   private AnnotationOperateService annotationRelationService;
 
   @Resource private AnnotationCombineRepository annotationCombineRepository;
+
+  @Resource private AnnotationFactory annotationFactory;
 
   public static void checkPermission(final AnnotationCombine annotation, final UserDetails user) {
     final AnnotationCombineStateEnum state =
@@ -70,6 +73,10 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
       default:
         throw new InternalServerException("未知状态");
     }
+  }
+
+  protected Annotation getAnnotation(final AnnotationCombine annotationCombine) {
+    return this.annotationFactory.create(annotationCombine);
   }
 
   @Nullable

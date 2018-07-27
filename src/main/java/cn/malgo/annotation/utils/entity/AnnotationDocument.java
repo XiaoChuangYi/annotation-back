@@ -4,13 +4,14 @@ import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,6 +40,18 @@ public class AnnotationDocument {
             entity ->
                 entity.getStart() >= position.getStart() && entity.getEnd() <= position.getEnd())
         .collect(Collectors.toList());
+  }
+
+  /**
+   * @param position start & end
+   * @return 找到所有和position有任何交集的entities
+   */
+  public Stream<Entity> getEntitiesIntersect(final BratPosition position) {
+    return entities
+        .stream()
+        .filter(
+            entity ->
+                entity.getEnd() > position.getStart() && entity.getStart() < position.getEnd());
   }
 
   /**
@@ -88,6 +101,19 @@ public class AnnotationDocument {
             entity ->
                 entity.intersectWith(start, end)
                     || (entity.getStart() >= start && entity.getEnd() <= end));
+  }
+
+  /**
+   * @param entity entity
+   * @return entity是否存在关联
+   */
+  public boolean hasRelation(final Entity entity) {
+    return getRelationEntities()
+        .stream()
+        .anyMatch(
+            relation ->
+                StringUtils.equalsAny(
+                    entity.getTag(), relation.getSourceTag(), relation.getTargetTag()));
   }
 
   public Entity getEntity(final String tag) {
