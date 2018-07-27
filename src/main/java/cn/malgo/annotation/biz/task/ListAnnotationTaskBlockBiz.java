@@ -47,15 +47,16 @@ public class ListAnnotationTaskBlockBiz
     return (Specification<AnnotationTaskBlock>)
         (root, criteriaQuery, criteriaBuilder) -> {
           final List<Predicate> predicates = new ArrayList<>();
+
           if (request.getTaskId() != 0) {
             Join<AnnotationTask, TaskBlock> joinA = root.join("taskBlocks", JoinType.LEFT);
             predicates.add(criteriaBuilder.equal(joinA.get("task").get("id"), request.getTaskId()));
           }
+
           if (request.getId() != null && request.getId() != 0) {
-            //            Join<AnnotationTaskBlock, TaskBlock> joinB = root.join("taskBlocks",
-            // JoinType.LEFT);
             predicates.add(criteriaBuilder.equal(root.get("id"), request.getId()));
           }
+
           if (request.getStates() != null && request.getStates().size() > 0) {
             predicates.add(
                 criteriaBuilder
@@ -84,15 +85,14 @@ public class ListAnnotationTaskBlockBiz
             if (request.getRegexMode() == null || !request.getRegexMode()) {
               predicates.add(
                   criteriaBuilder.like(
-                      root.get("AnnotationTaskDoc").get("text"),
-                      String.format("%%%s%%", request.getText())));
+                      root.get("text"), String.format("%%%s%%", request.getText())));
             } else {
               predicates.add(
                   criteriaBuilder.equal(
                       criteriaBuilder.function(
                           "rlike",
                           Integer.class,
-                          root.get("AnnotationTaskDoc").get("text"),
+                          root.get("text"),
                           criteriaBuilder.literal(
                               Pattern.compile(".*" + request.getText() + ".*").toString())),
                       1));
