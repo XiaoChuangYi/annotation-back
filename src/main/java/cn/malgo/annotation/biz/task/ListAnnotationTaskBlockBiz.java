@@ -2,7 +2,6 @@ package cn.malgo.annotation.biz.task;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.TaskBlock;
@@ -15,20 +14,19 @@ import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import java.util.Set;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Component;
-
-import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.ADMIN)
@@ -58,15 +56,14 @@ public class ListAnnotationTaskBlockBiz
           }
 
           if (request.getStates() != null && request.getStates().size() > 0) {
-            predicates.add(
-                criteriaBuilder
-                    .in(root.get("state"))
-                    .value(
-                        request
-                            .getStates()
-                            .stream()
-                            .map(AnnotationTaskState::valueOf)
-                            .collect(Collectors.toList())));
+            final List<AnnotationTaskState> states =
+                request
+                    .getStates()
+                    .stream()
+                    .map(AnnotationTaskState::valueOf)
+                    .collect(Collectors.toList());
+
+            predicates.add(criteriaBuilder.in(root.get("state")).value(states));
           }
 
           if (request.getAnnotationTypes() != null && request.getAnnotationTypes().size() > 0) {
@@ -122,11 +119,21 @@ public class ListAnnotationTaskBlockBiz
   @Override
   protected PageVO<AnnotationTaskBlockResponse> doBiz(
       ListAnnotationTaskBlockRequest request, UserDetails user) {
+    PageRequest page = PageRequest.of(request.getPageIndex() - 1, request.getPageSize());
+
+    if (request.getStates() != null
+        && request.getStates().size() == 1
+        && request.getStates().get(0).equals(AnnotationTaskState.CREATED.name())) {
+      page =
+          PageRequest.of(
+              request.getPageIndex() - 1,
+              request.getPageSize(),
+              Sort.by(Direction.DESC, "nerFreshRate"));
+    }
+
     return new PageVO<>(
         annotationTaskBlockRepository
-            .findAll(
-                queryAnnotationTaskBlockCondition(request),
-                PageRequest.of(request.getPageIndex() - 1, request.getPageSize()))
+            .findAll(queryAnnotationTaskBlockCondition(request), page)
             .map(AnnotationTaskBlockResponse::new));
   }
 }

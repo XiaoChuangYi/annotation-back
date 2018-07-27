@@ -4,12 +4,25 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.Index;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -18,6 +31,7 @@ import java.util.List;
     indexes = {
       @Index(name = "idx_annotation_type", columnList = "annotation_type"),
       @Index(name = "idx_state", columnList = "state"),
+      @Index(columnList = "ner_fresh_rate"),
     })
 @AllArgsConstructor
 @NoArgsConstructor
@@ -43,6 +57,12 @@ public class AnnotationTaskBlock extends BaseEntity {
   @Getter
   @Setter
   private String nerResult;
+
+  /** 实体在之前的实体中未出现的比例 */
+  @Column(name = "ner_fresh_rate", columnDefinition = "double default 0", nullable = false)
+  @Getter
+  @Setter
+  private double nerFreshRate;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "state", nullable = false, length = 16)
