@@ -52,7 +52,13 @@ public class AddAnnotationBiz
     if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
       if (checkRelationEntityService.checkRelationEntityBeforeAdd(
           addAnnotationRequest, annotationCombine)) {
-        throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法新增");
+      }
+      if (checkRelationEntityService.addRelationEntityCheckAnchorSide(
+          addAnnotationRequest, annotationCombine)) {
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-anchor", "不符合关联规则，锚点前实体类型重复，无法新增");
       }
     }
     annotationOperateService.addAnnotation(annotationCombine, addAnnotationRequest);

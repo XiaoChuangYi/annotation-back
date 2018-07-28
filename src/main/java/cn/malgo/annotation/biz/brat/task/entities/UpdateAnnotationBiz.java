@@ -8,6 +8,7 @@ import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationCombineBratVO;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,12 +47,18 @@ public class UpdateAnnotationBiz
       UpdateAnnotationRequest updateAnnotationRequest) {
     if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()) {
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
-          updateAnnotationRequest)) {
+          updateAnnotationRequest)) { // 符合规则的更新
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
       if (checkRelationEntityService.checkRelationEntityBeforeUpdate(
           updateAnnotationRequest, annotationCombine)) {
-        throw new InvalidInputException("in-conformity-association-rules", "不符合关联规则，无法更新");
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法新增");
+      }
+      if (checkRelationEntityService.updateRelationEntityCheckAnchorSide(
+          updateAnnotationRequest, annotationCombine)) {
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-text-cross", "不符合关联规则，锚点前两个实体类型重复，无法更新");
       }
     }
     annotationOperateService.updateAnnotation(annotationCombine, updateAnnotationRequest);
