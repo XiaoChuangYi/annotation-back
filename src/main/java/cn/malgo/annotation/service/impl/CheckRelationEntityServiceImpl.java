@@ -30,7 +30,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
       final Entity entity, final String newType, final int start, final int end) {
     // 允许有Anchor或者相同类型的完全重叠的实体
     return SPECIAL_TYPE.equals(entity.getType())
-        || (newType.equals(entity.getType())
+        || (newType.replace("-and", "").equals(entity.getType())
             && start == entity.getStart()
             && end == entity.getEnd());
   }
@@ -154,7 +154,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                         entityEntityPair.getRight().getStart()))
             .map(entityEntityPair -> entityEntityPair.getLeft().getType())
             .collect(Collectors.toList());
-    if (sourceRangeTypes.contains(addAnnotationRequest.getType())) {
+    if (sourceRangeTypes.contains(addAnnotationRequest.getType().replace("-and", ""))) {
       return true;
     }
     return false;
@@ -202,7 +202,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                           entityEntityPair.getRight().getStart()))
               .map(entityEntityPair -> entityEntityPair.getLeft().getType())
               .collect(Collectors.toList());
-      if (sourceRangeTypes.contains(updateAnnotationRequest.getNewType())) {
+      if (sourceRangeTypes.contains(updateAnnotationRequest.getNewType().replace("-and", ""))) {
         return true;
       }
     }
