@@ -111,7 +111,7 @@ public class ListAnnotationTaskBlockBiz
       throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
     }
 
-    if (request.getPageSize() <= 0 || request.getPageSize() > 50) {
+    if (request.getPageSize() <= 0) {
       throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
     }
   }
