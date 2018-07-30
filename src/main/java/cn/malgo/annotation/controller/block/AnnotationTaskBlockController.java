@@ -7,7 +7,9 @@ import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.DeleteBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.GetAnnotationBlockBiz;
 import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
+import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
@@ -18,16 +20,20 @@ import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2/block")
 public class AnnotationTaskBlockController extends BaseController {
-
+  private final BlockNerUpdater blockNerUpdater;
   private final AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz;
   private final GetAnnotationBlockBiz getAnnotationBlockBiz;
   private final AddBlockAnnotationBiz addBlockAnnotationBiz;
@@ -37,6 +43,7 @@ public class AnnotationTaskBlockController extends BaseController {
   private final ListOverlapEntityBiz listOverlapEntityBiz;
 
   public AnnotationTaskBlockController(
+      final BlockNerUpdater blockNerUpdater,
       AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz,
       GetAnnotationBlockBiz getAnnotationBlockBiz,
       AddBlockAnnotationBiz addBlockAnnotationBiz,
@@ -44,6 +51,7 @@ public class AnnotationTaskBlockController extends BaseController {
       UpdateBlockAnnotationBiz updateBlockAnnotationBiz,
       ListRelevanceAnnotationBiz listRelevanceAnnotationBiz,
       ListOverlapEntityBiz listOverlapEntityBiz) {
+    this.blockNerUpdater = blockNerUpdater;
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
     this.addBlockAnnotationBiz = addBlockAnnotationBiz;
@@ -51,6 +59,29 @@ public class AnnotationTaskBlockController extends BaseController {
     this.updateBlockAnnotationBiz = updateBlockAnnotationBiz;
     this.listRelevanceAnnotationBiz = listRelevanceAnnotationBiz;
     this.listOverlapEntityBiz = listOverlapEntityBiz;
+  }
+
+  // ADMIN ACTIONS
+  @RequestMapping(value = "/update-block-ner", method = RequestMethod.POST)
+  public Response<Boolean> updateBlockNer(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    if (userAccount == null || !userAccount.hasPermission(Permissions.ADMIN)) {
+      throw new BusinessRuleException("permission-deinied", "无权限");
+    }
+
+    blockNerUpdater.updateBlockNer();
+    return new Response<>(true);
+  }
+
+  @RequestMapping(value = "/update-block-ner-rate", method = RequestMethod.POST)
+  public Response<Boolean> updateBlockNerRate(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    if (userAccount == null || !userAccount.hasPermission(Permissions.ADMIN)) {
+      throw new BusinessRuleException("permission-deinied", "无权限");
+    }
+
+    blockNerUpdater.updateBlockNerRate();
+    return new Response<>(true);
   }
 
   /** ANNOTATED或FINISHED状态的block可以被打回重新标注或审核 */

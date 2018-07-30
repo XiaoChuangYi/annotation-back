@@ -6,6 +6,8 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -53,5 +55,8 @@ public interface AnnotationTaskBlockRepository
   List<AnnotationTaskBlock> findAllByStateInAndIdIn(
       List<AnnotationTaskState> stateList, List<Long> ids);
 
-  List<AnnotationTaskBlock> findAllByStateIn(List<AnnotationTaskState> stateList);
+  List<AnnotationTaskBlock> findAllByStateIn(List<AnnotationTaskState> stateList, Pageable page);
+
+  Page<AnnotationTaskBlock> findAllByAnnotationTypeAndStateIn(
+      final AnnotationTypeEnum annotationType, List<AnnotationTaskState> stateList, Pageable page);
 }

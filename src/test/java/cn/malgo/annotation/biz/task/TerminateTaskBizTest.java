@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.TestTransaction;
@@ -81,22 +82,26 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
     //        AnnotationTaskState.FINISHED);
     assertEquals(
         annotationTaskBlockRepository
-            .findAllByStateIn(Collections.singletonList(AnnotationTaskState.DOING))
+            .findAllByStateIn(
+                Collections.singletonList(AnnotationTaskState.DOING), PageRequest.of(0, 100))
             .size(),
         1);
     assertEquals(
         annotationTaskBlockRepository
-            .findAllByStateIn(Collections.singletonList(AnnotationTaskState.FINISHED))
+            .findAllByStateIn(
+                Collections.singletonList(AnnotationTaskState.FINISHED), PageRequest.of(0, 100))
             .size(),
         1);
     assertEquals(
         annotationTaskBlockRepository
-            .findAllByStateIn(Collections.singletonList(AnnotationTaskState.ANNOTATED))
+            .findAllByStateIn(
+                Collections.singletonList(AnnotationTaskState.ANNOTATED), PageRequest.of(0, 100))
             .size(),
         0);
     assertEquals(
         annotationTaskBlockRepository
-            .findAllByStateIn(Collections.singletonList(AnnotationTaskState.CREATED))
+            .findAllByStateIn(
+                Collections.singletonList(AnnotationTaskState.CREATED), PageRequest.of(0, 100))
             .size(),
         0);
   }
