@@ -1,4 +1,6 @@
 import asyncio
+import datetime
+
 import aiohttp
 import json
 
@@ -15,7 +17,12 @@ async def create_blocks(session, url, docs, annotation_type):
     print('create blocks from docs(count: %s), annotation type: %s' % (len(docs), annotation_type))
     async with session.post('%s/api/v2/doc/create-blocks' % url, json={'docIds': list(map(lambda doc: doc['id'], docs)), 'annotationType': annotation_type}) as res:
         text = await res.text()
-        return json.loads(text)['data']['createdBlocks']
+        try:
+            result = json.loads(text)
+            return result['data']['createdBlocks'] if result and result['data'] else 0
+        except:
+            print('error %s' % ','.join(list(map(lambda doc: str(doc['id']), docs))))
+            return 0
 
 
 async def main(states, count, annotation_type, url, username, password):
@@ -27,9 +34,11 @@ async def main(states, count, annotation_type, url, username, password):
 
         created_doc_count = 0
         while created_doc_count < count:
-            page_size = min(100, count - created_doc_count)
+            page_size = min(10, count - created_doc_count)
             docs = await get_docs(session, url, page_size, states)
-            print('docs get, total: %s, current count: %s' % (docs['total'], len(docs['dataList'])))
+            if not (docs and docs['dataList']):
+                continue
+            print('%s: docs get, total: %s, current count: %s' % (datetime.datetime.now(), docs['total'], len(docs['dataList'])))
             if len(docs['dataList']) == 0:
                 break
 
