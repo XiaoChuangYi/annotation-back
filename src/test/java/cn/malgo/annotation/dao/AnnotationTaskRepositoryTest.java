@@ -46,11 +46,17 @@ public class AnnotationTaskRepositoryTest extends AbstractTransactionalTestNGSpr
             .size(),
         1);
     assertEquals(taskRepository.getOne(task.getId()).getTaskBlocks().size(), 1);
-    //    assertEquals(
-    //        taskRepository.getOne(task.getId()).getTaskBlocks().get(0).getBlock().getText(),
-    //        "test-text");
-    //    assertEquals(
-    //        taskRepository.getOne(task.getId()).getTaskBlocks().get(0).getBlock().getAnnotation(),
-    // "");
+    assertEquals(
+        taskRepository.getOne(task.getId()).getTaskBlocks().iterator().next().getBlock().getText(),
+        "test-text");
+    assertEquals(
+        taskRepository
+            .getOne(task.getId())
+            .getTaskBlocks()
+            .iterator()
+            .next()
+            .getBlock()
+            .getAnnotation(),
+        "");
   }
 }
