@@ -4,7 +4,9 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -59,7 +61,7 @@ public class AnnotationTask extends BaseEntity {
       cascade = CascadeType.ALL,
       orphanRemoval = true)
   @Getter
-  private List<TaskBlock> taskBlocks = new ArrayList<>();
+  private Set<TaskBlock> taskBlocks = new HashSet<>();
 
   @Column(name = "total_branch_num", nullable = false, columnDefinition = "int(11) default 0")
   @Getter

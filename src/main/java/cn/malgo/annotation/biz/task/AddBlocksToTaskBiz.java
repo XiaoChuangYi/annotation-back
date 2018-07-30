@@ -11,6 +11,7 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.ArrayList;
@@ -46,6 +47,13 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
 
   @Override
   protected Object doBiz(AddBlocksToTaskRequest request, UserDetails user) {
+    final int num =
+        annotationTaskBlockRepository
+            .findByIdInAndTaskBlocks_Task_Id(request.getBlockIds(), request.getTaskId())
+            .size();
+    if (num == request.getBlockIds().size()) {
+      throw new BusinessRuleException("this-task-had-those-blocks", "该批次中已经存在这些语料，无法继续新增");
+    }
     final AnnotationTask annotationTask = annotationTaskRepository.getOne(request.getTaskId());
     final List<AnnotationCombine> annotationCombines = new ArrayList<>();
     annotationTaskBlockRepository

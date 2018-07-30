@@ -39,6 +39,8 @@ public interface AnnotationTaskBlockRepository
   Set<AnnotationTaskBlock> findByStateInAndTaskBlocks_Task_Id(
       List<AnnotationTaskState> states, long taskId);
 
+  Set<AnnotationTaskBlock> findByIdInAndTaskBlocks_Task_Id(List<Long> blockIds, long taskId);
+
   default Pair<AnnotationTaskBlock, Boolean> getOrCreateBlock(
       final AnnotationTypeEnum annotationType, final String text) {
     final AnnotationTaskBlock block =

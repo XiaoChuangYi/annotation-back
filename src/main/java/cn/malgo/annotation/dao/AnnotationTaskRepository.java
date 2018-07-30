@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface AnnotationTaskRepository
     extends JpaRepository<AnnotationTask, Long>, JpaSpecificationExecutor<AnnotationTask> {
   default AnnotationTask updateState(final AnnotationTask task) {
-    final List<TaskBlock> taskBlocks = task.getTaskBlocks();
+    final Set<TaskBlock> taskBlocks = task.getTaskBlocks();
 
     if (taskBlocks.size() == 0) {
       return task;
