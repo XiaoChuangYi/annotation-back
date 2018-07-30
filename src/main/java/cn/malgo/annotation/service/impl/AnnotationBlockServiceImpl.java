@@ -39,12 +39,12 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
 
     for (AnnotationTaskBlock block : annotationTaskBlockRepository.findAll()) {
       if (block.getAnnotationType() == AnnotationTypeEnum.relation) {
-        cachedBlockIds.computeIfPresent(
-            block.getText(),
-            (text, oldId) -> {
-              log.error("{}, {} has same text", oldId, block.getId());
-              return oldId;
-            });
+        if (cachedBlockIds.containsKey(block.getText())) {
+          log.error("{}, {} has same text", cachedBlockIds.get(block.getText()), block.getId());
+          continue;
+        }
+
+        cachedBlockIds.put(block.getText(), block.getId());
       }
     }
   }

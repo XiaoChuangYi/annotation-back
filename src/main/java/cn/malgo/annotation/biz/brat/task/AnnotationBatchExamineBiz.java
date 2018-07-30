@@ -7,6 +7,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.AnnotationStateBatchRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.service.annotation.RequirePermission;
@@ -30,18 +31,21 @@ public class AnnotationBatchExamineBiz
   private final AnnotationExamineService annotationExamineService;
   private final AnnotationBlockService annotationBlockService;
   private final CheckRelationEntityService checkRelationEntityService;
+  private final AnnotationFactory annotationFactory;
 
   public AnnotationBatchExamineBiz(
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService,
       final AnnotationExamineService annotationExamineService,
       final AnnotationBlockService annotationBlockService,
-      final CheckRelationEntityService checkRelationEntityService) {
+      final CheckRelationEntityService checkRelationEntityService,
+      final AnnotationFactory annotationFactory) {
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.annotationExamineService = annotationExamineService;
     this.annotationBlockService = annotationBlockService;
     this.checkRelationEntityService = checkRelationEntityService;
+    this.annotationFactory = annotationFactory;
   }
 
   @Override
@@ -61,7 +65,8 @@ public class AnnotationBatchExamineBiz
           .forEach(
               annotationCombine -> {
                 if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
-                    && checkRelationEntityService.hasIsolatedAnchor(annotationCombine)) {
+                    && checkRelationEntityService.hasIsolatedAnchor(
+                        annotationFactory.create(annotationCombine))) {
                   throw new BusinessRuleException(
                       "has-isolated-anchor-type",
                       String.format("标注id:%d含有孤立锚点，无法提交！", annotationCombine.getId()));

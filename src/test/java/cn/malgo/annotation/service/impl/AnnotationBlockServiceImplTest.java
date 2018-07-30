@@ -57,6 +57,7 @@ public class AnnotationBlockServiceImplTest {
                 "test",
                 "",
                 "",
+                0,
                 AnnotationTaskState.DOING,
                 AnnotationTypeEnum.wordPos,
                 new ArrayList<>(),

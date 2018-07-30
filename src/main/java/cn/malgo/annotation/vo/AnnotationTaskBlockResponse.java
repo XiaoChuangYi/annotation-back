@@ -18,6 +18,8 @@ public class AnnotationTaskBlockResponse {
 
   private final AnnotationTypeEnum annotationType;
 
+  private final double nerFreshRate;
+
   public AnnotationTaskBlockResponse(final AnnotationTaskBlock block) {
     this(block, true);
   }
@@ -27,6 +29,7 @@ public class AnnotationTaskBlockResponse {
     this.text = block.getText();
     this.state = block.getState().name();
     this.annotationType = block.getAnnotationType();
+    this.nerFreshRate = block.getNerFreshRate();
 
     if (parseAnnotation) {
       this.annotation =

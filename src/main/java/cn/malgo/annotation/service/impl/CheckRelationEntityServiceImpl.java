@@ -1,5 +1,6 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
@@ -8,13 +9,12 @@ import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
-import cn.malgo.core.definition.RelationEntity;
+import cn.malgo.core.definition.brat.BratPosition;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -25,152 +25,82 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
 
   private static final String SPECIAL_TYPE = "Anchor";
 
+  private boolean isValidEntity(
+      final Entity entity, final String newType, final int start, final int end) {
+    // 允许有Anchor或者相同类型的完全重叠的实体
+    return SPECIAL_TYPE.equals(entity.getType())
+        || (newType.equals(entity.getType())
+            && start == entity.getStart()
+            && end == entity.getEnd());
+  }
+
   @Override
   public boolean checkRelationEntityBeforeAdd(
-      AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
-    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
-    final List<EntityPair> entityPairs =
-        entities
-            .stream()
-            .map(entity -> new EntityPair(entity.getStart(), entity.getEnd(), entity.getType()))
-            .collect(Collectors.toList());
-    if (SPECIAL_TYPE.equals(addAnnotationRequest.getType())) {
+      final AddAnnotationRequest request, final Annotation annotation) {
+    if (SPECIAL_TYPE.equals(request.getType())) {
       return false;
     }
-    return entities
-        .stream()
-        .anyMatch(
-            entity -> {
-              final boolean cross =
-                  !(entity.getStart() >= addAnnotationRequest.getEndPosition()
-                      || entity.getEnd() <= addAnnotationRequest.getStartPosition());
-              if (cross) {
-                if (entityPairs.contains(
-                    new EntityPair(
-                        addAnnotationRequest.getStartPosition(),
-                        addAnnotationRequest.getEndPosition(),
-                        addAnnotationRequest.getType()))) {
-                  return false;
-                } else {
-                  return true;
-                }
-              } else {
-                return false;
-              }
-            });
+
+    return !annotation
+        .getDocument()
+        .getEntitiesIntersect(
+            new BratPosition(request.getStartPosition(), request.getEndPosition()))
+        .allMatch(
+            entity ->
+                isValidEntity(
+                    entity,
+                    request.getType(),
+                    request.getStartPosition(),
+                    request.getEndPosition()));
   }
 
   @Override
   public boolean checkRelationEntityBeforeUpdate(
-      UpdateAnnotationRequest request, AnnotationCombine annotationCombine) {
-    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
-    Optional<Entity> optional =
-        entities.stream().filter(entity -> entity.getTag().equals(request.getTag())).findFirst();
-    if (optional.isPresent()) {
-      final Entity current = optional.get();
-      if (entities
-              .stream()
-              .filter(
-                  entity ->
-                      entity.getStart() == current.getStart()
-                          && entity.getEnd() == current.getEnd())
-              .count()
-          == 1) {
-        return false;
-      }
-      // 更新为Anchor，不限制
-      if (StringUtils.equals(SPECIAL_TYPE, request.getNewType())) {
-        return false;
-      }
-      // 由Anchor更新为其它类型
-      if (StringUtils.equals(current.getType(), SPECIAL_TYPE)
-          && entities
-                  .stream()
-                  .filter(
-                      entity ->
-                          !entity.getType().equals(SPECIAL_TYPE)
-                              && entity.getStart() == current.getStart()
-                              && entity.getEnd() == current.getEnd())
-                  .count()
-              == 0) {
-        return false;
-      }
-
-      if (StringUtils.equals(current.getType(), SPECIAL_TYPE)
-          && entities
-              .stream()
-              .filter(
-                  entity ->
-                      !entity.getType().equals(SPECIAL_TYPE)
-                          && entity.getStart() == current.getStart()
-                          && entity.getEnd() == current.getEnd())
-              .allMatch(entity -> entity.getType().equals(request.getNewType()))) {
-        return false;
-      }
-      return entities
-          .stream()
-          .noneMatch(
-              entity ->
-                  entity.getStart() == current.getStart()
-                      && entity.getEnd() == current.getEnd()
-                      && entity.getType() == request.getNewType());
+      UpdateAnnotationRequest request, Annotation annotation) {
+    if (StringUtils.equals(SPECIAL_TYPE, request.getNewType())) {
+      // 不允许更新为Anchor
+      return true;
     }
-    return false;
-  }
 
-  private AnnotationDocument getAnnotationDocument(final AnnotationCombine annotationCombine) {
-    String annotation = "";
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.preAnnotation.name(),
-        AnnotationCombineStateEnum.annotationProcessing.name())) {
-      annotation = annotationCombine.getFinalAnnotation();
+    final Entity current = annotation.getDocument().getEntity(request.getTag());
+    if (current == null) {
+      return false;
     }
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.abandon.name(),
-        AnnotationCombineStateEnum.preExamine.name())) {
-      annotation = annotationCombine.getReviewedAnnotation();
+
+    if (SPECIAL_TYPE.equals(current.getType())) {
+      return true;
     }
-    AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(annotation, annotationDocument);
-    return annotationDocument;
-  }
 
-  @Value
-  static class EntityPair {
-
-    private final int start;
-    private final int end;
-    private final String type;
+    return !annotation
+        .getDocument()
+        .getEntitiesIntersect(new BratPosition(current.getStart(), current.getEnd()))
+        .allMatch(
+            entity ->
+                entity == current
+                    || isValidEntity(
+                        entity,
+                        request.getNewType(),
+                        request.getStartPosition(),
+                        request.getEndPosition()));
   }
 
   @Override
-  public boolean hasIsolatedAnchor(AnnotationCombine annotationCombine) {
-    // todo 找出type为Anchor的标签，然后去relation中查找
-    final List<Entity> entities = getAnnotationDocument(annotationCombine).getEntities();
-    final List<RelationEntity> relationEntities =
-        getAnnotationDocument(annotationCombine).getRelationEntities();
+  public boolean hasIsolatedAnchor(Annotation annotation) {
     final List<Entity> specialEntities =
-        entities
+        annotation
+            .getDocument()
+            .getEntities()
             .stream()
             .filter(entity -> StringUtils.equals(entity.getType(), SPECIAL_TYPE))
             .collect(Collectors.toList());
-    if (specialEntities.size() > 0) {
-      return specialEntities
-          .stream()
-          .anyMatch(
-              entity ->
-                  relationEntities
-                      .stream()
-                      .noneMatch(
-                          relationEntity ->
-                              StringUtils.equalsAny(
-                                  entity.getTag(),
-                                  relationEntity.getSourceTag(),
-                                  relationEntity.getTargetTag())));
+
+    if (specialEntities.size() == 0) {
+      return false;
     }
-    return false;
+
+    return specialEntities
+        .stream()
+        .anyMatch(entity -> !annotation.getDocument().hasRelation(entity));
   }
 
   @Override
@@ -218,6 +148,25 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
       return true;
     }
     return false;
+  }
+
+  private AnnotationDocument getAnnotationDocument(AnnotationCombine annotationCombine) {
+    String annotation = "";
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.preAnnotation.name(),
+        AnnotationCombineStateEnum.annotationProcessing.name())) {
+      annotation = annotationCombine.getFinalAnnotation();
+    }
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.abandon.name(),
+        AnnotationCombineStateEnum.preExamine.name())) {
+      annotation = annotationCombine.getReviewedAnnotation();
+    }
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(annotation, annotationDocument);
+    return annotationDocument;
   }
 
   @Override

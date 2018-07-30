@@ -3,22 +3,20 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationExamineService;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
-import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import org.springframework.stereotype.Component;
-
 import java.util.Optional;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.EXAMINE)
@@ -29,18 +27,21 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
   private final AnnotationExamineService annotationExamineService;
   private final CheckRelationEntityService checkRelationEntityService;
+  private final AnnotationFactory annotationFactory;
 
   public AnnotationExamineBiz(
       final AnnotationBlockService annotationBlockService,
       final AnnotationCombineRepository annotationCombineRepository,
       final ExtractAddAtomicTermService extractAddAtomicTermService,
       final AnnotationExamineService annotationExamineService,
-      final CheckRelationEntityService checkRelationEntityService) {
+      final CheckRelationEntityService checkRelationEntityService,
+      final AnnotationFactory annotationFactory) {
     this.annotationBlockService = annotationBlockService;
     this.annotationCombineRepository = annotationCombineRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.annotationExamineService = annotationExamineService;
     this.checkRelationEntityService = checkRelationEntityService;
+    this.annotationFactory = annotationFactory;
   }
 
   @Override
@@ -63,7 +64,8 @@ public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateReques
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.relation.ordinal()
-          && checkRelationEntityService.hasIsolatedAnchor(annotationCombine)) {
+          && checkRelationEntityService.hasIsolatedAnchor(
+              annotationFactory.create(annotationCombine))) {
         throw new BusinessRuleException("has-isolated-anchor-type", "含有孤立锚点，无法提交！");
       }
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) {
