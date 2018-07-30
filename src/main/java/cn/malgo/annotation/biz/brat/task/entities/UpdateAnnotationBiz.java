@@ -56,7 +56,7 @@ public class UpdateAnnotationBiz
             "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法更新");
       }
       if (checkRelationEntityService.updateRelationEntityCheckAnchorSide(
-          updateAnnotationRequest, annotationCombine)) {
+          updateAnnotationRequest, getAnnotation(annotationCombine))) {
         throw new BusinessRuleException(
             "in-conformity-association-rules-text-cross", "不符合关联规则，锚点前两个实体类型重复，无法更新");
       }

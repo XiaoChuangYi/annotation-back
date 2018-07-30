@@ -12,10 +12,10 @@ public interface CheckRelationEntityService {
       UpdateAnnotationRequest request, Annotation annotationCombine);
 
   boolean addRelationEntityCheckAnchorSide(
-      AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine);
+      AddAnnotationRequest addAnnotationRequest, Annotation annotationCombine);
 
   boolean updateRelationEntityCheckAnchorSide(
-      UpdateAnnotationRequest updateAnnotationRequest, AnnotationCombine annotationCombine);
+      UpdateAnnotationRequest updateAnnotationRequest, Annotation annotationCombine);
 
   boolean hasIsolatedAnchor(Annotation annotationCombine);
 }

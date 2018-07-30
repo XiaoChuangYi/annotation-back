@@ -3,12 +3,16 @@ package cn.malgo.annotation.biz.brat.block;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
+import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -21,14 +25,17 @@ public class UpdateBlockAnnotationBiz
   private final AnnotationWriteOperateService annotationWriteOperateService;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   public UpdateBlockAnnotationBiz(
       AnnotationWriteOperateService annotationWriteOperateService,
       AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService,
+      CheckRelationEntityService checkRelationEntityService) {
     this.annotationWriteOperateService = annotationWriteOperateService;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -58,7 +65,9 @@ public class UpdateBlockAnnotationBiz
   AnnotationBlockBratVO doInternalProcess(
       AnnotationTaskBlock annotationTaskBlock,
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
-    checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock);
+    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation) {
+      checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock);
+    }
     final String annotation =
         annotationWriteOperateService.updateMetaDataAnnotation(
             updateAnnotationGroupRequest,
@@ -84,6 +93,32 @@ public class UpdateBlockAnnotationBiz
           updateAnnotationGroupRequest, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
+    }
+    if (checkRelationEntityService.checkRelationEntityBeforeUpdate(
+        new UpdateAnnotationRequest(
+            updateAnnotationGroupRequest.getId(),
+            updateAnnotationGroupRequest.getTag(),
+            updateAnnotationGroupRequest.getNewType(),
+            "",
+            updateAnnotationGroupRequest.getStartPosition(),
+            updateAnnotationGroupRequest.getEndPosition(),
+            updateAnnotationGroupRequest.getTerm()),
+        getAnnotation(annotationTaskBlock))) {
+      throw new BusinessRuleException(
+          "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法更新");
+    }
+    if (checkRelationEntityService.updateRelationEntityCheckAnchorSide(
+        new UpdateAnnotationRequest(
+            updateAnnotationGroupRequest.getId(),
+            updateAnnotationGroupRequest.getTag(),
+            updateAnnotationGroupRequest.getNewType(),
+            "",
+            updateAnnotationGroupRequest.getStartPosition(),
+            updateAnnotationGroupRequest.getEndPosition(),
+            updateAnnotationGroupRequest.getTerm()),
+        getAnnotation(annotationTaskBlock))) {
+      throw new BusinessRuleException(
+          "in-conformity-association-rules-text-cross", "不符合关联规则，锚点前两个实体类型重复，无法更新");
     }
   }
 }

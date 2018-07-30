@@ -1,13 +1,9 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
 import cn.malgo.annotation.service.CheckRelationEntityService;
-import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
-import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import java.util.Comparator;
@@ -108,15 +104,16 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
         .anyMatch(entity -> !annotation.getDocument().hasRelation(entity));
   }
 
-  private List<Pair<Entity, Entity>> getRangeTypeEntityPairList(
-      AnnotationCombine annotationCombine) {
+  private List<Pair<Entity, Entity>> getRangeTypeEntityPairList(Annotation annotation) {
     final List<Entity> sortedEntities =
-        getAnnotationDocument(annotationCombine)
+        annotation
+            .getDocument()
             .getEntities()
             .stream()
             .sorted(Comparator.comparing(entity -> entity.getStart()))
             .collect(Collectors.toList());
-    return getAnnotationDocument(annotationCombine)
+    return annotation
+        .getDocument()
         .getRelationEntities()
         .stream()
         .filter(relationEntity -> relationEntity.getType().equals(SPECIAL_RELATION_TYPE))
@@ -142,9 +139,9 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
 
   @Override
   public boolean addRelationEntityCheckAnchorSide(
-      AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
+      AddAnnotationRequest addAnnotationRequest, Annotation annotation) {
     final List<String> sourceRangeTypes =
-        getRangeTypeEntityPairList(annotationCombine)
+        getRangeTypeEntityPairList(annotation)
             .stream()
             .filter(
                 entityEntityPair ->
@@ -160,31 +157,13 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
     return false;
   }
 
-  private AnnotationDocument getAnnotationDocument(AnnotationCombine annotationCombine) {
-    String annotation = "";
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.preAnnotation.name(),
-        AnnotationCombineStateEnum.annotationProcessing.name())) {
-      annotation = annotationCombine.getFinalAnnotation();
-    }
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.abandon.name(),
-        AnnotationCombineStateEnum.preExamine.name())) {
-      annotation = annotationCombine.getReviewedAnnotation();
-    }
-    AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(annotation, annotationDocument);
-    return annotationDocument;
-  }
-
   @Override
   public boolean updateRelationEntityCheckAnchorSide(
-      UpdateAnnotationRequest updateAnnotationRequest, AnnotationCombine annotationCombine) {
+      UpdateAnnotationRequest updateAnnotationRequest, Annotation annotation) {
     // 通过tag找到具体的实体
     final Optional<Entity> optional =
-        getAnnotationDocument(annotationCombine)
+        annotation
+            .getDocument()
             .getEntities()
             .stream()
             .filter(entity -> StringUtils.equals(entity.getTag(), updateAnnotationRequest.getTag()))
@@ -192,7 +171,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
     if (optional.isPresent()) {
       final Entity updateEntity = optional.get();
       final List<String> sourceRangeTypes =
-          getRangeTypeEntityPairList(annotationCombine)
+          getRangeTypeEntityPairList(annotation)
               .stream()
               .filter(
                   entityEntityPair ->

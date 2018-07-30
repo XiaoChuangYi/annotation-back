@@ -3,12 +3,16 @@ package cn.malgo.annotation.biz.brat.block;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
+import cn.malgo.annotation.request.brat.AddAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -21,14 +25,17 @@ public class AddBlockAnnotationBiz
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationWriteOperateService annotationWriteOperateService;
   private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
+  private final CheckRelationEntityService checkRelationEntityService;
 
   public AddBlockAnnotationBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationWriteOperateService annotationWriteOperateService,
-      final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService) {
+      final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService,
+      final CheckRelationEntityService checkRelationEntityService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationWriteOperateService = annotationWriteOperateService;
     this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
+    this.checkRelationEntityService = checkRelationEntityService;
   }
 
   @Override
@@ -68,7 +75,9 @@ public class AddBlockAnnotationBiz
   @Override
   AnnotationBlockBratVO doInternalProcess(
       AnnotationTaskBlock annotationTaskBlock, AddAnnotationGroupRequest request) {
-    checkRuleBeforeAddRelation(request, annotationTaskBlock);
+    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation) {
+      checkRuleBeforeAddRelation(request, annotationTaskBlock);
+    }
     final String annotation =
         annotationWriteOperateService.addMetaDataAnnotation(
             request,
@@ -87,6 +96,29 @@ public class AddBlockAnnotationBiz
           request, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
       }
+    }
+    if (checkRelationEntityService.checkRelationEntityBeforeAdd(
+        new AddAnnotationRequest(
+            request.getId(),
+            request.getTerm(),
+            request.getType(),
+            request.getStartPosition(),
+            request.getEndPosition(),
+            ""),
+        getAnnotation(annotationTaskBlock))) {
+      throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
+    }
+    if (checkRelationEntityService.addRelationEntityCheckAnchorSide(
+        new AddAnnotationRequest(
+            request.getId(),
+            request.getTerm(),
+            request.getType(),
+            request.getStartPosition(),
+            request.getEndPosition(),
+            ""),
+        getAnnotation(annotationTaskBlock))) {
+      throw new BusinessRuleException(
+          "in-conformity-association-rules-anchor", "不符合关联规则，锚点前实体类型重复，无法新增");
     }
   }
 }

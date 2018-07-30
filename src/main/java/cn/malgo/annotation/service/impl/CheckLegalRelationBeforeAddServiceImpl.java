@@ -67,23 +67,11 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
     final List<RelationLimitRule> relationLimitRules = relationLimitRuleRepository.findAll();
     AnnotationCombine annotationCombine =
         annotationCombineRepository.getOne(updateAnnotationRequest.getId());
-    String annotation = "";
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.preAnnotation.name(),
-        AnnotationCombineStateEnum.annotationProcessing.name())) {
-      annotation = annotationCombine.getFinalAnnotation();
-    }
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.abandon.name(),
-        AnnotationCombineStateEnum.preExamine.name())) {
-      annotation = annotationCombine.getReviewedAnnotation();
-    }
-    final List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(annotation);
+    final List<Entity> entities =
+        AnnotationConvert.getEntitiesFromAnnotation(getAnnotation(annotationCombine));
     final List<RelationLimitRulePair> sourceRelationLimitRulePairs =
         getSourceRelationLimitRulePairs(
-            annotation,
+            getAnnotation(annotationCombine),
             updateAnnotationRequest.getTag(),
             updateAnnotationRequest.getNewType(),
             entities);
@@ -92,7 +80,7 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
       // 作为target继续
       final List<RelationLimitRulePair> targetRelationLimitRulePairs =
           getTargetRelationLimitRulePairs(
-              annotation,
+              getAnnotation(annotationCombine),
               updateAnnotationRequest.getTag(),
               updateAnnotationRequest.getNewType(),
               entities);
@@ -203,26 +191,12 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
         annotationCombineRepository.findById(updateRelationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-
-      String annotation = "";
-      if (StringUtils.equalsAny(
-          annotationCombine.getState(),
-          AnnotationCombineStateEnum.preAnnotation.name(),
-          AnnotationCombineStateEnum.annotationProcessing.name())) {
-        annotation = annotationCombine.getFinalAnnotation();
-      }
-      if (StringUtils.equalsAny(
-          annotationCombine.getState(),
-          AnnotationCombineStateEnum.abandon.name(),
-          AnnotationCombineStateEnum.preExamine.name())) {
-        annotation = annotationCombine.getReviewedAnnotation();
-      }
       final RelationEntity relationEntity =
           AnnotationConvert.getRelationEntityFromAnnotation(
-              annotation, updateRelationRequest.getReTag());
+              getAnnotation(annotationCombine), updateRelationRequest.getReTag());
       return isLegal(
-          getEntityType(annotation, relationEntity.getSourceTag()),
-          getEntityType(annotation, relationEntity.getTargetTag()),
+          getEntityType(getAnnotation(annotationCombine), relationEntity.getSourceTag()),
+          getEntityType(getAnnotation(annotationCombine), relationEntity.getTargetTag()),
           updateRelationRequest.getRelation());
     }
     return false;
@@ -234,26 +208,29 @@ public class CheckLegalRelationBeforeAddServiceImpl implements CheckLegalRelatio
         annotationCombineRepository.findById(addRelationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationCombine annotationCombine = optional.get();
-
-      String annotation = "";
-      if (StringUtils.equalsAny(
-          annotationCombine.getState(),
-          AnnotationCombineStateEnum.preAnnotation.name(),
-          AnnotationCombineStateEnum.annotationProcessing.name())) {
-        annotation = annotationCombine.getFinalAnnotation();
-      }
-      if (StringUtils.equalsAny(
-          annotationCombine.getState(),
-          AnnotationCombineStateEnum.abandon.name(),
-          AnnotationCombineStateEnum.preExamine.name())) {
-        annotation = annotationCombine.getReviewedAnnotation();
-      }
       return isLegal(
-          getEntityType(annotation, addRelationRequest.getSourceTag()),
-          getEntityType(annotation, addRelationRequest.getTargetTag()),
+          getEntityType(getAnnotation(annotationCombine), addRelationRequest.getSourceTag()),
+          getEntityType(getAnnotation(annotationCombine), addRelationRequest.getTargetTag()),
           addRelationRequest.getRelation());
     }
     return false;
+  }
+
+  private String getAnnotation(AnnotationCombine annotationCombine) {
+    String annotation = "";
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.preAnnotation.name(),
+        AnnotationCombineStateEnum.annotationProcessing.name())) {
+      annotation = annotationCombine.getFinalAnnotation();
+    }
+    if (StringUtils.equalsAny(
+        annotationCombine.getState(),
+        AnnotationCombineStateEnum.abandon.name(),
+        AnnotationCombineStateEnum.preExamine.name())) {
+      annotation = annotationCombine.getReviewedAnnotation();
+    }
+    return annotation;
   }
 
   private String getEntityType(String annotation, String entityTag) {

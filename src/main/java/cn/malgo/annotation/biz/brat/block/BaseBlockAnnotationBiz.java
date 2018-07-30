@@ -1,8 +1,11 @@
 package cn.malgo.annotation.biz.brat.block;
 
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dto.Annotation;
+import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -17,6 +20,8 @@ public abstract class BaseBlockAnnotationBiz<
     extends BaseBiz<REQ, AnnotationBlockBratVO> {
 
   @Resource private AnnotationTaskBlockRepository annotationTaskBlockRepository;
+
+  @Resource private AnnotationFactory annotationFactory;
 
   @Override
   protected void validateRequest(REQ req) throws InvalidInputException {
@@ -37,4 +42,8 @@ public abstract class BaseBlockAnnotationBiz<
 
   abstract AnnotationBlockBratVO doInternalProcess(
       AnnotationTaskBlock annotationTaskBlock, REQ req);
+
+  protected Annotation getAnnotation(final AnnotationTaskBlock annotationTaskBlock) {
+    return this.annotationFactory.create(annotationTaskBlock);
+  }
 }

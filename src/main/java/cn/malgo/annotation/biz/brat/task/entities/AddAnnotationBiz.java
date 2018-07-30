@@ -55,7 +55,7 @@ public class AddAnnotationBiz
         throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
       }
       if (checkRelationEntityService.addRelationEntityCheckAnchorSide(
-          addAnnotationRequest, annotationCombine)) {
+          addAnnotationRequest, getAnnotation(annotationCombine))) {
         throw new BusinessRuleException(
             "in-conformity-association-rules-anchor", "不符合关联规则，锚点前实体类型重复，无法新增");
       }
