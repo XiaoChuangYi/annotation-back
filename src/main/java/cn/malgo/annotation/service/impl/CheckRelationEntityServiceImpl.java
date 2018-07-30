@@ -14,9 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class CheckRelationEntityServiceImpl implements CheckRelationEntityService {
 
   private static final String SPECIAL_TYPE = "Anchor";
+  private static final String SPECIAL_RELATION_TYPE = "range";
 
   private boolean isValidEntity(
       final Entity entity, final String newType, final int start, final int end) {
@@ -32,6 +33,10 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
         || (newType.equals(entity.getType())
             && start == entity.getStart()
             && end == entity.getEnd());
+  }
+
+  private boolean isMedian(int left, int middle, int right) {
+    return (left < middle && middle < right) || (right < middle && middle < left);
   }
 
   @Override
@@ -103,48 +108,53 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
         .anyMatch(entity -> !annotation.getDocument().hasRelation(entity));
   }
 
-  @Override
-  public boolean addRelationEntityCheckAnchorSide(
-      AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
+  private List<Pair<Entity, Entity>> getRangeTypeEntityPairList(
+      AnnotationCombine annotationCombine) {
     final List<Entity> sortedEntities =
         getAnnotationDocument(annotationCombine)
             .getEntities()
             .stream()
             .sorted(Comparator.comparing(entity -> entity.getStart()))
             .collect(Collectors.toList());
-    final Entity[] leftEntity = new Entity[1];
-    final Entity[] rightEntity = new Entity[1];
-    // right增的情况，判断锚点前两个的实体是否重复
-    IntStream.range(0, sortedEntities.size())
-        .forEach(
-            i -> {
-              if ((i == 0 ? 0 : sortedEntities.get(i - 1).getStart())
-                      < addAnnotationRequest.getStartPosition()
-                  && addAnnotationRequest.getStartPosition() < sortedEntities.get(i).getStart()) {
-                leftEntity[0] = i == 0 ? null : sortedEntities.get(i - 1);
-                rightEntity[0] = sortedEntities.get(i);
-              }
-            });
-    if (StringUtils.equals(rightEntity[0] == null ? "" : rightEntity[0].getType(), SPECIAL_TYPE)
-        && StringUtils.equals(
-            addAnnotationRequest.getType(), leftEntity[0] == null ? "" : leftEntity[0].getType())) {
-      return true;
-    }
-    // left增的情况，判断锚点前两个的实体是否重复
-    IntStream.range(0, sortedEntities.size())
-        .forEach(
-            k -> {
-              if ((k == 0 ? 0 : sortedEntities.get(k - 1).getStart())
-                      < addAnnotationRequest.getStartPosition()
-                  && addAnnotationRequest.getStartPosition() < sortedEntities.get(k).getStart()) {
-                leftEntity[0] = sortedEntities.get(k);
-                rightEntity[0] =
-                    (k + 1) >= sortedEntities.size() ? null : sortedEntities.get(k + 1);
-              }
-            });
-    if (StringUtils.equals(rightEntity[0] == null ? "" : rightEntity[0].getType(), SPECIAL_TYPE)
-        && StringUtils.equals(
-            addAnnotationRequest.getType(), leftEntity[0] == null ? "" : leftEntity[0].getType())) {
+    return getAnnotationDocument(annotationCombine)
+        .getRelationEntities()
+        .stream()
+        .filter(relationEntity -> relationEntity.getType().equals(SPECIAL_RELATION_TYPE))
+        .map(
+            relationEntity ->
+                Pair.of(
+                    sortedEntities
+                        .stream()
+                        .filter(
+                            sourceEntity ->
+                                sourceEntity.getTag().equals(relationEntity.getSourceTag()))
+                        .findFirst()
+                        .get(),
+                    sortedEntities
+                        .stream()
+                        .filter(
+                            targetEntity ->
+                                targetEntity.getTag().equals(relationEntity.getTargetTag()))
+                        .findFirst()
+                        .get()))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public boolean addRelationEntityCheckAnchorSide(
+      AddAnnotationRequest addAnnotationRequest, AnnotationCombine annotationCombine) {
+    final List<String> sourceRangeTypes =
+        getRangeTypeEntityPairList(annotationCombine)
+            .stream()
+            .filter(
+                entityEntityPair ->
+                    isMedian(
+                        entityEntityPair.getLeft().getStart(),
+                        addAnnotationRequest.getStartPosition(),
+                        entityEntityPair.getRight().getStart()))
+            .map(entityEntityPair -> entityEntityPair.getLeft().getType())
+            .collect(Collectors.toList());
+    if (sourceRangeTypes.contains(addAnnotationRequest.getType())) {
       return true;
     }
     return false;
@@ -172,39 +182,27 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
   @Override
   public boolean updateRelationEntityCheckAnchorSide(
       UpdateAnnotationRequest updateAnnotationRequest, AnnotationCombine annotationCombine) {
-    final List<Entity> sortedEntities =
+    // 通过tag找到具体的实体
+    final Optional<Entity> optional =
         getAnnotationDocument(annotationCombine)
             .getEntities()
-            .stream()
-            .sorted(Comparator.comparing(entity -> entity.getStart()))
-            .collect(Collectors.toList());
-    final Optional<Entity> optional =
-        sortedEntities
             .stream()
             .filter(entity -> StringUtils.equals(entity.getTag(), updateAnnotationRequest.getTag()))
             .findFirst();
     if (optional.isPresent()) {
       final Entity updateEntity = optional.get();
-      final Entity[] leftEntity = new Entity[1];
-      final Entity[] rightEntity = new Entity[1];
-      IntStream.range(0, sortedEntities.size())
-          .forEach(
-              i -> {
-                if (StringUtils.equals(
-                    sortedEntities.get(i).getType(), updateEntity.getType())) { // 通过类型匹配到当前的entity
-                  rightEntity[0] = sortedEntities.get(i + 1); // 获取右手边第一个entity
-                  if (StringUtils.equals(
-                      rightEntity[0].getType(), SPECIAL_TYPE)) { // 右手方向第一个匹配到特殊字符
-                    leftEntity[0] = (i - 1) < 0 ? null : sortedEntities.get(i - 1); // 取得左手边的第一个
-                  } else {
-                    rightEntity[0] = sortedEntities.get(i + 2); // 获取右手边第二个entity
-                    if (StringUtils.equals(rightEntity[0].getType(), SPECIAL_TYPE)) {
-                      leftEntity[0] = sortedEntities.get(i + 1); // 获取右手边第一个
-                    }
-                  }
-                }
-              });
-      if (StringUtils.equals(leftEntity[0].getType(), updateAnnotationRequest.getNewType())) {
+      final List<String> sourceRangeTypes =
+          getRangeTypeEntityPairList(annotationCombine)
+              .stream()
+              .filter(
+                  entityEntityPair ->
+                      isMedian(
+                          entityEntityPair.getLeft().getStart(),
+                          updateEntity.getStart(),
+                          entityEntityPair.getRight().getStart()))
+              .map(entityEntityPair -> entityEntityPair.getLeft().getType())
+              .collect(Collectors.toList());
+      if (sourceRangeTypes.contains(updateAnnotationRequest.getNewType())) {
         return true;
       }
     }
