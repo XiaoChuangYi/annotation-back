@@ -59,7 +59,6 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
                     null));
       }
     }
-
     wordLists.forEach(
         (term, words) ->
             words.addAll(
@@ -67,7 +66,6 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
                     .stream()
                     .flatMap(annotation -> getNotAnnotatedPositions(annotation, term))
                     .collect(Collectors.toList())));
-
     final List<WordErrorWithPosition> results =
         wordLists
             .values()
@@ -77,8 +75,6 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
             .filter(this::isEntitiesDifferentType)
             .findFirst()
             .orElse(Collections.emptyList());
-
-    log.info("get potential error list: {}", results.size());
     return postProcess(results, 0);
   }
 

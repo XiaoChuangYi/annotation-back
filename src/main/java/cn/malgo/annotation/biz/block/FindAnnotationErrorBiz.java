@@ -56,7 +56,6 @@ public class FindAnnotationErrorBiz
   @Override
   protected List<AnnotationWordError> doBiz(FindAnnotationErrorRequest request) {
     final AnnotationErrorEnum errorType = AnnotationErrorEnum.values()[request.getErrorType()];
-
     final Set<AnnotationTaskBlock> blocks =
         blockRepository.findByAnnotationTypeEqualsAndStateIn(
             errorType.getAnnotationType(),
@@ -66,10 +65,8 @@ public class FindAnnotationErrorBiz
     if (blocks.size() == 0) {
       return Collections.emptyList();
     }
-
     final List<Annotation> annotations =
         blocks.stream().map(this.annotationFactory::create).collect(Collectors.toList());
-
     final List<AlgorithmAnnotationWordError> errors =
         annotationErrorFactory.getProvider(errorType).find(annotations);
 
@@ -78,7 +75,6 @@ public class FindAnnotationErrorBiz
     }
 
     log.info("get error result from service: {}", errors.size());
-
     final List<AnnotationWordError> result =
         errors
             .stream()
@@ -87,7 +83,6 @@ public class FindAnnotationErrorBiz
             .collect(Collectors.toList());
 
     log.info("find annotation errors result, get {} errors", result.size());
-
     return result;
   }
 }
