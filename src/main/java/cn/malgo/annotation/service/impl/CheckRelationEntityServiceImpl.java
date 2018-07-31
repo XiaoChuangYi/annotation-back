@@ -151,7 +151,8 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                         entityEntityPair.getRight().getStart()))
             .map(entityEntityPair -> entityEntityPair.getLeft().getType())
             .collect(Collectors.toList());
-    if (sourceRangeTypes.contains(addAnnotationRequest.getType().replace("-and", ""))) {
+    if (sourceRangeTypes != null
+        && sourceRangeTypes.contains(addAnnotationRequest.getType().replace("-and", ""))) {
       return true;
     }
     return false;
@@ -181,7 +182,8 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                           entityEntityPair.getRight().getStart()))
               .map(entityEntityPair -> entityEntityPair.getLeft().getType())
               .collect(Collectors.toList());
-      if (sourceRangeTypes.contains(updateAnnotationRequest.getNewType().replace("-and", ""))) {
+      if (sourceRangeTypes != null
+          && sourceRangeTypes.contains(updateAnnotationRequest.getNewType().replace("-and", ""))) {
         return true;
       }
     }
