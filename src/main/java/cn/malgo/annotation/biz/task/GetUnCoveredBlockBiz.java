@@ -10,8 +10,8 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -36,23 +36,25 @@ public class GetUnCoveredBlockBiz
 
   @Override
   protected List<AnnotationTaskBlock> doBiz(GetUnCoveredBlockRequest request, UserDetails user) {
-    final List<AnnotationTaskBlock> annotationTaskBlocks =
+    List<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByStateIn(
             Collections.singletonList(AnnotationTaskState.CREATED),
             PageRequest.of(0, request.getPresupposePageSize()));
     final LevenshteinDistance levenshteinDistance = new LevenshteinDistance(request.getThreshold());
-    Iterator<AnnotationTaskBlock> iterator = annotationTaskBlocks.iterator();
-    while (iterator.hasNext()) {
-      final AnnotationTaskBlock annotationTaskBlock = iterator.next();
-      if (annotationTaskBlocks
-          .stream()
-          .anyMatch(
-              current ->
-                  current.getId() != annotationTaskBlock.getId()
-                      && levenshteinDistance.apply(current.getText(), annotationTaskBlock.getText())
-                          > 0)) {
-        iterator.remove();
-      }
+    for (int k = 0; k < annotationTaskBlocks.size(); k++) {
+      final AnnotationTaskBlock current = annotationTaskBlocks.get(k);
+      final List<AnnotationTaskBlock> annotationTaskBlockResults =
+          annotationTaskBlocks
+              .stream()
+              .filter(
+                  annotationTaskBlock ->
+                      current.getId() != annotationTaskBlock.getId()
+                          && levenshteinDistance.apply(
+                                  current.getText(), annotationTaskBlock.getText())
+                              > 0)
+              .collect(Collectors.toList());
+      annotationTaskBlockResults.add(k, current);
+      annotationTaskBlocks = annotationTaskBlockResults;
     }
     return annotationTaskBlocks;
   }
