@@ -2,14 +2,17 @@ package cn.malgo.annotation.controller.task;
 
 import cn.malgo.annotation.biz.task.AddBlocksToTaskBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
+import cn.malgo.annotation.biz.task.GetUnCoveredBlockBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBlockBiz;
 import cn.malgo.annotation.biz.task.ListTaskDetailsBiz;
 import cn.malgo.annotation.biz.task.RefreshTaskSummaryBiz;
 import cn.malgo.annotation.biz.task.TerminateTaskBiz;
 import cn.malgo.annotation.controller.BaseController;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
+import cn.malgo.annotation.request.task.GetUnCoveredBlockRequest;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.request.task.ListTaskDetailRequest;
@@ -18,8 +21,10 @@ import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.annotation.vo.AnnotationTaskDetailVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
+import java.util.List;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2/task")
 public class AnnotationTaskController extends BaseController {
+
   private final CreateTaskBiz createTaskBiz;
   private final AddBlocksToTaskBiz addBlocksToTaskBiz;
   private final ListAnnotationTaskBiz listAnnotationTaskBiz;
@@ -37,6 +43,7 @@ public class AnnotationTaskController extends BaseController {
   private final ListTaskDetailsBiz listTaskDetailsBiz;
   private final TerminateTaskBiz terminateTaskBiz;
   private final RefreshTaskSummaryBiz refreshTaskSummaryBiz;
+  private final GetUnCoveredBlockBiz getUnCoveredBlockBiz;
 
   public AnnotationTaskController(
       final CreateTaskBiz createTaskBiz,
@@ -45,7 +52,8 @@ public class AnnotationTaskController extends BaseController {
       final ListAnnotationTaskBlockBiz listAnnotationTaskBlockBiz,
       final ListTaskDetailsBiz listTaskDetailsBiz,
       final TerminateTaskBiz terminateTaskBiz,
-      final RefreshTaskSummaryBiz refreshTaskSummaryBiz) {
+      final RefreshTaskSummaryBiz refreshTaskSummaryBiz,
+      final GetUnCoveredBlockBiz getUnCoveredBlockBiz) {
     this.createTaskBiz = createTaskBiz;
     this.addBlocksToTaskBiz = addBlocksToTaskBiz;
     this.listAnnotationTaskBiz = listAnnotationTaskBiz;
@@ -53,6 +61,7 @@ public class AnnotationTaskController extends BaseController {
     this.listTaskDetailsBiz = listTaskDetailsBiz;
     this.terminateTaskBiz = terminateTaskBiz;
     this.refreshTaskSummaryBiz = refreshTaskSummaryBiz;
+    this.getUnCoveredBlockBiz = getUnCoveredBlockBiz;
   }
 
   @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -101,6 +110,14 @@ public class AnnotationTaskController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody TerminateTaskRequest terminateTaskRequest) {
     return new Response<>(terminateTaskBiz.process(terminateTaskRequest, userAccount));
+  }
+
+  /** 未覆盖度语料查询 */
+  @RequestMapping(value = "/get-un-covered-block", method = RequestMethod.GET)
+  public Response<List<AnnotationTaskBlock>> getUnCoveredBlocks(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      GetUnCoveredBlockRequest getUnCoveredBlockRequest) {
+    return new Response<>(getUnCoveredBlockBiz.process(getUnCoveredBlockRequest, userAccount));
   }
 
   @RequestMapping(value = "/refresh-task-summary", method = RequestMethod.POST)
