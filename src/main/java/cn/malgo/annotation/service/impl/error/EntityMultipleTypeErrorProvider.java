@@ -58,7 +58,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
             .add(
                 new WordErrorWithPosition(
                     term,
-                    type,
+                    type.replace("-and", ""),
                     new BratPosition(entity.getStart(), entity.getEnd()),
                     annotation,
                     null));
