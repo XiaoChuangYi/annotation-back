@@ -5,5 +5,5 @@ import lombok.Value;
 @Value
 public class GetUnCoveredBlockRequest {
   private int presupposePageSize;
-  private int threshold;
+  private double threshold;
 }

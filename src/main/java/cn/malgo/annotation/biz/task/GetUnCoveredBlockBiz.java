@@ -10,11 +10,12 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,22 +42,23 @@ public class GetUnCoveredBlockBiz
 
   @Override
   protected List<AnnotationTaskBlock> doBiz(GetUnCoveredBlockRequest request, UserDetails user) {
-    List<AnnotationTaskBlock> annotationTaskBlocks =
+    final List<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByStateIn(
             Collections.singletonList(AnnotationTaskState.CREATED),
-            PageRequest.of(0, request.getPresupposePageSize()));
-    final LevenshteinDistance levenshteinDistance = new LevenshteinDistance(request.getThreshold());
+            PageRequest.of(
+                0, request.getPresupposePageSize(), Sort.by(Direction.DESC, "nerFreshRate")));
+    final LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
     for (int k = 0; k < annotationTaskBlocks.size(); k++) {
       final AnnotationTaskBlock current = annotationTaskBlocks.get(k);
-      final Iterator<AnnotationTaskBlock> iterator =
-          annotationTaskBlocks.subList(k, annotationTaskBlocks.size()).iterator();
-      while (iterator.hasNext()) {
-        final AnnotationTaskBlock annotationTaskBlock = iterator.next();
-        if (current.getId() != annotationTaskBlock.getId()
-            && levenshteinDistance.apply(current.getText(), annotationTaskBlock.getText()) < 0) {
-          iterator.remove();
-        }
-      }
+      annotationTaskBlocks
+          .subList(k + 1, annotationTaskBlocks.size())
+          .removeIf(
+              block -> {
+                final double distance =
+                    levenshteinDistance.apply(current.getText(), block.getText())
+                        / (double) Math.max(current.getText().length(), block.getText().length());
+                return distance < request.getThreshold();
+              });
     }
     return annotationTaskBlocks;
   }
