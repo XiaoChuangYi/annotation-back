@@ -9,7 +9,6 @@ import cn.malgo.annotation.biz.task.ListTaskDetailsBiz;
 import cn.malgo.annotation.biz.task.RefreshTaskSummaryBiz;
 import cn.malgo.annotation.biz.task.TerminateTaskBiz;
 import cn.malgo.annotation.controller.BaseController;
-import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.request.task.GetUnCoveredBlockRequest;
@@ -21,7 +20,6 @@ import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.annotation.vo.AnnotationTaskDetailVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
@@ -114,7 +112,7 @@ public class AnnotationTaskController extends BaseController {
 
   /** 未覆盖度语料查询 */
   @RequestMapping(value = "/get-un-covered-block", method = RequestMethod.GET)
-  public Response<List<AnnotationTaskBlock>> getUnCoveredBlocks(
+  public Response<List<AnnotationTaskBlockResponse>> getUnCoveredBlocks(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       GetUnCoveredBlockRequest getUnCoveredBlockRequest) {
     return new Response<>(getUnCoveredBlockBiz.process(getUnCoveredBlockRequest, userAccount));
