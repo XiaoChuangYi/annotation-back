@@ -14,7 +14,7 @@ public enum AnnotationErrorEnum {
   // 关联：错误关联类型，source->target的关联type有误
   ILLEGAL_RELATION(AnnotationTypeEnum.relation, true, true),
   // 关联：实体重叠
-  ENTITY_OVERLAP(AnnotationTypeEnum.relation, true, true);
+  ENTITY_OVERLAP(AnnotationTypeEnum.relation, false, true);
   @Getter private final AnnotationTypeEnum annotationType;
   @Getter private final boolean canFix;
   @Getter private final boolean canReset;

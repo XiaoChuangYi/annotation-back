@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class RelationOverlapErrorProvider extends BaseErrorProvider {
-
   private final int batchSize;
 
   public RelationOverlapErrorProvider(
@@ -62,25 +61,5 @@ public class RelationOverlapErrorProvider extends BaseErrorProvider {
       }
     }
     return postProcess(results, this.batchSize);
-  }
-
-  @Override
-  public List<Entity> fix(
-      Annotation annotation, int start, int end, List<FixAnnotationEntity> entities)
-      throws InvalidInputException {
-    return null;
-  }
-
-  @Override
-  public List<Entity> fix(Annotation annotation, int start, int end, FixAnnotationErrorData data)
-      throws InvalidInputException {
-    return null;
-  }
-
-  @Override
-  public List<Entity> fix(
-      Annotation annotation, FixAnnotationErrorContext context, FixAnnotationErrorData data)
-      throws InvalidInputException {
-    return null;
   }
 }
