@@ -5,12 +5,14 @@ import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.GetUnCoveredBlockRequest;
+import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +24,7 @@ import org.springframework.stereotype.Component;
 @RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class GetUnCoveredBlockBiz
-    extends BaseBiz<GetUnCoveredBlockRequest, List<AnnotationTaskBlock>> {
+    extends BaseBiz<GetUnCoveredBlockRequest, List<AnnotationTaskBlockResponse>> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
@@ -41,7 +43,8 @@ public class GetUnCoveredBlockBiz
   }
 
   @Override
-  protected List<AnnotationTaskBlock> doBiz(GetUnCoveredBlockRequest request, UserDetails user) {
+  protected List<AnnotationTaskBlockResponse> doBiz(
+      GetUnCoveredBlockRequest request, UserDetails user) {
     final List<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByStateIn(
             Collections.singletonList(AnnotationTaskState.CREATED),
@@ -60,6 +63,9 @@ public class GetUnCoveredBlockBiz
                 return distance < request.getThreshold();
               });
     }
-    return annotationTaskBlocks;
+    return annotationTaskBlocks
+        .stream()
+        .map(block -> new AnnotationTaskBlockResponse(block, false))
+        .collect(Collectors.toList());
   }
 }
