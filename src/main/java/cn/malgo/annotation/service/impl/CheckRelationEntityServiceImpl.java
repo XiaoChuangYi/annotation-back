@@ -26,7 +26,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
       final Entity entity, final String newType, final int start, final int end) {
     // 允许有Anchor或者相同类型的完全重叠的实体
     return SPECIAL_TYPE.equals(entity.getType())
-        || (newType.replace("-and", "").equals(entity.getType())
+        || (newType.replace("-and", "").equals(entity.getType().replace("-and", ""))
             && start == entity.getStart()
             && end == entity.getEnd());
   }
@@ -58,7 +58,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
   @Override
   public boolean checkRelationEntityBeforeUpdate(
       UpdateAnnotationRequest request, Annotation annotation) {
-    if (StringUtils.equals(SPECIAL_TYPE, request.getNewType())) {
+    if (StringUtils.equals(SPECIAL_TYPE, request.getNewType().replace("-and", ""))) {
       // 不允许更新为Anchor
       return true;
     }
@@ -68,7 +68,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
       return false;
     }
 
-    if (SPECIAL_TYPE.equals(current.getType())) {
+    if (SPECIAL_TYPE.equals(current.getType().replace("-and", ""))) {
       return true;
     }
 
@@ -92,7 +92,8 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
             .getDocument()
             .getEntities()
             .stream()
-            .filter(entity -> StringUtils.equals(entity.getType(), SPECIAL_TYPE))
+            .filter(
+                entity -> StringUtils.equals(entity.getType().replace("-and", ""), SPECIAL_TYPE))
             .collect(Collectors.toList());
 
     if (specialEntities.size() == 0) {
@@ -149,7 +150,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                         entityEntityPair.getLeft().getStart(),
                         addAnnotationRequest.getStartPosition(),
                         entityEntityPair.getRight().getStart()))
-            .map(entityEntityPair -> entityEntityPair.getLeft().getType())
+            .map(entityEntityPair -> entityEntityPair.getLeft().getType().replace("-and", ""))
             .collect(Collectors.toList());
     if (sourceRangeTypes.size() > 0
         && sourceRangeTypes.contains(addAnnotationRequest.getType().replace("-and", ""))) {
@@ -180,7 +181,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
                           entityEntityPair.getLeft().getStart(),
                           updateEntity.getStart(),
                           entityEntityPair.getRight().getStart()))
-              .map(entityEntityPair -> entityEntityPair.getLeft().getType())
+              .map(entityEntityPair -> entityEntityPair.getLeft().getType().replace("-and", ""))
               .collect(Collectors.toList());
       if (sourceRangeTypes.size() > 0
           && sourceRangeTypes.contains(updateAnnotationRequest.getNewType().replace("-and", ""))) {
