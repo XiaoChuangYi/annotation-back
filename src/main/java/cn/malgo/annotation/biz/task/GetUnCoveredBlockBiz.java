@@ -12,7 +12,6 @@ import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.domain.PageRequest;
