@@ -10,44 +10,41 @@ import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.service.exception.InternalServerException;
 import com.alibaba.fastjson.JSONObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 @Slf4j
 public class AnnotationConvert {
-
   private static final String SPECIAL_TYPE = "Anchor";
 
   public static boolean isCross(Entity leftEntity, Entity rightEntity) {
-    final boolean cross =
-        !(rightEntity.getStart() >= leftEntity.getEnd()
-            || rightEntity.getEnd() <= leftEntity.getStart());
-    if (cross) {
-      if (rightEntity.getStart() == leftEntity.getStart()
-          && rightEntity.getEnd() == leftEntity.getEnd()
-          && rightEntity
-              .getType()
-              .replace("-and", "")
-              .equals(leftEntity.getType().replace("-and", ""))) {
-        return false;
-      } else if (rightEntity.getStart() == leftEntity.getStart()
-          && rightEntity.getEnd() == leftEntity.getEnd()
-          && StringUtils.equalsAny(
-              SPECIAL_TYPE,
-              rightEntity.getType().replace("-and", ""),
-              leftEntity.getType().replace("-and", ""))) {
-        return false;
-      } else {
-        return true;
-      }
+    if (rightEntity.getStart() >= leftEntity.getEnd()
+        || leftEntity.getStart() >= rightEntity.getEnd()) {
+      return false;
     }
-    return false;
+
+    final String leftType = leftEntity.getType().replace("-and", "");
+    final String rightType = rightEntity.getType().replace("-and", "");
+
+    if (StringUtils.equalsAny(SPECIAL_TYPE, leftType, rightType)) {
+      return false;
+    }
+
+    if (leftEntity.getStart() != rightEntity.getStart()
+        || leftEntity.getEnd() != rightEntity.getEnd()) {
+      return true;
+    }
+
+    return !StringUtils.equalsIgnoreCase(leftType, rightType);
   }
 
   /** 判断当前标注实体是否交叉 */
