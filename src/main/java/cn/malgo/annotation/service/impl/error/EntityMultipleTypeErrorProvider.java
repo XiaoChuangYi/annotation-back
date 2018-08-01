@@ -61,7 +61,7 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
                     type.replace("-and", ""),
                     new BratPosition(entity.getStart(), entity.getEnd()),
                     annotation,
-                    null));
+                    entity.getTag()));
       }
     }
 
