@@ -1,5 +1,6 @@
 package cn.malgo.annotation.request;
 
+import java.util.List;
 import java.util.Set;
 import lombok.Value;
 
@@ -12,6 +13,6 @@ public class BatchDeleteEntityMultipleRequest {
   public static class EntityMultipleType {
 
     private final long id;
-    private final Set<String> tags;
+    private final List<String> tags;
   }
 }
