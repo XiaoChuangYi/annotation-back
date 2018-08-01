@@ -71,7 +71,7 @@ deploy-test:
     - master
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.199:9001
+    BIND_ADDRESS: 172.16.209.199:9002
     MAX_MEMORY: 768m
   <<: *deploy_definition
 
