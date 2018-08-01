@@ -14,15 +14,16 @@ import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
@@ -33,6 +34,7 @@ public class FindAnnotationErrorBiz
   private final AnnotationFactory annotationFactory;
   private final AnnotationErrorFactory annotationErrorFactory;
   private final AnnotationTaskBlockRepository blockRepository;
+  private final ForkJoinPool forkJoinPool;
 
   @Autowired
   public FindAnnotationErrorBiz(
@@ -42,6 +44,7 @@ public class FindAnnotationErrorBiz
     this.annotationFactory = annotationFactory;
     this.blockRepository = blockRepository;
     this.annotationErrorFactory = annotationErrorFactory;
+    this.forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 2);
   }
 
   @Override
@@ -65,24 +68,32 @@ public class FindAnnotationErrorBiz
     if (blocks.size() == 0) {
       return Collections.emptyList();
     }
+
     final List<Annotation> annotations =
         blocks.stream().map(this.annotationFactory::create).collect(Collectors.toList());
-    final List<AlgorithmAnnotationWordError> errors =
-        annotationErrorFactory.getProvider(errorType).find(annotations);
 
-    if (errors.size() == 0) {
-      return Collections.emptyList();
+    try {
+      final List<AlgorithmAnnotationWordError> errors =
+          this.forkJoinPool
+              .submit(() -> annotationErrorFactory.getProvider(errorType).find(annotations))
+              .get();
+
+      if (errors.size() == 0) {
+        return Collections.emptyList();
+      }
+
+      log.info("get error result from service: {}", errors.size());
+      final List<AnnotationWordError> result =
+          errors
+              .stream()
+              .map(AnnotationWordError::new)
+              .sorted((lhs, rhs) -> lhs.getWord().compareToIgnoreCase(rhs.getWord()))
+              .collect(Collectors.toList());
+
+      log.info("find annotation errors result, get {} errors", result.size());
+      return result;
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
     }
-
-    log.info("get error result from service: {}", errors.size());
-    final List<AnnotationWordError> result =
-        errors
-            .stream()
-            .map(AnnotationWordError::new)
-            .sorted((lhs, rhs) -> lhs.getWord().compareToIgnoreCase(rhs.getWord()))
-            .collect(Collectors.toList());
-
-    log.info("find annotation errors result, get {} errors", result.size());
-    return result;
   }
 }
