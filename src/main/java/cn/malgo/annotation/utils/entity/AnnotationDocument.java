@@ -90,20 +90,6 @@ public class AnnotationDocument {
   }
 
   /**
-   * @param start start
-   * @param end end
-   * @return true如果存在entity和[start, end)有交集或被包含
-   */
-  public boolean hasEntityBetweenPosition(final int start, final int end) {
-    return getEntities()
-        .stream()
-        .anyMatch(
-            entity ->
-                entity.intersectWith(start, end)
-                    || (entity.getStart() >= start && entity.getEnd() <= end));
-  }
-
-  /**
    * @param entity entity
    * @return entity是否存在关联
    */
