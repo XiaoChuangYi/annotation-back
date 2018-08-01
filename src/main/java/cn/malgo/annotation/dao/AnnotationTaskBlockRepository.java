@@ -30,6 +30,8 @@ public interface AnnotationTaskBlockRepository
   Set<AnnotationTaskBlock> findByAnnotationTypeEqualsAndStateIn(
       AnnotationTypeEnum annotationType, List<AnnotationTaskState> states);
 
+  Set<AnnotationTaskBlock> findByIdInAndStateIn(Set<Long> ids, List<AnnotationTaskState> states);
+
   List<AnnotationTaskBlock> findByStateIn(List<AnnotationTaskState> states, Pageable pageable);
 
   /**

@@ -12,6 +12,7 @@ import cn.malgo.service.exception.InternalServerException;
 import com.alibaba.fastjson.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 
 @Slf4j
 public class AnnotationConvert {
+
   private static final String SPECIAL_TYPE = "Anchor";
 
   public static boolean isCross(Entity leftEntity, Entity rightEntity) {
@@ -419,6 +421,31 @@ public class AnnotationConvert {
             .add(new Entity(newTag, startPosition, endPosition, type, term));
       }
     }
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+  }
+
+  public static String batchDeleteEntityAnnotation(String oldAnnotation, List<String> tags) {
+    if (tags == null || tags.size() == 0) {
+      return oldAnnotation;
+    }
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    annotationDocument.setEntities(
+        annotationDocument
+            .getEntities()
+            .stream()
+            .filter(entity -> !tags.contains(entity.getTag()))
+            .collect(Collectors.toList()));
+    annotationDocument.setRelationEntities(
+        annotationDocument
+            .getRelationEntities()
+            .stream()
+            .filter(
+                relationEntity ->
+                    !tags.contains(relationEntity.getSourceTag())
+                        || tags.contains(relationEntity.getTargetTag()))
+            .collect(Collectors.toList()));
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
