@@ -3,16 +3,12 @@ package cn.malgo.annotation.service.impl.error;
 import cn.malgo.annotation.dao.AnnotationFixLogRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
-import cn.malgo.annotation.dto.error.FixAnnotationEntity;
-import cn.malgo.annotation.dto.error.FixAnnotationErrorContext;
-import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
-import cn.malgo.service.exception.InvalidInputException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class RelationOverlapErrorProvider extends BaseErrorProvider {
+
   private final int batchSize;
 
   public RelationOverlapErrorProvider(
@@ -48,16 +45,24 @@ public class RelationOverlapErrorProvider extends BaseErrorProvider {
                         && AnnotationConvert.isCrossAnnotation(annotation.getAnnotation()))
             .collect(Collectors.toList());
     final List<WordErrorWithPosition> results = new ArrayList<>();
-
+    //
     for (Annotation annotation : annotationList) {
-      for (Entity entity : annotation.getDocument().getEntities()) {
-        results.add(
-            new WordErrorWithPosition(
-                entity.getTerm(),
-                entity.getType(),
-                new BratPosition(entity.getStart(), entity.getEnd()),
-                annotation,
-                null));
+      List<Entity> entities = annotation.getDocument().getEntities();
+      for (int i = 0; i < entities.size(); i++) {
+        for (int k = 0; k < entities.size(); k++) {
+          if (i == k) {
+            continue;
+          }
+          if (AnnotationConvert.isCross(entities.get(i), entities.get(k))) {
+            results.add(
+                new WordErrorWithPosition(
+                    entities.get(i).getTerm(),
+                    entities.get(i).getType(),
+                    new BratPosition(entities.get(i).getStart(), entities.get(i).getEnd()),
+                    annotation,
+                    null));
+          }
+        }
       }
     }
     return postProcess(results, this.batchSize);

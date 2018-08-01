@@ -24,6 +24,32 @@ public class AnnotationConvert {
 
   private static final String SPECIAL_TYPE = "Anchor";
 
+  public static boolean isCross(Entity leftEntity, Entity rightEntity) {
+    final boolean cross =
+        !(rightEntity.getStart() >= leftEntity.getEnd()
+            || rightEntity.getEnd() <= leftEntity.getStart());
+    if (cross) {
+      if (rightEntity.getStart() == leftEntity.getStart()
+          && rightEntity.getEnd() == leftEntity.getEnd()
+          && rightEntity
+              .getType()
+              .replace("-and", "")
+              .equals(leftEntity.getType().replace("-and", ""))) {
+        return false;
+      } else if (rightEntity.getStart() == leftEntity.getStart()
+          && rightEntity.getEnd() == leftEntity.getEnd()
+          && StringUtils.equalsAny(
+              SPECIAL_TYPE,
+              rightEntity.getType().replace("-and", ""),
+              leftEntity.getType().replace("-and", ""))) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** 判断当前标注实体是否交叉 */
   public static boolean isCrossAnnotation(String annotation) {
     final List<Entity> entitiesLeft = getEntitiesFromAnnotation(annotation);
@@ -36,28 +62,7 @@ public class AnnotationConvert {
                 entitiesRight
                     .stream()
                     .filter(entityRight -> !entityRight.getTag().equals(entityLeft.getTag()))
-                    .anyMatch(
-                        entityRight -> {
-                          final boolean cross =
-                              !(entityRight.getStart() >= entityLeft.getEnd()
-                                  || entityRight.getEnd() <= entityLeft.getStart());
-                          if (cross) {
-                            if (entityRight.getStart() == entityLeft.getStart()
-                                && entityRight.getEnd() == entityLeft.getEnd()
-                                && entityRight.getType().equals(entityLeft.getType())) {
-                              return false;
-                            } else if (entityRight.getStart() == entityLeft.getStart()
-                                && entityRight.getEnd() == entityLeft.getEnd()
-                                && StringUtils.equalsAny(
-                                    SPECIAL_TYPE, entityRight.getType(), entityLeft.getType())) {
-                              return false;
-                            } else {
-                              return true;
-                            }
-                          } else {
-                            return false;
-                          }
-                        }));
+                    .anyMatch(entityRight -> isCross(entityLeft, entityRight)));
   }
 
   /** 获取指定标注的entities */
