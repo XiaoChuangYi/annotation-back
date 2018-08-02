@@ -140,7 +140,6 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   private Stream<WordErrorWithPosition> getIllegalRelations(
       final Set<RelationLimitRulePair> legalRules, final Annotation annotation) {
     final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
-    log.info("id:{}", annotation.getId());
     return annotation
         .getDocument()
         .getRelationEntities()
