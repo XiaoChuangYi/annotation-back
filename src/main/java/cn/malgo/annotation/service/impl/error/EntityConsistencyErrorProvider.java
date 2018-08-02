@@ -1,8 +1,15 @@
 package cn.malgo.annotation.service.impl.error;
 
+import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORDS;
+
 import cn.malgo.annotation.dao.AnnotationFixLogRepository;
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.dto.error.*;
+import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
+import cn.malgo.annotation.dto.error.AnnotationWithPosition;
+import cn.malgo.annotation.dto.error.FixAnnotationEntity;
+import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
+import cn.malgo.annotation.dto.error.FixAnnotationRelationEntity;
+import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.DocumentUtils;
@@ -12,15 +19,16 @@ import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORDS;
 
 @Slf4j
 @Service
@@ -61,7 +69,12 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
         // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
         final List<EntityListWithPosition> filtered =
             filterErrors(entityLists).collect(Collectors.toList());
-        if (!filtered.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+        if (filtered
+                .stream()
+                .map(entityList -> entityList.getEntities().size())
+                .collect(Collectors.toSet())
+                .size()
+            != 1) {
           return postProcess(
               filtered
                   .stream()
