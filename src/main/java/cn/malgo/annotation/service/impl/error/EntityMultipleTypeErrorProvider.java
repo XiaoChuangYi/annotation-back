@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
+
   public EntityMultipleTypeErrorProvider(
       final AnnotationFixLogRepository annotationFixLogRepository) {
     super(annotationFixLogRepository);
@@ -131,36 +132,12 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
     final FixAnnotationEntity fixEntity = entities.get(0);
 
     final AnnotationDocument oldDoc = annotation.getDocument();
+
     final AnnotationDocument newDoc =
         new AnnotationDocument(
             oldDoc.getText(),
             oldDoc.getRelationEntities(),
-            oldDoc
-                .getEntities()
-                .stream()
-                .map(
-                    entity -> {
-                      if (entity.getStart() != start || entity.getEnd() != end) {
-                        return entity;
-                      }
-
-                      if (!StringUtils.equalsIgnoreCase(
-                          oldDoc.getText().substring(start, end), fixEntity.getTerm())) {
-                        throw new IllegalArgumentException(
-                            "mismatch term: "
-                                + fixEntity.getTerm()
-                                + ", annotation id: "
-                                + annotation.getId()
-                                + ", start: "
-                                + start
-                                + ", end: "
-                                + end);
-                      }
-
-                      return new Entity(
-                          entity.getTag(), start, end, fixEntity.getType(), fixEntity.getTerm());
-                    })
-                .collect(Collectors.toList()));
+            getNewEntities(oldDoc, start, end, fixEntity, annotation));
 
     annotation.setAnnotation(AnnotationDocumentManipulator.toBratAnnotations(newDoc));
 
@@ -169,6 +146,66 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
         .stream()
         .filter(entity -> entity.getStart() == start && entity.getEnd() == end)
         .collect(Collectors.toList());
+  }
+
+  private List<Entity> getNewEntities(
+      final AnnotationDocument oldDoc,
+      final int start,
+      final int end,
+      final FixAnnotationEntity fixEntity,
+      final Annotation annotation) {
+    if (oldDoc
+        .getEntities()
+        .stream()
+        .noneMatch(oldEntity -> oldEntity.getStart() == start && oldEntity.getEnd() == end)) {
+      if (!StringUtils.equalsIgnoreCase(
+          oldDoc.getText().substring(start, end), fixEntity.getTerm())) {
+        throw new IllegalArgumentException(
+            "mismatch term: "
+                + fixEntity.getTerm()
+                + ", annotation id: "
+                + annotation.getId()
+                + ", start: "
+                + start
+                + ", end: "
+                + end);
+      }
+      oldDoc
+          .getEntities()
+          .add(
+              new Entity(
+                  oldDoc.getNewEntityTag(oldDoc.getEntities()),
+                  start,
+                  end,
+                  fixEntity.getType(),
+                  fixEntity.getTerm()));
+      return oldDoc.getEntities();
+    } else {
+      return oldDoc
+          .getEntities()
+          .stream()
+          .map(
+              entity -> {
+                if (entity.getStart() != start || entity.getEnd() != end) {
+                  return entity;
+                }
+                if (!StringUtils.equalsIgnoreCase(
+                    oldDoc.getText().substring(start, end), fixEntity.getTerm())) {
+                  throw new IllegalArgumentException(
+                      "mismatch term: "
+                          + fixEntity.getTerm()
+                          + ", annotation id: "
+                          + annotation.getId()
+                          + ", start: "
+                          + start
+                          + ", end: "
+                          + end);
+                }
+                return new Entity(
+                    entity.getTag(), start, end, fixEntity.getType(), fixEntity.getTerm());
+              })
+          .collect(Collectors.toList());
+    }
   }
 
   /** 判断同一个entity是否都是同一个类型的 */

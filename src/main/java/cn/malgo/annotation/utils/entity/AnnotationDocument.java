@@ -4,8 +4,10 @@ import cn.malgo.annotation.utils.DocumentUtils;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 @AllArgsConstructor
 @Data
 public class AnnotationDocument {
+
   private String text;
   private List<RelationEntity> relationEntities;
   private List<Entity> entities;
@@ -72,7 +75,6 @@ public class AnnotationDocument {
   /**
    * 找到所有不在entities这个子图中的所有关联，即关联的source或target有且仅有一个在entities列表中
    *
-   * @param entities
    * @return 不在entities这个子图中的所有关联
    */
   public List<RelationEntity> getRelationsOutsideToInside(final List<Entity> entities) {
@@ -127,5 +129,16 @@ public class AnnotationDocument {
                     && entity.getTargetTag().equals(target.getTag()))
         .findFirst()
         .orElse(null);
+  }
+
+  public String getNewEntityTag(final List<Entity> entities) {
+    int num =
+        entities
+            .stream()
+            .map(x -> x.getTag().substring(1, x.getTag().length()))
+            .map(Integer::valueOf)
+            .max(Comparator.comparing(Function.identity()))
+            .orElse(0);
+    return "T" + (num + 1);
   }
 }
