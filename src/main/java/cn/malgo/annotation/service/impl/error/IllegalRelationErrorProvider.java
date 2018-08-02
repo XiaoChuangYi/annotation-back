@@ -140,7 +140,7 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   private Stream<WordErrorWithPosition> getIllegalRelations(
       final Set<RelationLimitRulePair> legalRules, final Annotation annotation) {
     final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
-
+    log.info("id:{}", annotation.getId());
     return annotation
         .getDocument()
         .getRelationEntities()
@@ -225,31 +225,21 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                                               .equals(targetPair.getRight()));
                         })
                     .map(
-                        relationPair -> {
-                          log.info(
-                              "relationPair:{},blockId:{},BratPosition:{}",
-                              relationPair,
-                              annotation.getId(),
-                              new BratPosition(
-                                  Math.min(
-                                      entityMap.get(relationPair.getSourceTag()).getStart(),
-                                      entityMap.get(relationPair.getTargetTag()).getStart()),
-                                  Math.max(
-                                      entityMap.get(relationPair.getSourceTag()).getEnd(),
-                                      entityMap.get(relationPair.getTargetTag()).getEnd())));
-                          return new WordErrorWithPosition(
-                              relationPair.getSourceType() + " -> " + relationPair.getTargetType(),
-                              relationPair.getRelationType(),
-                              new BratPosition(
-                                  Math.min(
-                                      entityMap.get(relationPair.getSourceTag()).getStart(),
-                                      entityMap.get(relationPair.getTargetTag()).getStart()),
-                                  Math.max(
-                                      entityMap.get(relationPair.getSourceTag()).getEnd(),
-                                      entityMap.get(relationPair.getTargetTag()).getEnd())),
-                              annotation,
-                              relationPair.getRelationTag());
-                        });
+                        relationPair ->
+                            new WordErrorWithPosition(
+                                relationPair.getSourceType()
+                                    + " -> "
+                                    + relationPair.getTargetType(),
+                                relationPair.getRelationType(),
+                                new BratPosition(
+                                    Math.min(
+                                        entityMap.get(relationPair.getSourceTag()).getStart(),
+                                        entityMap.get(relationPair.getTargetTag()).getStart()),
+                                    Math.max(
+                                        entityMap.get(relationPair.getSourceTag()).getEnd(),
+                                        entityMap.get(relationPair.getTargetTag()).getEnd())),
+                                annotation,
+                                relationPair.getRelationTag()));
               } else {
                 return Stream.empty();
               }
