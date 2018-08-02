@@ -140,6 +140,7 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   private Stream<WordErrorWithPosition> getIllegalRelations(
       final Set<RelationLimitRulePair> legalRules, final Annotation annotation) {
     final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
+    log.info("id：{}", annotation.getId());
     return annotation
         .getDocument()
         .getRelationEntities()
@@ -208,6 +209,10 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                               Pair.of(
                                   relationPair.getTargetTerm(),
                                   relationPair.getTargetType().replace("-and", ""));
+                          if (sourcePair.getLeft().equals(targetPair.getLeft())
+                              && sourcePair.getRight().equals(targetPair.getRight())) {
+                            return false;
+                          }
                           return entryRelationPair
                               .stream()
                               .anyMatch(
