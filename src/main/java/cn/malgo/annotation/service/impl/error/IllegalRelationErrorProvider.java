@@ -19,6 +19,7 @@ import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 public class IllegalRelationErrorProvider extends BaseErrorProvider {
+
   private final RelationLimitRuleRepository relationLimitRuleRepository;
   private final int batchSize;
 
@@ -64,14 +66,20 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                     new RelationLimitRulePair(
                         rule.getSource(), rule.getTarget(), rule.getRelationType()))
             .collect(Collectors.toSet());
-
-    return postProcess(
+    // 先过滤出非法规则的标注
+    List<WordErrorWithPosition> illegalWordErrors =
         annotations
             .stream()
             .filter(annotation -> annotation.getAnnotationType() == AnnotationTypeEnum.relation)
             .flatMap(annotation -> getIllegalRelations(legalRules, annotation))
-            .collect(Collectors.toList()),
-        this.batchSize);
+            .collect(Collectors.toList());
+    // 过滤出实体双向关联的标注
+    illegalWordErrors.addAll(
+        annotations
+            .stream()
+            .flatMap(annotation -> getBidirectionalRelationEntity(annotation))
+            .collect(Collectors.toList()));
+    return postProcess(illegalWordErrors, this.batchSize);
   }
 
   @Override
@@ -162,8 +170,108 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                     relation.getTag()));
   }
 
+  private Stream<WordErrorWithPosition> getBidirectionalRelationEntity(
+      final Annotation annotation) {
+    final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
+    final Map<String, List<RelationPair>> relationMap =
+        annotation
+            .getDocument()
+            .getRelationEntities()
+            .stream()
+            .map(
+                relationEntity ->
+                    new RelationPair(
+                        relationEntity.getTag(),
+                        relationEntity.getSourceTag(),
+                        entityMap.get(relationEntity.getSourceTag()).getTerm(),
+                        entityMap.get(relationEntity.getSourceTag()).getType(),
+                        relationEntity.getTargetTag(),
+                        entityMap.get(relationEntity.getTargetTag()).getTerm(),
+                        entityMap.get(relationEntity.getTargetTag()).getType(),
+                        relationEntity.getType()))
+            .collect(Collectors.groupingBy(RelationPair::getRelationType));
+    return relationMap
+        .entrySet()
+        .parallelStream()
+        .flatMap(
+            entry -> {
+              if (entry.getValue().size() > 1) {
+                final List<RelationPair> entryRelationPair = entry.getValue();
+                return entryRelationPair
+                    .stream()
+                    .filter(
+                        relationPair -> {
+                          final Pair<String, String> sourcePair =
+                              Pair.of(
+                                  relationPair.getSourceTerm(),
+                                  relationPair.getSourceType().replace("-and", ""));
+                          final Pair<String, String> targetPair =
+                              Pair.of(
+                                  relationPair.getTargetTerm(),
+                                  relationPair.getTargetType().replace("-and", ""));
+                          return entryRelationPair
+                              .stream()
+                              .anyMatch(
+                                  current ->
+                                      current.getTargetTerm().equals(sourcePair.getLeft())
+                                          && current
+                                              .getTargetType()
+                                              .replace("-and", "")
+                                              .equals(sourcePair.getRight())
+                                          && current.getSourceTerm().equals(targetPair.getLeft())
+                                          && current
+                                              .getSourceType()
+                                              .replace("-and", "")
+                                              .equals(targetPair.getRight()));
+                        })
+                    .map(
+                        relationPair -> {
+                          log.info(
+                              "relationPair:{},blockId:{},BratPosition:{}",
+                              relationPair,
+                              annotation.getId(),
+                              new BratPosition(
+                                  Math.min(
+                                      entityMap.get(relationPair.getSourceTag()).getStart(),
+                                      entityMap.get(relationPair.getTargetTag()).getStart()),
+                                  Math.max(
+                                      entityMap.get(relationPair.getSourceTag()).getEnd(),
+                                      entityMap.get(relationPair.getTargetTag()).getEnd())));
+                          return new WordErrorWithPosition(
+                              relationPair.getSourceType() + " -> " + relationPair.getTargetType(),
+                              relationPair.getRelationType(),
+                              new BratPosition(
+                                  Math.min(
+                                      entityMap.get(relationPair.getSourceTag()).getStart(),
+                                      entityMap.get(relationPair.getTargetTag()).getStart()),
+                                  Math.max(
+                                      entityMap.get(relationPair.getSourceTag()).getEnd(),
+                                      entityMap.get(relationPair.getTargetTag()).getEnd())),
+                              annotation,
+                              relationPair.getRelationTag());
+                        });
+              } else {
+                return Stream.empty();
+              }
+            });
+  }
+
+  @lombok.Value
+  static class RelationPair {
+
+    private final String relationTag;
+    private final String sourceTag;
+    private final String sourceTerm;
+    private final String sourceType;
+    private final String targetTag;
+    private final String targetTerm;
+    private final String targetType;
+    private final String relationType;
+  }
+
   @lombok.Value
   static class RelationLimitRulePair {
+
     private final String source;
     private final String target;
     private final String relation;
