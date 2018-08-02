@@ -51,10 +51,9 @@ public class SearchAnnotationBiz
   @Override
   protected List<AnnotationErrorContext> doBiz(SearchAnnotationRequest request) {
     final Set<AnnotationTaskBlock> annotations =
-        blockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
+        blockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.getByValue(request.getAnnotationType()),
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
-            request.getTaskId());
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
     log.info("search annotations, get back {} annotations", annotations.size());
 
     if (annotations.size() == 0) {
