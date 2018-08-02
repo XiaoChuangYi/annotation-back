@@ -443,8 +443,13 @@ public class AnnotationConvert {
             .stream()
             .filter(
                 relationEntity ->
-                    !tags.contains(relationEntity.getSourceTag())
-                        || tags.contains(relationEntity.getTargetTag()))
+                    tags.stream()
+                        .noneMatch(
+                            tag ->
+                                StringUtils.equalsAny(
+                                    tag,
+                                    relationEntity.getSourceTag(),
+                                    relationEntity.getTargetTag())))
             .collect(Collectors.toList()));
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
