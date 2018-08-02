@@ -39,10 +39,6 @@ public class ListRelevanceAnnotationBiz
   @Override
   protected void validateRequest(ListRelevanceAnnotationRequest listRelevanceAnnotationRequest)
       throws InvalidInputException {
-    if (listRelevanceAnnotationRequest.getTaskId() <= 0) {
-      throw new InvalidInputException("invalid-task-id", "无效的taskId");
-    }
-
     if (listRelevanceAnnotationRequest.getPageIndex() <= 0) {
       throw new InvalidInputException("invalid-page-index", "无效的pageIndex");
     }
@@ -56,10 +52,9 @@ public class ListRelevanceAnnotationBiz
   protected PageVO<AnnotationBlockBratVO> doBiz(ListRelevanceAnnotationRequest request) {
     log.info("开始获取block集合：{}", new Date());
     final Set<AnnotationTaskBlock> blocks =
-        annotationTaskBlockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
+        annotationTaskBlockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.relation,
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
-            request.getTaskId());
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
     log.info("开始获取RelationQueryPair集合：{}", new Date());
     final List<RelationQueryPair> relations = getRelationQueryPairs(blocks, request);
     log.info("开始返回brat格式的RelationQueryPair集合：{}", new Date());
