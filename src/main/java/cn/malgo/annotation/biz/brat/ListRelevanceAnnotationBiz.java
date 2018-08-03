@@ -69,7 +69,8 @@ public class ListRelevanceAnnotationBiz
                 relation ->
                     new RelationSearchResponse(
                         AnnotationConvert.convert2AnnotationBlockBratVO(relation.getBlock()),
-                        relation.bratPosition))
+                        relation.bratPosition,
+                        relation.getRTag()))
             .collect(Collectors.toList()));
     return pageVO;
   }
@@ -90,6 +91,7 @@ public class ListRelevanceAnnotationBiz
                       relationEntity ->
                           new RelationQueryPair(
                               pair.getBlock(),
+                              relationEntity.getTag(),
                               entityMap.get(relationEntity.getSourceTag()).getTerm(),
                               entityMap.get(relationEntity.getSourceTag()).getType(),
                               entityMap.get(relationEntity.getTargetTag()).getTerm(),
@@ -111,6 +113,7 @@ public class ListRelevanceAnnotationBiz
   static class RelationQueryPair {
 
     private final AnnotationTaskBlock block;
+    private final String rTag;
     private final String sourceTerm;
     private final String sourceType;
     private final String targetTerm;

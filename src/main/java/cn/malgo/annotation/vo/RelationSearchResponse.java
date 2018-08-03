@@ -7,4 +7,5 @@ import lombok.Value;
 public class RelationSearchResponse {
   private AnnotationBlockBratVO annotationBlockBratVO;
   private BratPosition bratPosition;
+  private Object info;
 }
