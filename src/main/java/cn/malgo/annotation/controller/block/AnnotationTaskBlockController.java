@@ -12,6 +12,7 @@ import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
+import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.request.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
@@ -23,7 +24,6 @@ import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import cn.malgo.annotation.vo.RelationSearchResponse;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
@@ -144,7 +144,7 @@ public class AnnotationTaskBlockController extends BaseController {
 
   /** 五元组查询block关联查询 */
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
-  public Response<PageVO<RelationSearchResponse>> listBlockRelation(
+  public Response<PageVO<AnnotationErrorContext>> listBlockRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     return new Response<>(

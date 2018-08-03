@@ -2,15 +2,15 @@ package cn.malgo.annotation.biz.brat;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.vo.RelationSearchResponse;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.annotation.RequirePermission;
@@ -29,12 +29,16 @@ import org.springframework.stereotype.Component;
 @RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListRelevanceAnnotationBiz
-    extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<RelationSearchResponse>> {
+    extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationErrorContext>> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final AnnotationFactory annotationFactory;
 
-  public ListRelevanceAnnotationBiz(AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+  public ListRelevanceAnnotationBiz(
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationFactory annotationFactory) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.annotationFactory = annotationFactory;
   }
 
   @Override
@@ -50,7 +54,7 @@ public class ListRelevanceAnnotationBiz
   }
 
   @Override
-  protected PageVO<RelationSearchResponse> doBiz(ListRelevanceAnnotationRequest request) {
+  protected PageVO<AnnotationErrorContext> doBiz(ListRelevanceAnnotationRequest request) {
     final Set<AnnotationTaskBlock> blocks =
         annotationTaskBlockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.relation,
@@ -58,7 +62,7 @@ public class ListRelevanceAnnotationBiz
     final List<RelationQueryPair> relations = getRelationQueryPairs(blocks, request);
     final int skip = (request.getPageIndex() - 1) * request.getPageSize();
     final int limit = request.getPageSize();
-    final PageVO<RelationSearchResponse> pageVO = new PageVO<>();
+    final PageVO<AnnotationErrorContext> pageVO = new PageVO<>();
     pageVO.setTotal(relations.size());
     pageVO.setDataList(
         relations
@@ -67,8 +71,8 @@ public class ListRelevanceAnnotationBiz
             .limit(limit)
             .map(
                 relation ->
-                    new RelationSearchResponse(
-                        AnnotationConvert.convert2AnnotationBlockBratVO(relation.getBlock()),
+                    new AnnotationErrorContext(
+                        annotationFactory.create(relation.getBlock()),
                         relation.bratPosition,
                         relation.getRTag()))
             .collect(Collectors.toList()));
