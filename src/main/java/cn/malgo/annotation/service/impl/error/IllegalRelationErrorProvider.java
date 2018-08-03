@@ -11,41 +11,36 @@ import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.entity.RelationLimitRule;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import cn.malgo.service.exception.InvalidInputException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class IllegalRelationErrorProvider extends BaseErrorProvider {
 
   private final RelationLimitRuleRepository relationLimitRuleRepository;
-  private final int batchSize;
 
   public IllegalRelationErrorProvider(
       final AnnotationFixLogRepository annotationFixLogRepository,
-      final RelationLimitRuleRepository relationLimitRuleRepository,
-      @Value("${malgo.annotation.fix-log-batch-size}") final int batchSize) {
+      final RelationLimitRuleRepository relationLimitRuleRepository) {
     super(annotationFixLogRepository);
 
     this.relationLimitRuleRepository = relationLimitRuleRepository;
-    this.batchSize = batchSize;
   }
 
   @Override
@@ -73,13 +68,15 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
             .filter(annotation -> annotation.getAnnotationType() == AnnotationTypeEnum.relation)
             .flatMap(annotation -> getIllegalRelations(legalRules, annotation))
             .collect(Collectors.toList());
+
     // 过滤出实体双向关联的标注
     illegalWordErrors.addAll(
         annotations
             .stream()
-            .flatMap(annotation -> getBidirectionalRelationEntity(annotation))
+            .flatMap(this::getBidirectionalRelationEntity)
             .collect(Collectors.toList()));
-    return postProcess(illegalWordErrors, this.batchSize);
+
+    return postProcess(illegalWordErrors, 0);
   }
 
   @Override
