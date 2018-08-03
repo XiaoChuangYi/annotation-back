@@ -2,6 +2,7 @@ package cn.malgo.annotation.controller.block;
 
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockEntityMultipleBiz;
+import cn.malgo.annotation.biz.block.BatchDeleteBlockRelationBiz;
 import cn.malgo.annotation.biz.brat.ListOverlapEntityBiz;
 import cn.malgo.annotation.biz.brat.ListRelevanceAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
+import cn.malgo.annotation.request.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
@@ -21,6 +23,7 @@ import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
+import cn.malgo.annotation.vo.RelationSearchResponse;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
@@ -46,6 +49,7 @@ public class AnnotationTaskBlockController extends BaseController {
   private final ListRelevanceAnnotationBiz listRelevanceAnnotationBiz;
   private final ListOverlapEntityBiz listOverlapEntityBiz;
   private final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz;
+  private final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz;
 
   public AnnotationTaskBlockController(
       final BlockNerUpdater blockNerUpdater,
@@ -56,7 +60,8 @@ public class AnnotationTaskBlockController extends BaseController {
       final UpdateBlockAnnotationBiz updateBlockAnnotationBiz,
       final ListRelevanceAnnotationBiz listRelevanceAnnotationBiz,
       final ListOverlapEntityBiz listOverlapEntityBiz,
-      final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz) {
+      final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz,
+      final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz) {
     this.blockNerUpdater = blockNerUpdater;
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
@@ -66,6 +71,7 @@ public class AnnotationTaskBlockController extends BaseController {
     this.listRelevanceAnnotationBiz = listRelevanceAnnotationBiz;
     this.listOverlapEntityBiz = listOverlapEntityBiz;
     this.batchDeleteBlockEntityMultipleBiz = batchDeleteBlockEntityMultipleBiz;
+    this.batchDeleteBlockRelationBiz = batchDeleteBlockRelationBiz;
   }
 
   // ADMIN ACTIONS
@@ -138,7 +144,7 @@ public class AnnotationTaskBlockController extends BaseController {
 
   /** 五元组查询block关联查询 */
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
-  public Response<PageVO<AnnotationBlockBratVO>> listBlockRelation(
+  public Response<PageVO<RelationSearchResponse>> listBlockRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
     return new Response<>(
@@ -160,5 +166,14 @@ public class AnnotationTaskBlockController extends BaseController {
       @RequestBody BatchDeleteEntityMultipleRequest batchDeleteEntityMultipleRequest) {
     return new Response<>(
         batchDeleteBlockEntityMultipleBiz.process(batchDeleteEntityMultipleRequest, userAccount));
+  }
+
+  /** 批量删除关联标注关系 */
+  @RequestMapping(value = "/batch-delete-relation", method = RequestMethod.POST)
+  public Response<List<Long>> batchDeleteRelation(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody BatchDeleteBlockRelationRequest batchDeleteBlockRelationRequest) {
+    return new Response<>(
+        batchDeleteBlockRelationBiz.process(batchDeleteBlockRelationRequest, userAccount));
   }
 }

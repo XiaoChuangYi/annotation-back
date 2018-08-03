@@ -10,13 +10,13 @@ import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.vo.AnnotationBlockBratVO;
+import cn.malgo.annotation.vo.RelationSearchResponse;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +29,8 @@ import org.springframework.stereotype.Component;
 @RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListRelevanceAnnotationBiz
-    extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationBlockBratVO>> {
+    extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<RelationSearchResponse>> {
+
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
   public ListRelevanceAnnotationBiz(AnnotationTaskBlockRepository annotationTaskBlockRepository) {
@@ -49,25 +50,26 @@ public class ListRelevanceAnnotationBiz
   }
 
   @Override
-  protected PageVO<AnnotationBlockBratVO> doBiz(ListRelevanceAnnotationRequest request) {
-    log.info("开始获取block集合：{}", new Date());
+  protected PageVO<RelationSearchResponse> doBiz(ListRelevanceAnnotationRequest request) {
     final Set<AnnotationTaskBlock> blocks =
         annotationTaskBlockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.relation,
             Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
-    log.info("开始获取RelationQueryPair集合：{}", new Date());
     final List<RelationQueryPair> relations = getRelationQueryPairs(blocks, request);
-    log.info("开始返回brat格式的RelationQueryPair集合：{}", new Date());
     final int skip = (request.getPageIndex() - 1) * request.getPageSize();
     final int limit = request.getPageSize();
-    final PageVO<AnnotationBlockBratVO> pageVO = new PageVO<>();
+    final PageVO<RelationSearchResponse> pageVO = new PageVO<>();
     pageVO.setTotal(relations.size());
     pageVO.setDataList(
         relations
             .stream()
             .skip(skip)
             .limit(limit)
-            .map(relation -> AnnotationConvert.convert2AnnotationBlockBratVO(relation.getBlock()))
+            .map(
+                relation ->
+                    new RelationSearchResponse(
+                        AnnotationConvert.convert2AnnotationBlockBratVO(relation.getBlock()),
+                        relation.bratPosition))
             .collect(Collectors.toList()));
     return pageVO;
   }
@@ -90,9 +92,16 @@ public class ListRelevanceAnnotationBiz
                               pair.getBlock(),
                               entityMap.get(relationEntity.getSourceTag()).getTerm(),
                               entityMap.get(relationEntity.getSourceTag()).getType(),
+                              entityMap.get(relationEntity.getTargetTag()).getTerm(),
                               entityMap.get(relationEntity.getTargetTag()).getType(),
-                              entityMap.get(relationEntity.getTargetTag()).getType(),
-                              relationEntity.getType()))
+                              relationEntity.getType(),
+                              new BratPosition(
+                                  Math.min(
+                                      entityMap.get(relationEntity.getSourceTag()).getStart(),
+                                      entityMap.get(relationEntity.getTargetTag()).getStart()),
+                                  Math.max(
+                                      entityMap.get(relationEntity.getSourceTag()).getEnd(),
+                                      entityMap.get(relationEntity.getTargetTag()).getEnd()))))
                   .filter(relation -> relation.matches(request));
             })
         .collect(Collectors.toList());
@@ -100,12 +109,14 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class RelationQueryPair {
+
     private final AnnotationTaskBlock block;
     private final String sourceTerm;
     private final String sourceType;
     private final String targetTerm;
     private final String targetType;
     private final String relation;
+    private final BratPosition bratPosition;
 
     boolean matches(ListRelevanceAnnotationRequest request) {
       return (StringUtils.isBlank(request.getRelation())
@@ -123,6 +134,7 @@ public class ListRelevanceAnnotationBiz
 
   @lombok.Value
   static class BlockDocument {
+
     private final AnnotationTaskBlock block;
     private final AnnotationDocument document;
 

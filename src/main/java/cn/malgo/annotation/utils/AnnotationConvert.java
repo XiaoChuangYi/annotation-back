@@ -524,6 +524,23 @@ public class AnnotationConvert {
     }
   }
 
+  public static String batchDeleteRelationAnnotation(String oldAnnotation, List<String> rTags) {
+    if (rTags == null || rTags.size() == 0) {
+      return oldAnnotation;
+    }
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    List<RelationEntity> relationEntityList =
+        annotationDocument
+            .getRelationEntities()
+            .stream()
+            .filter(x -> !rTags.contains(x))
+            .collect(Collectors.toList());
+    annotationDocument.setRelationEntities(relationEntityList);
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+  }
+
   /** 删除relations数组中的标注 */
   public static String deleteRelationsAnnotation(String oldAnnotation, String rTag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
