@@ -17,7 +17,10 @@ import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -34,6 +38,9 @@ import org.springframework.stereotype.Service;
 public class IllegalRelationErrorProvider extends BaseErrorProvider {
 
   private final RelationLimitRuleRepository relationLimitRuleRepository;
+  private static final String CRON_STR = "0 0/1 * * * ?";
+  private static List<WordErrorWithPosition> globalWordErrorWithPositions;
+  private static List<Annotation> globalAnnotations;
 
   public IllegalRelationErrorProvider(
       final AnnotationFixLogRepository annotationFixLogRepository,
@@ -68,15 +75,22 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
             .filter(annotation -> annotation.getAnnotationType() == AnnotationTypeEnum.relation)
             .flatMap(annotation -> getIllegalRelations(legalRules, annotation))
             .collect(Collectors.toList());
-
+    globalAnnotations = annotations;
     // 过滤出实体双向关联的标注
-    illegalWordErrors.addAll(
-        annotations
-            .stream()
-            .flatMap(this::getBidirectionalRelationEntity)
-            .collect(Collectors.toList()));
-
+    if (globalWordErrorWithPositions == null) {
+      globalWordErrorWithPositions =
+          getBidirectionalRelationEntity(annotations).collect(Collectors.toList());
+    }
+    illegalWordErrors.addAll(globalWordErrorWithPositions);
     return postProcess(illegalWordErrors, 0);
+  }
+
+  @Scheduled(cron = CRON_STR)
+  public void updateBidirectionalWordErrorWithPositions() {
+    if (globalAnnotations != null) {
+      globalWordErrorWithPositions =
+          getBidirectionalRelationEntity(globalAnnotations).collect(Collectors.toList());
+    }
   }
 
   @Override
@@ -166,25 +180,42 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                     relation.getTag()));
   }
 
+  private List<RelationPair> getTotalRelationPairs(final List<Annotation> annotations) {
+    final List<RelationPair> totalRelationPairs = new ArrayList<>();
+    for (int k = 0; k < annotations.size(); k++) {
+      final Map<String, Entity> entityMap = annotations.get(k).getDocument().getEntityMap();
+      int finalK = k;
+      final List<RelationPair> relationPairs =
+          annotations
+              .get(k)
+              .getDocument()
+              .getRelationEntities()
+              .parallelStream()
+              .map(
+                  relationEntity ->
+                      new RelationPair(
+                          relationEntity.getTag(),
+                          entityMap.get(relationEntity.getSourceTag()).getTerm(),
+                          entityMap.get(relationEntity.getSourceTag()).getType(),
+                          entityMap.get(relationEntity.getSourceTag()).getStart(),
+                          entityMap.get(relationEntity.getSourceTag()).getEnd(),
+                          entityMap.get(relationEntity.getTargetTag()).getTerm(),
+                          entityMap.get(relationEntity.getTargetTag()).getType(),
+                          entityMap.get(relationEntity.getTargetTag()).getStart(),
+                          entityMap.get(relationEntity.getTargetTag()).getEnd(),
+                          relationEntity.getType(),
+                          annotations.get(finalK)))
+              .collect(Collectors.toList());
+      totalRelationPairs.addAll(relationPairs);
+    }
+    return totalRelationPairs;
+  }
+
   private Stream<WordErrorWithPosition> getBidirectionalRelationEntity(
-      final Annotation annotation) {
-    final Map<String, Entity> entityMap = annotation.getDocument().getEntityMap();
+      final List<Annotation> annotations) {
     final Map<String, List<RelationPair>> relationMap =
-        annotation
-            .getDocument()
-            .getRelationEntities()
-            .stream()
-            .map(
-                relationEntity ->
-                    new RelationPair(
-                        relationEntity.getTag(),
-                        relationEntity.getSourceTag(),
-                        entityMap.get(relationEntity.getSourceTag()).getTerm(),
-                        entityMap.get(relationEntity.getSourceTag()).getType(),
-                        relationEntity.getTargetTag(),
-                        entityMap.get(relationEntity.getTargetTag()).getTerm(),
-                        entityMap.get(relationEntity.getTargetTag()).getType(),
-                        relationEntity.getType()))
+        getTotalRelationPairs(annotations)
+            .parallelStream()
             .collect(Collectors.groupingBy(RelationPair::getRelationType));
     return relationMap
         .entrySet()
@@ -192,8 +223,9 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         .flatMap(
             entry -> {
               if (entry.getValue().size() > 1) {
-                final List<RelationPair> entryRelationPair = entry.getValue();
-                return entryRelationPair
+                final Set<String> typeSet = new HashSet<>();
+                return entry
+                    .getValue()
                     .stream()
                     .filter(
                         relationPair -> {
@@ -209,8 +241,11 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                               && sourcePair.getRight().equals(targetPair.getRight())) {
                             return false;
                           }
-                          return entryRelationPair
-                              .stream()
+                          return relationMap
+                              .entrySet()
+                              .parallelStream()
+                              .filter(totalEntry -> totalEntry.getKey().equals(entry.getKey()))
+                              .flatMap(stringListEntry -> stringListEntry.getValue().stream())
                               .anyMatch(
                                   current ->
                                       current.getTargetTerm().equals(sourcePair.getLeft())
@@ -225,21 +260,59 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
                                               .equals(targetPair.getRight()));
                         })
                     .map(
-                        relationPair ->
-                            new WordErrorWithPosition(
-                                relationPair.getSourceType()
-                                    + " -> "
-                                    + relationPair.getTargetType(),
-                                relationPair.getRelationType(),
-                                new BratPosition(
-                                    Math.min(
-                                        entityMap.get(relationPair.getSourceTag()).getStart(),
-                                        entityMap.get(relationPair.getTargetTag()).getStart()),
-                                    Math.max(
-                                        entityMap.get(relationPair.getSourceTag()).getEnd(),
-                                        entityMap.get(relationPair.getTargetTag()).getEnd())),
-                                annotation,
-                                relationPair.getRelationTag()));
+                        relationPair -> {
+                          //                          log.info(
+                          //                              "id:{},rTag:{}
+                          // ,sourceTerm:{},sourceType:{},relationType:{},targetTerm:{},targetType:{}",
+                          //                              relationPair.annotation.getId(),
+                          //                              relationPair.getRelationTag(),
+                          //                              relationPair.getSourceTerm(),
+                          //                              relationPair.getSourceType(),
+                          //                              relationPair.getRelationType(),
+                          //                              relationPair.getTargetTerm(),
+                          //                              relationPair.getTargetType()
+                          //                          );
+                          String term =
+                              String.format(
+                                  "[%s,%s] -> [%s,%s]",
+                                  relationPair.getSourceTerm(),
+                                  relationPair.getSourceType().replace("-and", ""),
+                                  relationPair.getTargetTerm(),
+                                  relationPair.getTargetType().replace("-and", ""));
+                          if (typeSet.add(term)
+                              && typeSet
+                                  .stream()
+                                  .anyMatch(
+                                      s ->
+                                          s.equals(
+                                              String.format(
+                                                  "[%s,%s] -> [%s,%s]",
+                                                  relationPair.getTargetTerm(),
+                                                  relationPair.getTargetType().replace("-and", ""),
+                                                  relationPair.getSourceTerm(),
+                                                  relationPair
+                                                      .getSourceType()
+                                                      .replace("-and", ""))))) {
+                            typeSet.remove(term);
+                            term =
+                                String.format(
+                                    "[%s,%s] -> [%s,%s]",
+                                    relationPair.getTargetTerm(),
+                                    relationPair.getTargetType(),
+                                    relationPair.getSourceTerm(),
+                                    relationPair.getSourceType());
+                          }
+                          return new WordErrorWithPosition(
+                              term,
+                              relationPair.getRelationType(),
+                              new BratPosition(
+                                  Math.min(
+                                      relationPair.getSourceStart(), relationPair.getTargetStart()),
+                                  Math.max(
+                                      relationPair.getSourceEnd(), relationPair.getTargetEnd())),
+                              relationPair.getAnnotation(),
+                              relationPair.getRelationTag());
+                        });
               } else {
                 return Stream.empty();
               }
@@ -250,13 +323,16 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   static class RelationPair {
 
     private final String relationTag;
-    private final String sourceTag;
     private final String sourceTerm;
     private final String sourceType;
-    private final String targetTag;
+    private final int sourceStart;
+    private final int sourceEnd;
     private final String targetTerm;
     private final String targetType;
+    private final int targetStart;
+    private final int targetEnd;
     private final String relationType;
+    private final Annotation annotation;
   }
 
   @lombok.Value
