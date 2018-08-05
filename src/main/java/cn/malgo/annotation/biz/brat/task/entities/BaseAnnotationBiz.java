@@ -40,10 +40,7 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
   @Resource private AnnotationFactory annotationFactory;
 
   public static void checkPermission(final AnnotationCombine annotation, final UserDetails user) {
-    final AnnotationCombineStateEnum state =
-        AnnotationCombineStateEnum.valueOf(annotation.getState());
-
-    switch (state) {
+    switch (annotation.getStateEnum()) {
       case unDistributed:
       case errorPass:
       case innerAnnotation:

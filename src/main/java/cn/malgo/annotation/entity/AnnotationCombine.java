@@ -3,11 +3,20 @@ package cn.malgo.annotation.entity;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import javax.persistence.*;
 import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -26,6 +35,7 @@ import java.util.Date;
 @ToString(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class AnnotationCombine extends BaseEntity {
   @Column(name = "term", nullable = false, columnDefinition = "MEDIUMTEXT")
   private String term;
@@ -70,6 +80,11 @@ public class AnnotationCombine extends BaseEntity {
   @Transient private String userName;
 
   public AnnotationCombineStateEnum getStateEnum() {
-    return AnnotationCombineStateEnum.valueOf(this.state);
+    try {
+      return AnnotationCombineStateEnum.valueOf(this.state);
+    } catch (IllegalArgumentException ex) {
+      log.warn("illegal annotation combine state: " + this.state + ", id: " + this.getId());
+      return AnnotationCombineStateEnum.UNKNOWN;
+    }
   }
 }

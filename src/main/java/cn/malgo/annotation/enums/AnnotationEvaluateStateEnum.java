@@ -2,7 +2,9 @@ package cn.malgo.annotation.enums;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public enum AnnotationEvaluateStateEnum {
   TOTAL(
@@ -24,20 +26,20 @@ public enum AnnotationEvaluateStateEnum {
       Arrays.asList(
           AnnotationCombineStateEnum.abandon, AnnotationCombineStateEnum.innerAnnotation));
 
-  private final List<AnnotationTaskState> blockStates;
-  private final List<AnnotationCombineStateEnum> annotationStates;
+  private final Set<AnnotationTaskState> blockStates;
+  private final Set<AnnotationCombineStateEnum> annotationStates;
 
   AnnotationEvaluateStateEnum(
       List<AnnotationTaskState> blockStates, List<AnnotationCombineStateEnum> annotationStates) {
-    this.blockStates = blockStates;
-    this.annotationStates = annotationStates;
+    this.blockStates = new HashSet<>(blockStates);
+    this.annotationStates = new HashSet<>(annotationStates);
   }
 
-  public List<AnnotationTaskState> getBlockStates() {
+  public Set<AnnotationTaskState> getBlockStates() {
     return blockStates;
   }
 
-  public List<AnnotationCombineStateEnum> getAnnotationStates() {
+  public Set<AnnotationCombineStateEnum> getAnnotationStates() {
     return annotationStates;
   }
 }

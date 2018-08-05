@@ -8,7 +8,8 @@ public enum AnnotationCombineStateEnum {
   abandon("已放弃"),
   innerAnnotation("内部标注"),
   errorPass("纠错通过"),
-  examinePass("审核通过");
+  examinePass("审核通过"),
+  UNKNOWN("未知");
 
   private String message;
 
