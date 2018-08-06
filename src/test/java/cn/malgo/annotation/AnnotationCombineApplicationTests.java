@@ -1,17 +1,16 @@
 package cn.malgo.annotation;
 
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.AtomicTerm;
 import com.alibaba.fastjson.JSON;
 import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dto.AnnotationSummary;
 import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.request.ListAnnotationCombineRequest;
-import cn.malgo.annotation.service.AnnotationCombineService;
+import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.service.AnnotationService;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ import java.util.List;
 @SpringBootTest
 @Slf4j
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
-  @Autowired private AnnotationCombineService annotationCombineService;
+  @Autowired private AnnotationService annotationCombineService;
   @Autowired private AnnotationCombineRepository annotationCombineRepository;
   @Autowired private AnnotationTaskRepository taskRepository;
 
@@ -38,13 +37,13 @@ public class AnnotationCombineApplicationTests extends AbstractTestNGSpringConte
 
   @Test(enabled = false)
   public void testAnnotationCombine() {
-    ListAnnotationCombineRequest annotationCombineQuery = new ListAnnotationCombineRequest();
+    ListAnnotationRequest annotationCombineQuery = new ListAnnotationRequest();
     annotationCombineQuery.setPageIndex(1);
     annotationCombineQuery.setPageSize(10);
     annotationCombineQuery.setAnnotationTypes(Arrays.asList(0, 1));
     annotationCombineQuery.setStates(Arrays.asList("a"));
 
-    Page<AnnotationCombine> page =
+    Page<AnnotationNew> page =
         annotationCombineService.listAnnotationCombine(annotationCombineQuery);
     log.info(">>>>>>>>data:" + JSON.toJSONString(page));
   }

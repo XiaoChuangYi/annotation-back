@@ -1,16 +1,17 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
-import cn.malgo.annotation.request.ListAnnotationCombineRequest;
+import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
-import cn.malgo.annotation.service.AnnotationCombineService;
+import cn.malgo.annotation.service.AnnotationService;
 import java.util.Calendar;
-import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,25 +29,25 @@ import java.util.stream.IntStream;
 
 @Service
 @Slf4j
-public class AnnotationCombineServiceImpl implements AnnotationCombineService {
-  private final AnnotationCombineRepository annotationCombineRepository;
+public class AnnotationServiceImpl implements AnnotationService {
+
+  private final AnnotationRepository annotationRepository;
   private final UserAccountRepository userAccountRepository;
 
   @Autowired
-  public AnnotationCombineServiceImpl(
-      AnnotationCombineRepository annotationCombineRepository,
-      UserAccountRepository userAccountRepository) {
-    this.annotationCombineRepository = annotationCombineRepository;
+  public AnnotationServiceImpl(
+      UserAccountRepository userAccountRepository,
+      final AnnotationRepository annotationRepository) {
     this.userAccountRepository = userAccountRepository;
+    this.annotationRepository = annotationRepository;
   }
 
   /** spring-boot-jpa 自定义查询 */
-  private static Specification<AnnotationCombine> queryAnnotationCombineCondition(
-      ListAnnotationCombineRequest param) {
-    return (Specification<AnnotationCombine>)
+  private static Specification<AnnotationNew> queryAnnotationCondition(
+      ListAnnotationRequest param) {
+    return (Specification<AnnotationNew>)
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
-          //          predicates.add(criteriaBuilder.equal(root.get("isTask"), 0));
           if (param.getIdList() != null && param.getIdList().size() > 0) {
             predicates.add(criteriaBuilder.in(root.get("id")).value(param.getIdList()));
           }
@@ -56,10 +56,23 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
           }
           if (param.getAnnotationTypes() != null && param.getAnnotationTypes().size() > 0) {
             predicates.add(
-                criteriaBuilder.in(root.get("annotationType")).value(param.getAnnotationTypes()));
+                criteriaBuilder
+                    .in(root.get("annotationType"))
+                    .value(
+                        param
+                            .getAnnotationTypes()
+                            .stream()
+                            .map(AnnotationTypeEnum::getByValue)
+                            .collect(Collectors.toList())));
           }
           if (param.getStates() != null && param.getStates().size() > 0) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getStates()));
+            final List<AnnotationStateEnum> states =
+                param
+                    .getStates()
+                    .stream()
+                    .map(AnnotationStateEnum::valueOf)
+                    .collect(Collectors.toList());
+            predicates.add(criteriaBuilder.in(root.get("state")).value(states));
           }
           if (param.getUserId() > 0) {
             predicates.add(criteriaBuilder.equal(root.get("assignee"), param.getUserId()));
@@ -81,16 +94,12 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
 
   /** 条件查询标注任务 */
   @Override
-  public Page<AnnotationCombine> listAnnotationCombine(
-      ListAnnotationCombineRequest listAnnotationCombineRequest) {
-    Page<AnnotationCombine> page =
-        annotationCombineRepository.findAll(
-            queryAnnotationCombineCondition(listAnnotationCombineRequest),
+  public Page<AnnotationNew> listAnnotationCombine(ListAnnotationRequest request) {
+    Page<AnnotationNew> page =
+        annotationRepository.findAll(
+            queryAnnotationCondition(request),
             PageRequest.of(
-                listAnnotationCombineRequest.getPageIndex(),
-                listAnnotationCombineRequest.getPageSize(),
-                Direction.DESC,
-                "createdTime"));
+                request.getPageIndex(), request.getPageSize(), Direction.DESC, "createdTime"));
     Map<Long, String> userMap;
     if (page.getTotalElements() > 0) {
       userMap =
@@ -100,9 +109,8 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
               .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
       page.getContent()
           .forEach(
-              annotationCombine ->
-                  annotationCombine.setUserName(
-                      userMap.getOrDefault(annotationCombine.getAssignee(), "")));
+              annotationNew ->
+                  annotationNew.setUserName(userMap.getOrDefault(annotationNew.getAssignee(), "")));
     }
     return page;
   }
@@ -110,15 +118,14 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
   /** 批量指派标注数据给特定用户 */
   @Override
   public void designateAnnotationCombine(DesignateAnnotationRequest request) {
-    final List<AnnotationCombine> annotationCombineList =
-        annotationCombineRepository.findAllById(request.getIdList());
+    final List<AnnotationNew> annotationCombineList =
+        annotationRepository.findAllById(request.getIdList());
     annotationCombineList.forEach(
         annotationCombine -> {
           annotationCombine.setAssignee(request.getUserId());
-          annotationCombine.setState(AnnotationCombineStateEnum.preAnnotation.name());
-          annotationCombine.setReviewedAnnotation("");
+          annotationCombine.setState(AnnotationStateEnum.PRE_ANNOTATION);
         });
-    annotationCombineRepository.saveAll(annotationCombineList);
+    annotationRepository.saveAll(annotationCombineList);
   }
 
   /** 随机批量指派标注数据给用户 */
@@ -126,8 +133,8 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
   public void randomDesignateAnnotationCombine(
       RandomDesignateAnnotationRequest randomDesignateAnnotationRequest) {
     // 第一步根据未分配状态，标注类型，以及num，查询出所有的标注
-    List<AnnotationCombine> annotationCombineList =
-        annotationCombineRepository.findAllByAnnotationTypeInAndStateEquals(
+    List<AnnotationNew> annotationCombineList =
+        annotationRepository.findAllByAnnotationTypeInAndStateEquals(
             randomDesignateAnnotationRequest.getAnnotationTypes(),
             AnnotationCombineStateEnum.unDistributed.name(),
             PageRequest.of(0, randomDesignateAnnotationRequest.getNum()));
@@ -139,11 +146,8 @@ public class AnnotationCombineServiceImpl implements AnnotationCombineService {
             i -> {
               int k = i % userIdList.size();
               annotationCombineList.get(i).setAssignee(userIdList.get(k));
-              annotationCombineList
-                  .get(i)
-                  .setState(AnnotationCombineStateEnum.preAnnotation.name());
-              annotationCombineList.get(i).setReviewedAnnotation("");
+              annotationCombineList.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
             });
-    annotationCombineRepository.saveAll(annotationCombineList);
+    annotationRepository.saveAll(annotationCombineList);
   }
 }

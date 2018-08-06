@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ListAnnotationCombineRequest {
+public class ListAnnotationRequest {
   private List<Long> idList;
   private String term;
   private int pageIndex;

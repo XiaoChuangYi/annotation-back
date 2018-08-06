@@ -59,31 +59,25 @@ public class AnnotationBratController extends BaseController {
   /** 标注entities处理，新增标注的接口，不过算法api */
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
   public Response addAnnotation(
-      @RequestBody AddAnnotationRequest addAnnotationRequest,
+      @RequestBody AddAnnotationGroupRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        addAnnotationBiz.process(
-            addAnnotationRequest, userAccount));
+    return new Response<>(addAnnotationBiz.process(request, userAccount));
   }
 
   /** entities处理，更新标注 ，不过算法api */
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
   public Response updateAnnotation(
-      @RequestBody UpdateAnnotationRequest updateAnnotationRequest,
+      @RequestBody UpdateAnnotationGroupRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        updateAnnotationBiz.process(
-            updateAnnotationRequest, userAccount));
+    return new Response<>(updateAnnotationBiz.process(request, userAccount));
   }
 
   /** entities处理，删除标注，不过算法api */
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
   public Response deleteAnnotation(
-      @RequestBody DeleteAnnotationRequest deleteAnnotationRequest,
+      @RequestBody DeleteAnnotationGroupRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        deleteAnnotationBiz.process(
-            deleteAnnotationRequest, userAccount));
+    return new Response<>(deleteAnnotationBiz.process(request, userAccount));
   }
 
   /** 普通人员，新增关联标注 */
@@ -91,8 +85,7 @@ public class AnnotationBratController extends BaseController {
   public Response addRelation(
       @RequestBody AddRelationRequest addRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        addRelationBiz.process(addRelationRequest, userAccount));
+    return new Response<>(addRelationBiz.process(addRelationRequest, userAccount));
   }
 
   /** 审核人员 删除关联标注 */
@@ -100,9 +93,7 @@ public class AnnotationBratController extends BaseController {
   public Response deleteRelation(
       @RequestBody DeleteRelationRequest deleteRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        deleteRelationBiz.process(
-            deleteRelationRequest, userAccount));
+    return new Response<>(deleteRelationBiz.process(deleteRelationRequest, userAccount));
   }
 
   /** 更新关联标注 */
@@ -110,9 +101,7 @@ public class AnnotationBratController extends BaseController {
   public Response updateRelation(
       @RequestBody UpdateRelationRequest updateRelationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(
-        updateRelationBiz.process(
-            updateRelationRequest, userAccount));
+    return new Response<>(updateRelationBiz.process(updateRelationRequest, userAccount));
   }
 
   /** 关联标注限制规则列表 */

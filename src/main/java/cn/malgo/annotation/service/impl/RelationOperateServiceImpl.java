@@ -1,9 +1,9 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.request.brat.DeleteRelationRequest;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
@@ -18,32 +18,30 @@ import java.util.function.Function;
 @Service("task-relation")
 public class RelationOperateServiceImpl implements RelationOperateService {
   private final AnnotationFactory factory;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
 
   @Autowired
   public RelationOperateServiceImpl(
-      AnnotationFactory factory, AnnotationCombineRepository annotationCombineRepository) {
+      AnnotationFactory factory, AnnotationRepository annotationRepository) {
     this.factory = factory;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.annotationRepository = annotationRepository;
   }
 
-  private Annotation process(
-      AnnotationCombine annotationCombine, Function<Annotation, String> operator) {
-    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
-      annotationCombine.setState(AnnotationCombineStateEnum.annotationProcessing.name());
+  private Annotation process(AnnotationNew annotationNew, Function<Annotation, String> operator) {
+    if (annotationNew.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
+      annotationNew.setState(AnnotationStateEnum.ANNOTATION_PROCESSING);
     }
 
-    final Annotation annotation = this.factory.create(annotationCombine);
+    final Annotation annotation = this.factory.create(annotationNew);
     annotation.setAnnotation(operator.apply(annotation));
-    annotationCombineRepository.save(annotationCombine);
+    annotationRepository.save(annotationNew);
     return annotation;
   }
 
   @Override
-  public String addRelation(
-      final AnnotationCombine annotationCombine, final AddRelationRequest request) {
+  public String addRelation(final AnnotationNew annotationNew, final AddRelationRequest request) {
     return process(
-            annotationCombine,
+            annotationNew,
             (annotation) ->
                 AnnotationConvert.addRelationsAnnotation(
                     annotation.getAnnotation(),
@@ -54,10 +52,10 @@ public class RelationOperateServiceImpl implements RelationOperateService {
   }
 
   @Override
-  public String updateRelation(AnnotationCombine annotationCombine, UpdateRelationRequest request) {
+  public String updateRelation(AnnotationNew annotationNew, UpdateRelationRequest request) {
 
     return process(
-            annotationCombine,
+            annotationNew,
             (annotation) ->
                 AnnotationConvert.updateRelationAnnotation(
                     annotation.getAnnotation(), request.getReTag(), request.getRelation()))
@@ -65,9 +63,9 @@ public class RelationOperateServiceImpl implements RelationOperateService {
   }
 
   @Override
-  public String deleteRelation(AnnotationCombine annotationCombine, DeleteRelationRequest request) {
+  public String deleteRelation(AnnotationNew annotationNew, DeleteRelationRequest request) {
     return process(
-            annotationCombine,
+            annotationNew,
             annotation ->
                 AnnotationConvert.deleteRelationsAnnotation(
                     annotation.getAnnotation(), request.getReTag()))

@@ -1,10 +1,10 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.annotation.vo.AnnotationCombineBratVO;
+import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -12,13 +12,12 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AnnotationExamineResetBiz
-    extends BaseBiz<AnnotationStateRequest, AnnotationCombineBratVO> {
+public class AnnotationExamineResetBiz extends BaseBiz<AnnotationStateRequest, AnnotationBratVO> {
 
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
 
-  public AnnotationExamineResetBiz(final AnnotationCombineRepository annotationCombineRepository) {
-    this.annotationCombineRepository = annotationCombineRepository;
+  public AnnotationExamineResetBiz(final AnnotationRepository annotationRepository) {
+    this.annotationRepository = annotationRepository;
   }
 
   @Override
@@ -29,16 +28,13 @@ public class AnnotationExamineResetBiz
   }
 
   @Override
-  protected AnnotationCombineBratVO doBiz(AnnotationStateRequest request, UserDetails user) {
-    final Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(request.getId());
+  protected AnnotationBratVO doBiz(AnnotationStateRequest request, UserDetails user) {
+    final Optional<AnnotationNew> optional = annotationRepository.findById(request.getId());
     if (optional.isPresent()) {
-      final AnnotationCombine annotationCombine = optional.get();
-      annotationCombine.setFinalAnnotation("");
-      annotationCombine.setManualAnnotation("");
-      annotationCombine.setReviewedAnnotation("");
-      return AnnotationConvert.convert2AnnotationCombineBratVO(
-          annotationCombineRepository.save(annotationCombine));
+      final AnnotationNew annotationNew = optional.get();
+      annotationNew.setFinalAnnotation("");
+      annotationNew.setManualAnnotation("");
+      return AnnotationConvert.convert2AnnotationBratVO(annotationRepository.save(annotationNew));
     }
     return null;
   }

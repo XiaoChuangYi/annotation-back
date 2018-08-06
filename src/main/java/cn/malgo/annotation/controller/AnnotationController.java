@@ -8,19 +8,20 @@ import cn.malgo.annotation.request.AnnotationRecycleRequest;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.CountAnnotationRequest;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
-import cn.malgo.annotation.request.ListAnnotationCombineRequest;
+import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.annotation.vo.AnnotationCombineBratVO;
+import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class AnnotationCombineController extends BaseController {
+public class AnnotationController extends BaseController {
 
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
@@ -31,7 +32,7 @@ public class AnnotationCombineController extends BaseController {
   private final PreAnnotationRecycleBiz preAnnotationRecycleBiz;
   private final AnnotationExamineResetBiz annotationExamineResetBiz;
 
-  public AnnotationCombineController(
+  public AnnotationController(
       final ListAnnotationBiz listAnnotationBiz,
       final DesignateAnnotationBiz designateAnnotationBiz,
       final GetAnnotationSummaryBiz getAnnotationSummaryBiz,
@@ -52,10 +53,28 @@ public class AnnotationCombineController extends BaseController {
 
   /** 条件，分页查询annotation列表 */
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
-  public Response<PageVO<AnnotationCombineBratVO>> listAnnotationCombine(
-      ListAnnotationCombineRequest annotationCombineQuery,
+  public Response<PageVO<AnnotationBratVO>> listAnnotationCombine(
+      ListAnnotationRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(listAnnotationBiz.process(annotationCombineQuery, userAccount));
+    request.setStates(
+        request
+            .getStates()
+            .stream()
+            .map(
+                s -> {
+                  switch (s) {
+                    case "preAnnotation":
+                      return "PRE_ANNOTATION";
+                    case "unDistributed":
+                      return "UN_DISTRIBUTED";
+                    case "annotationProcessing":
+                      return "ANNOTATION_PROCESSING";
+                    default:
+                      return "SUBMITTED";
+                  }
+                })
+            .collect(Collectors.toList()));
+    return new Response<>(listAnnotationBiz.process(request, userAccount));
   }
 
   /** 根据Annotation的idList，以及用户id，批量指派给特定的用户 */
@@ -107,7 +126,7 @@ public class AnnotationCombineController extends BaseController {
 
   /** 审核放弃 */
   @RequestMapping(value = "/annotation-examine-abandon", method = RequestMethod.POST)
-  public Response<AnnotationCombineBratVO> annotationExamineAbandon(
+  public Response<AnnotationBratVO> annotationExamineAbandon(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody AnnotationStateRequest annotationStateRequest) {
     return new Response<>(annotationExamineResetBiz.process(annotationStateRequest, userAccount));

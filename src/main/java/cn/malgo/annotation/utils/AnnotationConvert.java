@@ -1,10 +1,11 @@
 package cn.malgo.annotation.utils;
 
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import cn.malgo.annotation.vo.AnnotationCombineBratVO;
+import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
@@ -12,7 +13,6 @@ import cn.malgo.service.exception.InternalServerException;
 import com.alibaba.fastjson.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -161,35 +161,28 @@ public class AnnotationConvert {
   }
 
   /** 将分词标注数据装载到前端vo对象中 */
-  public static AnnotationCombineBratVO convert2AnnotationCombineBratVO(
-      AnnotationCombine annotationCombine) {
-    JSONObject finalBratJson, reviewedBratJson;
+  public static AnnotationBratVO convert2AnnotationBratVO(AnnotationNew annotationNew) {
+    JSONObject finalBratJson;
     try {
       finalBratJson =
           convertAnnotation2BratFormat(
-              annotationCombine.getTerm(),
-              annotationCombine.getFinalAnnotation(),
-              annotationCombine.getAnnotationType());
-      reviewedBratJson =
-          convertAnnotation2BratFormat(
-              annotationCombine.getTerm(),
-              annotationCombine.getReviewedAnnotation(),
-              annotationCombine.getAnnotationType());
+              annotationNew.getTerm(),
+              annotationNew.getFinalAnnotation(),
+              annotationNew.getAnnotationType().ordinal());
     } catch (Exception ex) {
       log.info(
           "Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}",
-          annotationCombine.getId(),
-          annotationCombine.getTerm(),
-          annotationCombine.getFinalAnnotation() + "--" + annotationCombine.getReviewedAnnotation(),
+          annotationNew.getId(),
+          annotationNew.getTerm(),
+          annotationNew.getFinalAnnotation(),
           ex.getMessage());
-      throw new InternalServerException("异常标注id：" + annotationCombine.getId());
+      throw new InternalServerException("异常标注id：" + annotationNew.getId());
     }
 
-    AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
-    BeanUtils.copyProperties(annotationCombine, annotationCombineBratVO);
-    annotationCombineBratVO.setFinalAnnotation(finalBratJson);
-    annotationCombineBratVO.setReviewedAnnotation(reviewedBratJson);
-    return annotationCombineBratVO;
+    AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+    BeanUtils.copyProperties(annotationNew, annotationBratVO);
+    annotationBratVO.setFinalAnnotation(finalBratJson);
+    return annotationBratVO;
   }
 
   public static String addUncomfirmed(String oldAnnotation) {
@@ -208,37 +201,30 @@ public class AnnotationConvert {
   }
 
   /** 批量将分词标注装载到前端vo对象中 */
-  public static List<AnnotationCombineBratVO> convert2AnnotationCombineBratVOList(
-      List<AnnotationCombine> annotationCombineList) {
-    List<AnnotationCombineBratVO> annotationBratVOList = new LinkedList<>();
-    if (annotationCombineList.size() > 0) {
-      for (AnnotationCombine annotation : annotationCombineList) {
-        JSONObject finalBratJson, reviewedBratJson;
+  public static List<AnnotationBratVO> convert2AnnotationCombineBratVOList(
+      List<AnnotationNew> annotationList) {
+    List<AnnotationBratVO> annotationBratVOList = new LinkedList<>();
+    if (annotationList.size() > 0) {
+      for (AnnotationNew annotation : annotationList) {
+        JSONObject finalBratJson;
         try {
-          reviewedBratJson =
-              convertAnnotation2BratFormat(
-                  annotation.getTerm(),
-                  annotation.getReviewedAnnotation(),
-                  annotation.getAnnotationType());
           finalBratJson =
               convertAnnotation2BratFormat(
                   annotation.getTerm(),
                   annotation.getFinalAnnotation(),
-                  annotation.getAnnotationType());
+                  annotation.getAnnotationType().ordinal());
         } catch (Exception ex) {
           log.info(
               "Brat装换异常,异常标注id：{},对应的文本：{},标注的数据：{},异常信息内容：{}",
               annotation.getId(),
               annotation.getTerm(),
-              annotation.getFinalAnnotation() + "--" + annotation.getReviewedAnnotation(),
+              annotation.getFinalAnnotation(),
               ex.getMessage());
           throw new InternalServerException("异常标注id：" + annotation.getId());
         }
-
-        AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
+        AnnotationBratVO annotationCombineBratVO = new AnnotationBratVO();
         BeanUtils.copyProperties(annotation, annotationCombineBratVO);
         annotationCombineBratVO.setFinalAnnotation(finalBratJson);
-        annotationCombineBratVO.setReviewedAnnotation(reviewedBratJson);
         annotationBratVOList.add(annotationCombineBratVO);
       }
     }

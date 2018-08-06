@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AlgorithmAnnotationVO {
   private String autoAnnotation;
-  private AnnotationCombineBratVO annotationCombineBratVO;
+  private AnnotationBratVO annotationCombineBratVO;
 }

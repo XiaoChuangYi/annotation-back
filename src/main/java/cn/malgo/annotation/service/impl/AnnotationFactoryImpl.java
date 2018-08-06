@@ -2,18 +2,18 @@ package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AnnotationFactoryImpl implements AnnotationFactory {
+
   @Override
   public Annotation create(final AnnotationCombine annotationCombine) {
     if (annotationCombine == null) {
@@ -52,7 +52,24 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     throw new IllegalArgumentException("标注状态错误: " + block.getState());
   }
 
+  @Override
+  public Annotation create(AnnotationNew annotation) {
+    if (annotation == null) {
+      throw new NullPointerException("create annotation get null");
+    }
+
+    switch (annotation.getState()) {
+      case UN_DISTRIBUTED:
+      case ANNOTATION_PROCESSING:
+      case PRE_ANNOTATION:
+        return new AnnotationNewFinal(annotation);
+    }
+
+    throw new IllegalArgumentException("标注状态错误: " + annotation.getState());
+  }
+
   abstract static class BaseAnnotation implements Annotation {
+
     private AnnotationDocument document;
 
     protected abstract String getText();
@@ -79,6 +96,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
   }
 
   abstract static class BaseAnnotationCombine extends BaseAnnotation {
+
     @NonNull protected final AnnotationCombine annotationCombine;
 
     BaseAnnotationCombine(final AnnotationCombine annotationCombine) {
@@ -102,6 +120,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
   }
 
   static class AnnotationFinal extends BaseAnnotationCombine {
+
     AnnotationFinal(final AnnotationCombine annotationCombine) {
       super(annotationCombine);
     }
@@ -119,6 +138,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
   }
 
   static class AnnotationReviewed extends BaseAnnotationCombine {
+
     AnnotationReviewed(AnnotationCombine annotationCombine) {
       super(annotationCombine);
     }
@@ -135,7 +155,43 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
   }
 
+  static class AnnotationNewFinal extends BaseAnnotation {
+
+    private final AnnotationNew annotationNew;
+
+    public AnnotationNewFinal(final AnnotationNew annotationNew) {
+      this.annotationNew = annotationNew;
+    }
+
+    @Override
+    public long getId() {
+      return 0;
+    }
+
+    @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return null;
+    }
+
+    @Override
+    public String getAnnotation() {
+      return annotationNew.getFinalAnnotation();
+    }
+
+    @Override
+    protected String getText() {
+      return null;
+    }
+
+    @Override
+    public void setAnnotation(String annotation) {
+      super.setAnnotation(annotation);
+      annotationNew.setFinalAnnotation(annotation);
+    }
+  }
+
   static class AnnotationBlock extends BaseAnnotation {
+
     private final AnnotationTaskBlock block;
 
     AnnotationBlock(final AnnotationTaskBlock block) {

@@ -2,7 +2,7 @@ package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
-import cn.malgo.annotation.service.AnnotationCombineService;
+import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InternalServerException;
@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, String> {
-  private final AnnotationCombineService annotationCombineService;
+  private final AnnotationService annotationCombineService;
 
-  public DesignateAnnotationBiz(AnnotationCombineService annotationCombineService) {
+  public DesignateAnnotationBiz(AnnotationService annotationCombineService) {
     this.annotationCombineService = annotationCombineService;
   }
 
