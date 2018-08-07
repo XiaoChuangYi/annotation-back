@@ -67,29 +67,29 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
 
     assertEquals(countRowsInTable("annotation_task_block"), 2);
     assertEquals(countRowsInTable("annotation_task"), 1);
-    assertEquals(countRowsInTable("task_block"), 1);
+    assertEquals(countRowsInTable("task_block"), 2);
 
     TestTransaction.start();
 
     final AnnotationTask task = annotationTaskRepository.findAll().get(0);
     assertEquals(task.getState(), AnnotationTaskState.FINISHED);
-    assertEquals(task.getTaskBlocks().size(), 1);
+    assertEquals(task.getTaskBlocks().size(), 2);
     final AnnotationTaskBlock block = task.getTaskBlocks().iterator().next().getBlock();
-    assertEquals(block.getState(), AnnotationTaskState.FINISHED);
+    assertEquals(block.getState(), AnnotationTaskState.CREATED);
     assertEquals(annotationTaskBlockRepository.findAll().size(), 2);
     assertEquals(
         annotationTaskBlockRepository.getOne(block.getId()).getState(),
-        AnnotationTaskState.FINISHED);
+        AnnotationTaskState.CREATED);
     assertEquals(
         annotationTaskBlockRepository
             .findAllByStateIn(
                 Collections.singletonList(AnnotationTaskState.DOING), PageRequest.of(0, 100))
             .size(),
-        1);
+        0);
     assertEquals(
         annotationTaskBlockRepository
             .findAllByStateIn(
-                Collections.singletonList(AnnotationTaskState.FINISHED), PageRequest.of(0, 100))
+                Collections.singletonList(AnnotationTaskState.PRE_CLEAN), PageRequest.of(0, 100))
             .size(),
         1);
     assertEquals(
@@ -103,6 +103,6 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
             .findAllByStateIn(
                 Collections.singletonList(AnnotationTaskState.CREATED), PageRequest.of(0, 100))
             .size(),
-        0);
+        1);
   }
 }
