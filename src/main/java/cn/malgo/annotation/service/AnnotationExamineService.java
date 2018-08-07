@@ -1,11 +1,11 @@
 package cn.malgo.annotation.service;
 
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import java.util.List;
 
 public interface AnnotationExamineService {
 
-  List<Long> batchAnnotationExamine(List<AnnotationCombine> annotationCombines);
+  List<Long> batchAnnotationExamine(List<AnnotationNew> annotationNews);
 
-  Long singleAnnotationExamine(AnnotationCombine annotationCombine);
+  Long singleAnnotationExamine(AnnotationNew annotationNew);
 }

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -33,6 +34,8 @@ public interface AnnotationTaskBlockRepository
   Set<AnnotationTaskBlock> findByIdInAndStateIn(Set<Long> ids, List<AnnotationTaskState> states);
 
   List<AnnotationTaskBlock> findByStateIn(List<AnnotationTaskState> states, Pageable pageable);
+
+  List<AnnotationTaskBlock> findByStateIn(List<AnnotationTaskState> states, Sort sort);
 
   /**
    * @param taskId {@link cn.malgo.annotation.entity.AnnotationTask#id}

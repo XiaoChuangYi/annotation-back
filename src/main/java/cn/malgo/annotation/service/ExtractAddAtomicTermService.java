@@ -1,13 +1,13 @@
 package cn.malgo.annotation.service;
 
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import java.util.List;
 
 /** Created by cjl on 2018/6/13. */
 public interface ExtractAddAtomicTermService {
 
-  UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(AnnotationCombine annotationCombine);
+  UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(AnnotationNew annotationNew);
 
-  void batchExtractAndAddAtomicTerm(List<AnnotationCombine> combineList);
+  void batchExtractAndAddAtomicTerm(List<AnnotationNew> combineList);
 }

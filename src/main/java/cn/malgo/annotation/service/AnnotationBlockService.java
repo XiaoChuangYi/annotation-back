@@ -1,6 +1,6 @@
 package cn.malgo.annotation.service;
 
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
@@ -9,22 +9,22 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public interface AnnotationBlockService {
   /**
-   * 获取block，如果不存在则创建，同时会创建对应的{@link AnnotationCombine}
+   * 获取block，如果不存在则创建，同时会创建对应的{@link AnnotationNew}
    *
    * @param annotationType 标注类型
    * @param text 文本
-   * @param createAnnotationCombine 是否创建AnnotationCombine
+   * @param createAnnotationNew 是否创建AnnotationNew
    * @return Block以及是否是新建的
    */
   Pair<AnnotationTaskBlock, Boolean> getOrCreateAnnotation(
       final AnnotationTypeEnum annotationType,
       final String text,
-      final boolean createAnnotationCombine);
+      final boolean createAnnotationNew);
 
-  void saveAnnotation(final AnnotationCombine annotationCombine);
+  void saveAnnotation(final AnnotationNew annotationNew);
 
   /**
-   * block状态更新之后，同步{@link cn.malgo.annotation.entity.AnnotationTaskDoc}和{@link
+   * block状态更新之后，同步{@link cn.malgo.annotation.entity.AnnotationTaskBlock}和{@link
    * cn.malgo.annotation.entity.AnnotationTask}的状态
    *
    * @param block block
@@ -37,10 +37,10 @@ public interface AnnotationBlockService {
    * @param block target block
    * @param action 操作
    */
-  AnnotationCombine resetBlock(
+  AnnotationNew resetBlock(
       final AnnotationTaskBlock block,
       final AnnotationBlockActionEnum action,
       final String comment);
 
-  void saveAnnotationAll(final List<AnnotationCombine> annotationCombines);
+  void saveAnnotationAll(final List<AnnotationNew> annotationNews);
 }

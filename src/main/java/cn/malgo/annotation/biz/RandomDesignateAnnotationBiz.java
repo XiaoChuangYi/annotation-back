@@ -44,7 +44,7 @@ public class RandomDesignateAnnotationBiz
   @Override
   protected Object doBiz(RandomDesignateAnnotationRequest request) {
     try {
-      annotationCombineService.randomDesignateAnnotationCombine(request);
+      annotationCombineService.randomDesignateAnnotationNew(request);
     } catch (Exception ex) {
       log.error("随机指派interface层异常", ex);
       throw new InternalServerException("随机指派interface层异常: " + ex.getMessage());

@@ -1,7 +1,6 @@
 package cn.malgo.annotation.utils;
 
 import cn.malgo.annotation.entity.AnnotationNew;
-import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
@@ -222,10 +221,10 @@ public class AnnotationConvert {
               ex.getMessage());
           throw new InternalServerException("异常标注id：" + annotation.getId());
         }
-        AnnotationBratVO annotationCombineBratVO = new AnnotationBratVO();
-        BeanUtils.copyProperties(annotation, annotationCombineBratVO);
-        annotationCombineBratVO.setFinalAnnotation(finalBratJson);
-        annotationBratVOList.add(annotationCombineBratVO);
+        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+        BeanUtils.copyProperties(annotation, annotationBratVO);
+        annotationBratVO.setFinalAnnotation(finalBratJson);
+        annotationBratVOList.add(annotationBratVO);
       }
     }
     return annotationBratVOList;

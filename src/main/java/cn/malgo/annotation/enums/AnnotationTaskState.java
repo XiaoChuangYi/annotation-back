@@ -4,5 +4,6 @@ public enum AnnotationTaskState {
   CREATED,
   DOING,
   ANNOTATED,
+  PRE_CLEAN,
   FINISHED;
 }

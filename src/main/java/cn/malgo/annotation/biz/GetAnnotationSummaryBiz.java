@@ -1,7 +1,7 @@
 package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.vo.AnnotationSummaryVO;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSummaryVO>> {
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository AnnotationRepository;
 
   @Autowired
-  public GetAnnotationSummaryBiz(AnnotationCombineRepository annotationCombineRepository) {
-    this.annotationCombineRepository = annotationCombineRepository;
+  public GetAnnotationSummaryBiz(AnnotationRepository AnnotationRepository) {
+    this.AnnotationRepository = AnnotationRepository;
   }
 
   @Override
@@ -27,8 +27,7 @@ public class GetAnnotationSummaryBiz extends BaseBiz<Object, List<AnnotationSumm
 
   @Override
   protected List<AnnotationSummaryVO> doBiz(Object o) {
-    return annotationCombineRepository
-        .findByStateGroup()
+    return AnnotationRepository.findByStateGroup()
         .stream()
         .map(x -> new AnnotationSummaryVO(x.getState(), x.getNum()))
         .collect(Collectors.toList());

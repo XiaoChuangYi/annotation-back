@@ -5,7 +5,6 @@ import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.AddAnnotationRequest;
-import cn.malgo.annotation.service.AnnotationOperateService;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.utils.AnnotationConvert;
@@ -70,9 +69,7 @@ public class AddAnnotationBiz
 
   @Override
   AnnotationBratVO doInternalProcess(
-      AnnotationOperateService annotationOperateService,
-      AnnotationNew annotationNew,
-      AddAnnotationGroupRequest request) {
+      AnnotationNew annotationNew, AddAnnotationGroupRequest request) {
     final AddAnnotationRequest paramRequest = new AddAnnotationRequest();
     BeanUtils.copyProperties(request, paramRequest);
     if (annotationNew.getAnnotationType() == AnnotationTypeEnum.relation) {

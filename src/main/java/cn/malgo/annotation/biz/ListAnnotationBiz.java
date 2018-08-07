@@ -47,7 +47,7 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
       request.setUserId(user.getId());
     }
 
-    final Page<AnnotationNew> page = annotationService.listAnnotationCombine(request);
+    final Page<AnnotationNew> page = annotationService.listAnnotationNew(request);
     return new PageVO<>(
         page.getTotalElements(),
         AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent()));

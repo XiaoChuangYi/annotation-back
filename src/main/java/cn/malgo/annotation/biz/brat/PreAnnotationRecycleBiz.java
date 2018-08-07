@@ -1,9 +1,9 @@
 package cn.malgo.annotation.biz.brat;
 
 import cn.malgo.annotation.constants.Permissions;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
@@ -11,17 +11,16 @@ import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class PreAnnotationRecycleBiz extends BaseBiz<AnnotationRecycleRequest, Object> {
 
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
 
-  public PreAnnotationRecycleBiz(final AnnotationCombineRepository annotationCombineRepository) {
-    this.annotationCombineRepository = annotationCombineRepository;
+  public PreAnnotationRecycleBiz(final AnnotationRepository annotationRepository) {
+    this.annotationRepository = annotationRepository;
   }
 
   @Override
@@ -33,25 +32,24 @@ public class PreAnnotationRecycleBiz extends BaseBiz<AnnotationRecycleRequest, O
 
   @Override
   protected Object doBiz(AnnotationRecycleRequest request, UserDetails user) {
-    final List<AnnotationCombine> annotationCombines =
-        annotationCombineRepository.findAllById(request.getAnnotationIdList());
-    if (annotationCombines.size() > 0) {
-      final List<AnnotationCombine> annotationCombineList =
-          annotationCombines
+    final List<AnnotationNew> annotationNews =
+        annotationRepository.findAllById(request.getAnnotationIdList());
+    if (annotationNews.size() > 0) {
+      final List<AnnotationNew> annotationNewList =
+          annotationNews
               .stream()
               .filter(
-                  annotationCombine ->
-                      StringUtils.equals(
-                          annotationCombine.getState(),
-                          AnnotationCombineStateEnum.preAnnotation.name()))
+                  annotationNew ->
+                      annotationNew.getState() == AnnotationStateEnum.PRE_ANNOTATION
+                          || annotationNew.getState() == AnnotationStateEnum.ANNOTATION_PROCESSING)
               .map(
-                  annotationCombine -> {
-                    annotationCombine.setState(AnnotationCombineStateEnum.unDistributed.name());
-                    annotationCombine.setAssignee(1);
-                    return annotationCombine;
+                  annotationNew -> {
+                    annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
+                    annotationNew.setAssignee(0);
+                    return annotationNew;
                   })
               .collect(Collectors.toList());
-      annotationCombineRepository.saveAll(annotationCombineList);
+      annotationRepository.saveAll(annotationNewList);
     }
     return null;
   }

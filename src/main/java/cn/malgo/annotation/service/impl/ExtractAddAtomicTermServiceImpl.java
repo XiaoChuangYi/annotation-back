@@ -3,7 +3,7 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dao.AtomicTermRepository;
 import cn.malgo.annotation.dto.NewTerm;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AtomicTerm;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
@@ -24,9 +24,8 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
   }
 
   @Override
-  public UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(
-      AnnotationCombine annotationCombine) {
-    String manualAnnotation = annotationCombine.getManualAnnotation();
+  public UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(AnnotationNew annotationNew) {
+    String manualAnnotation = annotationNew.getManualAnnotation();
     List<Entity> entities = AnnotationConvert.getEntitiesFromAnnotation(manualAnnotation);
     List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
     entities.removeIf(
@@ -52,7 +51,7 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
               .stream()
               .map(
                   entity ->
-                      new AtomicTerm(entity.getTerm(), entity.getType(), annotationCombine.getId()))
+                      new AtomicTerm(entity.getTerm(), entity.getType(), annotationNew.getId()))
               .collect(Collectors.toList());
       if (atomicTerms.stream().distinct().collect(Collectors.toList()).size() > 0) {
         atomicTermRepository.saveAll(atomicTerms.stream().distinct().collect(Collectors.toList()));
@@ -60,24 +59,24 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
     } else {
       updateAnnotationAlgorithmRequest.setNewTerms(new ArrayList<>());
     }
-    updateAnnotationAlgorithmRequest.setId(annotationCombine.getId());
-    updateAnnotationAlgorithmRequest.setText(annotationCombine.getTerm());
+    updateAnnotationAlgorithmRequest.setId(annotationNew.getId());
+    updateAnnotationAlgorithmRequest.setText(annotationNew.getTerm());
     updateAnnotationAlgorithmRequest.setManualAnnotation(manualAnnotation);
 
     return updateAnnotationAlgorithmRequest;
   }
 
   @Override
-  public void batchExtractAndAddAtomicTerm(List<AnnotationCombine> combineList) {
+  public void batchExtractAndAddAtomicTerm(List<AnnotationNew> annotationNewList) {
     final List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
     final List<AtomicTerm> finalAtomicTerms =
-        combineList
+        annotationNewList
             .stream()
             .flatMap(
-                annotationCombine -> {
+                annotationNew -> {
                   List<Entity> entities =
                       AnnotationConvert.getEntitiesFromAnnotation(
-                          annotationCombine.getManualAnnotation());
+                          annotationNew.getManualAnnotation());
                   entities.removeIf(
                       current ->
                           current.getType().endsWith("-unconfirmed")
@@ -92,7 +91,7 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
                       .map(
                           entity ->
                               new AtomicTerm(
-                                  entity.getTerm(), entity.getType(), annotationCombine.getId()))
+                                  entity.getTerm(), entity.getType(), annotationNew.getId()))
                       .collect(Collectors.toList())
                       .stream();
                 })

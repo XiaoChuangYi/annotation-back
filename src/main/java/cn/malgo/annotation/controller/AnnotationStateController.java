@@ -1,7 +1,6 @@
 package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.brat.AnnotationReworkBiz;
-import cn.malgo.annotation.biz.brat.task.AnnotationAbandonBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationBatchExamineBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
@@ -20,19 +19,16 @@ import org.springframework.web.bind.annotation.*;
 public class AnnotationStateController extends BaseController {
 
   private final AnnotationCommitBiz annotationCommitBiz;
-  private final AnnotationAbandonBiz annotationAbandonBiz;
   private final AnnotationExamineBiz annotationExamineBiz;
   private final AnnotationReworkBiz annotationReworkBiz;
   private final AnnotationBatchExamineBiz annotationBatchExamineBiz;
 
   public AnnotationStateController(
       AnnotationCommitBiz annotationCommitBiz,
-      AnnotationAbandonBiz annotationAbandonBiz,
       AnnotationExamineBiz annotationExamineBiz,
       AnnotationReworkBiz annotationReworkBiz,
       final AnnotationBatchExamineBiz annotationBatchExamineBiz) {
     this.annotationCommitBiz = annotationCommitBiz;
-    this.annotationAbandonBiz = annotationAbandonBiz;
     this.annotationExamineBiz = annotationExamineBiz;
     this.annotationReworkBiz = annotationReworkBiz;
     this.annotationBatchExamineBiz = annotationBatchExamineBiz;
@@ -44,14 +40,6 @@ public class AnnotationStateController extends BaseController {
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(annotationCommitBiz.process(commitAnnotationRequest, userAccount));
-  }
-
-  /** 标注人员放弃 */
-  @RequestMapping(value = "/abandon-annotation", method = RequestMethod.POST)
-  public Response abandonAnnotation(
-      @RequestBody AnnotationStateRequest annotationStateRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(annotationAbandonBiz.process(annotationStateRequest, userAccount));
   }
 
   /** 审核人员审核 */

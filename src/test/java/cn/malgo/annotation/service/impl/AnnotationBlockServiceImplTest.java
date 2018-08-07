@@ -1,6 +1,6 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
@@ -23,13 +23,13 @@ public class AnnotationBlockServiceImplTest {
         return taskBlock;
       };
 
-  private AnnotationCombineRepository mockAnnotationRepository;
+  private AnnotationRepository mockAnnotationRepository;
   private AnnotationTaskBlockRepository mockBlockRepository;
   private AnnotationBlockService blockService;
 
   @BeforeMethod
   public void init() {
-    mockAnnotationRepository = Mockito.mock(AnnotationCombineRepository.class);
+    mockAnnotationRepository = Mockito.mock(AnnotationRepository.class);
     Mockito.when(mockAnnotationRepository.save(Mockito.any()))
         .thenAnswer(invocation -> invocation.getArguments()[0]);
 

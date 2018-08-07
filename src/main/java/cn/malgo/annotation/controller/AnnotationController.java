@@ -4,12 +4,15 @@ import cn.malgo.annotation.biz.*;
 import cn.malgo.annotation.biz.brat.AnnotationExamineResetBiz;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
+import cn.malgo.annotation.biz.task.OneKeyAddBlocksToTaskBiz;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
 import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.CountAnnotationRequest;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
+import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.model.Response;
@@ -31,6 +34,8 @@ public class AnnotationController extends BaseController {
   private final ListAnTypeBiz listAnTypeBiz;
   private final PreAnnotationRecycleBiz preAnnotationRecycleBiz;
   private final AnnotationExamineResetBiz annotationExamineResetBiz;
+  private final OneKeyDesignateAnnotationBiz oneKeyDesignateAnnotationBiz;
+  private final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz;
 
   public AnnotationController(
       final ListAnnotationBiz listAnnotationBiz,
@@ -40,7 +45,9 @@ public class AnnotationController extends BaseController {
       final CountAnnotationBiz countAnnotationBiz,
       final ListAnTypeBiz listAnTypeBiz,
       final PreAnnotationRecycleBiz preAnnotationRecycleBiz,
-      final AnnotationExamineResetBiz annotationExamineResetBiz) {
+      final AnnotationExamineResetBiz annotationExamineResetBiz,
+      final OneKeyDesignateAnnotationBiz oneKeyDesignateAnnotationBiz,
+      final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz) {
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.getAnnotationSummaryBiz = getAnnotationSummaryBiz;
@@ -49,6 +56,8 @@ public class AnnotationController extends BaseController {
     this.listAnTypeBiz = listAnTypeBiz;
     this.preAnnotationRecycleBiz = preAnnotationRecycleBiz;
     this.annotationExamineResetBiz = annotationExamineResetBiz;
+    this.oneKeyDesignateAnnotationBiz = oneKeyDesignateAnnotationBiz;
+    this.oneKeyAddBlocksToTaskBiz = oneKeyAddBlocksToTaskBiz;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -116,7 +125,7 @@ public class AnnotationController extends BaseController {
     return new Response<>(listAnTypeBiz.process(null, userAccount));
   }
 
-  /** 待标注回收功能 */
+  /** 待标注/任务回收功能 */
   @RequestMapping(value = "/annotation-recycle", method = RequestMethod.POST)
   public Response annotationRecycle(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -130,5 +139,21 @@ public class AnnotationController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody AnnotationStateRequest annotationStateRequest) {
     return new Response<>(annotationExamineResetBiz.process(annotationStateRequest, userAccount));
+  }
+
+  /** 一键指派标注 */
+  @RequestMapping(value = "/one-key-designate", method = RequestMethod.POST)
+  public Response oneKeyDesignate(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody OneKeyDesignateAnnotationRequest request) {
+    return new Response<>(oneKeyDesignateAnnotationBiz.process(request, userAccount));
+  }
+
+  /** 一键添加语料到批次 */
+  @RequestMapping(value = "/one-key-add-blocks-to-task", method = RequestMethod.POST)
+  public Response oneKeyAddBlocksToTask(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody OneKeyAddBlocksToTaskRequest request) {
+    return new Response<>(oneKeyAddBlocksToTaskBiz.process(request, userAccount));
   }
 }

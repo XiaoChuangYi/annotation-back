@@ -1,20 +1,23 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
 import cn.malgo.annotation.enums.AnnotationEvaluateStateEnum;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.service.entity.BaseEntity;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -33,23 +36,70 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryService {
-  //  private static final String CRON_STR = "0 0/5 * * * ?";
-  private static final String CRON_STR = "0 0/20 * * * ?";
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
   private final AnnotationFactory annotationFactory;
+  private final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final AnnotationCombineRepository annotationCombineRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
-      final AnnotationFactory annotationFactory) {
+      final AnnotationFactory annotationFactory,
+      final AnnotationRepository annotationRepository,
+      final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.annotationRepository = annotationRepository;
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
     this.annotationFactory = annotationFactory;
+    this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
+  }
+
+  @NotNull
+  @Override
+  public void updatePersonalAnnotatedWordNum(final AnnotationTask task) {
+    annotationRepository
+        .findAllByStateInAndBlockIdIn(
+            Arrays.asList(AnnotationStateEnum.ANNOTATION_PROCESSING, AnnotationStateEnum.SUBMITTED),
+            getBlockIds(task))
+        .parallelStream()
+        .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
+        .entrySet()
+        .parallelStream()
+        .forEach(
+            entry -> {
+              final int annotatedTotalWordNum = getAnnotatedTermsLength(entry.getValue());
+              PersonalAnnotatedTotalWordNumRecord current =
+                  personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
+                      task.getId(), entry.getKey());
+              if (current != null) {
+                current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
+              } else {
+                current =
+                    new PersonalAnnotatedTotalWordNumRecord(
+                        task.getId(), entry.getKey(), annotatedTotalWordNum);
+              }
+              personalAnnotatedEstimatePriceRepository.save(current);
+            });
+  }
+
+  private List<Long> getBlockIds(final AnnotationTask task) {
+    return annotationTaskBlockRepository
+        .findByStateInAndTaskBlocks_Task_Id(
+            Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED), task.getId())
+        .stream()
+        .map(annotationTaskBlock -> annotationTaskBlock.getId())
+        .collect(Collectors.toList());
+  }
+
+  private int getAnnotatedTermsLength(List<AnnotationNew> annotationNews) {
+    return annotationNews
+        .parallelStream()
+        .map(annotationNew -> this.annotationFactory.create(annotationNew))
+        .flatMap(annotation -> annotation.getDocument().getEntities().stream())
+        .mapToInt(value -> value.getTerm().length())
+        .sum();
   }
 
   @NotNull
@@ -59,11 +109,11 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
     final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
     final Map<Long, Annotation> blockMap = getBlockMap(blocks);
-    final List<AnnotationCombine> annotationCombines =
-        annotationCombineRepository.findAllByBlockIdIn(
+    final List<AnnotationNew> annotationNews =
+        annotationRepository.findAllByBlockIdIn(
             blocks.stream().map(BaseEntity::getId).collect(Collectors.toSet()));
     final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
-        getAnnotationStaffEvaluates(blockMap, annotationCombines, annotationTask);
+        getAnnotationStaffEvaluates(blockMap, annotationNews, annotationTask);
     annotationStaffEvaluates.forEach(
         annotationStaffEvaluate -> {
           final AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
@@ -140,15 +190,13 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         (entityResult.getRight() + relationResult.getRight()) / 2);
   }
 
-  private boolean isAnnotated(final AnnotationCombine annotationCombine) {
-    if (annotationCombine.getAssignee() <= 1) {
+  private boolean isAnnotated(final AnnotationNew annotationNew) {
+    if (annotationNew.getAssignee() <= 1) {
       return false;
     }
 
-    final AnnotationCombineStateEnum state = annotationCombine.getStateEnum();
-    return state == AnnotationCombineStateEnum.errorPass
-        || state == AnnotationCombineStateEnum.examinePass
-        || state == AnnotationCombineStateEnum.innerAnnotation;
+    final AnnotationStateEnum state = annotationNew.getState();
+    return state == AnnotationStateEnum.SUBMITTED;
   }
 
   private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {
@@ -171,8 +219,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     annotationTask.setRestWordNum(getOverviewWordNum(blocks, AnnotationEvaluateStateEnum.REST));
 
     final Pair<Double, Double> result =
-        getInConformity(
-            annotationCombineRepository.findAllByBlockIdIn(blockMap.keySet()), blockMap);
+        getInConformity(annotationRepository.findAllByBlockIdIn(blockMap.keySet()), blockMap);
 
     annotationTask.setPrecisionRate(result.getLeft());
     annotationTask.setRecallRate(result.getRight());
@@ -181,9 +228,9 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   }
 
   private Pair<Double, Double> getInConformity(
-      final List<AnnotationCombine> annotationCombines, final Map<Long, Annotation> blockMap) {
+      final List<AnnotationNew> annotationNews, final Map<Long, Annotation> blockMap) {
     final List<Pair<Double, Double>> values =
-        annotationCombines
+        annotationNews
             .stream()
             .filter(this::isAnnotated)
             .map(
@@ -223,10 +270,10 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
   private List<AnnotationStaffEvaluate> getAnnotationStaffEvaluates(
       final Map<Long, Annotation> blockMap,
-      final List<AnnotationCombine> annotationCombines,
+      final List<AnnotationNew> annotationNews,
       final AnnotationTask task) {
-    final Map<Long, List<AnnotationCombine>> assigneeMap =
-        annotationCombines.stream().collect(Collectors.groupingBy(AnnotationCombine::getAssignee));
+    final Map<Long, List<AnnotationNew>> assigneeMap =
+        annotationNews.stream().collect(Collectors.groupingBy(AnnotationNew::getAssignee));
 
     return assigneeMap
         .entrySet()
@@ -265,8 +312,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                             getWordNum(dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
                             restBranchNum,
                             restWordNum,
-                            getBranchNum(dateEntry.getValue(), AnnotationEvaluateStateEnum.ABANDON),
-                            getWordNum(dateEntry.getValue(), AnnotationEvaluateStateEnum.ABANDON),
+                            0,
+                            0,
                             result.getLeft(),
                             result.getRight());
                       });
@@ -301,29 +348,26 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   }
 
   private int getBranchNum(
-      final List<AnnotationCombine> annotationCombines, final AnnotationEvaluateStateEnum state) {
-    return annotationCombines
+      final List<AnnotationNew> annotationNews, final AnnotationEvaluateStateEnum state) {
+    return annotationNews
         .stream()
-        .filter(
-            annotationCombine ->
-                state.getAnnotationStates().contains(annotationCombine.getStateEnum()))
+        .filter(annotationNew -> state.getAnnotationStates().contains(annotationNew.getState()))
         .collect(Collectors.toList())
         .size();
   }
 
   private int getWordNum(
-      final List<AnnotationCombine> annotationCombines, final AnnotationEvaluateStateEnum state) {
-    return annotationCombines
+      final List<AnnotationNew> annotationNews, final AnnotationEvaluateStateEnum state) {
+    return annotationNews
         .stream()
-        .filter(
-            annotationCombine ->
-                state.getAnnotationStates().contains(annotationCombine.getStateEnum()))
+        .filter(annotationNew -> state.getAnnotationStates().contains(annotationNew.getState()))
         .mapToInt(value -> value.getTerm().length())
         .sum();
   }
 
   @Value
   static class EntitySummary {
+
     private int start;
     private int end;
     private String type;
@@ -337,6 +381,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
   @Value
   static class RelationEntitySummary {
+
     private EntitySummary source;
     private EntitySummary target;
     private String type;

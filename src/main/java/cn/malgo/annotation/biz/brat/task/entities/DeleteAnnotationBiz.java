@@ -3,7 +3,6 @@ package cn.malgo.annotation.biz.brat.task.entities;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
-import cn.malgo.annotation.service.AnnotationOperateService;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBratVO;
@@ -37,9 +36,7 @@ public class DeleteAnnotationBiz
 
   @Override
   AnnotationBratVO doInternalProcess(
-      AnnotationOperateService annotationOperateService,
-      AnnotationNew annotationNew,
-      DeleteAnnotationGroupRequest request) {
+      AnnotationNew annotationNew, DeleteAnnotationGroupRequest request) {
     final String annotation =
         annotationWriteOperateService.deleteMetaDataAnnotation(
             request,

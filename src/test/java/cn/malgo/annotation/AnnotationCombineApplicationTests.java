@@ -5,9 +5,8 @@ import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AtomicTerm;
 import com.alibaba.fastjson.JSON;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AnnotationSummary;
-import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import java.util.ArrayList;
@@ -25,8 +24,8 @@ import java.util.List;
 @SpringBootTest
 @Slf4j
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
-  @Autowired private AnnotationService annotationCombineService;
-  @Autowired private AnnotationCombineRepository annotationCombineRepository;
+  @Autowired private AnnotationService annotationService;
+  @Autowired private AnnotationRepository annotationRepository;
   @Autowired private AnnotationTaskRepository taskRepository;
 
   @Test
@@ -43,14 +42,13 @@ public class AnnotationCombineApplicationTests extends AbstractTestNGSpringConte
     annotationCombineQuery.setAnnotationTypes(Arrays.asList(0, 1));
     annotationCombineQuery.setStates(Arrays.asList("a"));
 
-    Page<AnnotationNew> page =
-        annotationCombineService.listAnnotationCombine(annotationCombineQuery);
+    Page<AnnotationNew> page = annotationService.listAnnotationNew(annotationCombineQuery);
     log.info(">>>>>>>>data:" + JSON.toJSONString(page));
   }
 
   @Test(enabled = false)
   public void testGroup() {
-    List<AnnotationSummary> annotationSummaries = annotationCombineRepository.findByStateGroup();
+    List<AnnotationSummary> annotationSummaries = annotationRepository.findByStateGroup();
     for (AnnotationSummary current : annotationSummaries) {
       log.info(">>>>>>>>state:" + current.getState() + ">>>>>>num:" + current.getNum());
     }

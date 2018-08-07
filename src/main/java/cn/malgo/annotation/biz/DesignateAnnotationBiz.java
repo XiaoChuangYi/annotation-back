@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, String> {
-  private final AnnotationService annotationCombineService;
+  private final AnnotationService annotationService;
 
-  public DesignateAnnotationBiz(AnnotationService annotationCombineService) {
-    this.annotationCombineService = annotationCombineService;
+  public DesignateAnnotationBiz(AnnotationService annotationService) {
+    this.annotationService = annotationService;
   }
 
   @Override
@@ -33,7 +33,7 @@ public class DesignateAnnotationBiz extends BaseBiz<DesignateAnnotationRequest, 
   @Override
   protected String doBiz(DesignateAnnotationRequest designateAnnotationRequest) {
     try {
-      annotationCombineService.designateAnnotationCombine(designateAnnotationRequest);
+      annotationService.designateAnnotationNew(designateAnnotationRequest);
     } catch (Exception ex) {
       throw new InternalServerException("batch-designate-failed: " + ex.getMessage());
     }

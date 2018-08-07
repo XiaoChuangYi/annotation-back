@@ -1,13 +1,13 @@
 package cn.malgo.annotation.service.impl;
 
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.TaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationBlockService;
@@ -22,15 +22,15 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskRepository annotationTaskRepository;
 
   public AnnotationBlockServiceImpl(
-      final AnnotationCombineRepository annotationCombineRepository,
+      final AnnotationRepository annotationRepository,
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationTaskRepository annotationTaskRepository) {
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.annotationRepository = annotationRepository;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationTaskRepository = annotationTaskRepository;
   }
@@ -39,16 +39,16 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
   public Pair<AnnotationTaskBlock, Boolean> getOrCreateAnnotation(
       final AnnotationTypeEnum annotationType,
       final String text,
-      final boolean createAnnotationCombine) {
+      final boolean createAnnotationNew) {
     final Pair<AnnotationTaskBlock, Boolean> result =
         annotationTaskBlockRepository.getOrCreateBlock(annotationType, text);
 
-    if (createAnnotationCombine && result.getRight()) {
-      final AnnotationCombine annotationCombine = new AnnotationCombine();
-      annotationCombine.setAnnotationType(annotationType.ordinal());
-      annotationCombine.setTerm(text);
-      annotationCombine.setBlockId(result.getLeft().getId());
-      annotationCombineRepository.save(annotationCombine);
+    if (createAnnotationNew && result.getRight()) {
+      final AnnotationNew annotationNew = new AnnotationNew();
+      annotationNew.setAnnotationType(annotationType);
+      annotationNew.setTerm(text);
+      annotationNew.setBlockId(result.getLeft().getId());
+      annotationRepository.save(annotationNew);
 
       result.getLeft().setState(AnnotationTaskState.DOING);
       return Pair.of(annotationTaskBlockRepository.save(result.getLeft()), result.getRight());
@@ -58,44 +58,42 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
   }
 
   @Override
-  public void saveAnnotation(final AnnotationCombine annotationCombine) {
-    Objects.requireNonNull(annotationCombine);
+  public void saveAnnotation(final AnnotationNew annotationNew) {
+    Objects.requireNonNull(annotationNew);
 
     final AnnotationTaskBlock block =
         annotationTaskBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
-            AnnotationTypeEnum.getByValue(annotationCombine.getAnnotationType()),
-            annotationCombine.getTerm());
+            annotationNew.getAnnotationType(), annotationNew.getTerm());
 
     if (block == null) {
-      log.warn("annotation combine {} not found in task block", annotationCombine.getId());
+      log.warn("annotation combine {} not found in task block", annotationNew.getId());
       return;
     }
 
-    block.setAnnotation(annotationCombine.getReviewedAnnotation());
+    block.setAnnotation(annotationNew.getFinalAnnotation());
     block.setState(AnnotationTaskState.ANNOTATED);
 
     updateTaskState(annotationTaskBlockRepository.save(block));
   }
 
   @Override
-  public void saveAnnotationAll(List<AnnotationCombine> annotationCombines) {
+  public void saveAnnotationAll(List<AnnotationNew> annotationNews) {
     final List<Long> blockIds =
-        annotationCombines
+        annotationNews
             .stream()
-            .map(annotationCombine -> annotationCombine.getBlockId())
+            .map(annotationNew -> annotationNew.getBlockId())
             .collect(Collectors.toList());
     final List<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findAllById(blockIds);
-    if (annotationCombines.size() != annotationTaskBlocks.size()) {
+    if (annotationNews.size() != annotationTaskBlocks.size()) {
       log.warn("some annotation ids are invalid {}", blockIds);
       return;
     }
     Map<Long, String> map =
-        annotationCombines
+        annotationNews
             .stream()
             .collect(
-                Collectors.toMap(
-                    AnnotationCombine::getBlockId, AnnotationCombine::getReviewedAnnotation));
+                Collectors.toMap(AnnotationNew::getBlockId, AnnotationNew::getFinalAnnotation));
     annotationTaskBlocks
         .stream()
         .map(
@@ -129,26 +127,22 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
   }
 
   @Override
-  public AnnotationCombine resetBlock(
+  public AnnotationNew resetBlock(
       final AnnotationTaskBlock block,
       final AnnotationBlockActionEnum action,
       final String comment) {
     block.setState(AnnotationTaskState.DOING);
     updateTaskState(annotationTaskBlockRepository.save(block));
 
-    final AnnotationCombine annotationCombine = new AnnotationCombine();
-    annotationCombine.setTerm(block.getText());
-    annotationCombine.setAnnotationType(block.getAnnotationType().ordinal());
-    annotationCombine.setAssignee(0);
-    annotationCombine.setManualAnnotation(block.getAnnotation());
-    annotationCombine.setFinalAnnotation(block.getAnnotation());
-    annotationCombine.setReviewedAnnotation(block.getAnnotation());
-    annotationCombine.setState(
-        action == AnnotationBlockActionEnum.RE_ANNOTATION
-            ? AnnotationCombineStateEnum.unDistributed.name()
-            : AnnotationCombineStateEnum.preExamine.name());
-    annotationCombine.setBlockId(block.getId());
-    annotationCombine.setComment(comment);
-    return annotationCombineRepository.save(annotationCombine);
+    final AnnotationNew annotationNew = new AnnotationNew();
+    annotationNew.setTerm(block.getText());
+    annotationNew.setAnnotationType(block.getAnnotationType());
+    annotationNew.setAssignee(0);
+    annotationNew.setManualAnnotation(block.getAnnotation());
+    annotationNew.setFinalAnnotation(block.getAnnotation());
+    annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
+    annotationNew.setBlockId(block.getId());
+    annotationNew.setComment(comment);
+    return annotationRepository.save(annotationNew);
   }
 }

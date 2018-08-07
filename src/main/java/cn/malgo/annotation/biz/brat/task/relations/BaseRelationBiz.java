@@ -1,9 +1,7 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
 import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
 import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.service.RelationOperateService;

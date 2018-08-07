@@ -7,30 +7,19 @@ import java.util.List;
 import java.util.Set;
 
 public enum AnnotationEvaluateStateEnum {
-  TOTAL(
-      Arrays.asList(AnnotationTaskState.values()),
-      Arrays.asList(AnnotationCombineStateEnum.values())),
+  TOTAL(Arrays.asList(AnnotationTaskState.values()), Arrays.asList(AnnotationStateEnum.values())),
   ANNOTATED(
       Arrays.asList(AnnotationTaskState.FINISHED, AnnotationTaskState.ANNOTATED),
-      Arrays.asList(
-          AnnotationCombineStateEnum.preExamine,
-          AnnotationCombineStateEnum.examinePass,
-          AnnotationCombineStateEnum.errorPass)),
+      Arrays.asList(AnnotationStateEnum.SUBMITTED)),
   REST(
       Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.DOING),
-      Arrays.asList(
-          AnnotationCombineStateEnum.preAnnotation,
-          AnnotationCombineStateEnum.annotationProcessing)),
-  ABANDON(
-      Collections.emptyList(),
-      Arrays.asList(
-          AnnotationCombineStateEnum.abandon, AnnotationCombineStateEnum.innerAnnotation));
+      Arrays.asList(AnnotationStateEnum.PRE_ANNOTATION, AnnotationStateEnum.ANNOTATION_PROCESSING));
 
   private final Set<AnnotationTaskState> blockStates;
-  private final Set<AnnotationCombineStateEnum> annotationStates;
+  private final Set<AnnotationStateEnum> annotationStates;
 
   AnnotationEvaluateStateEnum(
-      List<AnnotationTaskState> blockStates, List<AnnotationCombineStateEnum> annotationStates) {
+      List<AnnotationTaskState> blockStates, List<AnnotationStateEnum> annotationStates) {
     this.blockStates = new HashSet<>(blockStates);
     this.annotationStates = new HashSet<>(annotationStates);
   }
@@ -39,7 +28,7 @@ public enum AnnotationEvaluateStateEnum {
     return blockStates;
   }
 
-  public Set<AnnotationCombineStateEnum> getAnnotationStates() {
+  public Set<AnnotationStateEnum> getAnnotationStates() {
     return annotationStates;
   }
 }

@@ -9,9 +9,12 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
+import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.util.Calendar;
+import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +36,16 @@ public class AnnotationServiceImpl implements AnnotationService {
 
   private final AnnotationRepository annotationRepository;
   private final UserAccountRepository userAccountRepository;
+  private final OutsourcingPriceCalculateService outsourcingPriceCalculateService;
 
   @Autowired
   public AnnotationServiceImpl(
-      UserAccountRepository userAccountRepository,
-      final AnnotationRepository annotationRepository) {
+      final UserAccountRepository userAccountRepository,
+      final AnnotationRepository annotationRepository,
+      final OutsourcingPriceCalculateService outsourcingPriceCalculateService) {
     this.userAccountRepository = userAccountRepository;
     this.annotationRepository = annotationRepository;
+    this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -48,6 +54,7 @@ public class AnnotationServiceImpl implements AnnotationService {
     return (Specification<AnnotationNew>)
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
+          predicates.add(criteriaBuilder.equal(root.get("deleteToken"), 0));
           if (param.getIdList() != null && param.getIdList().size() > 0) {
             predicates.add(criteriaBuilder.in(root.get("id")).value(param.getIdList()));
           }
@@ -94,7 +101,7 @@ public class AnnotationServiceImpl implements AnnotationService {
 
   /** 条件查询标注任务 */
   @Override
-  public Page<AnnotationNew> listAnnotationCombine(ListAnnotationRequest request) {
+  public Page<AnnotationNew> listAnnotationNew(ListAnnotationRequest request) {
     Page<AnnotationNew> page =
         annotationRepository.findAll(
             queryAnnotationCondition(request),
@@ -107,6 +114,7 @@ public class AnnotationServiceImpl implements AnnotationService {
               .findAll()
               .stream()
               .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+
       page.getContent()
           .forEach(
               annotationNew ->
@@ -117,20 +125,20 @@ public class AnnotationServiceImpl implements AnnotationService {
 
   /** 批量指派标注数据给特定用户 */
   @Override
-  public void designateAnnotationCombine(DesignateAnnotationRequest request) {
-    final List<AnnotationNew> annotationCombineList =
+  public void designateAnnotationNew(DesignateAnnotationRequest request) {
+    final List<AnnotationNew> annotationNews =
         annotationRepository.findAllById(request.getIdList());
-    annotationCombineList.forEach(
-        annotationCombine -> {
-          annotationCombine.setAssignee(request.getUserId());
-          annotationCombine.setState(AnnotationStateEnum.PRE_ANNOTATION);
+    annotationNews.forEach(
+        annotationNew -> {
+          annotationNew.setAssignee(request.getUserId());
+          annotationNew.setState(AnnotationStateEnum.PRE_ANNOTATION);
         });
-    annotationRepository.saveAll(annotationCombineList);
+    annotationRepository.saveAll(annotationNews);
   }
 
   /** 随机批量指派标注数据给用户 */
   @Override
-  public void randomDesignateAnnotationCombine(
+  public void randomDesignateAnnotationNew(
       RandomDesignateAnnotationRequest randomDesignateAnnotationRequest) {
     // 第一步根据未分配状态，标注类型，以及num，查询出所有的标注
     List<AnnotationNew> annotationCombineList =
@@ -149,5 +157,33 @@ public class AnnotationServiceImpl implements AnnotationService {
               annotationCombineList.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
             });
     annotationRepository.saveAll(annotationCombineList);
+  }
+
+  @Override
+  public void oneKeyDesignateAnnotationNew(OneKeyDesignateAnnotationRequest request) {
+    final List<AnnotationNew> annotationNews =
+        annotationRepository.findAllByStateIn(
+            Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED));
+    if (annotationNews.size() > 0) {
+      final List<AnnotationNew> resultAnnotationNews = new ArrayList<>();
+      long wordSum = 0;
+      for (int k = 0; k < annotationNews.size(); k++) {
+        final AnnotationNew current = annotationNews.get(k);
+        if (wordSum >= request.getDesignateWordNum()) {
+          break;
+        }
+        wordSum += current.getTerm().length();
+        resultAnnotationNews.add(current);
+      }
+      final List<Long> userIdList = request.getUserIdList();
+      IntStream.range(0, resultAnnotationNews.size())
+          .forEach(
+              i -> {
+                int k = i % userIdList.size();
+                resultAnnotationNews.get(i).setAssignee(userIdList.get(k));
+                resultAnnotationNews.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
+              });
+      annotationRepository.saveAll(annotationNews);
+    }
   }
 }

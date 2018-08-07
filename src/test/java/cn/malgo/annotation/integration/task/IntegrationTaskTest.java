@@ -3,11 +3,12 @@ package cn.malgo.annotation.integration.task;
 import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.*;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.enums.OriginalDocState;
@@ -39,7 +40,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   @Autowired private CreateBlocksFromDocBiz createBlocksFromDocBiz;
   @Autowired private AnnotationTaskRepository taskRepository;
   @Autowired private AnnotationExamineBiz annotationExamineBiz;
-  @Autowired private AnnotationCombineRepository annotationCombineRepository;
+  @Autowired private AnnotationRepository annotationRepository;
 
   /**
    *
@@ -75,7 +76,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING, AnnotationTaskState.DOING});
 
-    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话"));
+    finishAnnotation(annotationRepository.findByTermEquals("这是第一句话，这是第二句话"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -86,7 +87,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.ANNOTATED, AnnotationTaskState.DOING});
 
-    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
+    finishAnnotation(annotationRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -149,7 +150,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
-    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话"));
+    finishAnnotation(annotationRepository.findByTermEquals("这是第一句话，这是第二句话"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -169,7 +170,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         AnnotationTaskState.DOING,
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
-    finishAnnotation(annotationCombineRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
+    finishAnnotation(annotationRepository.findByTermEquals("这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -190,7 +191,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         new AnnotationTaskState[] {AnnotationTaskState.DOING});
 
     finishAnnotation(
-        annotationCombineRepository.findByTermEquals("这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长"));
+        annotationRepository.findByTermEquals("这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长"));
     checkStateAfterAddingDoc(
         taskAndDoc.getLeft().getId(),
         taskAndDoc.getRight().getId(),
@@ -268,23 +269,19 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
     TestTransaction.end();
   }
 
-  private void finishAnnotation(final AnnotationCombine annotationCombine) {
+  private void finishAnnotation(final AnnotationNew annotationNew) {
     TestTransaction.start();
     final String annotation =
-        "T1 body-structure 0 "
-            + annotationCombine.getTerm().length()
-            + " "
-            + annotationCombine.getTerm();
-    annotationCombine.setFinalAnnotation(annotation);
-    annotationCombine.setReviewedAnnotation(annotation);
-    annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-    annotationCombineRepository.save(annotationCombine);
+        "T1 body-structure 0 " + annotationNew.getTerm().length() + " " + annotationNew.getTerm();
+    annotationNew.setFinalAnnotation(annotation);
+    annotationNew.setState(AnnotationStateEnum.SUBMITTED);
+    annotationRepository.save(annotationNew);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
     TestTransaction.start();
     annotationExamineBiz.process(
-        new AnnotationStateRequest(annotationCombine.getId()),
+        new AnnotationStateRequest(annotationNew.getId()),
         UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();

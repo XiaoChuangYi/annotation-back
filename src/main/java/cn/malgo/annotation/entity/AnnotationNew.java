@@ -30,6 +30,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
       @Index(columnList = "annotation_type"),
       @Index(columnList = "assignee"),
       @Index(columnList = "state"),
+      @Index(columnList = "delete_token"),
       @Index(columnList = "block_id"),
     })
 @Getter
@@ -63,6 +64,9 @@ public class AnnotationNew extends BaseEntity {
   @Column(name = "block_id")
   private Long blockId;
 
+  @Column(name = "task_id")
+  private Long taskId;
+
   @Column(name = "comment", columnDefinition = "text")
   private String comment;
 
@@ -70,12 +74,15 @@ public class AnnotationNew extends BaseEntity {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date commitTimestamp;
 
-  @Column(name = "expiration_time", nullable = false, columnDefinition = "TIMESTAMP NULL")
+  @Column(name = "expiration_time", columnDefinition = "TIMESTAMP NULL")
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date expirationTime;
 
   @Column(name = "estimate_price", nullable = false, columnDefinition = "default 0")
   private BigDecimal estimatePrice;
+
+  @Column(name = "delete_token", nullable = false, columnDefinition = "default 0")
+  private long deleteToken;
 
   @Transient private String userName;
 }
