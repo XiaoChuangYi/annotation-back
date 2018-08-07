@@ -38,7 +38,7 @@ public class CheckRelationEntityServiceImpl implements CheckRelationEntityServic
   @Override
   public boolean checkRelationEntityBeforeAdd(
       final AddAnnotationRequest request, final Annotation annotation) {
-    if (SPECIAL_TYPE.equals(request.getType())) {
+    if (StringUtils.equals(SPECIAL_TYPE, request.getType().replace("-and", ""))) {
       return false;
     }
 

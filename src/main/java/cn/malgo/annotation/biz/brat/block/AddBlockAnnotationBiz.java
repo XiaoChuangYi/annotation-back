@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.brat.block;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
@@ -96,29 +97,26 @@ public class AddBlockAnnotationBiz
           request, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
       }
-    }
-    if (checkRelationEntityService.checkRelationEntityBeforeAdd(
-        new AddAnnotationRequest(
-            request.getId(),
-            request.getTerm(),
-            request.getType(),
-            request.getStartPosition(),
-            request.getEndPosition(),
-            ""),
-        getAnnotation(annotationTaskBlock))) {
-      throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
-    }
-    if (checkRelationEntityService.addRelationEntityCheckAnchorSide(
-        new AddAnnotationRequest(
-            request.getId(),
-            request.getTerm(),
-            request.getType(),
-            request.getStartPosition(),
-            request.getEndPosition(),
-            ""),
-        getAnnotation(annotationTaskBlock))) {
-      throw new BusinessRuleException(
-          "in-conformity-association-rules-anchor", "不符合关联规则，锚点前实体类型重复，无法新增");
+    } else {
+      final AddAnnotationRequest addReq =
+          new AddAnnotationRequest(
+              request.getId(),
+              request.getTerm(),
+              request.getType(),
+              request.getStartPosition(),
+              request.getEndPosition(),
+              "");
+
+      final Annotation annotation = getAnnotation(annotationTaskBlock);
+
+      if (checkRelationEntityService.checkRelationEntityBeforeAdd(addReq, annotation)) {
+        throw new BusinessRuleException("in-conformity-association-rules", "不符合关联规则，无法新增");
+      }
+
+      if (checkRelationEntityService.addRelationEntityCheckAnchorSide(addReq, annotation)) {
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-anchor", "不符合关联规则，锚点前实体类型重复，无法新增");
+      }
     }
   }
 }
