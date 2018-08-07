@@ -42,7 +42,7 @@ maven-build:
   only:
     - develop
     - master
-    - feature/*
+    - /^feature\/.*$/
 
 docker-build:
   stage: build
@@ -59,7 +59,7 @@ docker-build:
   only:
     - develop
     - master
-    - feature/*
+    - /^feature\/.*$/
 
 deploy-test:
   stage: deploy_test
@@ -86,7 +86,7 @@ deploy-beta:
     name: beta
     url: 118.31.10.105
   only:
-    - feature/*
+    - /^feature\/.*$/
   variables:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9003
