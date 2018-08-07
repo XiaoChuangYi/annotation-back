@@ -13,6 +13,7 @@ import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
+import cn.malgo.service.exception.BusinessRuleException;
 import java.util.Calendar;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -165,6 +166,14 @@ public class AnnotationServiceImpl implements AnnotationService {
         annotationRepository.findAllByStateIn(
             Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED));
     if (annotationNews.size() > 0) {
+      if (request.getDesignateWordNum()
+          > annotationNews
+              .stream()
+              .mapToInt(annotationNew -> annotationNew.getTerm().length())
+              .sum()) {
+        throw new BusinessRuleException(
+            "invalid-designate-word-num", "请求参数designateWordNum超过可分配的最大值");
+      }
       final List<AnnotationNew> resultAnnotationNews = new ArrayList<>();
       long wordSum = 0;
       for (int k = 0; k < annotationNews.size(); k++) {
