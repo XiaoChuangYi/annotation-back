@@ -4,7 +4,6 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
-import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -78,11 +77,14 @@ public class AnnotationNew extends BaseEntity {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date expirationTime;
 
-  @Column(name = "estimate_price", nullable = false, columnDefinition = "default 0")
-  private BigDecimal estimatePrice;
+  @Column(name = "precision_rate")
+  private double precisionRate = 0;
 
-  @Column(name = "delete_token", nullable = false, columnDefinition = "default 0")
-  private long deleteToken;
+  @Column(name = "recall_rate")
+  private double recallRate = 0;
+
+  @Column(name = "delete_token")
+  private long deleteToken = 0;
 
   @Transient private String userName;
 }
