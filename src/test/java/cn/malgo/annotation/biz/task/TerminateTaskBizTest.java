@@ -67,19 +67,14 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
 
     assertEquals(countRowsInTable("annotation_task_block"), 2);
     assertEquals(countRowsInTable("annotation_task"), 1);
-    assertEquals(countRowsInTable("task_block"), 2);
+    assertEquals(countRowsInTable("task_block"), 0);
 
     TestTransaction.start();
 
     final AnnotationTask task = annotationTaskRepository.findAll().get(0);
     assertEquals(task.getState(), AnnotationTaskState.FINISHED);
-    assertEquals(task.getTaskBlocks().size(), 2);
-    final AnnotationTaskBlock block = task.getTaskBlocks().iterator().next().getBlock();
-    assertEquals(block.getState(), AnnotationTaskState.CREATED);
+    assertEquals(task.getTaskBlocks().size(), 0);
     assertEquals(annotationTaskBlockRepository.findAll().size(), 2);
-    assertEquals(
-        annotationTaskBlockRepository.getOne(block.getId()).getState(),
-        AnnotationTaskState.CREATED);
     assertEquals(
         annotationTaskBlockRepository
             .findAllByStateIn(

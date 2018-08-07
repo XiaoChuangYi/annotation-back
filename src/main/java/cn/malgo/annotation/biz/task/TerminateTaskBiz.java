@@ -71,6 +71,10 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
               Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.DOING),
               request.getTaskId());
 
+      taskBlockRepository.deleteInBatch(
+          taskBlockRepository.findByTask_IdAndBlock_StateIn(
+              request.getTaskId(),
+              Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED)));
       // doing状态的语料状态重置成created状态
       blockSet.forEach(
           block -> {
@@ -85,10 +89,6 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
       // 修改标注submitted状态的标注为pre_clean,其它状态的标注更新delete_token
       terminateAnnotationNew(annotationTask, blockSet);
       // 删除doing状态的blocks与该task的关系
-      taskBlockRepository.deleteInBatch(
-          taskBlockRepository.findByTask_IdAndBlock_StateIn(
-              request.getTaskId(), Collections.singletonList(AnnotationTaskState.DOING)));
-
       annotationSummaryService.updateTaskSummary(annotationTask);
     }
     return null;
