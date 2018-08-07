@@ -16,6 +16,7 @@ import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.service.exception.BusinessRuleException;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,12 +130,21 @@ public class AnnotationServiceImpl implements AnnotationService {
   public void designateAnnotationNew(DesignateAnnotationRequest request) {
     final List<AnnotationNew> annotationNews =
         annotationRepository.findAllById(request.getIdList());
+
     annotationNews.forEach(
         annotationNew -> {
           annotationNew.setAssignee(request.getUserId());
           annotationNew.setState(AnnotationStateEnum.PRE_ANNOTATION);
+          annotationNew.setExpirationTime(getExpirationTime().getTime());
         });
     annotationRepository.saveAll(annotationNews);
+  }
+
+  private Calendar getExpirationTime() {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(new Date());
+    calendar.add(Calendar.DAY_OF_MONTH, 2);
+    return calendar;
   }
 
   /** 随机批量指派标注数据给用户 */
@@ -156,6 +166,7 @@ public class AnnotationServiceImpl implements AnnotationService {
               int k = i % userIdList.size();
               annotationCombineList.get(i).setAssignee(userIdList.get(k));
               annotationCombineList.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
+              annotationCombineList.get(i).setExpirationTime(getExpirationTime().getTime());
             });
     annotationRepository.saveAll(annotationCombineList);
   }
