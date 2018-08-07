@@ -12,9 +12,10 @@ import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,15 +24,20 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
+  private final int batchSize;
 
   public EntityMultipleTypeErrorProvider(
-      final AnnotationFixLogRepository annotationFixLogRepository) {
+      final AnnotationFixLogRepository annotationFixLogRepository,
+      @Value("${malgo.annotation.fix-log-batch-size}") final int batchSize) {
     super(annotationFixLogRepository);
+
+    this.batchSize = batchSize;
   }
 
   @Override
@@ -103,19 +109,25 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
             .filter(this::isEntitiesDifferentType)
             .collect(Collectors.toList());
 
-    log.info("find all different entities");
+    log.info("find all different entities, size: {}", differentEntities.size());
 
-    for (final List<WordErrorWithPosition> entities : differentEntities) {
-      final List<WordErrorWithPosition> filteredEntities =
-          this.filterErrors(entities).collect(Collectors.toList());
-      if (this.isEntitiesDifferentType(filteredEntities)) {
-        log.info("find different entities error, word: {}", filteredEntities.get(0).getTerm());
-        return postProcess(filteredEntities, 0);
-      }
-    }
+    final List<List<WordErrorWithPosition>> results =
+        Lists.partition(
+                differentEntities.stream().flatMap(Collection::stream).collect(Collectors.toList()),
+                this.batchSize)
+            .parallelStream()
+            // 过滤已经被处理过的错误
+            .flatMap(this::filterErrors)
+            .collect(Collectors.groupingBy(WordErrorWithPosition::getTerm))
+            .values()
+            .stream()
+            .filter(this::isEntitiesDifferentType)
+            .collect(Collectors.toList());
 
-    log.info("no different entities error fonnd");
-    return postProcess(Collections.emptyList(), 0);
+    log.info("find all different entities after filter fixed logs, size: {}", results.size());
+
+    return postProcess(
+        results.stream().flatMap(Collection::stream).collect(Collectors.toList()), 0);
   }
 
   @Override
