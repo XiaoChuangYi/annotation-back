@@ -42,6 +42,7 @@ maven-build:
   only:
     - develop
     - master
+    - feature/*
 
 docker-build:
   stage: build
@@ -58,6 +59,7 @@ docker-build:
   only:
     - develop
     - master
+    - feature/*
 
 deploy-test:
   stage: deploy_test
