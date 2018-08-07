@@ -16,6 +16,7 @@ stages:
   - package
   - build
   - deploy_test
+  - deploy_beta
   - deploy_prod
 
 variables:
@@ -72,6 +73,21 @@ deploy-test:
   variables:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.199:9002
+    MAX_MEMORY: 768m
+  <<: *deploy_definition
+
+deploy-beta:
+  stage: deploy_beta
+  tags:
+    - deploy
+  environment:
+    name: beta
+    url: 118.31.10.105
+  only:
+    - feature/*
+  variables:
+    GIT_STRATEGY: none
+    BIND_ADDRESS: 172.16.209.197:9003
     MAX_MEMORY: 768m
   <<: *deploy_definition
 
