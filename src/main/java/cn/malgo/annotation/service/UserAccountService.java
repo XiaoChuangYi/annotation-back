@@ -8,9 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 
-/** Created by cjl on 2018/5/24. */
 public interface UserAccountService {
-
   /** 分页查询用户 */
   Page<UserAccount> listUserAccountPaging(int pageIndex, int pageSize);
 
