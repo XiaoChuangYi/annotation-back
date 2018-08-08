@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PersonalAnnotatedWordNumUpdater {
 
-  private static final String CRON_STR = "0 0/1 * * * ?";
+  private static final String CRON_STR = "0 0/30 * * * ?";
 
   private final AnnotationTaskRepository taskRepository;
   private final AnnotationSummaryService annotationSummaryService;

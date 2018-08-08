@@ -1,7 +1,9 @@
 package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.AnnotationService;
@@ -10,6 +12,8 @@ import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,10 +24,14 @@ import org.springframework.stereotype.Component;
 public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<AnnotationBratVO>> {
 
   private final AnnotationService annotationService;
+  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
   @Autowired
-  public ListAnnotationBiz(AnnotationService annotationService) {
+  public ListAnnotationBiz(
+      final AnnotationService annotationService,
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationService = annotationService;
+    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
   @Override
@@ -46,10 +54,26 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
     if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
       request.setUserId(user.getId());
     }
-
     final Page<AnnotationNew> page = annotationService.listAnnotationNew(request);
-    return new PageVO<>(
-        page.getTotalElements(),
-        AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent()));
+    final List<AnnotationBratVO> annotationBratVOS =
+        page.getContent()
+            .parallelStream()
+            .map(
+                annotationNew -> {
+                  AnnotationBratVO annotationBratVO =
+                      AnnotationConvert.convert2AnnotationBratVO(annotationNew);
+                  AnnotationTaskBlock annotationTaskBlock =
+                      annotationTaskBlockRepository.findById(annotationNew.getBlockId()).get();
+                  if (annotationTaskBlock != null) {
+                    annotationBratVO.setReviewedAnnotation(
+                        AnnotationConvert.convertAnnotation2BratFormat(
+                            annotationTaskBlock.getText(),
+                            annotationTaskBlock.getAnnotation(),
+                            annotationTaskBlock.getAnnotationType().ordinal()));
+                  }
+                  return annotationBratVO;
+                })
+            .collect(Collectors.toList());
+    return new PageVO<>(page.getTotalElements(), annotationBratVOS);
   }
 }
