@@ -65,24 +65,6 @@ public class AnnotationController extends BaseController {
   public Response<PageVO<AnnotationBratVO>> listAnnotationCombine(
       ListAnnotationRequest request,
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    request.setStates(
-        request
-            .getStates()
-            .stream()
-            .map(
-                s -> {
-                  switch (s) {
-                    case "preAnnotation":
-                      return "PRE_ANNOTATION";
-                    case "unDistributed":
-                      return "UN_DISTRIBUTED";
-                    case "annotationProcessing":
-                      return "ANNOTATION_PROCESSING";
-                    default:
-                      return "SUBMITTED";
-                  }
-                })
-            .collect(Collectors.toList()));
     return new Response<>(listAnnotationBiz.process(request, userAccount));
   }
 

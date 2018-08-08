@@ -7,6 +7,7 @@ import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.AnnotationService;
+import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.biz.BaseBiz;
@@ -25,13 +26,16 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
 
   private final AnnotationService annotationService;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final OutsourcingPriceCalculateService outsourcingPriceCalculateService;
 
   @Autowired
   public ListAnnotationBiz(
       final AnnotationService annotationService,
-      final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final OutsourcingPriceCalculateService outsourcingPriceCalculateService) {
     this.annotationService = annotationService;
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
   }
 
   @Override
@@ -62,8 +66,9 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
                 annotationNew -> {
                   AnnotationBratVO annotationBratVO =
                       AnnotationConvert.convert2AnnotationBratVO(annotationNew);
-                  AnnotationTaskBlock annotationTaskBlock =
-                      annotationTaskBlockRepository.findById(annotationNew.getBlockId()).get();
+                  final AnnotationTaskBlock annotationTaskBlock =
+                      annotationTaskBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
+                          annotationNew.getAnnotationType(), annotationNew.getTerm());
                   if (annotationTaskBlock != null) {
                     annotationBratVO.setReviewedAnnotation(
                         AnnotationConvert.convertAnnotation2BratFormat(
@@ -71,6 +76,9 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
                             annotationTaskBlock.getAnnotation(),
                             annotationTaskBlock.getAnnotationType().ordinal()));
                   }
+                  annotationBratVO.setEstimatePrice(
+                      outsourcingPriceCalculateService.getCurrentRecordEstimatedPrice(
+                          annotationNew));
                   return annotationBratVO;
                 })
             .collect(Collectors.toList());
