@@ -7,15 +7,14 @@ import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.brat.BratPosition;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -55,7 +54,7 @@ public class IsolatedEntityErrorProvider extends BaseErrorProvider {
       document
           .getEntities()
           .stream()
-          .filter(entity -> !usedTags.contains(entity.getTag()))
+          .filter(entity -> !entity.getType().equals("Time") && !usedTags.contains(entity.getTag()))
           .forEach(
               entity -> {
                 final String term = entity.getTerm();
