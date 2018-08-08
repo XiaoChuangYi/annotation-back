@@ -12,5 +12,4 @@ import java.util.List;
 public class DesignateAnnotationRequest {
   private long userId;
   private List<Long> idList;
-  private int task; // 0为任务标注，1为练习标注
 }
