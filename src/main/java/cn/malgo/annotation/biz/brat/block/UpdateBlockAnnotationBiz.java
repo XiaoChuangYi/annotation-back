@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.brat.block;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
@@ -79,46 +80,38 @@ public class UpdateBlockAnnotationBiz
   }
 
   private void checkRuleBeforeUpdateRelation(
-      UpdateAnnotationGroupRequest updateAnnotationGroupRequest,
-      AnnotationTaskBlock annotationTaskBlock) {
-    if (updateAnnotationGroupRequest.isUpdatingEntity()) {
+      UpdateAnnotationGroupRequest request, AnnotationTaskBlock annotationTaskBlock) {
+    if (request.isUpdatingEntity()) {
       // 更新entity
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdateEntity(
-          updateAnnotationGroupRequest, annotationTaskBlock)) {
+          request, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
+      }
+      final Annotation annotation = getAnnotation(annotationTaskBlock);
+      final UpdateAnnotationRequest updateReq =
+          new UpdateAnnotationRequest(
+              request.getId(),
+              request.getTag(),
+              request.getNewType(),
+              "",
+              request.getStartPosition(),
+              request.getEndPosition(),
+              request.getTerm());
+
+      if (checkRelationEntityService.checkRelationEntityBeforeUpdate(updateReq, annotation)) {
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法更新");
+      }
+      if (checkRelationEntityService.updateRelationEntityCheckAnchorSide(updateReq, annotation)) {
+        throw new BusinessRuleException(
+            "in-conformity-association-rules-text-cross", "不符合关联规则，锚点前两个实体类型重复，无法更新");
       }
     } else {
       // 更新relation
       if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(
-          updateAnnotationGroupRequest, annotationTaskBlock)) {
+          request, annotationTaskBlock)) {
         throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
       }
-    }
-    if (checkRelationEntityService.checkRelationEntityBeforeUpdate(
-        new UpdateAnnotationRequest(
-            updateAnnotationGroupRequest.getId(),
-            updateAnnotationGroupRequest.getTag(),
-            updateAnnotationGroupRequest.getNewType(),
-            "",
-            updateAnnotationGroupRequest.getStartPosition(),
-            updateAnnotationGroupRequest.getEndPosition(),
-            updateAnnotationGroupRequest.getTerm()),
-        getAnnotation(annotationTaskBlock))) {
-      throw new BusinessRuleException(
-          "in-conformity-association-rules-text-cross", "不符合关联规则，文本交叉，无法更新");
-    }
-    if (checkRelationEntityService.updateRelationEntityCheckAnchorSide(
-        new UpdateAnnotationRequest(
-            updateAnnotationGroupRequest.getId(),
-            updateAnnotationGroupRequest.getTag(),
-            updateAnnotationGroupRequest.getNewType(),
-            "",
-            updateAnnotationGroupRequest.getStartPosition(),
-            updateAnnotationGroupRequest.getEndPosition(),
-            updateAnnotationGroupRequest.getTerm()),
-        getAnnotation(annotationTaskBlock))) {
-      throw new BusinessRuleException(
-          "in-conformity-association-rules-text-cross", "不符合关联规则，锚点前两个实体类型重复，无法更新");
     }
   }
 }
