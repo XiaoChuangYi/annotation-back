@@ -24,4 +24,6 @@ public class PersonalTaskRankSummaryVO {
   private Date lastModified;
 
   private BigDecimal payment;
+
+  private int totalWordNum;
 }

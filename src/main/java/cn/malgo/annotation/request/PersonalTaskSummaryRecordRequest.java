@@ -1,8 +1,10 @@
 package cn.malgo.annotation.request;
 
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 public class PersonalTaskSummaryRecordRequest {
   private long assigneeId;
+  private long taskId;
+  private int precisionRate;
 }

@@ -37,4 +37,6 @@ public interface AnnotationRepository
   Integer countAllByStateIn(AnnotationStateEnum state);
 
   AnnotationNew findByTermEquals(String text);
+
+  Set<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEquals(long taskId, long assigneeId);
 }
