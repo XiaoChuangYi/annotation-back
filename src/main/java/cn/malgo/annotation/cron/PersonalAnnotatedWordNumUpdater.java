@@ -39,7 +39,7 @@ public class PersonalAnnotatedWordNumUpdater {
   }
 
   private List<AnnotationTask> getTasks() {
-    return taskRepository.findByStateNotIn(
+    return taskRepository.findByStateIn(
         Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED));
   }
 }
