@@ -75,7 +75,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     final DefaultUserDetails defaultUserDetails =
         new DefaultUserDetails(param.getId(), param.getRoleId());
     session.setAttribute("userAccount", defaultUserDetails);
-    session.setMaxInactiveInterval(-1);
+    session.setMaxInactiveInterval(Integer.MAX_VALUE);
     Cookie cookie = new Cookie("userId", param.getId() + param.getAccountName());
     cookie.setMaxAge(1 * 60 * 60);
     cookie.setPath("/");
