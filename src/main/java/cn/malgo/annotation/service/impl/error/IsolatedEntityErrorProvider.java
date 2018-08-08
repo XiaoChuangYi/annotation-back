@@ -54,7 +54,10 @@ public class IsolatedEntityErrorProvider extends BaseErrorProvider {
       document
           .getEntities()
           .stream()
-          .filter(entity -> !entity.getType().equals("Time") && !usedTags.contains(entity.getTag()))
+          .filter(
+              entity ->
+                  !StringUtils.equalsAnyIgnoreCase(entity.getType(), "Time", "Duration")
+                      && !usedTags.contains(entity.getTag()))
           .forEach(
               entity -> {
                 final String term = entity.getTerm();
