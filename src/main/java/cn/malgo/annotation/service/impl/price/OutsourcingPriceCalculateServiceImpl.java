@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.impl.price;
 
 import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,14 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
 
   @Override
   public BigDecimal getCurrentRecordEstimatedPrice(final AnnotationNew annotationNew) {
+    final PersonalAnnotatedTotalWordNumRecord personalAnnotatedTotalWordNumRecord =
+        personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
+            annotationNew.getTaskId(), annotationNew.getAssignee());
+    if (personalAnnotatedTotalWordNumRecord == null) {
+      return BigDecimal.valueOf(0);
+    }
     final int totalAnnotatedWordNum =
-        personalAnnotatedEstimatePriceRepository
-            .findByTaskIdEqualsAndAssigneeIdEquals(
-                annotationNew.getTaskId(), annotationNew.getAssignee())
-            .getAnnotatedTotalWordNum();
-
+        personalAnnotatedTotalWordNumRecord.getAnnotatedTotalWordNum();
     switch (getPriceRankByWordNum(totalAnnotatedWordNum)) {
       case 0:
         return BigDecimal.valueOf(0);
@@ -36,7 +39,7 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
       case 4:
         return BigDecimal.valueOf(6 * annotationNew.getTerm().length());
     }
-    return null;
+    return BigDecimal.valueOf(0);
   }
 
   private int getPriceRankByWordNum(int totalAnnotationWordNum) {
