@@ -62,7 +62,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     annotationRepository
         .findAllByStateInAndBlockIdIn(
             Arrays.asList(AnnotationStateEnum.ANNOTATION_PROCESSING, AnnotationStateEnum.SUBMITTED),
-            getBlockIds(task))
+            getBlockIds(
+                task, Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED)))
         .parallelStream()
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
         .entrySet()
@@ -84,10 +85,28 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
             });
   }
 
-  private List<Long> getBlockIds(final AnnotationTask task) {
+  @Override
+  public void updateAnnotationStateByExpirationTime(AnnotationTask task) {
+    annotationRepository
+        .findAllByStateInAndBlockIdIn(
+            Arrays.asList(
+                AnnotationStateEnum.ANNOTATION_PROCESSING, AnnotationStateEnum.PRE_ANNOTATION),
+            getBlockIds(task, Arrays.asList(AnnotationTaskState.DOING)))
+        .parallelStream()
+        .filter(
+            annotationNew -> annotationNew.getExpirationTime().getTime() <= new Date().getTime())
+        .forEach(
+            annotationNew -> {
+              annotationNew.setAssignee(0);
+              annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
+              annotationRepository.save(annotationNew);
+            });
+  }
+
+  private List<Long> getBlockIds(
+      final AnnotationTask task, final List<AnnotationTaskState> annotationTaskStates) {
     return annotationTaskBlockRepository
-        .findByStateInAndTaskBlocks_Task_Id(
-            Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED), task.getId())
+        .findByStateInAndTaskBlocks_Task_Id(annotationTaskStates, task.getId())
         .stream()
         .map(annotationTaskBlock -> annotationTaskBlock.getId())
         .collect(Collectors.toList());
