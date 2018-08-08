@@ -8,4 +8,6 @@ public interface AnnotationSummaryService {
   void updatePersonalAnnotatedWordNum(AnnotationTask task);
 
   void updateAnnotationStateByExpirationTime(AnnotationTask task);
+
+  void updateAnnotationPrecisionAndRecallRate(AnnotationTask task);
 }

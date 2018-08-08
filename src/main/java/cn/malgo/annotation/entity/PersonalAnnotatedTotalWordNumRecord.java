@@ -41,4 +41,10 @@ public class PersonalAnnotatedTotalWordNumRecord extends BaseEntity {
       nullable = false,
       columnDefinition = "int(11) default 0")
   private int annotatedTotalWordNum; // 批次总字数
+
+  @Column(name = "precision_rate")
+  private double precisionRate = 0;
+
+  @Column(name = "recall_rate")
+  private double recallRate = 0;
 }

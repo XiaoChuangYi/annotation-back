@@ -14,14 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Slf4j
-public class AnnotationNewFilterByExpirationTimeUpdater {
-
+public class AnnotationPrecisionAndRecallRateUpdater {
   private static final String CRON_STR = "0 0/20 * * * ?";
 
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationSummaryService annotationSummaryService;
 
-  public AnnotationNewFilterByExpirationTimeUpdater(
+  public AnnotationPrecisionAndRecallRateUpdater(
       final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationSummaryService annotationSummaryService) {
     this.annotationTaskRepository = annotationTaskRepository;
@@ -30,16 +29,16 @@ public class AnnotationNewFilterByExpirationTimeUpdater {
 
   @Scheduled(cron = CRON_STR)
   @Transactional
-  public void updateAnnotationStateByExpirationTime() {
-    log.info("updateAnnotationStateByExpirationTime, start: {}", new Date());
+  public void updatePrecisionAndRecallRateOnce() {
+    log.info("updatePrecisionAndRecallRateOnce, start: {}", new Date());
     getTasks()
         .parallelStream()
-        .forEach(task -> annotationSummaryService.updateAnnotationStateByExpirationTime(task));
-    log.info("updateAnnotationStateByExpirationTime, end: {}", new Date());
+        .forEach(task -> annotationSummaryService.updateAnnotationPrecisionAndRecallRate(task));
+    log.info("updatePrecisionAndRecallRateOnce, end: {}", new Date());
   }
 
   private List<AnnotationTask> getTasks() {
     return annotationTaskRepository.findByStateIn(
-        Collections.singletonList(AnnotationTaskState.DOING));
+        Collections.singletonList(AnnotationTaskState.FINISHED));
   }
 }

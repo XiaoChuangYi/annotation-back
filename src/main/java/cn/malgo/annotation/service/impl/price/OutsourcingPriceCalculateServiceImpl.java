@@ -27,19 +27,75 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
     }
     final int totalAnnotatedWordNum =
         personalAnnotatedTotalWordNumRecord.getAnnotatedTotalWordNum();
-    switch (getPriceRankByWordNum(totalAnnotatedWordNum)) {
+    return getPriceByWordLength(totalAnnotatedWordNum, annotationNew.getTerm().length());
+  }
+
+  private BigDecimal getPriceByWordLength(int totalWordNum, int currentWordLength) {
+    switch (getPriceRankByWordNum(totalWordNum)) {
       case 0:
         return BigDecimal.valueOf(0);
       case 1:
-        return BigDecimal.valueOf(2 * annotationNew.getTerm().length());
+        return BigDecimal.valueOf(2 * currentWordLength);
       case 2:
-        return BigDecimal.valueOf(3 * annotationNew.getTerm().length());
+        return BigDecimal.valueOf(3 * currentWordLength);
       case 3:
-        return BigDecimal.valueOf(4 * annotationNew.getTerm().length());
+        return BigDecimal.valueOf(4 * currentWordLength);
       case 4:
-        return BigDecimal.valueOf(6 * annotationNew.getTerm().length());
+        return BigDecimal.valueOf(6 * currentWordLength);
+      default:
+        return BigDecimal.valueOf(0);
+    }
+  }
+
+  @Override
+  public BigDecimal getPersonalPaymentByTaskRank(long taskId, long assigneeId) {
+    final PersonalAnnotatedTotalWordNumRecord current =
+        personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
+            taskId, assigneeId);
+    if (current == null) {
+      return BigDecimal.valueOf(0);
+    }
+    switch (getPriceRankByPrecisionRate(current.getPrecisionRate())) {
+      case 0:
+        return getPriceByWordLength(
+                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
+            .multiply(BigDecimal.valueOf(0));
+      case 1:
+        return getPriceByWordLength(
+                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
+            .multiply(BigDecimal.valueOf(0.7));
+      case 2:
+        return getPriceByWordLength(
+                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
+            .multiply(BigDecimal.valueOf(0.8));
+      case 3:
+        return getPriceByWordLength(
+                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
+            .multiply(BigDecimal.valueOf(0.9));
+      case 4:
+        return getPriceByWordLength(
+            current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum());
     }
     return BigDecimal.valueOf(0);
+  }
+
+  private int getPriceRankByPrecisionRate(double currentPrecisionRate) {
+    if (currentPrecisionRate < 0.80) {
+      return 0;
+    }
+    if (currentPrecisionRate >= 0.80 && currentPrecisionRate < 0.85) {
+      return 1;
+    }
+    if (currentPrecisionRate >= 0.85 && currentPrecisionRate < 0.90) {
+      return 2;
+    }
+    if (currentPrecisionRate >= 0.90 && currentPrecisionRate < 0.95) {
+      return 3;
+    }
+    if (currentPrecisionRate >= 0.95) {
+      return 4;
+    }
+    return 0;
   }
 
   private int getPriceRankByWordNum(int totalAnnotationWordNum) {
