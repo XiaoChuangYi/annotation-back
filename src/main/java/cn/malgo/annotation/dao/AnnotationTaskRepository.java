@@ -37,5 +37,7 @@ public interface AnnotationTaskRepository
 
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
 
+  List<AnnotationTask> findByStateIn(List<AnnotationTaskState> states);
+
   Set<AnnotationTask> findByTaskBlocks_Block_DocBlocks_DocEquals(OriginalDoc doc);
 }
