@@ -228,6 +228,11 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
       // 找到所有在这个文本范围内的entity
       final List<Entity> entities = document.getEntitiesInside(position);
+      if (entities.size() == 0) {
+        index = end;
+        continue;
+      }
+
       final Map<String, Entity> entityMap =
           entities.stream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
 

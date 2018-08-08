@@ -74,33 +74,33 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
 
     log.info("all entities processed, word number: {}", wordLists.size());
 
-    final Map<Long, BitSet> flagMap =
-        annotations
-            .parallelStream()
-            .collect(
-                Collectors.toMap(
-                    Annotation::getId,
-                    annotation -> {
-                      final BitSet hasEntityFlag =
-                          new BitSet(annotation.getDocument().getText().length());
-                      for (Entity entity : annotation.getDocument().getEntities()) {
-                        hasEntityFlag.set(entity.getStart(), entity.getEnd(), true);
-                      }
-                      return hasEntityFlag;
-                    }));
-
-    log.info("entity flag map generated");
-
-    wordLists
-        .entrySet()
-        .parallelStream()
-        .forEach(
-            entry ->
-                entry
-                    .getValue()
-                    .addAll(getNotAnnotatedPositions(entry.getKey(), annotations, flagMap)));
-
-    log.info("all not annotated positions processed");
+    //    final Map<Long, BitSet> flagMap =
+    //        annotations
+    //            .parallelStream()
+    //            .collect(
+    //                Collectors.toMap(
+    //                    Annotation::getId,
+    //                    annotation -> {
+    //                      final BitSet hasEntityFlag =
+    //                          new BitSet(annotation.getDocument().getText().length());
+    //                      for (Entity entity : annotation.getDocument().getEntities()) {
+    //                        hasEntityFlag.set(entity.getStart(), entity.getEnd(), true);
+    //                      }
+    //                      return hasEntityFlag;
+    //                    }));
+    //
+    //    log.info("entity flag map generated");
+    //
+    //    wordLists
+    //        .entrySet()
+    //        .parallelStream()
+    //        .forEach(
+    //            entry ->
+    //                entry
+    //                    .getValue()
+    //                    .addAll(getNotAnnotatedPositions(entry.getKey(), annotations, flagMap)));
+    //
+    //    log.info("all not annotated positions processed");
 
     final List<List<WordErrorWithPosition>> differentEntities =
         wordLists
