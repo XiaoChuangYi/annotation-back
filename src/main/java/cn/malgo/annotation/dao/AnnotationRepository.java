@@ -40,6 +40,9 @@ public interface AnnotationRepository
 
   Set<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEquals(long taskId, long assigneeId);
 
+  List<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+      long taskId, long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
+
   List<AnnotationNew> findByTaskIdEqualsAndStateIn(
       long taskId, List<AnnotationStateEnum> annotationStateEnums);
 

@@ -58,13 +58,12 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       HttpServletResponse response, long taskId, long assigneeId) throws Exception {
     response.setHeader("Content-Disposition", "attachment;filename=malgo.xls");
     WritableWorkbook workbook = null;
-    final boolean taskFlag = (taskId != 0 && assigneeId == 0);
     try {
       workbook = Workbook.createWorkbook(response.getOutputStream());
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
       //      setExcelTitle(sheet);
-      setExcelColumn(taskFlag, sheet);
-      final List<AnnotationNew> annotationNews = getAnnotationNews(taskFlag, taskId, assigneeId);
+      setExcelColumn(sheet);
+      final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
       IntStream.range(0, annotationNews.size())
           .forEach(
               k -> {
@@ -76,23 +75,19 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                   e.printStackTrace();
                 }
                 try {
-                  if (taskFlag) {
-                    sheet.addCell(
-                        new Label(
-                            0, k, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
-                  } else {
-                    sheet.addCell(
-                        new Label(
-                            0, k, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
-                  }
-                  sheet.addCell(new Label(1, k, String.valueOf(annotationNew.getId())));
+                  sheet.addCell(
+                      new Label(0, k, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
                   sheet.addCell(
                       new Label(
-                          2, k, String.format("%d字", getCurrentAnnotatedWordNum(annotationNew))));
-                  sheet.addCell(new Label(3, k, annotationNew.getPrecisionRate() * 100 + "%"));
+                          1, k, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
+                  sheet.addCell(new Label(2, k, String.valueOf(annotationNew.getId())));
                   sheet.addCell(
                       new Label(
-                          4,
+                          3, k, String.format("%d字", getCurrentAnnotatedWordNum(annotationNew))));
+                  sheet.addCell(new Label(4, k, annotationNew.getPrecisionRate() * 100 + "%"));
+                  sheet.addCell(
+                      new Label(
+                          5,
                           k,
                           String.format(
                               "每100字%d元",
@@ -100,7 +95,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                                   annotationNew.getTaskId(), annotationNew.getAssignee()))));
                   sheet.addCell(
                       new Label(
-                          5, k, String.format("%d元", getCurrentRecordTotalPrice(annotationNew))));
+                          6, k, String.format("%d元", getCurrentRecordTotalPrice(annotationNew))));
                 } catch (WriteException e) {
                   e.printStackTrace();
                 }
@@ -161,8 +156,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
         .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
   }
 
-  private void setExcelColumn(final boolean taskFlag, final WritableSheet sheet)
-      throws WriteException {
+  private void setExcelColumn(final WritableSheet sheet) throws WriteException {
     final int rowIndex = 0;
     sheet.addCell(new Label(0, rowIndex, "批次名称"));
     sheet.addCell(new Label(1, rowIndex, "人员名称"));
@@ -173,16 +167,21 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     sheet.addCell(new Label(6, rowIndex, "合价"));
   }
 
-  private List<AnnotationNew> getAnnotationNews(
-      final boolean taskFlag, final long taskId, final long assigneeId) {
+  private List<AnnotationNew> getAnnotationNews(final long taskId, final long assigneeId) {
     List<AnnotationNew> annotationNews;
-    if (taskFlag) {
+    if (taskId != 0 && assigneeId == 0) {
       annotationNews =
           annotationRepository.findByTaskIdEqualsAndStateIn(
               taskId, Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
-    } else {
+    } else if (taskId == 0 && assigneeId != 0) {
       annotationNews =
           annotationRepository.findByAssigneeEqualsAndStateIn(
+              assigneeId,
+              Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
+    } else {
+      annotationNews =
+          annotationRepository.findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+              taskId,
               assigneeId,
               Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
     }
