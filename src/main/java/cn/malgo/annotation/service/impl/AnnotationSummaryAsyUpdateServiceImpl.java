@@ -75,12 +75,20 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
               PersonalAnnotatedTotalWordNumRecord current =
                   personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
                       task.getId(), entry.getKey());
+              final int totalNum =
+                  annotationRepository
+                      .findAllByTaskIdEqualsAndAssigneeEquals(
+                          current.getTaskId(), current.getAssigneeId())
+                      .parallelStream()
+                      .mapToInt(value -> value.getTerm().length())
+                      .sum();
               if (current != null) {
                 current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
+                current.setTotalWordNum(totalNum);
               } else {
                 current =
                     new PersonalAnnotatedTotalWordNumRecord(
-                        task.getId(), entry.getKey(), annotatedTotalWordNum, 0, 0, 0);
+                        task.getId(), entry.getKey(), annotatedTotalWordNum, totalNum, 0, 0);
               }
               personalAnnotatedEstimatePriceRepository.save(current);
             });

@@ -4,7 +4,6 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.service.AddBlocksToTaskService;

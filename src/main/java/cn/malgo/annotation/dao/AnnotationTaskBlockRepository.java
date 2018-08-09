@@ -11,6 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface AnnotationTaskBlockRepository
     extends JpaRepository<AnnotationTaskBlock, Long>,
@@ -69,4 +72,13 @@ public interface AnnotationTaskBlockRepository
 
   Page<AnnotationTaskBlock> findAllByAnnotationTypeAndStateIn(
       final AnnotationTypeEnum annotationType, List<AnnotationTaskState> stateList, Pageable page);
+
+  @Modifying
+  @Query(
+      value =
+          "INSERT INTO release.annotation_task_block (`annotation`,`annotation_type`,`created_time`,`state`,text)\n"
+              + "  SELECT annotation,annotation_type,NOW() as created_time,state,text FROM annotation_task_block WHERE state='FINISHED'",
+      nativeQuery = true)
+  @Transactional
+  void copyDataToRelease();
 }

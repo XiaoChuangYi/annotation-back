@@ -2,6 +2,7 @@ package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.PersonalTaskSummaryRecordBiz;
 import cn.malgo.annotation.request.PersonalTaskSummaryRecordRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.PersonalTaskRankSummaryVO;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
@@ -25,7 +26,7 @@ public class PersonalTaskSummaryRecordController extends BaseController {
   }
 
   @RequestMapping(value = "/get-personal-summary", method = RequestMethod.GET)
-  public Response<List<PersonalTaskRankSummaryVO>> getPersonalSummary(
+  public Response<PageVO<PersonalTaskRankSummaryVO>> getPersonalSummary(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       PersonalTaskSummaryRecordRequest request) {
     return new Response<>(personalTaskSummaryRecordBiz.process(request, userAccount));

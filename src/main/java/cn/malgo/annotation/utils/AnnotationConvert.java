@@ -181,6 +181,7 @@ public class AnnotationConvert {
     AnnotationBratVO annotationBratVO = new AnnotationBratVO();
     BeanUtils.copyProperties(annotationNew, annotationBratVO);
     annotationBratVO.setFinalAnnotation(finalBratJson);
+    annotationBratVO.setState(annotationNew.getState().name());
     return annotationBratVO;
   }
 

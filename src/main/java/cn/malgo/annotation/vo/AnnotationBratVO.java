@@ -1,5 +1,6 @@
 package cn.malgo.annotation.vo;
 
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;

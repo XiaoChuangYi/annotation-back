@@ -164,16 +164,13 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   private void setExcelColumn(final boolean taskFlag, final WritableSheet sheet)
       throws WriteException {
     final int rowIndex = 0;
-    if (taskFlag) {
-      sheet.addCell(new Label(0, rowIndex, "人员名称"));
-    } else {
-      sheet.addCell(new Label(0, rowIndex, "批次名称"));
-    }
-    sheet.addCell(new Label(1, rowIndex, "ANID"));
-    sheet.addCell(new Label(2, rowIndex, "标注字数"));
-    sheet.addCell(new Label(3, rowIndex, "准确率"));
-    sheet.addCell(new Label(4, rowIndex, "单价"));
-    sheet.addCell(new Label(5, rowIndex, "合价"));
+    sheet.addCell(new Label(0, rowIndex, "批次名称"));
+    sheet.addCell(new Label(1, rowIndex, "人员名称"));
+    sheet.addCell(new Label(2, rowIndex, "ANID"));
+    sheet.addCell(new Label(3, rowIndex, "标注字数"));
+    sheet.addCell(new Label(4, rowIndex, "准确率"));
+    sheet.addCell(new Label(5, rowIndex, "单价"));
+    sheet.addCell(new Label(6, rowIndex, "合价"));
   }
 
   private List<AnnotationNew> getAnnotationNews(

@@ -23,9 +23,9 @@ public class SettlementListExportBiz extends BaseBiz<SettlementListExportRequest
 
   @Override
   protected void validateRequest(SettlementListExportRequest request) throws InvalidInputException {
-    if (request.getTaskId() != 0 && request.getAssigneeId() != 0) {
+    if (request.getTaskId() == 0 && request.getAssigneeId() == 0) {
       throw new InvalidInputException(
-          "parameters cannot appear at the same time", "不能同时出现参数taskId和assigneeId");
+          "parameters cannot zero at the same time", "缺少参数taskId和assigneeId");
     }
   }
 
