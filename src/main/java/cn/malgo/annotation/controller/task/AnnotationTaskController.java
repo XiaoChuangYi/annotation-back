@@ -2,7 +2,6 @@ package cn.malgo.annotation.controller.task;
 
 import cn.malgo.annotation.biz.task.AddBlocksToTaskBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
-import cn.malgo.annotation.biz.task.GetAnnotationTaskInfoBiz;
 import cn.malgo.annotation.biz.task.GetUnCoveredBlockBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBiz;
 import cn.malgo.annotation.biz.task.ListAnnotationTaskBlockBiz;
@@ -44,7 +43,6 @@ public class AnnotationTaskController extends BaseController {
   private final TerminateTaskBiz terminateTaskBiz;
   private final RefreshTaskSummaryBiz refreshTaskSummaryBiz;
   private final GetUnCoveredBlockBiz getUnCoveredBlockBiz;
-  private final GetAnnotationTaskInfoBiz getAnnotationTaskInfoBiz;
 
   public AnnotationTaskController(
       final CreateTaskBiz createTaskBiz,
@@ -54,8 +52,7 @@ public class AnnotationTaskController extends BaseController {
       final ListTaskDetailsBiz listTaskDetailsBiz,
       final TerminateTaskBiz terminateTaskBiz,
       final RefreshTaskSummaryBiz refreshTaskSummaryBiz,
-      final GetUnCoveredBlockBiz getUnCoveredBlockBiz,
-      final GetAnnotationTaskInfoBiz getAnnotationTaskInfoBiz) {
+      final GetUnCoveredBlockBiz getUnCoveredBlockBiz) {
     this.createTaskBiz = createTaskBiz;
     this.addBlocksToTaskBiz = addBlocksToTaskBiz;
     this.listAnnotationTaskBiz = listAnnotationTaskBiz;
@@ -64,7 +61,6 @@ public class AnnotationTaskController extends BaseController {
     this.terminateTaskBiz = terminateTaskBiz;
     this.refreshTaskSummaryBiz = refreshTaskSummaryBiz;
     this.getUnCoveredBlockBiz = getUnCoveredBlockBiz;
-    this.getAnnotationTaskInfoBiz = getAnnotationTaskInfoBiz;
   }
 
   @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -87,13 +83,6 @@ public class AnnotationTaskController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       ListAnnotationTaskRequest request) {
     return new Response<>(listAnnotationTaskBiz.process(request, userAccount));
-  }
-
-  /** 获取任务列表信息 */
-  @RequestMapping(value = "/get-annotation-task-info", method = RequestMethod.GET)
-  public Response<List<TaskInfoVO>> getAnnotationTask(
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(getAnnotationTaskInfoBiz.process(null, userAccount));
   }
 
   /** 查询任务详情列表 */

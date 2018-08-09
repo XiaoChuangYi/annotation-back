@@ -11,6 +11,7 @@ import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
+import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.service.exception.BusinessRuleException;
