@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Slf4j
 public class AnnotationPrecisionAndRecallRateUpdater {
-  private static final String CRON_STR = "0 0/20 * * * ?";
 
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationSummaryService annotationSummaryService;
@@ -27,7 +26,7 @@ public class AnnotationPrecisionAndRecallRateUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = CRON_STR)
+  @Scheduled(cron = "${malgo.config.precision-recall-rate-cron}")
   @Transactional
   public void updatePrecisionAndRecallRateOnce() {
     log.info("updatePrecisionAndRecallRateOnce, start: {}", new Date());

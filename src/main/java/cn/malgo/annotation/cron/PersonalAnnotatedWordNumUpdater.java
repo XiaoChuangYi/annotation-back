@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PersonalAnnotatedWordNumUpdater {
 
-  private static final String CRON_STR = "0 0/30 * * * ?";
-
   private final AnnotationTaskRepository taskRepository;
   private final AnnotationSummaryService annotationSummaryService;
 
@@ -28,7 +26,7 @@ public class PersonalAnnotatedWordNumUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = CRON_STR)
+  @Scheduled(cron = "${malgo.config.personal-word-num-cron}")
   @Transactional
   public void updatePersonalAnnotatedWordNum() {
     log.info("updatePersonalAnnotatedWordNum, start: {}", new Date());

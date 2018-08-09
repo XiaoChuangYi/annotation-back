@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AnnotationNewFilterByExpirationTimeUpdater {
 
-  private static final String CRON_STR = "0 0/20 * * * ?";
-
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationSummaryService annotationSummaryService;
 
@@ -28,7 +26,7 @@ public class AnnotationNewFilterByExpirationTimeUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = CRON_STR)
+  @Scheduled(cron = "${malgo.config.expiration-time-cron}")
   @Transactional
   public void updateAnnotationStateByExpirationTime() {
     log.info("updateAnnotationStateByExpirationTime, start: {}", new Date());

@@ -17,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AnnotationSummaryUpdater {
   /** 0 0/5 * * * ? 秒 分 时 天(月) 月 天(星期) 天(月),天(星期)互斥，任意一个为? 当前的corn表达式的意思时每隔5分钟触发一次 */
-  private static final String CRON_STR = "0 0/20 * * * ?";
-
   private final AnnotationTaskRepository taskRepository;
+
   private final AnnotationSummaryService annotationSummaryService;
 
   public AnnotationSummaryUpdater(
@@ -29,7 +28,7 @@ public class AnnotationSummaryUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = CRON_STR)
+  @Scheduled(cron = "${malgo.config.task-summary-cron}")
   @Transactional
   public void updateAnnotationSummaries() {
     log.info("updateAnnotationSummaries, start: {}", new Date());
