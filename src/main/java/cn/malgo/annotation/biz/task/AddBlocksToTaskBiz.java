@@ -4,6 +4,8 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.service.AddBlocksToTaskService;
 import cn.malgo.service.annotation.RequirePermission;
@@ -48,6 +50,15 @@ public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest,
             .size();
     if (num == request.getBlockIds().size()) {
       throw new BusinessRuleException("this-task-had-those-blocks", "该批次中已经存在这些语料，无法继续新增");
+    }
+    if (annotationTaskBlockRepository
+        .findAllById(request.getBlockIds())
+        .parallelStream()
+        .anyMatch(
+            annotationTaskBlock ->
+                annotationTaskBlock.getState() == AnnotationTaskState.ANNOTATED
+                    || annotationTaskBlock.getState() == AnnotationTaskState.DOING)) {
+      throw new BusinessRuleException("those-blocks-has-unexpected-state", "这些语料中含有不合法的状态，无法继续新增");
     }
     final AnnotationTask annotationTask = annotationTaskRepository.getOne(request.getTaskId());
     return addBlocksToTaskService.addBlocksToTask(annotationTask, request.getBlockIds());
