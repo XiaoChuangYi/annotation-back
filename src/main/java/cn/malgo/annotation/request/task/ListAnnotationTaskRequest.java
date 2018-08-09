@@ -2,9 +2,10 @@ package cn.malgo.annotation.request.task;
 
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import java.util.List;
-import lombok.Value;
+import lombok.Data;
+import lombok.Setter;
 
-@Value
+@Data
 public class ListAnnotationTaskRequest {
   int pageIndex;
   int pageSize;
