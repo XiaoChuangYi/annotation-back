@@ -32,7 +32,12 @@ public class GetAnnotationTaskInfoBiz extends BaseBiz<ListAnnotationTaskRequest,
     return annotationTaskRepository
         .findAll()
         .parallelStream()
-        .map(annotationTask -> new TaskInfoVO(annotationTask.getId(), annotationTask.getName()))
+        .map(
+            annotationTask ->
+                new TaskInfoVO(
+                    annotationTask.getId(),
+                    annotationTask.getName(),
+                    annotationTask.getState().name()))
         .collect(Collectors.toList());
   }
 }

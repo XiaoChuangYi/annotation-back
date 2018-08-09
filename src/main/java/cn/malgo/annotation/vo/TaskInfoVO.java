@@ -7,4 +7,5 @@ public class TaskInfoVO {
 
   private long taskId;
   private String taskName;
+  private String taskState;
 }
