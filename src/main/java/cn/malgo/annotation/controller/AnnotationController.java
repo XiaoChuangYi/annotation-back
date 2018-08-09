@@ -3,6 +3,7 @@ package cn.malgo.annotation.controller;
 import cn.malgo.annotation.biz.CountAnnotationBiz;
 import cn.malgo.annotation.biz.DesignateAnnotationBiz;
 import cn.malgo.annotation.biz.GetAnnotationSummaryBiz;
+import cn.malgo.annotation.biz.GetUnDistributedAnnotationWordNumBiz;
 import cn.malgo.annotation.biz.ListAnnotationBiz;
 import cn.malgo.annotation.biz.OneKeyDesignateAnnotationBiz;
 import cn.malgo.annotation.biz.RandomDesignateAnnotationBiz;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationController extends BaseController {
+
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
@@ -45,6 +47,7 @@ public class AnnotationController extends BaseController {
   private final AnnotationExamineResetBiz annotationExamineResetBiz;
   private final OneKeyDesignateAnnotationBiz oneKeyDesignateAnnotationBiz;
   private final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz;
+  private final GetUnDistributedAnnotationWordNumBiz getUnDistributedAnnotationWordNumBiz;
 
   public AnnotationController(
       final ListAnnotationBiz listAnnotationBiz,
@@ -56,7 +59,8 @@ public class AnnotationController extends BaseController {
       final PreAnnotationRecycleBiz preAnnotationRecycleBiz,
       final AnnotationExamineResetBiz annotationExamineResetBiz,
       final OneKeyDesignateAnnotationBiz oneKeyDesignateAnnotationBiz,
-      final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz) {
+      final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz,
+      final GetUnDistributedAnnotationWordNumBiz getUnDistributedAnnotationWordNumBiz) {
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.getAnnotationSummaryBiz = getAnnotationSummaryBiz;
@@ -67,6 +71,7 @@ public class AnnotationController extends BaseController {
     this.annotationExamineResetBiz = annotationExamineResetBiz;
     this.oneKeyDesignateAnnotationBiz = oneKeyDesignateAnnotationBiz;
     this.oneKeyAddBlocksToTaskBiz = oneKeyAddBlocksToTaskBiz;
+    this.getUnDistributedAnnotationWordNumBiz = getUnDistributedAnnotationWordNumBiz;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -145,5 +150,12 @@ public class AnnotationController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody OneKeyAddBlocksToTaskRequest request) {
     return new Response<>(oneKeyAddBlocksToTaskBiz.process(request, userAccount));
+  }
+
+  /** 获取未指派语料总字数 */
+  @RequestMapping(value = "/get-un-distributed-word-num", method = RequestMethod.GET)
+  public Response getUnDistributedWordNum(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response(getUnDistributedAnnotationWordNumBiz.process(null, userAccount));
   }
 }
