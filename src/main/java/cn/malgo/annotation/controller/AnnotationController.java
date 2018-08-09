@@ -1,6 +1,11 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.*;
+import cn.malgo.annotation.biz.CountAnnotationBiz;
+import cn.malgo.annotation.biz.DesignateAnnotationBiz;
+import cn.malgo.annotation.biz.GetAnnotationSummaryBiz;
+import cn.malgo.annotation.biz.ListAnnotationBiz;
+import cn.malgo.annotation.biz.OneKeyDesignateAnnotationBiz;
+import cn.malgo.annotation.biz.RandomDesignateAnnotationBiz;
 import cn.malgo.annotation.biz.brat.AnnotationExamineResetBiz;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
@@ -14,18 +19,22 @@ import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.vo.AnTypeVO;
 import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
-import java.util.stream.Collectors;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationController extends BaseController {
-
   private final ListAnnotationBiz listAnnotationBiz;
   private final DesignateAnnotationBiz designateAnnotationBiz;
   private final GetAnnotationSummaryBiz getAnnotationSummaryBiz;
@@ -102,9 +111,8 @@ public class AnnotationController extends BaseController {
 
   /** 查询分词标注类型列表 */
   @RequestMapping(value = "/list-type", method = RequestMethod.GET)
-  public Response listType(
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(listAnTypeBiz.process(null, userAccount));
+  public Response<List<AnTypeVO>> listType() {
+    return new Response<>(listAnTypeBiz.process(null, null));
   }
 
   /** 待标注/任务回收功能 */

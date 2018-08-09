@@ -1,15 +1,15 @@
 package cn.malgo.annotation.biz.brat;
 
 import cn.malgo.annotation.dao.AnTypeRepository;
-import cn.malgo.annotation.entity.AnType;
+import cn.malgo.annotation.vo.AnTypeVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class ListAnTypeBiz extends BaseBiz<Object, List<AnType>> {
+public class ListAnTypeBiz extends BaseBiz<Object, List<AnTypeVO>> {
   private final AnTypeRepository anTypeRepository;
 
   public ListAnTypeBiz(AnTypeRepository anTypeRepository) {
@@ -20,7 +20,7 @@ public class ListAnTypeBiz extends BaseBiz<Object, List<AnType>> {
   protected void validateRequest(Object o) throws InvalidInputException {}
 
   @Override
-  protected List<AnType> doBiz(Object o) {
-    return anTypeRepository.findAll();
+  protected List<AnTypeVO> doBiz(Object o) {
+    return anTypeRepository.findAll().stream().map(AnTypeVO::new).collect(Collectors.toList());
   }
 }
