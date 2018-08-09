@@ -53,7 +53,7 @@ public class PersonalTaskSummaryRecordBiz
       request.setAssigneeId(user.getId());
     }
     return personalAnnotatedEstimatePriceRepository
-        .findAllByAssigneeIdIn(queryCondition(request))
+        .findAll(queryCondition(request))
         .parallelStream()
         .map(
             current -> {

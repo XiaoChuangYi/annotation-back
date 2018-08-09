@@ -80,7 +80,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
               } else {
                 current =
                     new PersonalAnnotatedTotalWordNumRecord(
-                        task.getId(), entry.getKey(), annotatedTotalWordNum, 0, 0);
+                        task.getId(), entry.getKey(), annotatedTotalWordNum, 0, 0, 0);
               }
               personalAnnotatedEstimatePriceRepository.save(current);
             });

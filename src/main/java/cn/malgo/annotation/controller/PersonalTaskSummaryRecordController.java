@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class PersonalTaskSummaryRecordController {
+public class PersonalTaskSummaryRecordController extends BaseController {
 
   private final PersonalTaskSummaryRecordBiz personalTaskSummaryRecordBiz;
 
