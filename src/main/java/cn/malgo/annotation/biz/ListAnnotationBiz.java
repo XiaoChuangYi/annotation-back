@@ -13,7 +13,9 @@ import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
+import com.alibaba.fastjson.JSONObject;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,30 +60,50 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
     if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
       request.setUserId(user.getId());
     }
+
     final Page<AnnotationNew> page = annotationService.listAnnotationNew(request);
+
     final List<AnnotationBratVO> annotationBratVOS =
         page.getContent()
             .parallelStream()
             .map(
                 annotationNew -> {
-                  AnnotationBratVO annotationBratVO =
+                  final AnnotationBratVO annotationBratVO =
                       AnnotationConvert.convert2AnnotationBratVO(annotationNew);
-                  final AnnotationTaskBlock annotationTaskBlock =
-                      annotationTaskBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
-                          annotationNew.getAnnotationType(), annotationNew.getTerm());
-                  if (annotationTaskBlock != null) {
-                    annotationBratVO.setReviewedAnnotation(
-                        AnnotationConvert.convertAnnotation2BratFormat(
-                            annotationTaskBlock.getText(),
-                            annotationTaskBlock.getAnnotation(),
-                            annotationTaskBlock.getAnnotationType().ordinal()));
-                  }
+
                   annotationBratVO.setEstimatePrice(
                       outsourcingPriceCalculateService.getCurrentRecordEstimatedPrice(
                           annotationNew));
                   return annotationBratVO;
                 })
             .collect(Collectors.toList());
+
+    if (request.isIncludeReviewedAnnotation()) {
+      final Map<Long, JSONObject> blocks =
+          annotationTaskBlockRepository
+              .findAllById(
+                  page.getContent()
+                      .stream()
+                      .map(AnnotationNew::getBlockId)
+                      .collect(Collectors.toSet()))
+              .stream()
+              .collect(
+                  Collectors.toMap(
+                      AnnotationTaskBlock::getId,
+                      block ->
+                          AnnotationConvert.convertAnnotation2BratFormat(
+                              block.getText(),
+                              block.getAnnotation(),
+                              block.getAnnotationType().ordinal())));
+
+      annotationBratVOS.forEach(
+          vo -> {
+            if (blocks.containsKey(vo.getBlockId())) {
+              vo.setReviewedAnnotation(blocks.get(vo.getBlockId()));
+            }
+          });
+    }
+
     return new PageVO<>(page.getTotalElements(), annotationBratVOS);
   }
 }

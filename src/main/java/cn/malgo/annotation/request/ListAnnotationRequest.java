@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ListAnnotationRequest {
   private List<Long> idList;
+  private List<Long> blockIds;
   private String term;
   private int pageIndex;
   private int pageSize;
@@ -20,4 +21,5 @@ public class ListAnnotationRequest {
   private List<Integer> annotationTypes;
   private Date leftDate;
   private Date rightDate;
+  private boolean includeReviewedAnnotation;
 }

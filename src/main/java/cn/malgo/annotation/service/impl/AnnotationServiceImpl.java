@@ -57,13 +57,21 @@ public class AnnotationServiceImpl implements AnnotationService {
     return (Specification<AnnotationNew>)
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
+
           predicates.add(criteriaBuilder.equal(root.get("deleteToken"), 0));
+
           if (param.getIdList() != null && param.getIdList().size() > 0) {
             predicates.add(criteriaBuilder.in(root.get("id")).value(param.getIdList()));
           }
+
+          if (param.getBlockIds() != null && param.getBlockIds().size() > 0) {
+            predicates.add(criteriaBuilder.in(root.get("blockId")).value(param.getBlockIds()));
+          }
+
           if (StringUtils.isNotBlank(param.getTerm())) {
             predicates.add(criteriaBuilder.like(root.get("term"), "%" + param.getTerm() + "%"));
           }
+
           if (param.getAnnotationTypes() != null && param.getAnnotationTypes().size() > 0) {
             predicates.add(
                 criteriaBuilder
@@ -75,6 +83,7 @@ public class AnnotationServiceImpl implements AnnotationService {
                             .map(AnnotationTypeEnum::getByValue)
                             .collect(Collectors.toList())));
           }
+
           if (param.getStates() != null && param.getStates().size() > 0) {
             final List<AnnotationStateEnum> states =
                 param
@@ -93,13 +102,16 @@ public class AnnotationServiceImpl implements AnnotationService {
                     .collect(Collectors.toList());
             predicates.add(criteriaBuilder.in(root.get("state")).value(states));
           }
+
           if (param.getUserId() > 0) {
             predicates.add(criteriaBuilder.equal(root.get("assignee"), param.getUserId()));
           }
+
           if (param.getLeftDate() != null) {
             predicates.add(
                 criteriaBuilder.greaterThanOrEqualTo(root.get("createdTime"), param.getLeftDate()));
           }
+
           if (param.getRightDate() != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(param.getRightDate());
@@ -107,6 +119,7 @@ public class AnnotationServiceImpl implements AnnotationService {
             predicates.add(
                 criteriaBuilder.lessThanOrEqualTo(root.get("createdTime"), calendar.getTime()));
           }
+
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
   }
@@ -119,9 +132,9 @@ public class AnnotationServiceImpl implements AnnotationService {
             queryAnnotationCondition(request),
             PageRequest.of(
                 request.getPageIndex(), request.getPageSize(), Direction.DESC, "createdTime"));
-    Map<Long, String> userMap;
+
     if (page.getTotalElements() > 0) {
-      userMap =
+      final Map<Long, String> userMap =
           userAccountRepository
               .findAll()
               .stream()
@@ -132,6 +145,7 @@ public class AnnotationServiceImpl implements AnnotationService {
               annotationNew ->
                   annotationNew.setUserName(userMap.getOrDefault(annotationNew.getAssignee(), "")));
     }
+
     return page;
   }
 
