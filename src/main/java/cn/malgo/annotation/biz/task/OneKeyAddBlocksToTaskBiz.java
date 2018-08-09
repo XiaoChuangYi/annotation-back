@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
@@ -45,8 +44,8 @@ public class OneKeyAddBlocksToTaskBiz
     if (request.getTotalWordNum() > 1000 * 100) {
       throw new InvalidInputException("pre-suppose-total-word-num-too-large", "预取总字数太大");
     }
-    if (request.getThreshold() < 0) {
-      throw new InvalidInputException("threshold-must-not-be-negative", "阈值不能为负数");
+    if (request.getThreshold() > 0) {
+      throw new InvalidInputException("threshold-must-be-zero", "阈值暂定为0");
     }
     if (request.getTaskId() < 0) {
       throw new InvalidInputException("invalid-task-id", "无效的taskId");
@@ -70,20 +69,6 @@ public class OneKeyAddBlocksToTaskBiz
         wordNum += current.getText().length();
         resultAnnotationTaskBlocks.add(current);
       }
-      final LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-      for (int k = 0; k < resultAnnotationTaskBlocks.size(); k++) {
-        final AnnotationTaskBlock current = resultAnnotationTaskBlocks.get(k);
-        resultAnnotationTaskBlocks
-            .subList(k + 1, annotationTaskBlocks.size())
-            .removeIf(
-                block -> {
-                  final double distance =
-                      levenshteinDistance.apply(current.getText(), block.getText())
-                          / (double) Math.max(current.getText().length(), block.getText().length());
-                  return distance < request.getThreshold();
-                });
-      }
-      // todo threshold目前默认为0，后期code，当threshold大于0时，总字数少于指定数量
       final AnnotationTask annotationTask = annotationTaskRepository.getOne(request.getTaskId());
       return addBlocksToTaskService.addBlocksToTask(
           annotationTask,
