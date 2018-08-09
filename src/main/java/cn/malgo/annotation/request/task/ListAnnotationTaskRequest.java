@@ -11,4 +11,5 @@ public class ListAnnotationTaskRequest {
   long taskId;
   String name;
   List<AnnotationTaskState> taskStates;
+  boolean all;
 }

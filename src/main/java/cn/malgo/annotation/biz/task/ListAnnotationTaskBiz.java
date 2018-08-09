@@ -75,6 +75,11 @@ public class ListAnnotationTaskBiz
 
   @Override
   protected PageVO<AnnotationTaskVO> doBiz(ListAnnotationTaskRequest request, UserDetails user) {
+    if (request.isAll()) {
+      final List<AnnotationTask> tasks = annotationTaskRepository.findAll();
+      return new PageVO<>(
+          tasks.size(), tasks.stream().map(AnnotationTaskVO::new).collect(Collectors.toList()));
+    }
     final Page<AnnotationTask> page =
         annotationTaskRepository.findAll(
             queryAnnotationTaskCondition(request),
