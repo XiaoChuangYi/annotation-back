@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequirePermission(Permissions.ADMIN)
 public class AddBlocksToTaskBiz extends TransactionalBiz<AddBlocksToTaskRequest, Object> {
-
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AddBlocksToTaskService addBlocksToTaskService;

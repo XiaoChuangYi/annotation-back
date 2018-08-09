@@ -1,6 +1,5 @@
 package cn.malgo.annotation.vo;
 
-import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
 import java.util.List;
 import lombok.Value;

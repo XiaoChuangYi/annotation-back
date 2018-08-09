@@ -11,13 +11,13 @@ import cn.malgo.service.model.UserDetails;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class GetAnnotationTaskInfoBiz extends BaseBiz<ListAnnotationTaskRequest, List<TaskInfoVO>> {
-
   private final AnnotationTaskRepository annotationTaskRepository;
 
   public GetAnnotationTaskInfoBiz(final AnnotationTaskRepository annotationTaskRepository) {
@@ -30,7 +30,7 @@ public class GetAnnotationTaskInfoBiz extends BaseBiz<ListAnnotationTaskRequest,
   @Override
   protected List<TaskInfoVO> doBiz(ListAnnotationTaskRequest request, UserDetails user) {
     return annotationTaskRepository
-        .findAll()
+        .findAll(Sort.by(Sort.Direction.DESC, "createdTime"))
         .parallelStream()
         .map(
             annotationTask ->
