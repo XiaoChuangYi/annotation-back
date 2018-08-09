@@ -62,14 +62,14 @@ public class ListAnnotationTaskBiz
   }
 
   @Override
-  protected void validateRequest(ListAnnotationTaskRequest listAnnotationTaskRequest)
-      throws InvalidInputException {
-    if (listAnnotationTaskRequest.getPageIndex() <= 0) {
-      throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
-    }
-
-    if (listAnnotationTaskRequest.getPageSize() <= 0) {
-      throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
+  protected void validateRequest(ListAnnotationTaskRequest request) throws InvalidInputException {
+    if (!request.isAll()) {
+      if (request.getPageIndex() <= 0) {
+        throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
+      }
+      if (request.getPageSize() <= 0) {
+        throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
+      }
     }
   }
 
