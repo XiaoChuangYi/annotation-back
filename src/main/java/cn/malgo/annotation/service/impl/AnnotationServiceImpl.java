@@ -14,9 +14,16 @@ import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.service.exception.BusinessRuleException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +32,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import javax.persistence.criteria.Predicate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -79,7 +80,16 @@ public class AnnotationServiceImpl implements AnnotationService {
                 param
                     .getStates()
                     .stream()
-                    .map(AnnotationStateEnum::valueOf)
+                    .map(
+                        state -> {
+                          try {
+                            return AnnotationStateEnum.valueOf(state);
+                          } catch (IllegalArgumentException ex) {
+                            log.warn("wrong state passed: {}", state);
+                            return null;
+                          }
+                        })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
             predicates.add(criteriaBuilder.in(root.get("state")).value(states));
           }
