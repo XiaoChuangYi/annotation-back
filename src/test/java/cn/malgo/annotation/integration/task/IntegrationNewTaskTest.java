@@ -207,7 +207,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     TestTransaction.end();
   }
 
-  private void commitAnnotation(final AnnotationNew annotationNew) {
+  private void commitAnnotation(AnnotationNew annotationNew) {
     TestTransaction.start();
     final String annotation =
         "T1 body-structure 0 " + annotationNew.getTerm().length() + " " + annotationNew.getTerm();
@@ -234,7 +234,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
 
     TestTransaction.start();
     annotationNew.setState(AnnotationStateEnum.PRE_ANNOTATION);
-    annotationRepository.save(annotationNew);
+    annotationNew = annotationRepository.save(annotationNew);
     annotationCommitBiz.process(
         new CommitAnnotationRequest(annotationNew.getId()),
         UserAccountServiceImpl.DefaultUserDetails.ADMIN);
