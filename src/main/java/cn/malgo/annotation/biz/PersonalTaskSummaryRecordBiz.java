@@ -85,17 +85,16 @@ public class PersonalTaskSummaryRecordBiz
         (root, criteriaQuery, criteriaBuilder) -> {
           List<Predicate> predicates = new ArrayList<>();
           if (param.getTaskId() != 0) {
-            predicates.add(criteriaBuilder.in(root.get("task_id")).value(param.getTaskId()));
+            predicates.add(criteriaBuilder.in(root.get("taskId")).value(param.getTaskId()));
           }
           if (param.getAssigneeId() != 0) {
-            predicates.add(
-                criteriaBuilder.in(root.get("assignee_id")).value(param.getAssigneeId()));
+            predicates.add(criteriaBuilder.in(root.get("assigneeId")).value(param.getAssigneeId()));
           }
           if (param.getPrecisionRate() != 0) {
             final Pair<Double, Double> pair = getPrecisionRateSection(param.getPrecisionRate());
             predicates.add(
-                criteriaBuilder.greaterThanOrEqualTo(root.get("precision_rate"), pair.getRight()));
-            predicates.add(criteriaBuilder.lessThan(root.get("precision_rate"), pair.getLeft()));
+                criteriaBuilder.greaterThanOrEqualTo(root.get("precisionRate"), pair.getRight()));
+            predicates.add(criteriaBuilder.lessThan(root.get("precisionRate"), pair.getLeft()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
