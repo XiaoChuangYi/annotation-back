@@ -523,7 +523,7 @@ public class AnnotationConvert {
         annotationDocument
             .getRelationEntities()
             .stream()
-            .filter(x -> !rTags.contains(x))
+            .filter(x -> !rTags.contains(x.getTag()))
             .collect(Collectors.toList());
     annotationDocument.setRelationEntities(relationEntityList);
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
