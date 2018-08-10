@@ -11,6 +11,6 @@ public class ListAnnotationTaskRequest {
   int pageSize;
   long taskId;
   String name;
-  List<AnnotationTaskState> taskStates;
+  List<AnnotationTaskState> state;
   boolean all;
 }

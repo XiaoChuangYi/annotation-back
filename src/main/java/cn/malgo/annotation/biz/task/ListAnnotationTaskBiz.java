@@ -47,10 +47,10 @@ public class ListAnnotationTaskBiz
                     root.get("name"), String.format("%s%s%s", "%", param.getName(), "%")));
           }
 
-          if (param.getTaskStates() != null
-              && param.getTaskStates().size() > 0
-              && !param.getTaskStates().contains(null)) {
-            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getTaskStates()));
+          if (param.getState() != null
+              && param.getState().size() > 0
+              && !param.getState().contains(null)) {
+            predicates.add(criteriaBuilder.in(root.get("state")).value(param.getState()));
           }
 
           if (param.getTaskId() > 0) {

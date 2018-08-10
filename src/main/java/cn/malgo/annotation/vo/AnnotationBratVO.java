@@ -1,6 +1,5 @@
 package cn.malgo.annotation.vo;
 
-import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -13,7 +12,7 @@ import java.util.Date;
 public class AnnotationBratVO {
 
   private long id;
-  private int assignee;
+  private long assignee;
   private String state;
   private AnnotationTypeEnum annotationType;
 
