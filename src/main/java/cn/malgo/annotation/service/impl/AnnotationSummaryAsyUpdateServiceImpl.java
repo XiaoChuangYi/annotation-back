@@ -75,20 +75,20 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
               PersonalAnnotatedTotalWordNumRecord current =
                   personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
                       task.getId(), entry.getKey());
-              final int totalNum =
-                  annotationRepository
-                      .findAllByTaskIdEqualsAndAssigneeEquals(
-                          current.getTaskId(), current.getAssigneeId())
-                      .parallelStream()
-                      .mapToInt(value -> value.getTerm().length())
-                      .sum();
               if (current != null) {
+                final int totalNum =
+                    annotationRepository
+                        .findAllByTaskIdEqualsAndAssigneeEquals(
+                            current.getTaskId(), current.getAssigneeId())
+                        .parallelStream()
+                        .mapToInt(value -> value.getTerm().length())
+                        .sum();
                 current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
                 current.setTotalWordNum(totalNum);
               } else {
                 current =
                     new PersonalAnnotatedTotalWordNumRecord(
-                        task.getId(), entry.getKey(), annotatedTotalWordNum, totalNum, 0, 0);
+                        task.getId(), entry.getKey(), annotatedTotalWordNum, 0, 0, 0);
               }
               personalAnnotatedEstimatePriceRepository.save(current);
             });
@@ -119,12 +119,13 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
             getBlocks(task.getId()), Collections.singletonList(AnnotationTaskState.FINISHED));
     annotationRepository
         .findAllByStateInAndBlockIdIn(
-            Collections.singletonList(AnnotationStateEnum.CLEANED),
+            Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED),
             getBlockIds(task, Collections.singletonList(AnnotationTaskState.FINISHED)))
         .parallelStream()
         .filter(
             annotationNew ->
-                annotationNew.getState() == AnnotationStateEnum.CLEANED
+                (annotationNew.getState() == AnnotationStateEnum.CLEANED
+                        || annotationNew.getState() == AnnotationStateEnum.PRE_CLEAN)
                     && annotationNew.getPrecisionRate() == 0
                     && annotationNew.getRecallRate() == 0)
         .forEach(
