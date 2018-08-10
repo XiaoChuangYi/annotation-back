@@ -62,8 +62,7 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     Objects.requireNonNull(annotationNew);
 
     final AnnotationTaskBlock block =
-        annotationTaskBlockRepository.getOneByAnnotationTypeEqualsAndTextEquals(
-            annotationNew.getAnnotationType(), annotationNew.getTerm());
+        annotationTaskBlockRepository.getOne(annotationNew.getBlockId());
 
     if (block == null) {
       log.warn("annotation combine {} not found in task block", annotationNew.getId());

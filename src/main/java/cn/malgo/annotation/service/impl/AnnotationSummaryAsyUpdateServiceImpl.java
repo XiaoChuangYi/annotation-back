@@ -165,7 +165,11 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
     final Map<Long, Annotation> blockMap =
         getBlockMap(
-            blocks, Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            blocks,
+            Arrays.asList(
+                AnnotationTaskState.ANNOTATED,
+                AnnotationTaskState.PRE_CLEAN,
+                AnnotationTaskState.FINISHED));
     final List<AnnotationNew> annotationNews =
         annotationRepository.findAllByBlockIdIn(
             blocks.stream().map(BaseEntity::getId).collect(Collectors.toSet()));

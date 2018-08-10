@@ -20,6 +20,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
 
     switch (block.getState()) {
       case ANNOTATED:
+      case PRE_CLEAN:
       case FINISHED:
         return new AnnotationBlock(block);
     }
@@ -37,6 +38,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
       case UN_DISTRIBUTED:
       case ANNOTATION_PROCESSING:
       case PRE_ANNOTATION:
+      case SUBMITTED:
         return new AnnotationNewFinal(annotation);
     }
 
