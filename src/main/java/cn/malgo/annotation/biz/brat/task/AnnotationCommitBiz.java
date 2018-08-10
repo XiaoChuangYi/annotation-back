@@ -78,8 +78,10 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
           throw new BusinessRuleException("invalid-state", "当前记录无法直接设定为'放弃'状态！");
       }
 
-      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
-      annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
+      // 目前直接通过，且不拷贝到review
+      annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
+      //      annotationCombine.setState(AnnotationCombineStateEnum.preExamine.name());
+      //      annotationCombine.setReviewedAnnotation(annotationCombine.getFinalAnnotation());
       annotationCombine.setCommitTimestamp(new Date());
       if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.ordinal()) { // 分词标注提交
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
