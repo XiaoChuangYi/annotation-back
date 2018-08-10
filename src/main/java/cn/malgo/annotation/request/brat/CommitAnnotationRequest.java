@@ -1,9 +1,12 @@
 package cn.malgo.annotation.request.brat;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommitAnnotationRequest {
   private long id;
-  private String autoAnnotation;
 }

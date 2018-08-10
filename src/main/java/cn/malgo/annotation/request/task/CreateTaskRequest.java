@@ -1,8 +1,8 @@
 package cn.malgo.annotation.request.task;
 
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 public class CreateTaskRequest {
   private final String name;
 }

@@ -49,8 +49,11 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
   }
 
   @Override
-  protected void validateRequest(TerminateTaskRequest terminateTaskRequest)
-      throws InvalidInputException {}
+  protected void validateRequest(TerminateTaskRequest request) throws InvalidInputException {
+    if (request.getTaskId() <= 0) {
+      throw new InvalidInputException("invalid-task-id", "无效的参数taskId");
+    }
+  }
 
   @Override
   protected Object doBiz(TerminateTaskRequest request, UserDetails user) {

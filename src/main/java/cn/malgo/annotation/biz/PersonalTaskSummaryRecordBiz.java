@@ -39,10 +39,6 @@ public class PersonalTaskSummaryRecordBiz
   @Override
   protected void validateRequest(PersonalTaskSummaryRecordRequest request)
       throws InvalidInputException {
-    if (request.getAssigneeId() > 0 && request.getTaskId() > 0) {
-      throw new InvalidInputException(
-          "assignee-id-task-id-can-not-be-both", "参数assigneeId和taskId不能同时出现");
-    }
     if (request.getPageIndex() < 1) {
       throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
     }

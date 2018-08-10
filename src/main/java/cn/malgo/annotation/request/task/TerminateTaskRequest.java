@@ -1,8 +1,12 @@
 package cn.malgo.annotation.request.task;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TerminateTaskRequest {
   private long taskId;
 }

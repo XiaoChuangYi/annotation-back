@@ -1,8 +1,8 @@
 package cn.malgo.annotation.request;
 
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 public class CleanOutBlockRequest {
   private long taskId;
 }

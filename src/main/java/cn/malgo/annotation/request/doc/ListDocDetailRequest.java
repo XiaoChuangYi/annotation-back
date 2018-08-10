@@ -1,8 +1,12 @@
 package cn.malgo.annotation.request.doc;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ListDocDetailRequest {
   private Long id;
 }

@@ -1,8 +1,8 @@
 package cn.malgo.annotation.request.block;
 
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 public class ListRelevanceAnnotationRequest {
   private int pageIndex;
   private int pageSize;

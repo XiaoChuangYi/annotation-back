@@ -44,7 +44,7 @@ public class AnnotationNew extends BaseEntity {
   private String term;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "state", nullable = false, length = 16)
+  @Column(name = "state", nullable = false, length = 32)
   private AnnotationStateEnum state = AnnotationStateEnum.UN_DISTRIBUTED;
 
   @Column(name = "assignee", nullable = false)

@@ -1,8 +1,9 @@
 package cn.malgo.annotation.request;
 
+import lombok.Data;
 import lombok.Value;
 
-@Value
+@Data
 public class SearchAnnotationRequest {
   private final int annotationType;
 

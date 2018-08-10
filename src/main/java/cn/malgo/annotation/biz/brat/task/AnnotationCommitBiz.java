@@ -51,7 +51,6 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
     if (commitAnnotationRequest == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
-
     if (commitAnnotationRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }

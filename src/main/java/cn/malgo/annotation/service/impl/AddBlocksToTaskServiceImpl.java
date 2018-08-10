@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
+
   private final AnnotationSummaryService annotationSummaryService;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationRepository annotationRepository;
@@ -43,11 +44,6 @@ public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
   @Override
   public AnnotationTask addBlocksToTask(
       final AnnotationTask annotationTask, final Collection<AnnotationTaskBlock> blocks) {
-    if (annotationTask.getState() == AnnotationTaskState.PRE_CLEAN
-        || annotationTask.getState() == AnnotationTaskState.FINISHED) {
-      throw new BusinessRuleException("invalid-task-state", annotationTask.getState() + "不可以再加入语料");
-    }
-
     final List<AnnotationNew> annotationNews = new ArrayList<>();
     blocks.forEach(
         annotationTaskBlock -> {
