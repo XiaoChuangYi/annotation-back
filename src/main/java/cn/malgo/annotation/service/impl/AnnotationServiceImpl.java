@@ -40,16 +40,13 @@ public class AnnotationServiceImpl implements AnnotationService {
 
   private final AnnotationRepository annotationRepository;
   private final UserAccountRepository userAccountRepository;
-  private final OutsourcingPriceCalculateService outsourcingPriceCalculateService;
 
   @Autowired
   public AnnotationServiceImpl(
       final UserAccountRepository userAccountRepository,
-      final AnnotationRepository annotationRepository,
-      final OutsourcingPriceCalculateService outsourcingPriceCalculateService) {
+      final AnnotationRepository annotationRepository) {
     this.userAccountRepository = userAccountRepository;
     this.annotationRepository = annotationRepository;
-    this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -211,14 +208,14 @@ public class AnnotationServiceImpl implements AnnotationService {
             "invalid-designate-word-num", "请求参数designateWordNum超过可分配的最大值");
       }
       final List<AnnotationNew> resultAnnotationNews = new ArrayList<>();
-      long wordSum = 0;
+      long wordSum = request.getDesignateWordNum();
       for (int k = 0; k < annotationNews.size(); k++) {
         final AnnotationNew current = annotationNews.get(k);
-        if (wordSum >= request.getDesignateWordNum()) {
+        resultAnnotationNews.add(current);
+        wordSum -= current.getTerm().length();
+        if (wordSum <= 0) {
           break;
         }
-        wordSum += current.getTerm().length();
-        resultAnnotationNews.add(current);
       }
       final List<Long> userIdList = request.getUserIdList();
       IntStream.range(0, resultAnnotationNews.size())

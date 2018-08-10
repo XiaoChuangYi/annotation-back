@@ -148,7 +148,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         annotationTaskBlockRepository.findAll().get(0).getState(), AnnotationTaskState.ANNOTATED);
     assertEquals(
         annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getState(),
-        AnnotationTaskState.ANNOTATED);
+        AnnotationTaskState.DOING);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
