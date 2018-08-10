@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -197,7 +198,8 @@ public class AnnotationServiceImpl implements AnnotationService {
   public void oneKeyDesignateAnnotationNew(OneKeyDesignateAnnotationRequest request) {
     final List<AnnotationNew> annotationNews =
         annotationRepository.findAllByStateIn(
-            Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED));
+            Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED),
+            Sort.by(Direction.DESC, "createdTime"));
     if (annotationNews.size() > 0) {
       if (request.getDesignateWordNum()
           > annotationNews
@@ -225,7 +227,7 @@ public class AnnotationServiceImpl implements AnnotationService {
                 resultAnnotationNews.get(i).setAssignee(userIdList.get(k));
                 resultAnnotationNews.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
               });
-      annotationRepository.saveAll(annotationNews);
+      annotationRepository.saveAll(resultAnnotationNews);
     }
   }
 }

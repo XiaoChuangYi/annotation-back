@@ -7,6 +7,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +21,7 @@ public interface AnnotationRepository
   Set<AnnotationNew> findAllByStateInAndBlockIdIn(
       List<AnnotationStateEnum> annotationStateEnums, List<Long> blockIds);
 
-  List<AnnotationNew> findAllByStateIn(List<AnnotationStateEnum> annotationStateEnums);
+  List<AnnotationNew> findAllByStateIn(List<AnnotationStateEnum> annotationStateEnums, Sort sort);
 
   List<AnnotationNew> findAllByTaskIdEqualsAndBlockIdIn(long taskId, List<Long> blockIds);
 
