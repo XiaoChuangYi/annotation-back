@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.brat.task.entities;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
@@ -42,6 +43,9 @@ public class DeleteAnnotationBiz
             request,
             annotationNew.getFinalAnnotation(),
             annotationNew.getAnnotationType().ordinal());
+    if (annotationNew.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
+      annotationNew.setState(AnnotationStateEnum.ANNOTATION_PROCESSING);
+    }
     annotationNew.setFinalAnnotation(annotation);
     annotationRepository.save(annotationNew);
     return AnnotationConvert.convert2AnnotationBratVO(annotationNew);

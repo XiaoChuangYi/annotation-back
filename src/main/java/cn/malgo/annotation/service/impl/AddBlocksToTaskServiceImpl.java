@@ -57,6 +57,7 @@ public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
           annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
           annotationNew.setBlockId(annotationTaskBlock.getId());
           annotationNew.setTaskId(annotationTask.getId());
+          annotationNew.setDeleteToken(0l);
           annotationNew.setComment(
               String.format(
                   "[block:{%d}] add to [task:{%d}]",

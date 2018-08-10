@@ -77,7 +77,6 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
                   return annotationBratVO;
                 })
             .collect(Collectors.toList());
-
     if (request.isIncludeReviewedAnnotation()) {
       final Map<Long, JSONObject> blocks =
           annotationTaskBlockRepository
