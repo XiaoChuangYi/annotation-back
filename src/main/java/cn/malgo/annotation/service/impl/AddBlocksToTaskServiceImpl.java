@@ -51,7 +51,7 @@ public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
           final AnnotationNew annotationNew = new AnnotationNew();
           annotationNew.setTerm(annotationTaskBlock.getText());
           annotationNew.setAnnotationType(annotationTaskBlock.getAnnotationType());
-          annotationNew.setAssignee(0);
+          annotationNew.setAssignee(1);
           annotationNew.setManualAnnotation(annotationTaskBlock.getAnnotation());
           annotationNew.setFinalAnnotation(annotationTaskBlock.getAnnotation());
           annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);

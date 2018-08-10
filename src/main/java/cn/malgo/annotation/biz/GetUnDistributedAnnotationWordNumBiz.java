@@ -8,6 +8,8 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,7 +28,9 @@ public class GetUnDistributedAnnotationWordNumBiz extends BaseBiz<Void, Integer>
   @Override
   protected Integer doBiz(Void aVoid, UserDetails user) {
     return annotationRepository
-        .findAllByStateIn(Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED))
+        .findAllByStateIn(
+            Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED),
+            Sort.by(Direction.ASC, "state"))
         .parallelStream()
         .mapToInt(annotationNew -> annotationNew.getTerm().length())
         .sum();
