@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskInfoVO {
-
+  private String taskName;
   private int taskAnnotatedWordNum;
   private BigDecimal taskAvailableMaximumPayment;
   private long taskParticipationStaffNum;

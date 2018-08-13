@@ -17,7 +17,6 @@ import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -77,8 +76,7 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
       // 删除doing/annotated状态的blocks与该task的关系
       taskBlockRepository.deleteInBatch(
           taskBlockRepository.findByTask_IdAndBlock_StateIn(
-              request.getTaskId(),
-              Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED)));
+              request.getTaskId(), Arrays.asList(AnnotationTaskState.DOING)));
       // block语料 doing状态的语料状态重置成created状态，annotated->pre_clean
       blockSet.forEach(
           block -> {

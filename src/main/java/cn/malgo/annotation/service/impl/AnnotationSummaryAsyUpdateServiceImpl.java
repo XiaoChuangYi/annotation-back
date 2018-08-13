@@ -127,7 +127,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   public void updateAnnotationPrecisionAndRecallRate(AnnotationTask task) {
     final Map<Long, Annotation> blockMap =
         getBlockMap(
-            getBlocks(task.getId()), Collections.singletonList(AnnotationTaskState.FINISHED));
+            getBlocks(task.getId()),
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
     annotationRepository
         .findAllByStateInAndBlockIdIn(
             Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED),

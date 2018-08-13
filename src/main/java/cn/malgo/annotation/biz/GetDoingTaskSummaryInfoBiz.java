@@ -76,6 +76,7 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
               .sum();
 
       return new TaskInfoVO(
+          task.getName(),
           taskAnnotatedTotalWordNum,
           outsourcingPriceCalculateService
               .getUnitPriceByWordNum(taskAnnotatedTotalWordNum)

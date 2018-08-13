@@ -88,13 +88,15 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
           .divide(BigDecimal.valueOf(100))
           .add(BigDecimal.valueOf(400))
           .add(BigDecimal.valueOf(300));
-    } else {
+    } else if (taskTotalEfficientWordNum >= 40000) {
       return BigDecimal.valueOf(6)
           .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 40000))
           .divide(BigDecimal.valueOf(100))
           .add(BigDecimal.valueOf(400))
           .add(BigDecimal.valueOf(300))
           .add(BigDecimal.valueOf(400));
+    } else {
+      return BigDecimal.valueOf(0);
     }
   }
 
