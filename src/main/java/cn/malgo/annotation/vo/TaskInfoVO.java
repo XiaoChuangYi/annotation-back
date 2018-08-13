@@ -1,11 +1,18 @@
 package cn.malgo.annotation.vo;
 
-import lombok.Value;
+import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TaskInfoVO {
 
-  private long taskId;
-  private String taskName;
-  private String taskState;
+  private int taskAnnotatedWordNum;
+  private BigDecimal taskAvailableMaximumPayment;
+  private long taskParticipationStaffNum;
+  private BigDecimal predictAverageHighestPayment;
+  private int currentTaskRestNum;
 }

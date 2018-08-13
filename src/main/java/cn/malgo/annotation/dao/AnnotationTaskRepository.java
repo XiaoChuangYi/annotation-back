@@ -7,6 +7,7 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -43,6 +44,8 @@ public interface AnnotationTaskRepository
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);
 
   List<AnnotationTask> findByStateIn(List<AnnotationTaskState> states);
+
+  List<AnnotationTask> findByStateIn(List<AnnotationTaskState> states, Sort sort);
 
   Set<AnnotationTask> findByTaskBlocks_Block_DocBlocks_DocEquals(OriginalDoc doc);
 }

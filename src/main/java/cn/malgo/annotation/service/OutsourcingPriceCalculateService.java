@@ -8,4 +8,8 @@ public interface OutsourcingPriceCalculateService {
   BigDecimal getCurrentRecordEstimatedPrice(AnnotationNew annotationNew);
 
   BigDecimal getPersonalPaymentByTaskRank(long taskId, long assigneeId);
+
+  BigDecimal getUnitPriceByWordNum(int totalWordNum);
+
+  BigDecimal testTaskPersonalPayment(double precisionRate, String term);
 }

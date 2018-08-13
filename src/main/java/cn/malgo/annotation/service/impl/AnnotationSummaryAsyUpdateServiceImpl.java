@@ -3,7 +3,7 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
+import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
@@ -42,14 +42,16 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   private final AnnotationRepository annotationRepository;
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
   private final AnnotationFactory annotationFactory;
-  private final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository;
+  private final PersonalAnnotatedTotalWordNumRecordRepository
+      personalAnnotatedEstimatePriceRepository;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
       final AnnotationFactory annotationFactory,
       final AnnotationRepository annotationRepository,
-      final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository) {
+      final PersonalAnnotatedTotalWordNumRecordRepository
+          personalAnnotatedEstimatePriceRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationRepository = annotationRepository;
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
@@ -60,6 +62,10 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   @NotNull
   @Override
   public void updatePersonalAnnotatedWordNum(final AnnotationTask task) {
+    final Map<Long, Annotation> blockMap =
+        getBlockMap(
+            getBlocks(task.getId()),
+            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
     annotationRepository
         .findAllByStateInAndBlockIdIn(
             Arrays.asList(AnnotationStateEnum.ANNOTATION_PROCESSING, AnnotationStateEnum.SUBMITTED),
@@ -85,6 +91,11 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                         .sum();
                 current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
                 current.setTotalWordNum(totalNum);
+                final Pair<Double, Double> result =
+                    getInConformity(
+                        annotationRepository.findAllByBlockIdIn(blockMap.keySet()), blockMap);
+                current.setPrecisionRate(result.getLeft());
+                current.setRecallRate(result.getRight());
               } else {
                 current =
                     new PersonalAnnotatedTotalWordNumRecord(

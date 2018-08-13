@@ -1,20 +1,28 @@
 package cn.malgo.annotation.service.impl.price;
 
-import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCalculateService {
 
-  private final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository;
+  private final PersonalAnnotatedTotalWordNumRecordRepository
+      personalAnnotatedEstimatePriceRepository;
+  private final AnnotationRepository annotationRepository;
 
   public OutsourcingPriceCalculateServiceImpl(
-      final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository) {
+      final PersonalAnnotatedTotalWordNumRecordRepository personalAnnotatedEstimatePriceRepository,
+      final AnnotationRepository annotationRepository) {
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
+    this.annotationRepository = annotationRepository;
   }
 
   @Override
@@ -49,53 +57,85 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
 
   @Override
   public BigDecimal getPersonalPaymentByTaskRank(long taskId, long assigneeId) {
-    final PersonalAnnotatedTotalWordNumRecord current =
-        personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
-            taskId, assigneeId);
-    if (current == null) {
-      return BigDecimal.valueOf(0);
-    }
-    switch (getPriceRankByPrecisionRate(current.getPrecisionRate())) {
-      case 0:
-        return getPriceByWordLength(
-                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
-            .multiply(BigDecimal.valueOf(0));
-      case 1:
-        return getPriceByWordLength(
-                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
-            .multiply(BigDecimal.valueOf(0.7));
-      case 2:
-        return getPriceByWordLength(
-                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
-            .multiply(BigDecimal.valueOf(0.8));
-      case 3:
-        return getPriceByWordLength(
-                current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum())
-            .multiply(BigDecimal.valueOf(0.9));
-      case 4:
-        return getPriceByWordLength(
-            current.getAnnotatedTotalWordNum(), current.getAnnotatedTotalWordNum());
-    }
-    return BigDecimal.valueOf(0);
+    final List<AnnotationNew> annotationNews =
+        annotationRepository.findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+            taskId,
+            assigneeId,
+            Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
+    final int taskTotalEfficientWordNum =
+        annotationNews
+            .parallelStream()
+            .mapToInt(
+                annotationNew ->
+                    getEfficientWordNum(annotationNew.getPrecisionRate(), annotationNew.getTerm()))
+            .sum();
+    return getTaskPersonalPayment(taskTotalEfficientWordNum);
   }
 
-  private int getPriceRankByPrecisionRate(double currentPrecisionRate) {
-    if (currentPrecisionRate < 0.80) {
-      return 0;
+  private BigDecimal getTaskPersonalPayment(int taskTotalEfficientWordNum) {
+    if (0 < taskTotalEfficientWordNum && taskTotalEfficientWordNum < 20000) {
+      return BigDecimal.valueOf(2)
+          .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum))
+          .divide(BigDecimal.valueOf(100));
+    } else if (taskTotalEfficientWordNum >= 20000 && taskTotalEfficientWordNum < 30000) {
+      return BigDecimal.valueOf(3)
+          .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 20000))
+          .divide(BigDecimal.valueOf(100))
+          .add(BigDecimal.valueOf(400));
+    } else if (taskTotalEfficientWordNum >= 30000 && taskTotalEfficientWordNum < 40000) {
+      return BigDecimal.valueOf(4)
+          .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 30000))
+          .divide(BigDecimal.valueOf(100))
+          .add(BigDecimal.valueOf(400))
+          .add(BigDecimal.valueOf(300));
+    } else {
+      return BigDecimal.valueOf(6)
+          .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 40000))
+          .divide(BigDecimal.valueOf(100))
+          .add(BigDecimal.valueOf(400))
+          .add(BigDecimal.valueOf(300))
+          .add(BigDecimal.valueOf(400));
     }
-    if (currentPrecisionRate >= 0.80 && currentPrecisionRate < 0.85) {
-      return 1;
+  }
+
+  private int getEfficientWordNum(double precisionRate, String term) {
+    int efficientWordNum = 0;
+    if (precisionRate >= 0.8d && precisionRate < 0.85d) {
+      efficientWordNum += term.length() * 0.7;
     }
-    if (currentPrecisionRate >= 0.85 && currentPrecisionRate < 0.90) {
-      return 2;
+    if (precisionRate >= 0.85d && precisionRate < 0.90d) {
+      efficientWordNum += term.length() * 0.8;
     }
-    if (currentPrecisionRate >= 0.90 && currentPrecisionRate < 0.95) {
-      return 3;
+    if (precisionRate >= 0.90d && precisionRate < 0.95d) {
+      efficientWordNum += term.length() * 0.9;
     }
-    if (currentPrecisionRate >= 0.95) {
-      return 4;
+    if (precisionRate >= 0.95d) {
+      efficientWordNum += term.length();
     }
-    return 0;
+    return efficientWordNum;
+  }
+
+  @Override
+  public BigDecimal getUnitPriceByWordNum(int totalWordNum) {
+    switch (getPriceRankByWordNum(totalWordNum)) {
+      case 0:
+        return BigDecimal.valueOf(0);
+      case 1:
+        return BigDecimal.valueOf(2);
+      case 2:
+        return BigDecimal.valueOf(3);
+      case 3:
+        return BigDecimal.valueOf(4);
+      case 4:
+        return BigDecimal.valueOf(6);
+      default:
+        return BigDecimal.valueOf(0);
+    }
+  }
+
+  @Override
+  public BigDecimal testTaskPersonalPayment(double precisionRate, String term) {
+    return getTaskPersonalPayment(getEfficientWordNum(precisionRate, term));
   }
 
   private int getPriceRankByWordNum(int totalAnnotationWordNum) {

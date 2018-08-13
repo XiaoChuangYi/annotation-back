@@ -1,12 +1,10 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.request.task.ListAnnotationTaskRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -24,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListAnnotationTaskBiz
     extends BaseBiz<ListAnnotationTaskRequest, PageVO<AnnotationTaskVO>> {

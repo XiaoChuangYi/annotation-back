@@ -2,11 +2,9 @@ package cn.malgo.annotation.service.impl.excel;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
@@ -37,17 +35,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class SettlementListExportServiceImpl implements SettlementListExportService {
 
-  private final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository;
   private final UserAccountRepository userAccountRepository;
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationRepository annotationRepository;
 
   public SettlementListExportServiceImpl(
-      final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository,
       final UserAccountRepository userAccountRepository,
       final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationRepository annotationRepository) {
-    this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
     this.userAccountRepository = userAccountRepository;
     this.annotationTaskRepository = annotationTaskRepository;
     this.annotationRepository = annotationRepository;
@@ -61,7 +56,6 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     try {
       workbook = Workbook.createWorkbook(response.getOutputStream());
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
-      //      setExcelTitle(sheet);
       setExcelColumn(sheet);
       final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
       IntStream.range(0, annotationNews.size())
@@ -85,14 +79,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                       new Label(
                           3, k, String.format("%d字", getCurrentAnnotatedWordNum(annotationNew))));
                   sheet.addCell(new Label(4, k, annotationNew.getPrecisionRate() * 100 + "%"));
-                  sheet.addCell(
-                      new Label(
-                          5,
-                          k,
-                          String.format(
-                              "每100字%d元",
-                              getAnnotationUnitPrice(
-                                  annotationNew.getTaskId(), annotationNew.getAssignee()))));
+                  sheet.addCell(new Label(5, k, "每100字2元"));
                   sheet.addCell(
                       new Label(
                           6, k, String.format("%d元", getCurrentRecordTotalPrice(annotationNew))));
@@ -188,30 +175,8 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     return annotationNews;
   }
 
-  private int getAnnotationUnitPrice(final long taskId, final long assigneeId) {
-    final PersonalAnnotatedTotalWordNumRecord current =
-        personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
-            taskId, assigneeId);
-    if (current != null) {
-      if (current.getTotalWordNum() >= 0 && current.getTotalWordNum() < 20000) {
-        return 2;
-      }
-      if (current.getTotalWordNum() >= 20000 && current.getTotalWordNum() < 30000) {
-        return 3;
-      }
-      if (current.getTotalWordNum() >= 30000 && current.getTotalWordNum() < 40000) {
-        return 4;
-      }
-      if (current.getTotalWordNum() >= 40000) {
-        return 6;
-      }
-    }
-    return 0;
-  }
-
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
-    return BigDecimal.valueOf(
-            getAnnotationUnitPrice(annotationNew.getTaskId(), annotationNew.getAssignee()))
+    return BigDecimal.valueOf(2)
         .multiply(BigDecimal.valueOf(annotationNew.getPrecisionRate()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)));
   }

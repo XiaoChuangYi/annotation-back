@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.dao.PersonalAnnotatedEstimatePriceRepository;
+import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
 import cn.malgo.annotation.request.PersonalTaskSummaryRecordRequest;
 import cn.malgo.annotation.result.PageVO;
@@ -26,11 +26,12 @@ import org.springframework.stereotype.Component;
 public class PersonalTaskSummaryRecordBiz
     extends BaseBiz<PersonalTaskSummaryRecordRequest, PageVO<PersonalTaskRankSummaryVO>> {
 
-  private final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository;
+  private final PersonalAnnotatedTotalWordNumRecordRepository
+      personalAnnotatedEstimatePriceRepository;
   private final OutsourcingPriceCalculateService outsourcingPriceCalculateService;
 
   public PersonalTaskSummaryRecordBiz(
-      final PersonalAnnotatedEstimatePriceRepository personalAnnotatedEstimatePriceRepository,
+      final PersonalAnnotatedTotalWordNumRecordRepository personalAnnotatedEstimatePriceRepository,
       final OutsourcingPriceCalculateService outsourcingPriceCalculateService) {
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
     this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
@@ -50,9 +51,6 @@ public class PersonalTaskSummaryRecordBiz
   @Override
   protected PageVO<PersonalTaskRankSummaryVO> doBiz(
       PersonalTaskSummaryRecordRequest request, UserDetails user) {
-    if (user.getId() != 1) {
-      request.setAssigneeId(user.getId());
-    }
     final Page<PersonalAnnotatedTotalWordNumRecord> page =
         personalAnnotatedEstimatePriceRepository.findAll(
             queryCondition(request),

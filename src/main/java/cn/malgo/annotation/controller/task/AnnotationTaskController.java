@@ -1,5 +1,6 @@
 package cn.malgo.annotation.controller.task;
 
+import cn.malgo.annotation.biz.GetDoingTaskSummaryInfoBiz;
 import cn.malgo.annotation.biz.task.AddBlocksToTaskBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.biz.task.GetUnCoveredBlockBiz;
@@ -43,6 +44,7 @@ public class AnnotationTaskController extends BaseController {
   private final TerminateTaskBiz terminateTaskBiz;
   private final RefreshTaskSummaryBiz refreshTaskSummaryBiz;
   private final GetUnCoveredBlockBiz getUnCoveredBlockBiz;
+  private final GetDoingTaskSummaryInfoBiz getDoingTaskSummaryInfoBiz;
 
   public AnnotationTaskController(
       final CreateTaskBiz createTaskBiz,
@@ -52,7 +54,8 @@ public class AnnotationTaskController extends BaseController {
       final ListTaskDetailsBiz listTaskDetailsBiz,
       final TerminateTaskBiz terminateTaskBiz,
       final RefreshTaskSummaryBiz refreshTaskSummaryBiz,
-      final GetUnCoveredBlockBiz getUnCoveredBlockBiz) {
+      final GetUnCoveredBlockBiz getUnCoveredBlockBiz,
+      final GetDoingTaskSummaryInfoBiz getDoingTaskSummaryInfoBiz) {
     this.createTaskBiz = createTaskBiz;
     this.addBlocksToTaskBiz = addBlocksToTaskBiz;
     this.listAnnotationTaskBiz = listAnnotationTaskBiz;
@@ -61,6 +64,7 @@ public class AnnotationTaskController extends BaseController {
     this.terminateTaskBiz = terminateTaskBiz;
     this.refreshTaskSummaryBiz = refreshTaskSummaryBiz;
     this.getUnCoveredBlockBiz = getUnCoveredBlockBiz;
+    this.getDoingTaskSummaryInfoBiz = getDoingTaskSummaryInfoBiz;
   }
 
   @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -124,5 +128,12 @@ public class AnnotationTaskController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody TerminateTaskRequest terminateTaskRequest) {
     return new Response<>(refreshTaskSummaryBiz.process(terminateTaskRequest, userAccount));
+  }
+
+  /** 标注人员未结束批次统计数据查询 */
+  @RequestMapping(value = "/get-doing-task-summary", method = RequestMethod.GET)
+  public Response<TaskInfoVO> getDoingTaskSummary(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(getDoingTaskSummaryInfoBiz.process(null, userAccount));
   }
 }
