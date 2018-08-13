@@ -160,7 +160,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     assertEquals(
         annotationTaskBlockRepository.findAll().get(0).getState(), AnnotationTaskState.PRE_CLEAN);
     assertEquals(
-        annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getTaskBlocks().size(), 0);
+        annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getTaskBlocks().size(), 1);
     assertEquals(
         annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getState(),
         AnnotationTaskState.FINISHED);
@@ -178,30 +178,6 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
                 Collections.singletonList(AnnotationStateEnum.PRE_CLEAN))
             .size(),
         1);
-    assertEquals(countRowsInTable("task_block"), 0);
-    TestTransaction.flagForCommit();
-    TestTransaction.end();
-
-    TestTransaction.start();
-    // 语料返工
-    addBlocksToTaskBiz.process(
-        new AddBlocksToTaskRequest(
-            taskAndDoc.getLeft().getId(),
-            annotationTaskBlockRepository
-                .findAll()
-                .stream()
-                .map(block -> block.getId())
-                .collect(Collectors.toList())),
-        DefaultUserDetails.ADMIN);
-    assertNotEquals(
-        annotationTaskBlockRepository.findAll().get(0).getState(), AnnotationTaskState.PRE_CLEAN);
-    assertEquals(
-        annotationTaskBlockRepository.findAll().get(0).getState(), AnnotationTaskState.DOING);
-    assertEquals(
-        annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getTaskBlocks().size(), 1);
-    assertEquals(
-        annotationTaskRepository.getOne(taskAndDoc.getLeft().getId()).getState(),
-        AnnotationTaskState.DOING);
     assertEquals(countRowsInTable("task_block"), 1);
     TestTransaction.flagForCommit();
     TestTransaction.end();
