@@ -132,7 +132,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     annotationRepository
         .findAllByStateInAndBlockIdIn(
             Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED),
-            getBlockIds(task, Collections.singletonList(AnnotationTaskState.FINISHED)))
+            getBlockIds(
+                task, Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED)))
         .parallelStream()
         .filter(
             annotationNew ->
