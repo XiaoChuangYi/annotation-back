@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -129,28 +130,32 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         getBlockMap(
             getBlocks(task.getId()),
             Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
-    annotationRepository
-        .findAllByStateInAndBlockIdIn(
-            Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED),
-            getBlockIds(
-                task, Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED)))
-        .parallelStream()
-        .filter(
-            annotationNew ->
-                (annotationNew.getState() == AnnotationStateEnum.CLEANED
-                        || annotationNew.getState() == AnnotationStateEnum.PRE_CLEAN)
-                    && annotationNew.getPrecisionRate() == 0
-                    && annotationNew.getRecallRate() == 0)
-        .forEach(
-            annotationNew -> {
-              Pair<Double, Double> pair =
-                  getInConformity(
-                      this.annotationFactory.create(annotationNew),
-                      blockMap.getOrDefault(annotationNew.getBlockId(), null));
-              annotationNew.setPrecisionRate(pair.getLeft());
-              annotationNew.setRecallRate(pair.getRight());
-              annotationRepository.save(annotationNew);
-            });
+    List<AnnotationNew> annotationNews =
+        annotationRepository
+            .findAllByStateInAndBlockIdIn(
+                Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED),
+                blockMap.keySet().stream().collect(Collectors.toList()))
+            .parallelStream()
+            .filter(
+                annotationNew ->
+                    StringUtils.equalsAny(
+                            annotationNew.getState().name(),
+                            AnnotationStateEnum.PRE_CLEAN.name(),
+                            AnnotationStateEnum.CLEANED.name())
+                        && annotationNew.getPrecisionRate() == 0.0d
+                        && annotationNew.getRecallRate() == 0.0d)
+            .map(
+                annotationNew -> {
+                  Pair<Double, Double> pair =
+                      getInConformity(
+                          this.annotationFactory.create(annotationNew),
+                          blockMap.getOrDefault(annotationNew.getBlockId(), null));
+                  annotationNew.setPrecisionRate(pair.getLeft());
+                  annotationNew.setRecallRate(pair.getRight());
+                  return annotationNew;
+                })
+            .collect(Collectors.toList());
+    annotationRepository.saveAll(annotationNews);
   }
 
   private List<Long> getBlockIds(

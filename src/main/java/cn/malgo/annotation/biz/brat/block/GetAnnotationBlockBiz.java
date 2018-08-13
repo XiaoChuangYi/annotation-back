@@ -43,6 +43,7 @@ public class GetAnnotationBlockBiz
       if (StringUtils.equalsAny(
           annotationTaskBlock.getState().name(),
           AnnotationTaskState.ANNOTATED.name(),
+          AnnotationTaskState.PRE_CLEAN.name(),
           AnnotationTaskState.FINISHED.name())) {
         return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
       } else {

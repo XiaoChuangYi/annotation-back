@@ -39,6 +39,8 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
       case ANNOTATION_PROCESSING:
       case PRE_ANNOTATION:
       case SUBMITTED:
+      case PRE_CLEAN:
+      case CLEANED:
         return new AnnotationNewFinal(annotation);
     }
 

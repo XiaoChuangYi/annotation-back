@@ -102,7 +102,7 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
 
   private int getEfficientWordNum(double precisionRate, String term) {
     int efficientWordNum = 0;
-    if (precisionRate >= 0.8d && precisionRate < 0.85d) {
+    if (precisionRate >= 0.80d && precisionRate < 0.85d) {
       efficientWordNum += term.length() * 0.7;
     }
     if (precisionRate >= 0.85d && precisionRate < 0.90d) {
