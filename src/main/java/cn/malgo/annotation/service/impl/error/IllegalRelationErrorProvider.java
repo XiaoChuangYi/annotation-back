@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class IllegalRelationErrorProvider extends BaseErrorProvider {
+
   private final RelationLimitRuleRepository relationLimitRuleRepository;
 
   public IllegalRelationErrorProvider(
@@ -133,12 +134,18 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         .getRelationEntities()
         .stream()
         .filter(
-            relation ->
-                !legalRules.contains(
-                    new RelationLimitRulePair(
-                        entityMap.get(relation.getSourceTag()).getType().replace("-and", ""),
-                        entityMap.get(relation.getTargetTag()).getType().replace("-and", ""),
-                        relation.getType())))
+            relation -> {
+              if (StringUtils.equalsAny(relation.getType(), "and", "coreference")
+                  && entityMap.get(relation.getSourceTag()).getStart()
+                      > entityMap.get(relation.getTargetTag()).getEnd()) {
+                return false;
+              }
+              return !legalRules.contains(
+                  new RelationLimitRulePair(
+                      entityMap.get(relation.getSourceTag()).getType().replace("-and", ""),
+                      entityMap.get(relation.getTargetTag()).getType().replace("-and", ""),
+                      relation.getType()));
+            })
         .map(
             relation -> {
               final Entity source = entityMap.get(relation.getSourceTag());
@@ -218,6 +225,7 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   /** 如果两个关系的source/target的类型、文本都一致，而且relation也是一致的，则认为是相同类似的关联，则不允许出现两个方向的关联 */
   @lombok.Value
   static class RelationUniqueTerm {
+
     private String lhsTerm;
     private String lhsType;
     private String rhsTerm;
@@ -244,6 +252,7 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   @lombok.Value
   @AllArgsConstructor
   static class RelationLimitRulePair {
+
     private final String source;
     private final String target;
     private final String relation;
