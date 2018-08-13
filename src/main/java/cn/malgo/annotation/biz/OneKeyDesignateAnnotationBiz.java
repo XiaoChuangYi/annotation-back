@@ -36,12 +36,7 @@ public class OneKeyDesignateAnnotationBiz
 
   @Override
   protected Object doBiz(OneKeyDesignateAnnotationRequest request, UserDetails user) {
-    try {
-      annotationService.oneKeyDesignateAnnotationNew(request);
-    } catch (Exception ex) {
-      log.error("一键指派interface层异常", ex);
-      throw new InternalServerException("一键指派interface层异常: " + ex.getMessage());
-    }
+    annotationService.oneKeyDesignateAnnotationNew(request);
     return "一键指派成功！";
   }
 }

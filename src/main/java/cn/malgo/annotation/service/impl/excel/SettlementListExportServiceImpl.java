@@ -75,14 +75,10 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                       new Label(
                           1, k, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
                   sheet.addCell(new Label(2, k, String.valueOf(annotationNew.getId())));
-                  sheet.addCell(
-                      new Label(
-                          3, k, String.format("%d字", getCurrentAnnotatedWordNum(annotationNew))));
+                  sheet.addCell(new Label(3, k, getCurrentAnnotatedWordNum(annotationNew) + "字"));
                   sheet.addCell(new Label(4, k, annotationNew.getPrecisionRate() * 100 + "%"));
                   sheet.addCell(new Label(5, k, "每100字2元"));
-                  sheet.addCell(
-                      new Label(
-                          6, k, String.format("%d元", getCurrentRecordTotalPrice(annotationNew))));
+                  sheet.addCell(new Label(6, k, getCurrentRecordTotalPrice(annotationNew) + "元"));
                 } catch (WriteException e) {
                   e.printStackTrace();
                 }
@@ -94,11 +90,10 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       e.printStackTrace();
     } catch (WriteException e) {
       e.printStackTrace();
-    } finally {
-      if (workbook != null) {
-        workbook.write();
-        workbook.close();
-      }
+    }
+    if (workbook != null) {
+      workbook.write();
+      workbook.close();
     }
   }
 
