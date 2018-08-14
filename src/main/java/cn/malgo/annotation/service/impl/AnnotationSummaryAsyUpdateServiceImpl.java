@@ -64,9 +64,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   @Override
   public void updatePersonalAnnotatedWordNum(final AnnotationTask task) {
     final Map<Long, Annotation> blockMap =
-        getBlockMap(
-            getBlocks(task.getId()),
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+        getBlockMap(getBlocks(task.getId()), Arrays.asList(AnnotationTaskState.FINISHED));
     annotationRepository
         .findAllByStateInAndBlockIdIn(
             Arrays.asList(AnnotationStateEnum.ANNOTATION_PROCESSING, AnnotationStateEnum.SUBMITTED),
@@ -283,7 +281,11 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
     final Map<Long, Annotation> blockMap =
         getBlockMap(
-            blocks, Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            blocks,
+            Arrays.asList(
+                AnnotationTaskState.ANNOTATED,
+                AnnotationTaskState.PRE_CLEAN,
+                AnnotationTaskState.FINISHED));
 
     annotationTask.setTotalBranchNum(
         getOverviewBranchNum(blocks, AnnotationEvaluateStateEnum.TOTAL));

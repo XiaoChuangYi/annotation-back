@@ -187,6 +187,6 @@ public class AnnotationTaskBlockController extends BaseController {
   public Response cleanOutBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       CleanOutBlockRequest request) {
-    return new Response(cleanOutBlockBiz.process(request, userAccount));
+    return new Response<>(cleanOutBlockBiz.process(request, userAccount));
   }
 }

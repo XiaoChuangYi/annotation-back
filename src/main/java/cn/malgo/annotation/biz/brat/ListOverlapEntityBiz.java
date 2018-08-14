@@ -53,7 +53,7 @@ public class ListOverlapEntityBiz
     final Set<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByAnnotationTypeAndStateInAndTaskBlocks_Task_IdEquals(
             AnnotationTypeEnum.relation,
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED),
             listOverlapEntityRequest.getTaskId());
     final List<AnnotationTaskBlock> annotationTaskBlockList =
         annotationTaskBlocks

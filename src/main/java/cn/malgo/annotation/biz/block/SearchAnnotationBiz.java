@@ -53,7 +53,7 @@ public class SearchAnnotationBiz
     final Set<AnnotationTaskBlock> annotations =
         blockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.getByValue(request.getAnnotationType()),
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
     log.info("search annotations, get back {} annotations", annotations.size());
 
     if (annotations.size() == 0) {

@@ -29,7 +29,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
           unique = true)
     })
 public class PersonalAnnotatedTotalWordNumRecord extends BaseEntity {
-
   @Column(name = "task_id", nullable = false, columnDefinition = "bigint(20) default 0")
   private long taskId;
 

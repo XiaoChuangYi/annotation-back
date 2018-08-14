@@ -53,7 +53,7 @@ public class AnnotationBlockResetToAnnotationBiz
 
     final List<AnnotationTaskBlock> blocks =
         annotationTaskBlockRepository.findAllByStateInAndIdIn(
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED),
             request.getIds());
 
     if (blocks.size() != request.getIds().size()) {

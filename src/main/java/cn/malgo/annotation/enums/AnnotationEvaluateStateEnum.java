@@ -1,7 +1,6 @@
 package cn.malgo.annotation.enums;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +8,10 @@ import java.util.Set;
 public enum AnnotationEvaluateStateEnum {
   TOTAL(Arrays.asList(AnnotationTaskState.values()), Arrays.asList(AnnotationStateEnum.values())),
   ANNOTATED(
-      Arrays.asList(AnnotationTaskState.FINISHED, AnnotationTaskState.ANNOTATED),
+      Arrays.asList(
+          AnnotationTaskState.FINISHED,
+          AnnotationTaskState.ANNOTATED,
+          AnnotationTaskState.PRE_CLEAN),
       Arrays.asList(AnnotationStateEnum.SUBMITTED)),
   REST(
       Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.DOING),

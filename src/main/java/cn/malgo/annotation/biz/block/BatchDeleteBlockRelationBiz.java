@@ -50,7 +50,7 @@ public class BatchDeleteBlockRelationBiz
     final Set<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByIdInAndStateIn(
             batchDeleteMap.keySet(),
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
     if (batchDeleteMap.size() != annotationTaskBlocks.size()) {
       log.warn("批量删除语料中存在非法ID: {}", batchDeleteMap.keySet());
     }

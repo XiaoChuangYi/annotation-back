@@ -58,7 +58,7 @@ public class ListRelevanceAnnotationBiz
     final Set<AnnotationTaskBlock> blocks =
         annotationTaskBlockRepository.findByAnnotationTypeEqualsAndStateIn(
             AnnotationTypeEnum.relation,
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
     final List<RelationQueryPair> relations = getRelationQueryPairs(blocks, request);
     final int skip = (request.getPageIndex() - 1) * request.getPageSize();
     final int limit = request.getPageSize();

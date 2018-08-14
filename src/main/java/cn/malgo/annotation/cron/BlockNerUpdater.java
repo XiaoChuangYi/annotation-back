@@ -130,7 +130,7 @@ public class BlockNerUpdater {
     final BlockBatchIterator it =
         new BlockBatchIterator(
             taskBlockRepository,
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED),
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED),
             batchSize * 100);
 
     while (it.hasNext()) {
