@@ -62,7 +62,7 @@ public class FindAnnotationErrorBiz
     final Set<AnnotationTaskBlock> blocks =
         blockRepository.findByAnnotationTypeEqualsAndStateIn(
             errorType.getAnnotationType(),
-            Arrays.asList(AnnotationTaskState.ANNOTATED, AnnotationTaskState.FINISHED));
+            Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
     log.info("find annotation errors, get back {} annotations", blocks.size());
 
     if (blocks.size() == 0) {
