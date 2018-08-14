@@ -88,7 +88,8 @@ public class PersonalTaskSummaryRecordBiz
             final Pair<Double, Double> pair = getPrecisionRateSection(param.getPrecisionRate());
             predicates.add(
                 criteriaBuilder.greaterThanOrEqualTo(root.get("precisionRate"), pair.getRight()));
-            predicates.add(criteriaBuilder.lessThan(root.get("precisionRate"), pair.getLeft()));
+            predicates.add(
+                criteriaBuilder.lessThanOrEqualTo(root.get("precisionRate"), pair.getLeft()));
           }
           return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

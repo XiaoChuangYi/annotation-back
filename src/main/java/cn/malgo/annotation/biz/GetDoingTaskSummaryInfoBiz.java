@@ -74,19 +74,28 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
               .filter(current -> current.getAssigneeId() == user.getId())
               .mapToInt(current -> current.getAnnotatedTotalWordNum())
               .sum();
-
+      final BigDecimal taskAvailableMaximumPayment =
+          outsourcingPriceCalculateService
+              .getUnitPriceByWordNum(taskAnnotatedTotalWordNum)
+              .multiply(BigDecimal.valueOf(taskAnnotatedTotalWordNum));
+      final BigDecimal predictAverageHighestPayment =
+          outsourcingPriceCalculateService
+              .getUnitPriceByWordNum(
+                  taskStaffNum == 0 ? 0 : ((int) (taskTotalWordNum / taskStaffNum)))
+              .multiply(
+                  taskStaffNum == 0
+                      ? BigDecimal.valueOf(0)
+                      : BigDecimal.valueOf(taskTotalWordNum / taskStaffNum));
       return new TaskInfoVO(
           task.getName(),
           taskAnnotatedTotalWordNum,
-          outsourcingPriceCalculateService
-              .getUnitPriceByWordNum(taskAnnotatedTotalWordNum)
-              .multiply(BigDecimal.valueOf(taskAnnotatedTotalWordNum))
-              .divide(BigDecimal.valueOf(100)),
+          taskAvailableMaximumPayment.equals(BigDecimal.ZERO)
+              ? BigDecimal.valueOf(0)
+              : taskAvailableMaximumPayment.divide(BigDecimal.valueOf(100)),
           taskStaffNum,
-          outsourcingPriceCalculateService
-              .getUnitPriceByWordNum((int) (taskTotalWordNum / taskStaffNum))
-              .multiply(BigDecimal.valueOf(taskTotalWordNum / taskStaffNum))
-              .divide(BigDecimal.valueOf(100)),
+          predictAverageHighestPayment.equals(BigDecimal.ZERO)
+              ? BigDecimal.valueOf(0)
+              : predictAverageHighestPayment.divide(BigDecimal.valueOf(100)),
           annotationRepository
               .findByTaskIdEqualsAndStateIn(
                   task.getId(), Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED))
