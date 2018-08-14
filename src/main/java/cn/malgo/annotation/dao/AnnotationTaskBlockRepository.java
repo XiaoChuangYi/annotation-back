@@ -73,12 +73,14 @@ public interface AnnotationTaskBlockRepository
   Page<AnnotationTaskBlock> findAllByAnnotationTypeAndStateIn(
       final AnnotationTypeEnum annotationType, List<AnnotationTaskState> stateList, Pageable page);
 
-  @Modifying
-  @Query(
-      value =
-          "INSERT INTO release.annotation_task_block (`annotation`,`annotation_type`,`created_time`,`state`,text)\n"
-              + "  SELECT annotation,annotation_type,NOW() as created_time,state,text FROM annotation_task_block WHERE state='FINISHED'",
-      nativeQuery = true)
-  @Transactional
-  void copyDataToRelease();
+  //  @Modifying
+  //  @Query(
+  //      value =
+  //          "INSERT INTO annotation_task_block_release
+  // (`annotation`,`annotation_type`,`created_time`,`state`,text)\n"
+  //              + "  SELECT annotation,annotation_type,NOW() as created_time,state,text FROM
+  // annotation_task_block WHERE state='FINISHED'",
+  //      nativeQuery = true)
+  //  @Transactional
+  //  void copyDataToRelease();
 }

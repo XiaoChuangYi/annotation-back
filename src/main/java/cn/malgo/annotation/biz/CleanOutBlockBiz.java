@@ -58,7 +58,7 @@ public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Obj
                   return annotationTaskBlock;
                 })
             .collect(Collectors.toList()));
-    annotationTaskBlockRepository.copyDataToRelease();
+    //    annotationTaskBlockRepository.copyDataToRelease();
     return null;
   }
 }
