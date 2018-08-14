@@ -1,6 +1,6 @@
 package cn.malgo.annotation.vo;
 
-import cn.malgo.annotation.dto.FixAnnotationResult;
+import cn.malgo.annotation.dto.error.FixAnnotationResult;
 import lombok.Data;
 
 import java.util.List;

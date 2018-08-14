@@ -1,12 +1,14 @@
 package cn.malgo.annotation;
 
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AtomicTerm;
 import com.alibaba.fastjson.JSON;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AnnotationSummary;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.request.ListAnnotationCombineRequest;
-import cn.malgo.annotation.service.AnnotationCombineService;
+import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.service.AnnotationService;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -22,25 +24,31 @@ import java.util.List;
 @SpringBootTest
 @Slf4j
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
-  @Autowired private AnnotationCombineService annotationCombineService;
-  @Autowired private AnnotationCombineRepository annotationCombineRepository;
+  @Autowired private AnnotationService annotationService;
+  @Autowired private AnnotationRepository annotationRepository;
+  @Autowired private AnnotationTaskRepository taskRepository;
+
+  @Test
+  public void testEntityGraph() {
+    final List<AnnotationTask> annotationTasks = taskRepository.findAll();
+    log.info("annotationTasks：" + annotationTasks);
+  }
 
   @Test(enabled = false)
   public void testAnnotationCombine() {
-    ListAnnotationCombineRequest annotationCombineQuery = new ListAnnotationCombineRequest();
+    ListAnnotationRequest annotationCombineQuery = new ListAnnotationRequest();
     annotationCombineQuery.setPageIndex(1);
     annotationCombineQuery.setPageSize(10);
     annotationCombineQuery.setAnnotationTypes(Arrays.asList(0, 1));
     annotationCombineQuery.setStates(Arrays.asList("a"));
 
-    Page<AnnotationCombine> page =
-        annotationCombineService.listAnnotationCombine(annotationCombineQuery);
+    Page<AnnotationNew> page = annotationService.listAnnotationNew(annotationCombineQuery);
     log.info(">>>>>>>>data:" + JSON.toJSONString(page));
   }
 
   @Test(enabled = false)
   public void testGroup() {
-    List<AnnotationSummary> annotationSummaries = annotationCombineRepository.findByStateGroup();
+    List<AnnotationSummary> annotationSummaries = annotationRepository.findByStateGroup();
     for (AnnotationSummary current : annotationSummaries) {
       log.info(">>>>>>>>state:" + current.getState() + ">>>>>>num:" + current.getNum());
     }

@@ -1,19 +1,16 @@
 package cn.malgo.annotation.utils;
 
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.utils.entity.AnnotationDocument;
+import cn.malgo.annotation.vo.AnnotationBlockBratVO;
+import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.core.definition.BratConst;
 import cn.malgo.core.definition.Entity;
+import cn.malgo.core.definition.RelationEntity;
+import cn.malgo.service.exception.InternalServerException;
 import com.alibaba.fastjson.JSONObject;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.entity.UserExercise;
-import cn.malgo.annotation.exception.BratParseException;
-import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
-import cn.malgo.annotation.vo.AnnotationCombineBratVO;
-import cn.malgo.annotation.vo.ExerciseAnnotationBratVO;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -21,10 +18,50 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
-/** Created by cjl on 2018/5/24. */
 @Slf4j
 public class AnnotationConvert {
+
+  private static final String SPECIAL_TYPE = "Anchor";
+
+  public static boolean isCross(Entity leftEntity, Entity rightEntity) {
+    if (rightEntity.getStart() >= leftEntity.getEnd()
+        || leftEntity.getStart() >= rightEntity.getEnd()) {
+      return false;
+    }
+
+    final String leftType = leftEntity.getType().replace("-and", "");
+    final String rightType = rightEntity.getType().replace("-and", "");
+
+    if (StringUtils.equalsAny(SPECIAL_TYPE, leftType, rightType)) {
+      return false;
+    }
+
+    if (leftEntity.getStart() != rightEntity.getStart()
+        || leftEntity.getEnd() != rightEntity.getEnd()) {
+      return true;
+    }
+
+    return !StringUtils.equalsIgnoreCase(leftType, rightType);
+  }
+
+  /** 判断当前标注实体是否交叉 */
+  public static boolean isCrossAnnotation(String annotation) {
+    final List<Entity> entitiesLeft = getEntitiesFromAnnotation(annotation);
+    final List<Entity> entitiesRight = getEntitiesFromAnnotation(annotation);
+    // 排除掉自己和自己的比较
+    return entitiesLeft
+        .stream()
+        .anyMatch(
+            entityLeft ->
+                entitiesRight
+                    .stream()
+                    .filter(entityRight -> !entityRight.getTag().equals(entityLeft.getTag()))
+                    .anyMatch(entityRight -> isCross(entityLeft, entityRight)));
+  }
 
   /** 获取指定标注的entities */
   public static List<Entity> getEntitiesFromAnnotation(String annotation) {
@@ -34,13 +71,21 @@ public class AnnotationConvert {
     return annotationDocument.getEntities();
   }
 
-  /** 获取指定的entity */
-  public static Entity getEntityFromAnnotation(String annotation, String tag) {
+  /** 获取指定标注的relationEntities */
+  public static List<RelationEntity> getRelationEntitiesFromAnnotation(String annotation) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        annotation == null ? "" : annotation, annotationDocument);
+    return annotationDocument.getRelationEntities();
+  }
+
+  /** 获取指定的relationEntity */
+  public static RelationEntity getRelationEntityFromAnnotation(String annotation, String tag) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(
         annotation == null ? "" : annotation, annotationDocument);
     return annotationDocument
-        .getEntities()
+        .getRelationEntities()
         .stream()
         .filter(x -> x.getTag().equals(tag))
         .findFirst()
@@ -60,10 +105,10 @@ public class AnnotationConvert {
               .getEntities()
               .stream()
               .filter(x -> !x.getType().endsWith("-deleted"))
-              .map(x -> x.getEnd())
+              .map(Entity::getEnd)
               .sorted()
               .collect(Collectors.toList());
-      List<Integer> startPositionList = endPositionList.stream().collect(Collectors.toList());
+      List<Integer> startPositionList = new ArrayList<>(endPositionList);
       if (endPositionList.size() == 0
           || endPositionList.get(endPositionList.size() - 1)
               < annotationDocument.getText().length()) {
@@ -84,60 +129,61 @@ public class AnnotationConvert {
     return finalJsonObj;
   }
 
-  /** 将分句标注数据装载到前端vo对象中 */
-  public static ExerciseAnnotationBratVO convert2ExerciseAnnotationBratVO(
-      UserExercise userExercise) {
-    JSONObject bratJson;
+  public static AnnotationBlockBratVO convert2AnnotationBlockBratVO(
+      AnnotationTaskBlock annotationTaskBlock) {
+    final JSONObject annotationJson;
+
     try {
-      bratJson =
+      annotationJson =
           convertAnnotation2BratFormat(
-              userExercise.getTerm(),
-              userExercise.getUserAnnotation(),
-              userExercise.getAnnotationType());
+              annotationTaskBlock.getText(),
+              annotationTaskBlock.getAnnotation(),
+              annotationTaskBlock.getAnnotationType().ordinal());
     } catch (Exception ex) {
       log.info(
           "Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}",
-          userExercise.getId(),
-          userExercise.getTerm(),
-          userExercise.getUserAnnotation(),
+          annotationTaskBlock.getId(),
+          annotationTaskBlock.getText(),
+          annotationTaskBlock.getAnnotation(),
           ex.getMessage());
-      throw new BratParseException("brat-parse-error", "异常标注id：" + userExercise.getId());
+      throw new InternalServerException("异常标注id：" + annotationTaskBlock.getId());
     }
-    ExerciseAnnotationBratVO exerciseAnnotationBratVO = new ExerciseAnnotationBratVO();
-    BeanUtils.copyProperties(userExercise, exerciseAnnotationBratVO);
-    exerciseAnnotationBratVO.setFinalJson(bratJson);
-    return exerciseAnnotationBratVO;
+
+    return new AnnotationBlockBratVO(
+        annotationTaskBlock.getId(),
+        annotationJson,
+        annotationTaskBlock.getAnnotationType().ordinal(),
+        annotationTaskBlock.getCreatedTime(),
+        annotationTaskBlock.getLastModified(),
+        annotationTaskBlock.getState().name(),
+        annotationTaskBlock.getText());
   }
 
   /** 将分词标注数据装载到前端vo对象中 */
-  public static AnnotationCombineBratVO convert2AnnotationCombineBratVO(
-      AnnotationCombine annotationCombine) {
-    JSONObject finalBratJson, reviewedBratJson;
+  public static AnnotationBratVO convert2AnnotationBratVO(AnnotationNew annotationNew) {
+    JSONObject finalBratJson;
     try {
       finalBratJson =
           convertAnnotation2BratFormat(
-              annotationCombine.getTerm(),
-              annotationCombine.getFinalAnnotation(),
-              annotationCombine.getAnnotationType());
-      reviewedBratJson =
-          convertAnnotation2BratFormat(
-              annotationCombine.getTerm(),
-              annotationCombine.getReviewedAnnotation(),
-              annotationCombine.getAnnotationType());
+              annotationNew.getTerm(),
+              annotationNew.getFinalAnnotation(),
+              annotationNew.getAnnotationType().ordinal());
     } catch (Exception ex) {
       log.info(
           "Brat装换异常,异常标注id：{},对应的文本：{},标注数据：{},异常信息内容：{}",
-          annotationCombine.getId(),
-          annotationCombine.getTerm(),
-          annotationCombine.getFinalAnnotation() + "--" + annotationCombine.getReviewedAnnotation(),
+          annotationNew.getId(),
+          annotationNew.getTerm(),
+          annotationNew.getFinalAnnotation(),
           ex.getMessage());
-      throw new BratParseException("brat-parse-error", "异常标注id：" + annotationCombine.getId());
+      throw new InternalServerException("异常标注id：" + annotationNew.getId());
     }
-    AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
-    BeanUtils.copyProperties(annotationCombine, annotationCombineBratVO);
-    annotationCombineBratVO.setFinalAnnotation(finalBratJson);
-    annotationCombineBratVO.setReviewedAnnotation(reviewedBratJson);
-    return annotationCombineBratVO;
+
+    AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+    BeanUtils.copyProperties(annotationNew, annotationBratVO);
+    annotationBratVO.setState(annotationNew.getState().name());
+    annotationBratVO.setFinalAnnotation(finalBratJson);
+    annotationBratVO.setState(annotationNew.getState().name());
+    return annotationBratVO;
   }
 
   public static String addUncomfirmed(String oldAnnotation) {
@@ -146,7 +192,6 @@ public class AnnotationConvert {
         oldAnnotation == null ? "" : oldAnnotation, document);
     document
         .getEntities()
-        .stream()
         .forEach(
             x -> {
               if (!x.getType().endsWith("-unconfirmed")) {
@@ -157,37 +202,32 @@ public class AnnotationConvert {
   }
 
   /** 批量将分词标注装载到前端vo对象中 */
-  public static List<AnnotationCombineBratVO> convert2AnnotationCombineBratVOList(
-      List<AnnotationCombine> annotationCombineList) {
-    List<AnnotationCombineBratVO> annotationBratVOList = new LinkedList<>();
-    if (annotationCombineList.size() > 0) {
-      for (AnnotationCombine annotation : annotationCombineList) {
-        JSONObject finalBratJson, reviewedBratJson;
+  public static List<AnnotationBratVO> convert2AnnotationCombineBratVOList(
+      List<AnnotationNew> annotationList) {
+    List<AnnotationBratVO> annotationBratVOList = new LinkedList<>();
+    if (annotationList.size() > 0) {
+      for (AnnotationNew annotation : annotationList) {
+        JSONObject finalBratJson;
         try {
-          reviewedBratJson =
-              convertAnnotation2BratFormat(
-                  annotation.getTerm(),
-                  annotation.getReviewedAnnotation(),
-                  annotation.getAnnotationType());
           finalBratJson =
               convertAnnotation2BratFormat(
                   annotation.getTerm(),
                   annotation.getFinalAnnotation(),
-                  annotation.getAnnotationType());
+                  annotation.getAnnotationType().ordinal());
         } catch (Exception ex) {
           log.info(
               "Brat装换异常,异常标注id：{},对应的文本：{},标注的数据：{},异常信息内容：{}",
               annotation.getId(),
               annotation.getTerm(),
-              annotation.getFinalAnnotation() + "--" + annotation.getReviewedAnnotation(),
+              annotation.getFinalAnnotation(),
               ex.getMessage());
-          throw new BratParseException("brat-parse-error", "异常标注id：" + annotation.getId());
+          throw new InternalServerException("异常标注id：" + annotation.getId());
         }
-        AnnotationCombineBratVO annotationCombineBratVO = new AnnotationCombineBratVO();
-        BeanUtils.copyProperties(annotation, annotationCombineBratVO);
-        annotationCombineBratVO.setFinalAnnotation(finalBratJson);
-        annotationCombineBratVO.setReviewedAnnotation(reviewedBratJson);
-        annotationBratVOList.add(annotationCombineBratVO);
+        AnnotationBratVO annotationBratVO = new AnnotationBratVO();
+        BeanUtils.copyProperties(annotation, annotationBratVO);
+        annotationBratVO.setState(annotation.getState().name());
+        annotationBratVO.setFinalAnnotation(finalBratJson);
+        annotationBratVOList.add(annotationBratVO);
       }
     }
     return annotationBratVOList;
@@ -261,17 +301,13 @@ public class AnnotationConvert {
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     List<RelationEntity> relationEntityList = annotationDocument.getRelationEntities();
     int num =
-        relationEntityList.size() > 0
-            ? relationEntityList
-                .stream()
-                .map(x -> x.getTag().substring(1, x.getTag().length()))
-                .map(s -> Integer.valueOf(s))
-                .max(Comparator.comparing(Function.identity()))
-                .get()
-                .intValue()
-            : 0;
-    num++;
-    return "R" + num;
+        relationEntityList
+            .stream()
+            .map(x -> x.getTag().substring(1, x.getTag().length()))
+            .map(Integer::valueOf)
+            .max(Comparator.comparing(Function.identity()))
+            .orElse(0);
+    return "R" + (num + 1);
   }
 
   public static String getEntityNewTag(String oldAnnotation) {
@@ -280,17 +316,13 @@ public class AnnotationConvert {
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     List<Entity> entityList = annotationDocument.getEntities();
     int num =
-        entityList.size() > 0
-            ? entityList
-                .stream()
-                .map(x -> x.getTag().substring(1, x.getTag().length()))
-                .map(s -> Integer.valueOf(s))
-                .max(Comparator.comparing(Function.identity()))
-                .get()
-                .intValue()
-            : 0;
-    num++;
-    return "T" + num;
+        entityList
+            .stream()
+            .map(x -> x.getTag().substring(1, x.getTag().length()))
+            .map(Integer::valueOf)
+            .max(Comparator.comparing(Function.identity()))
+            .orElse(0);
+    return "T" + (num + 1);
   }
 
   /** 分词标注新增标注，过算法api，特殊处理 */
@@ -321,10 +353,10 @@ public class AnnotationConvert {
   /** relation界面新增entities */
   public static String addRelationEntitiesAnnotation(
       String oldAnnotation, String type, int startPosition, int endPosition, String term) {
+    String newTag = getEntityNewTag(oldAnnotation);
     AnnotationDocument annotationDocument = new AnnotationDocument();
     AnnotationDocumentManipulator.parseBratAnnotation(
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
-    String newTag = getEntityNewTag(oldAnnotation);
     annotationDocument
         .getEntities()
         .add(new Entity(newTag, startPosition, endPosition, type, term));
@@ -339,33 +371,28 @@ public class AnnotationConvert {
     AnnotationDocumentManipulator.parseBratAnnotation(
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     if (annotationDocument
-            .getEntities()
-            .stream()
-            .filter(
-                x ->
-                    x.getTerm().equals(term)
-                        && x.getType().equals(type)
-                        && x.getStart() == startPosition
-                        && x.getEnd() == endPosition)
-            .count()
-        > 0) {
+        .getEntities()
+        .stream()
+        .anyMatch(
+            x ->
+                x.getTerm().equals(term)
+                    && x.getType().equals(type)
+                    && x.getStart() == startPosition
+                    && x.getEnd() == endPosition)) {
       return oldAnnotation;
     } else {
       if (annotationDocument
-              .getEntities()
-              .stream()
-              .filter(
-                  x ->
-                      x.getTerm().equals(term)
-                          && x.getStart() == startPosition
-                          && x.getEnd() == endPosition
-                          && x.getType().equals("Sentence-end-unconfirmed")
-                          && "Sentence-end".equals(type))
-              .count()
-          > 0) {
+          .getEntities()
+          .stream()
+          .anyMatch(
+              x ->
+                  x.getTerm().equals(term)
+                      && x.getStart() == startPosition
+                      && x.getEnd() == endPosition
+                      && x.getType().equals("Sentence-end-unconfirmed")
+                      && "Sentence-end".equals(type))) {
         annotationDocument
             .getEntities()
-            .stream()
             .forEach(
                 x -> {
                   if (x.getTerm().equals(term)
@@ -382,6 +409,36 @@ public class AnnotationConvert {
             .add(new Entity(newTag, startPosition, endPosition, type, term));
       }
     }
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+  }
+
+  public static String batchDeleteEntityAnnotation(String oldAnnotation, List<String> tags) {
+    if (tags == null || tags.size() == 0) {
+      return oldAnnotation;
+    }
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    annotationDocument.setEntities(
+        annotationDocument
+            .getEntities()
+            .stream()
+            .filter(entity -> !tags.contains(entity.getTag()))
+            .collect(Collectors.toList()));
+    annotationDocument.setRelationEntities(
+        annotationDocument
+            .getRelationEntities()
+            .stream()
+            .filter(
+                relationEntity ->
+                    tags.stream()
+                        .noneMatch(
+                            tag ->
+                                StringUtils.equalsAny(
+                                    tag,
+                                    relationEntity.getSourceTag(),
+                                    relationEntity.getTargetTag())))
+            .collect(Collectors.toList()));
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
@@ -419,7 +476,6 @@ public class AnnotationConvert {
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     annotationDocument
         .getEntities()
-        .stream()
         .forEach(
             x -> {
               if (x.getTag().equals(tag)) {
@@ -437,20 +493,16 @@ public class AnnotationConvert {
     AnnotationDocumentManipulator.parseBratAnnotation(
         oldAnnotation == null ? "" : oldAnnotation, annoDocument);
     if (annoDocument
-            .getRelationEntities()
-            .stream()
-            .filter(
-                x -> {
-                  if (x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag)) {
-                    return true;
-                  }
-                  if (x.getSourceTag().equals(targetTag) && x.getTargetTag().equals(sourceTag)) {
-                    return true;
-                  }
-                  return false;
-                })
-            .count()
-        > 0) {
+        .getRelationEntities()
+        .stream()
+        .anyMatch(
+            x -> {
+              if (x.getSourceTag().equals(sourceTag) && x.getTargetTag().equals(targetTag)) {
+                return true;
+              }
+
+              return x.getSourceTag().equals(targetTag) && x.getTargetTag().equals(sourceTag);
+            })) {
       return oldAnnotation;
     } else {
       annoDocument
@@ -458,6 +510,23 @@ public class AnnotationConvert {
           .add(new RelationEntity(maxTag, type, sourceTag, targetTag, "source", "target"));
       return AnnotationDocumentManipulator.toBratAnnotations(annoDocument);
     }
+  }
+
+  public static String batchDeleteRelationAnnotation(String oldAnnotation, List<String> rTags) {
+    if (rTags == null || rTags.size() == 0) {
+      return oldAnnotation;
+    }
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    List<RelationEntity> relationEntityList =
+        annotationDocument
+            .getRelationEntities()
+            .stream()
+            .filter(x -> !rTags.contains(x.getTag()))
+            .collect(Collectors.toList());
+    annotationDocument.setRelationEntities(relationEntityList);
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
   /** 删除relations数组中的标注 */
@@ -482,7 +551,6 @@ public class AnnotationConvert {
         oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
     annotationDocument
         .getRelationEntities()
-        .stream()
         .forEach(
             x -> {
               if (x.getTag().equals(rTag)) {
@@ -512,38 +580,6 @@ public class AnnotationConvert {
                                         .equals(relationEntityList.get(i).getTargetTag())
                                     && x.getType().equals(relationEntityList.get(i).getType())))
             .count();
-    if (count > 0) {
-      return true;
-    }
-    return false;
+    return count > 0;
   }
-
-  /** 更新relations数组中指定标注的sourceTag或者targetTag */
-  public static String updateRelationTag(
-      String oldAnnotation, String rTag, String sourceTag, String targetTag) {
-    AnnotationDocument annotationDocument = new AnnotationDocument();
-    AnnotationDocumentManipulator.parseBratAnnotation(
-        oldAnnotation == null ? oldAnnotation : "", annotationDocument);
-    // 加个判断，如果更新后的relation标签和之前的重复了，则不更新
-    annotationDocument
-        .getRelationEntities()
-        .stream()
-        .forEach(
-            x -> {
-              if (x.getTag().equals(rTag)) {
-                if (StringUtils.isNotBlank(targetTag)) {
-                  x.setTargetTag(targetTag);
-                }
-                if (StringUtils.isNotBlank(sourceTag)) {
-                  x.setSourceTag(sourceTag);
-                }
-              }
-            });
-    if (annotationDocument.getRelationEntities().size() > 1
-        && checkRelationRepetition(annotationDocument.getRelationEntities())) {
-      return oldAnnotation;
-    }
-    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
-  }
-  /** 后期加入events/triggers，另外新增相应的add/delete/update方法 todo */
 }

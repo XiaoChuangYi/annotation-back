@@ -10,3 +10,4 @@ example/
 /src/main/resources/application-dev.properties
 db.properties
 log4j2-test.xml
+/logs

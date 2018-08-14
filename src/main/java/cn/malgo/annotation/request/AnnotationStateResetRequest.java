@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AnnotationStateResetRequest {
-  private List<Integer> idList;
+  private List<Long> idList;
 }

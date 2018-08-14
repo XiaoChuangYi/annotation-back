@@ -1,9 +1,11 @@
 package cn.malgo.annotation.aop;
 
-import cn.malgo.annotation.exception.MalgoServiceException;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.utils.OpLoggerUtil;
+import cn.malgo.service.exception.MalgoServiceException;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -26,7 +28,8 @@ public class SystemArchitecture {
    * A join point is in the service layer if the method is defined in a type in the
    * com.xyz.someapp.service package or any sub-package under that.
    */
-  @Pointcut("within(cn.malgo.annotation.biz..*)")
+  @Pointcut(
+      "within(cn.malgo.annotation.biz..*) && !within(cn.malgo.annotation.biz.doc.ImportDocBiz)")
   public void inBusinessLayer() {}
 
   @Pointcut("inBusinessLayer()")
@@ -38,13 +41,17 @@ public class SystemArchitecture {
    * types are in sub-packages.
    */
   @Pointcut(
-      "execution(* cn.malgo.annotation.service.*.*(..)) && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..)) && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))&& !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
+      "execution(* cn.malgo.annotation.service.*.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))"
+          + " && !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
   private boolean isReadMethod(final String className) {
     return className.startsWith("List")
         || className.startsWith("Get")
         || className.startsWith("Search")
+        || className.startsWith("Import")
         || className.startsWith("Find");
   }
 
@@ -66,7 +73,7 @@ public class SystemArchitecture {
             args);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；请求参数：{}；", className, methodSignature.getName(), args);
       }
     }
@@ -77,39 +84,30 @@ public class SystemArchitecture {
     String className = joinPoint.getTarget().getClass().getName();
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     Object[] args = joinPoint.getArgs();
-    if (args.length == 3) { // businessLayer
-      int anId = 0;
+    if (args.length == 2) { // businessLayer
+      long anId = 0;
       if (args[0] instanceof BaseAnnotationRequest) {
         anId = ((BaseAnnotationRequest) args[0]).getId();
       }
       String[] methodArr = className.split("\\.");
-      if (retValue == null) {
-        OpLoggerUtil.info(
-            Integer.valueOf(args[1].toString()),
-            Integer.valueOf(args[2].toString()),
-            methodArr[methodArr.length - 1].replace("Biz", ""),
-            "",
-            anId);
-      } else {
-        OpLoggerUtil.info(
-            Integer.valueOf(args[1].toString()),
-            Integer.valueOf(args[2].toString()),
-            methodArr[methodArr.length - 1].replace("Biz", ""),
-            "success",
-            anId);
-      }
+      final long userId =
+          args[1] != null && (args[1] instanceof UserDetails) ? ((UserDetails) args[1]).getId() : 0;
+      OpLoggerUtil.info(
+          userId,
+          methodArr[methodArr.length - 1].replace("Biz", ""),
+          retValue == null ? "" : "success",
+          anId);
 
       if (!isReadMethod(methodArr[methodArr.length - 1])) {
         log.info(
-            "类名：{}；方法名：{}；用户ID：{}；角色ID：{}；返回结果：{}；",
+            "类名：{}；方法名：{}；用户ID：{}；返回结果：{}；",
             className,
             methodSignature.getName(),
-            Integer.valueOf(args[1].toString()),
-            Integer.valueOf(args[2].toString()),
+            userId,
             retValue);
       }
     } else {
-      if (!methodSignature.getName().startsWith("list")) {
+      if (!isReadMethod(StringUtils.substringAfterLast(className, "."))) {
         log.info("类名：{}；方法名：{}；返回结果：{}；", className, methodSignature.getName(), retValue);
       }
     }
@@ -119,15 +117,14 @@ public class SystemArchitecture {
   public void afterThrowMethod(JoinPoint joinPoint, MalgoServiceException ex) {
     String className = joinPoint.getTarget().getClass().getName();
     Object[] args = joinPoint.getArgs();
-    if (args.length == 3) {
-      int anId = 0;
+    if (args.length == 2) {
+      long anId = 0;
       if (args[0] instanceof BaseAnnotationRequest) {
         anId = ((BaseAnnotationRequest) args[0]).getId();
       }
       String[] methodArr = className.split("\\.");
       OpLoggerUtil.info(
-          Integer.valueOf(args[1].toString()),
-          Integer.valueOf(args[2].toString()),
+          args[1] != null && (args[1] instanceof UserDetails) ? ((UserDetails) args[1]).getId() : 0,
           methodArr[methodArr.length - 1].replace("Biz", ""),
           ex.getMessage(),
           anId);

@@ -1,24 +1,23 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
-import cn.malgo.annotation.biz.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
+import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
+import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.service.RelationOperateService;
-import java.util.Optional;
-import javax.annotation.Resource;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.exception.NotFoundException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-/** Created by cjl on 2018/6/14. */
+import javax.annotation.Resource;
+import java.util.Optional;
+
 public abstract class BaseRelationBiz<REQ extends BaseAnnotationRequest, AnnotationCombineBratVO>
     extends BaseBiz<REQ, AnnotationCombineBratVO> {
 
-  @Resource private AnnotationCombineRepository annotationCombineRepository;
+  @Resource private AnnotationRepository annotationRepository;
 
   @Qualifier("task-relation")
   @Resource
@@ -26,45 +25,22 @@ public abstract class BaseRelationBiz<REQ extends BaseAnnotationRequest, Annotat
 
   @Override
   protected void validateRequest(REQ baseAnnotationRequest) throws InvalidInputException {
-    if (baseAnnotationRequest == null) {
-      throw new InvalidInputException("invalid-request", "无效的请求");
-    }
     if (baseAnnotationRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }
   }
 
   @Override
-  protected void authorize(int userId, int role, REQ baseAnnotationRequest)
-      throws BusinessRuleException {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(baseAnnotationRequest.getId());
+  protected AnnotationCombineBratVO doBiz(final REQ req, final UserDetails user) {
+    Optional<AnnotationNew> optional = annotationRepository.findById(req.getId());
     if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      if (role > AnnotationRoleStateEnum.auditor.getRole()) { // 标注人员，练习人员，需要判断是否有权限操作这一条
-        if (annotationCombine.getAssignee() != userId) {
-          throw new BusinessRuleException("no-authorize-handle-current-record", "当前人员无权操作该条记录");
-        }
-      }
-      if (annotationCombine.getAnnotationType() != AnnotationTypeEnum.relation.getValue()) {
-        throw new BusinessRuleException("annotation-mismatching", "当前角色操作，标注类型不匹配");
-      }
+      final AnnotationNew annotationNew = optional.get();
+      BaseAnnotationBiz.checkPermission(annotationNew, user);
+      return doInternalProcess(relationOperateService, annotationNew, req);
     }
-  }
-
-  @Override
-  protected final AnnotationCombineBratVO doBiz(int userId, int role, REQ req) {
-    Optional<AnnotationCombine> optional = annotationCombineRepository.findById(req.getId());
-    if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      return doInternalProcess(role, relationOperateService, annotationCombine, req);
-    }
-    return null;
+    throw new NotFoundException("annotation-not-found", req.getId() + "未找到");
   }
 
   abstract AnnotationCombineBratVO doInternalProcess(
-      int role,
-      RelationOperateService relationOperateService,
-      AnnotationCombine annotationCombine,
-      REQ req);
+      RelationOperateService relationOperateService, AnnotationNew annotation, REQ req);
 }

@@ -1,27 +1,32 @@
 package cn.malgo.annotation.controller;
 
-import cn.malgo.annotation.biz.FindAnnotationErrorBiz;
-import cn.malgo.annotation.biz.FixAnnotationBiz;
-import cn.malgo.annotation.biz.SearchAnnotationBiz;
-import cn.malgo.annotation.dto.AnnotationErrorContext;
-import cn.malgo.annotation.dto.AnnotationWordError;
-import cn.malgo.annotation.dto.FixAnnotationResult;
-import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.biz.block.FindAnnotationErrorBiz;
+import cn.malgo.annotation.biz.block.FixAnnotationBiz;
+import cn.malgo.annotation.biz.block.SearchAnnotationBiz;
+import cn.malgo.annotation.dto.error.AnnotationErrorContext;
+import cn.malgo.annotation.dto.error.AnnotationWordError;
+import cn.malgo.annotation.dto.error.FixAnnotationResult;
+import cn.malgo.annotation.request.FindAnnotationErrorRequest;
 import cn.malgo.annotation.request.FixAnnotationErrorRequest;
-import cn.malgo.annotation.request.GetAnnotationErrorRequest;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
-import cn.malgo.annotation.result.Response;
 import cn.malgo.annotation.vo.AnnotationErrorVO;
 import cn.malgo.annotation.vo.FixAnnotationResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class AnnotationErrorController extends BaseController {
+
   private final FindAnnotationErrorBiz findAnnotationErrorBiz;
   private final FixAnnotationBiz fixAnnotationBiz;
   private final SearchAnnotationBiz searchAnnotationBiz;
@@ -37,28 +42,32 @@ public class AnnotationErrorController extends BaseController {
 
   @RequestMapping(value = "/annotation/errors", method = RequestMethod.GET)
   public Response<AnnotationErrorVO> getAnnotationErrors(
-      GetAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    final List<AnnotationWordError> errors =
-        findAnnotationErrorBiz.process(request, userAccount.getId(), userAccount.getRoleId());
+      FindAnnotationErrorRequest request,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    final List<AnnotationWordError> errors = findAnnotationErrorBiz.process(request, userAccount);
+    if (errors.size() != 0 && request.getErrorIndex() >= errors.size()) {
+      throw new BusinessRuleException("index-exceed", "索引超出数据范围");
+    }
     return new Response<>(
-        new AnnotationErrorVO(errors != null && errors.size() > 0 ? errors.subList(0, 1) : errors));
+        new AnnotationErrorVO(
+            errors != null && errors.size() > 0
+                ? errors.subList(request.getErrorIndex(), (request.getErrorIndex() + 1))
+                : errors,
+            errors.size()));
   }
 
   @RequestMapping(value = "/annotation/search", method = RequestMethod.GET)
   public Response<List<AnnotationErrorContext>> searchAnnotations(
       SearchAnnotationRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    return new Response<>(
-        searchAnnotationBiz.process(request, userAccount.getId(), userAccount.getRoleId()));
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(searchAnnotationBiz.process(request, userAccount));
   }
 
   @RequestMapping(value = "/annotation/fix-errors", method = RequestMethod.POST)
   public Response<FixAnnotationResponse> fixAnnotationError(
       @RequestBody FixAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserAccount userAccount) {
-    final List<FixAnnotationResult> results =
-        this.fixAnnotationBiz.process(request, userAccount.getId(), userAccount.getRoleId());
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    final List<FixAnnotationResult> results = this.fixAnnotationBiz.process(request, userAccount);
     return new Response<>(new FixAnnotationResponse(results));
   }
 }

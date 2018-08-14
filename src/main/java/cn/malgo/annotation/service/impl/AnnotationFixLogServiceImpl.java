@@ -21,7 +21,7 @@ public class AnnotationFixLogServiceImpl implements AnnotationFixLogService {
 
   @Override
   public AnnotationFixLog insertOrUpdate(
-      int annotationId, int start, int end, AnnotationFixLogStateEnum state) {
+      long annotationId, int start, int end, AnnotationFixLogStateEnum state) {
     AnnotationFixLog fixLog = new AnnotationFixLog();
     fixLog.setAnnotationId(annotationId);
     fixLog.setStart(start);
@@ -43,7 +43,7 @@ public class AnnotationFixLogServiceImpl implements AnnotationFixLogService {
           ex);
 
       fixLog = repository.findByAnnotationIdAndStartAndEnd(annotationId, start, end);
-      if (!state.equals(fixLog.getState())) {
+      if (!state.name().equals(fixLog.getState())) {
         fixLog.setState(state.name());
         fixLog = repository.save(fixLog);
       }

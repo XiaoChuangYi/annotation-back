@@ -1,45 +1,56 @@
 package cn.malgo.annotation.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
+import cn.malgo.service.entity.BaseEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/** Created by cjl on 2018/6/5. */
-@Data
+@Entity
+@Table(
+    name = "an_type",
+    indexes = {
+      @Index(columnList = "task_id"),
+      @Index(columnList = "type_code, task_id", unique = true)
+    })
+@EntityListeners(AuditingEntityListener.class)
+@ToString(callSuper = true)
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-public class AnType {
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private String id;
-
+public class AnType extends BaseEntity {
+  @Column(name = "type_name", nullable = false, length = 64)
   private String typeName;
+
+  @Column(name = "state", nullable = false, columnDefinition = "VARCHAR(64) default 'ENABLE'")
   private String state;
+
+  @Column(name = "type_code", nullable = false, length = 64)
   private String typeCode;
-  private String parentId;
+
+  @Column(name = "parent_id", nullable = false, columnDefinition = "BIGINT(20) default 0")
+  private Long parentId;
+
+  @Column(name = "has_children", nullable = false, columnDefinition = "int(11) default 0")
   private int hasChildren;
+
+  @Column(name = "task_id", nullable = false)
   private int taskId;
 
-  @CreatedDate
-  @Column(name = "gmt_created", updatable = false, nullable = false)
-  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-  private Date gmtCreated;
+  @Column(name = "labels")
+  private String labels;
 
-  @LastModifiedDate
-  @Column(name = "gmt_modified", nullable = false)
-  @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-  private Date gmtModified;
+  @Column(name = "bg_color", nullable = false, columnDefinition = "VARCHAR(255) default 'white'")
+  private String bgColor;
+
+  @Column(name = "fg_color", nullable = false, columnDefinition = "VARCHAR(255) default 'black'")
+  private String fgColor;
 }

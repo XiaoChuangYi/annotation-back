@@ -1,5 +1,6 @@
 package cn.malgo.annotation.request;
 
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CountAnnotationRequest {
-  private List<Integer> annotationTypes;
+  private List<AnnotationTypeEnum> annotationTypes;
 }

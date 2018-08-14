@@ -1,63 +1,108 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
-import cn.malgo.annotation.request.ListAnnotationCombineRequest;
+import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.annotation.service.AnnotationCombineService;
+import cn.malgo.annotation.service.AnnotationService;
+import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.annotation.vo.AnnotationCombineBratVO;
+import cn.malgo.annotation.vo.AnnotationBratVO;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
+import com.alibaba.fastjson.JSONObject;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/5/30. */
 @Component
 @Slf4j
-public class ListAnnotationBiz
-    extends BaseBiz<ListAnnotationCombineRequest, PageVO<AnnotationCombineBratVO>> {
+public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<AnnotationBratVO>> {
 
-  private final AnnotationCombineService annotationCombineService;
+  private final AnnotationService annotationService;
+  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
+  private final OutsourcingPriceCalculateService outsourcingPriceCalculateService;
 
   @Autowired
-  public ListAnnotationBiz(AnnotationCombineService annotationCombineService) {
-    this.annotationCombineService = annotationCombineService;
+  public ListAnnotationBiz(
+      final AnnotationService annotationService,
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final OutsourcingPriceCalculateService outsourcingPriceCalculateService) {
+    this.annotationService = annotationService;
+    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+    this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
   }
 
   @Override
-  protected void validateRequest(ListAnnotationCombineRequest listAnnotationCombineRequest)
-      throws InvalidInputException {
-    if (listAnnotationCombineRequest == null) {
+  protected void validateRequest(ListAnnotationRequest request) throws InvalidInputException {
+    if (request == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
-    if (listAnnotationCombineRequest.getPageIndex() < 1) {
+    if (request.getPageIndex() < 1) {
       throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
     }
-    if (listAnnotationCombineRequest.getPageSize() <= 0) {
+    if (request.getPageSize() <= 0) {
       throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
     }
   }
 
   @Override
-  protected void authorize(
-      int userId, int role, ListAnnotationCombineRequest listAnnotationCombineRequest)
-      throws BusinessRuleException {}
+  protected PageVO<AnnotationBratVO> doBiz(ListAnnotationRequest request, UserDetails user) {
+    request.setPageIndex(request.getPageIndex() - 1);
 
-  @Override
-  protected PageVO<AnnotationCombineBratVO> doBiz(
-      int userId, int role, ListAnnotationCombineRequest annotationCombineQuery) {
-    annotationCombineQuery.setPageIndex(annotationCombineQuery.getPageIndex() - 1);
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
-      annotationCombineQuery.setUserId(userId);
+    if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
+      request.setUserId(user.getId());
     }
-    Page page = annotationCombineService.listAnnotationCombine(annotationCombineQuery);
-    List<AnnotationCombineBratVO> annotationCombineBratVOList =
-        AnnotationConvert.convert2AnnotationCombineBratVOList(page.getContent());
-    PageVO pageVO = new PageVO(page, false);
-    pageVO.setDataList(annotationCombineBratVOList);
-    return pageVO;
+
+    final Page<AnnotationNew> page = annotationService.listAnnotationNew(request);
+
+    final List<AnnotationBratVO> annotationBratVOS =
+        page.getContent()
+            .parallelStream()
+            .map(
+                annotationNew -> {
+                  final AnnotationBratVO annotationBratVO =
+                      AnnotationConvert.convert2AnnotationBratVO(annotationNew);
+
+                  annotationBratVO.setEstimatePrice(
+                      outsourcingPriceCalculateService.getCurrentRecordEstimatedPrice(
+                          annotationNew));
+                  return annotationBratVO;
+                })
+            .collect(Collectors.toList());
+    if (request.isIncludeReviewedAnnotation()) {
+      final Map<Long, JSONObject> blocks =
+          annotationTaskBlockRepository
+              .findAllById(
+                  page.getContent()
+                      .stream()
+                      .map(AnnotationNew::getBlockId)
+                      .collect(Collectors.toSet()))
+              .stream()
+              .collect(
+                  Collectors.toMap(
+                      AnnotationTaskBlock::getId,
+                      block ->
+                          AnnotationConvert.convertAnnotation2BratFormat(
+                              block.getText(),
+                              block.getAnnotation(),
+                              block.getAnnotationType().ordinal())));
+
+      annotationBratVOS.forEach(
+          vo -> {
+            if (blocks.containsKey(vo.getBlockId())) {
+              vo.setReviewedAnnotation(blocks.get(vo.getBlockId()));
+            }
+          });
+    }
+
+    return new PageVO<>(page.getTotalElements(), annotationBratVOS);
   }
 }

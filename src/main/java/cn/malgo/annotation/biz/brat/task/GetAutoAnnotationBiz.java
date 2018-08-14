@@ -1,79 +1,70 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
+import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
+import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
-import cn.malgo.annotation.dto.UpdateAnnotationAlgorithm;
-import cn.malgo.annotation.entity.AnnotationCombine;
+import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.AlgorithmServiceException;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InternalServiceException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AlgorithmAnnotationVO;
-import java.util.Arrays;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.exception.DependencyServiceException;
+import cn.malgo.service.exception.InternalServerException;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Created by cjl on 2018/5/31. */
 @Component
 @Slf4j
 public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, AlgorithmAnnotationVO> {
 
   private final AlgorithmApiService algorithmApiService;
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationRepository annotationRepository;
 
   @Autowired
   public GetAutoAnnotationBiz(
-      AlgorithmApiService algorithmApiService,
-      AnnotationCombineRepository annotationCombineRepository) {
+      AlgorithmApiService algorithmApiService, AnnotationRepository annotationRepository) {
     this.algorithmApiService = algorithmApiService;
-    this.annotationCombineRepository = annotationCombineRepository;
+    this.annotationRepository = annotationRepository;
   }
 
   @Override
-  protected void validateRequest(GetAutoAnnotationRequest getAutoAnnotationRequest)
-      throws InvalidInputException {
-    if (getAutoAnnotationRequest.getId() <= 0) {
+  protected void validateRequest(GetAutoAnnotationRequest request) throws InvalidInputException {
+    if (request.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的标注id");
     }
   }
 
-  @Override
-  protected void authorize(int userId, int role, GetAutoAnnotationRequest getAutoAnnotationRequest)
-      throws BusinessRuleException {
-    // 1管理员, 2审核, 3标注, 4练习
-    if (role <= 0 || role > 4) {
-      throw new InternalServiceException("invalid-role", role + " is not a valid role");
-    }
+  private UpdateAnnotationAlgorithmRequest getUpdateAnnotationAlgorithm(
+      AnnotationNew annotationNew) {
+    UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
+        new UpdateAnnotationAlgorithmRequest();
+    updateAnnotationAlgorithmRequest.setId(annotationNew.getId());
+    updateAnnotationAlgorithmRequest.setText(annotationNew.getTerm());
+    updateAnnotationAlgorithmRequest.setNewTerms(new ArrayList<>());
+    updateAnnotationAlgorithmRequest.setManualAnnotation(annotationNew.getManualAnnotation());
+    return updateAnnotationAlgorithmRequest;
   }
 
-  private UpdateAnnotationAlgorithm getUpdateAnnotationAlgorithm(
-      AnnotationCombine annotationCombine) {
-    UpdateAnnotationAlgorithm updateAnnotationAlgorithm = new UpdateAnnotationAlgorithm();
-    updateAnnotationAlgorithm.setId(annotationCombine.getId());
-    updateAnnotationAlgorithm.setText(annotationCombine.getTerm());
-    updateAnnotationAlgorithm.setNewTerms(Arrays.asList());
-    updateAnnotationAlgorithm.setManualAnnotation(annotationCombine.getManualAnnotation());
-    return updateAnnotationAlgorithm;
-  }
-
-  private AlgorithmAnnotationVO getWordAnnotationVO(int role, AnnotationCombine annotation) {
+  private AlgorithmAnnotationVO getWordAnnotationVO(AnnotationNew annotation) {
     if (annotation.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
-      final UpdateAnnotationAlgorithm updateAnnotationAlgorithm =
+      final UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
           getUpdateAnnotationAlgorithm(annotation);
       final List<AutoAnnotation> finalAnnotationList =
-          algorithmApiService.listRecombineAnnotationThroughAlgorithm(updateAnnotationAlgorithm);
+          algorithmApiService.listRecombineAnnotationThroughAlgorithm(
+              updateAnnotationAlgorithmRequest);
       String autoAnnotation = null;
       if (finalAnnotationList != null
           && finalAnnotationList.size() > 0
@@ -81,96 +72,59 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         autoAnnotation = finalAnnotationList.get(0).getAnnotation();
         annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
         annotation.setManualAnnotation("");
-        annotationCombineRepository.save(annotation);
+        annotationRepository.save(annotation);
       } else {
         log.warn("调用算法后台病历分词预标注接口: {}, {}", annotation.getId(), autoAnnotation);
-        throw new AlgorithmServiceException("algorithm-response-error", "调用算法后台病历分词预标注接口，返回异常null");
+        throw new DependencyServiceException("调用算法后台病历分词预标注接口，返回异常null");
       }
     }
-    return new AlgorithmAnnotationVO(
-        "", AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
+    return new AlgorithmAnnotationVO("", AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
 
-  private AlgorithmAnnotationVO getSentenceAnnotationVO(int role, AnnotationCombine annotation) {
+  private AlgorithmAnnotationVO getSentenceAnnotationVO(AnnotationNew annotation) {
     // TODO 过后端自己的分句算法
     return new AlgorithmAnnotationVO(
-        annotation.getFinalAnnotation(),
-        AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
+        annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
 
-  private AlgorithmAnnotationVO getRelationAnnotationVO(int role, AnnotationCombine annotation) {
+  private AlgorithmAnnotationVO getRelationAnnotationVO(AnnotationNew annotation) {
     // TODO 过算法的关联算法
     return new AlgorithmAnnotationVO(
-        annotation.getFinalAnnotation(),
-        AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
+        annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
 
   @Override
   protected AlgorithmAnnotationVO doBiz(
-      int userId, int role, GetAutoAnnotationRequest getAutoAnnotationRequest) {
-    final Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(getAutoAnnotationRequest.getId());
+      final GetAutoAnnotationRequest request, final UserDetails user) {
+    final Optional<AnnotationNew> optional = annotationRepository.findById(request.getId());
 
     if (optional.isPresent()) {
-      AnnotationCombine annotation = optional.get();
-      if (role == AnnotationRoleStateEnum.admin.getRole()
-          && !StringUtils.equalsAny(
-              annotation.getState(),
-              AnnotationCombineStateEnum.errorPass.name(),
-              AnnotationCombineStateEnum.innerAnnotation.name(),
-              AnnotationCombineStateEnum.examinePass.name())) {
-        throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被管理员继续标注");
-      }
+      final AnnotationNew annotation = optional.get();
+      BaseAnnotationBiz.checkPermission(annotation, user);
+      switch (annotation.getState()) {
+        case PRE_ANNOTATION:
+        case ANNOTATION_PROCESSING:
+          if (!user.hasPermission(Permissions.ANNOTATE)) {
+            throw new BusinessRuleException("permission-denied", "无权限");
+          }
 
-      if (role == AnnotationRoleStateEnum.auditor.getRole()
-          && !StringUtils.equalsAny(
-              annotation.getState(),
-              AnnotationCombineStateEnum.preExamine.name(),
-              AnnotationCombineStateEnum.abandon.name())) {
-        throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被审核人员继续标注");
-      }
+          switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType().ordinal())) {
+            case wordPos:
+              // 分词
+              return getWordAnnotationVO(annotation);
 
-      if (role >= AnnotationRoleStateEnum.labelStaff.getRole()
-          && !StringUtils.equalsAny(
-              annotation.getState(),
-              AnnotationCombineStateEnum.preAnnotation.name(),
-              AnnotationCombineStateEnum.annotationProcessing.name())) {
-        throw new BusinessRuleException("invalid-state", annotation.getState() + "不应该被标注人员继续标注");
-      }
+            case sentence:
+              return getSentenceAnnotationVO(annotation);
 
-      if (role == AnnotationRoleStateEnum.admin.getRole()) {
-        // 管理员永远返回已审核结果
-        return new AlgorithmAnnotationVO(
-            annotation.getReviewedAnnotation(),
-            AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
-      }
+            case relation:
+              return getRelationAnnotationVO(annotation);
+          }
 
-      if (role == AnnotationRoleStateEnum.auditor.getRole()
-          && StringUtils.equalsAny(
-              annotation.getState(),
-              AnnotationCombineStateEnum.preExamine.name(),
-              AnnotationCombineStateEnum.abandon.name())) {
-
-        // 审核人员，而且已经被标注过，直接返回最后的标注结果
-        return new AlgorithmAnnotationVO(
-            annotation.getAnnotationType() == 0
-                ? annotation.getReviewedAnnotation()
-                : annotation.getFinalAnnotation(),
-            AnnotationConvert.convert2AnnotationCombineBratVO(annotation));
-      }
-      switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType())) {
-        case wordPos:
-          // 分词
-          return getWordAnnotationVO(role, annotation);
-
-        case sentence:
-          return getSentenceAnnotationVO(role, annotation);
-
-        case relation:
-          return getRelationAnnotationVO(role, annotation);
+        default:
+          throw new InternalServerException("未知状态");
       }
     }
 
-    throw new InvalidInputException("invalid-id", getAutoAnnotationRequest.getId() + "不存在");
+    throw new InvalidInputException("invalid-id", request.getId() + "不存在");
   }
 }

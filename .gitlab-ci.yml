@@ -10,25 +10,27 @@
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker pull $PULL_REPO"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker stop $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker rm -f $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
-    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always -p $BIND_IP:9001:9001 --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m 768m --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always -p $BIND_ADDRESS:9001 --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m $MAX_MEMORY --env=MAX_MEMORY=$MAX_MEMORY --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
 
 stages:
   - package
   - build
   - deploy_test
+  - deploy_beta
   - deploy_prod
 
 variables:
-  DOCKER_DRIVER: overlay
   REPO_NAME: annotation-service
   PULL_REPO: registry-vpc.cn-hangzhou.aliyuncs.com/malgo/$REPO_NAME:$CI_COMMIT_SHA
   PUSH_REPO: $REGISTRY_SERVER/malgo/$REPO_NAME:$CI_COMMIT_SHA
-  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "-s /gitlab/.m2/settings.xml --batch-mode -U"
+  MAVEN_OPTS: "-Dmaven.repo.local=/gitlab/.m2/repository"
 
 maven-build:
   image: maven:3-jdk-8
   stage: package
+  tags:
+    - backend
   script:
     - mvn $MAVEN_CLI_OPTS package
     - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
@@ -37,15 +39,16 @@ maven-build:
     paths:
       - target/*.jar
       - target/.version
-  cache:
-    paths:
-      - .m2/repository/
+  only:
+    - develop
+    - master
+    - /^feature\/.*$/
 
 docker-build:
   stage: build
   image: docker:latest
-  services:
-   - docker:dind
+  tags:
+    - dind
   allow_failure: false
   before_script:
     - docker info
@@ -56,30 +59,52 @@ docker-build:
   only:
     - develop
     - master
+    - /^feature\/.*$/
 
 deploy-test:
   stage: deploy_test
+  tags:
+    - deploy
   environment:
     name: test
     url: 121.196.212.109
   when: on_success
   only:
     - develop
-    - master
   variables:
     GIT_STRATEGY: none
-    BIND_IP: 172.16.209.199
+    BIND_ADDRESS: 172.16.209.199:9002
+    MAX_MEMORY: 768m
+  <<: *deploy_definition
+
+deploy-beta:
+  stage: deploy_beta
+  tags:
+    - deploy
+  environment:
+    name: beta
+    url: 118.31.10.105
+  only:
+    - /^feature\/.*$/
+  variables:
+    GIT_STRATEGY: none
+    BIND_ADDRESS: 172.16.209.197:9003
+    MAX_MEMORY: 768m
   <<: *deploy_definition
 
 deploy-prod:
   stage: deploy_prod
+  tags:
+    - deploy
   environment:
     name: prod
-    url: 47.96.0.236
+    url: 118.31.10.105
   when: manual
   only:
+    - develop
     - master
   variables:
     GIT_STRATEGY: none
-    BIND_IP: 172.16.209.198
+    BIND_ADDRESS: 172.16.209.197:9002
+    MAX_MEMORY: 2048m
   <<: *deploy_definition

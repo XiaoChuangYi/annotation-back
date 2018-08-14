@@ -1,50 +1,48 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.UserAccount;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.ModifyPasswordRequest;
-import java.util.Optional;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.exception.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/5/30. */
-@Component
-public class ModifyUserPasswordBiz extends BaseBiz<ModifyPasswordRequest, UserAccount> {
+import java.util.Optional;
 
+@Component
+@RequirePermission(Permissions.ADMIN)
+public class ModifyUserPasswordBiz extends BaseBiz<ModifyPasswordRequest, UserAccount> {
   private final UserAccountRepository userAccountRepository;
 
-  @Autowired
   public ModifyUserPasswordBiz(UserAccountRepository userAccountRepository) {
     this.userAccountRepository = userAccountRepository;
   }
 
   @Override
-  protected void validateRequest(ModifyPasswordRequest modifyPasswordRequest)
-      throws InvalidInputException {
-    if (modifyPasswordRequest.getUserId() <= 0) {
+  protected void validateRequest(ModifyPasswordRequest request) throws InvalidInputException {
+    if (request.getUserId() <= 0) {
       throw new InvalidInputException("invalid-user-id", "无效的用户Id");
     }
-    if (StringUtils.isBlank(modifyPasswordRequest.getPassword())) {
+
+    if (StringUtils.isBlank(request.getPassword())) {
       throw new InvalidInputException("invalid-password", "密码为空");
     }
   }
 
   @Override
-  protected void authorize(int userId, int role, ModifyPasswordRequest modifyPasswordRequest)
-      throws BusinessRuleException {}
+  protected UserAccount doBiz(ModifyPasswordRequest request) {
+    final Optional<UserAccount> optional = userAccountRepository.findById(request.getUserId());
 
-  @Override
-  protected UserAccount doBiz(ModifyPasswordRequest modifyPasswordRequest) {
-    Optional<UserAccount> optional =
-        userAccountRepository.findById(modifyPasswordRequest.getUserId());
     if (optional.isPresent()) {
-      optional.get().setPassword(modifyPasswordRequest.getPassword());
-      return userAccountRepository.save(optional.get());
-    } else {
-      return optional.get();
+      final UserAccount userAccount = optional.get();
+      userAccount.setPassword(request.getPassword());
+      return userAccountRepository.save(userAccount);
     }
+
+    throw new NotFoundException("user-not-found", request.getUserId() + "不存在");
   }
 }

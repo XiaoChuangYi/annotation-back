@@ -1,10 +1,12 @@
 package cn.malgo.annotation.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/6/1. */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AnnotationStateRequest {
-  private int id;
-  private String state;
+  private long id;
 }

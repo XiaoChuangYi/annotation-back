@@ -1,31 +1,47 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.biz.BaseBiz;
-import cn.malgo.annotation.dao.AnnotationCombineRepository;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
-import cn.malgo.annotation.enums.AnnotationRoleStateEnum;
+import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.exception.BusinessRuleException;
-import cn.malgo.annotation.exception.InvalidInputException;
 import cn.malgo.annotation.request.AnnotationStateRequest;
+import cn.malgo.annotation.service.AnnotationBlockService;
+import cn.malgo.annotation.service.AnnotationExamineService;
+import cn.malgo.annotation.service.AnnotationFactory;
+import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
-import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.service.annotation.RequirePermission;
+import cn.malgo.service.biz.TransactionalBiz;
+import cn.malgo.service.exception.BusinessRuleException;
+import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/** Created by cjl on 2018/6/3. */
 @Component
-public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object> {
+@RequirePermission(Permissions.EXAMINE)
+public class AnnotationExamineBiz extends TransactionalBiz<AnnotationStateRequest, Object> {
 
-  private final AnnotationCombineRepository annotationCombineRepository;
+  private final AnnotationBlockService annotationBlockService;
+  private final AnnotationRepository annotationRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
+  private final AnnotationExamineService annotationExamineService;
+  private final CheckRelationEntityService checkRelationEntityService;
+  private final AnnotationFactory annotationFactory;
 
   public AnnotationExamineBiz(
-      AnnotationCombineRepository annotationCombineRepository,
-      ExtractAddAtomicTermService extractAddAtomicTermService) {
-    this.annotationCombineRepository = annotationCombineRepository;
+      final AnnotationBlockService annotationBlockService,
+      final AnnotationRepository annotationRepository,
+      final ExtractAddAtomicTermService extractAddAtomicTermService,
+      final AnnotationExamineService annotationExamineService,
+      final CheckRelationEntityService checkRelationEntityService,
+      final AnnotationFactory annotationFactory) {
+    this.annotationBlockService = annotationBlockService;
+    this.annotationRepository = annotationRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
+    this.annotationExamineService = annotationExamineService;
+    this.checkRelationEntityService = checkRelationEntityService;
+    this.annotationFactory = annotationFactory;
   }
 
   @Override
@@ -34,45 +50,35 @@ public class AnnotationExamineBiz extends BaseBiz<AnnotationStateRequest, Object
     if (annotationStateRequest == null) {
       throw new InvalidInputException("invalid-request", "无效的请求");
     }
+
     if (annotationStateRequest.getId() <= 0) {
       throw new InvalidInputException("invalid-id", "无效的id");
     }
   }
 
   @Override
-  protected void authorize(int userId, int role, AnnotationStateRequest annotationStateRequest)
-      throws BusinessRuleException {
-    if (role > AnnotationRoleStateEnum.auditor.getRole()) {
-      throw new BusinessRuleException("no-privilege-handle-current-record", "当前用户无权限进行该操作!");
-    }
-  }
+  protected Object doBiz(AnnotationStateRequest annotationStateRequest, UserDetails user) {
+    Optional<AnnotationNew> optional =
+        annotationRepository.findById(annotationStateRequest.getId());
 
-  @Override
-  protected Object doBiz(AnnotationStateRequest annotationStateRequest) {
-    Optional<AnnotationCombine> optional =
-        annotationCombineRepository.findById(annotationStateRequest.getId());
     if (optional.isPresent()) {
-      AnnotationCombine annotationCombine = optional.get();
-      // 入库
-      if (annotationCombine.getAnnotationType() == AnnotationTypeEnum.wordPos.getValue()) { // 分词，入库
-        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationCombine);
+      final AnnotationNew annotationNew = optional.get();
+      if (annotationNew.getAnnotationType() == AnnotationTypeEnum.relation
+          && checkRelationEntityService.hasIsolatedAnchor(
+              annotationFactory.create(annotationNew))) {
+        throw new BusinessRuleException("has-isolated-anchor-type", "含有孤立锚点，无法提交！");
       }
-      // state handle
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-        boolean changed =
-            AnnotationConvert.compareAnnotation(
-                annotationCombine.getFinalAnnotation(), annotationCombine.getReviewedAnnotation());
-        if (changed) { // 相同
-          annotationCombine.setState(AnnotationCombineStateEnum.examinePass.name());
-        } else { // 不同
-          annotationCombine.setState(AnnotationCombineStateEnum.errorPass.name());
-        }
+      if (annotationNew.getAnnotationType() == AnnotationTypeEnum.wordPos) {
+        // 原子词入库
+        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationNew);
       }
-      if (annotationCombine.getState().equals(AnnotationCombineStateEnum.abandon.name())) {
-        annotationCombine.setState(AnnotationCombineStateEnum.innerAnnotation.name());
+      if (annotationExamineService.singleAnnotationExamine(annotationNew).intValue() > 0) {
+        throw new BusinessRuleException("invalid-state", annotationNew.getState() + "状态不可以被审核提交");
       }
-      annotationCombineRepository.save(annotationCombine);
+      // 更新block
+      annotationBlockService.saveAnnotation(annotationRepository.save(annotationNew));
     }
+
     return null;
   }
 }

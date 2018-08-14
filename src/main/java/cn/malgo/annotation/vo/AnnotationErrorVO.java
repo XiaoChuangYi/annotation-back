@@ -1,6 +1,6 @@
 package cn.malgo.annotation.vo;
 
-import cn.malgo.annotation.dto.AnnotationWordError;
+import cn.malgo.annotation.dto.error.AnnotationWordError;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,4 +15,5 @@ import java.util.List;
 @AllArgsConstructor
 public class AnnotationErrorVO {
   private List<AnnotationWordError> errors;
+  private int total;
 }

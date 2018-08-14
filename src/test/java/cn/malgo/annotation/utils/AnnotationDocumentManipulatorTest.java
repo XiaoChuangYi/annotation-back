@@ -2,7 +2,7 @@ package cn.malgo.annotation.utils;
 
 import cn.malgo.core.definition.Entity;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import cn.malgo.annotation.utils.entity.RelationEntity;
+import cn.malgo.core.definition.RelationEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;

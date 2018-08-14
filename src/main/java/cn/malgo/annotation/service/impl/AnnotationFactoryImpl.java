@@ -1,50 +1,57 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.Annotation;
-import cn.malgo.annotation.entity.AnnotationCombine;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
-import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AnnotationFactoryImpl implements AnnotationFactory {
+
   @Override
-  public Annotation create(final AnnotationCombine annotationCombine) {
-    if (annotationCombine == null) {
+  public Annotation create(final AnnotationTaskBlock block) {
+    if (block == null) {
       throw new NullPointerException("create annotation get null");
     }
 
-    if (annotationCombine.getState().equals(AnnotationCombineStateEnum.preExamine.name())) {
-      return new AnnotationFinal(annotationCombine);
+    switch (block.getState()) {
+      case ANNOTATED:
+      case PRE_CLEAN:
+      case FINISHED:
+        return new AnnotationBlock(block);
     }
 
-    if (StringUtils.equalsAny(
-        annotationCombine.getState(),
-        AnnotationCombineStateEnum.examinePass.name(),
-        AnnotationCombineStateEnum.errorPass.name())) {
-      return new AnnotationReviewed(annotationCombine);
+    throw new IllegalArgumentException("标注状态错误: " + block.getState());
+  }
+
+  @Override
+  public Annotation create(AnnotationNew annotation) {
+    if (annotation == null) {
+      throw new NullPointerException("create annotation get null");
     }
 
-    throw new IllegalArgumentException(
-        "annotation factory get annotation with state: " + annotationCombine.getState());
+    switch (annotation.getState()) {
+      case UN_DISTRIBUTED:
+      case ANNOTATION_PROCESSING:
+      case PRE_ANNOTATION:
+      case SUBMITTED:
+      case PRE_CLEAN:
+      case CLEANED:
+        return new AnnotationNewFinal(annotation);
+    }
+
+    throw new IllegalArgumentException("标注状态错误: " + annotation.getState());
   }
 
   abstract static class BaseAnnotation implements Annotation {
-    @NonNull protected final AnnotationCombine annotationCombine;
+
     private AnnotationDocument document;
 
-    BaseAnnotation(final AnnotationCombine annotationCombine) {
-      this.annotationCombine = annotationCombine;
-    }
-
-    @Override
-    public int getId() {
-      return annotationCombine.getId();
-    }
+    protected abstract String getText();
 
     @Override
     public void setAnnotation(String annotation) {
@@ -54,7 +61,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     @Override
     public AnnotationDocument getDocument() {
       if (document == null) {
-        document = new AnnotationDocument(annotationCombine.getTerm());
+        document = new AnnotationDocument(getText());
         AnnotationDocumentManipulator.parseBratAnnotation(getAnnotation(), document);
       }
 
@@ -63,41 +70,78 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
 
     @Override
     public String toString() {
-      return this.getClass() + "@" + annotationCombine.getId();
+      return this.getClass() + "@" + getId();
     }
   }
 
-  static class AnnotationFinal extends BaseAnnotation {
-    AnnotationFinal(final AnnotationCombine annotationCombine) {
-      super(annotationCombine);
+  static class AnnotationNewFinal extends BaseAnnotation {
+
+    private final AnnotationNew annotationNew;
+
+    public AnnotationNewFinal(final AnnotationNew annotationNew) {
+      this.annotationNew = annotationNew;
+    }
+
+    @Override
+    public long getId() {
+      return 0;
+    }
+
+    @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return null;
     }
 
     @Override
     public String getAnnotation() {
-      return annotationCombine.getFinalAnnotation();
+      return annotationNew.getFinalAnnotation();
+    }
+
+    @Override
+    protected String getText() {
+      return null;
     }
 
     @Override
     public void setAnnotation(String annotation) {
       super.setAnnotation(annotation);
-      annotationCombine.setFinalAnnotation(annotation);
+      annotationNew.setFinalAnnotation(annotation);
     }
   }
 
-  static class AnnotationReviewed extends BaseAnnotation {
-    AnnotationReviewed(AnnotationCombine annotationCombine) {
-      super(annotationCombine);
+  static class AnnotationBlock extends BaseAnnotation {
+
+    private final AnnotationTaskBlock block;
+
+    AnnotationBlock(final AnnotationTaskBlock block) {
+      this.block = block;
+    }
+
+    @Override
+    protected String getText() {
+      return block.getText();
+    }
+
+    @Override
+    public long getId() {
+      return block.getId();
+    }
+
+    @Override
+    public AnnotationTypeEnum getAnnotationType() {
+      return block.getAnnotationType();
     }
 
     @Override
     public String getAnnotation() {
-      return annotationCombine.getReviewedAnnotation();
+      return block.getAnnotation();
     }
 
     @Override
-    public void setAnnotation(String annotation) {
+    public void setAnnotation(final String annotation) {
       super.setAnnotation(annotation);
-      annotationCombine.setReviewedAnnotation(annotation);
+
+      block.setAnnotation(annotation);
     }
   }
 }

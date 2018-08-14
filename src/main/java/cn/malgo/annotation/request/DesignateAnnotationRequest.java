@@ -1,16 +1,15 @@
 package cn.malgo.annotation.request;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/5/30. */
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DesignateAnnotationRequest {
-  private int userId;
-  private List<Integer> idList;
-  private int task; // 0为任务标注，1为练习标注
+  private long userId;
+  private List<Long> idList;
 }
