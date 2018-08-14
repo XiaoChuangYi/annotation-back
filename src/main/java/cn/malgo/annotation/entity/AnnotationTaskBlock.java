@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
     indexes = {
       @Index(name = "idx_annotation_type", columnList = "annotation_type"),
       @Index(name = "idx_state", columnList = "state"),
+      @Index(columnList = "annotation_type,state"),
       @Index(columnList = "ner_fresh_rate"),
     })
 @AllArgsConstructor
