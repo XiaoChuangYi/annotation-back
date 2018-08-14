@@ -71,7 +71,6 @@ deploy-test:
   when: on_success
   only:
     - develop
-    - master
   variables:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.199:9002
