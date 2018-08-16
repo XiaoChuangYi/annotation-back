@@ -4,9 +4,9 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.entity.TaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -19,26 +19,20 @@ public interface AnnotationTaskRepository
 
     if (taskBlocks.size() == 0) {
       return task;
-    }
-
-    final AnnotationTaskState state =
-        task.getTaskBlocks()
-            .stream()
-            .min(Comparator.comparing(taskBlock -> taskBlock.getBlock().getState()))
-            .get()
-            .getBlock()
-            .getState();
-
-    if (state != task.getState()) {
-      if (state == AnnotationTaskState.ANNOTATED || state == AnnotationTaskState.PRE_CLEAN) {
+    } else {
+      if (task.getState() == AnnotationTaskState.CREATED) {
+        task.setState(AnnotationTaskState.DOING);
+      } else if (StringUtils.equalsAny(
+          task.getState().name(),
+          AnnotationTaskState.DOING.name(),
+          AnnotationTaskState.ANNOTATED.name(),
+          AnnotationTaskState.PRE_CLEAN.name())) {
         task.setState(AnnotationTaskState.DOING);
       } else {
-        task.setState(state);
+        task.setState(AnnotationTaskState.FINISHED);
       }
       return save(task);
     }
-
-    return task;
   }
 
   List<AnnotationTask> findByStateNotIn(List<AnnotationTaskState> states);

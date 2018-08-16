@@ -3,6 +3,7 @@ package cn.malgo.annotation.vo;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.math.BigDecimal;
 import lombok.Data;
 
@@ -29,8 +30,12 @@ public class AnnotationBratVO {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date expirationTime;
 
-  private double precisionRate;
-  private double recallRate;
+  @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
+  private Double precisionRate;
+
+  @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
+  private Double recallRate;
+
   private long deleteToken;
 
   private BigDecimal estimatePrice;

@@ -89,7 +89,7 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
             annotationTaskBlockRepository.save(block);
           });
       terminateAnnotationNew(annotationTask, blockSet);
-      annotationSummaryService.updateTaskSummary(annotationTask);
+      annotationSummaryService.updateTaskSummary(annotationTask.getId());
     }
     return null;
   }
@@ -115,6 +115,7 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
                       || annotationNew.getState() == AnnotationStateEnum.PRE_ANNOTATION
                       || annotationNew.getState() == AnnotationStateEnum.ANNOTATION_PROCESSING) {
                     annotationNew.setDeleteToken(new Date().getTime());
+                    annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
                   }
                   return annotationNew;
                 })

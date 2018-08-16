@@ -58,16 +58,12 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
   @Override
   public BigDecimal getPersonalPaymentByTaskRank(long taskId, long assigneeId) {
     final List<AnnotationNew> annotationNews =
-        annotationRepository.findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
-            taskId,
-            assigneeId,
-            Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
+        annotationRepository.findAllByTaskIdAndAssigneeAndStateIn(
+            taskId, assigneeId, Arrays.asList(AnnotationStateEnum.CLEANED));
     final int taskTotalEfficientWordNum =
         annotationNews
             .parallelStream()
-            .mapToInt(
-                annotationNew ->
-                    getEfficientWordNum(annotationNew.getPrecisionRate(), annotationNew.getTerm()))
+            .mapToInt(annotationNew -> getEfficientWordNum(annotationNew, annotationNew.getTerm()))
             .sum();
     return getTaskPersonalPayment(taskTotalEfficientWordNum);
   }
@@ -100,18 +96,29 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
     }
   }
 
-  private int getEfficientWordNum(double precisionRate, String term) {
+  /** f1计算公式：f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0 */
+  private int getEfficientWordNum(AnnotationNew annotationNew, String term) {
     int efficientWordNum = 0;
-    if (precisionRate >= 0.80d && precisionRate < 0.85d) {
+    double f1;
+    if ((annotationNew.getPrecisionRate() + annotationNew.getRecallRate()) == 0) {
+      f1 = 0d;
+    } else {
+      f1 =
+          2
+              * annotationNew.getPrecisionRate()
+              * annotationNew.getRecallRate()
+              / (annotationNew.getPrecisionRate() + annotationNew.getRecallRate());
+    }
+    if (f1 >= 0.80d && f1 < 0.85d) {
       efficientWordNum += term.length() * 0.7;
     }
-    if (precisionRate >= 0.85d && precisionRate < 0.90d) {
+    if (f1 >= 0.85d && f1 < 0.90d) {
       efficientWordNum += term.length() * 0.8;
     }
-    if (precisionRate >= 0.90d && precisionRate < 0.95d) {
+    if (f1 >= 0.90d && f1 < 0.95d) {
       efficientWordNum += term.length() * 0.9;
     }
-    if (precisionRate >= 0.95d) {
+    if (f1 >= 0.95d) {
       efficientWordNum += term.length();
     }
     return efficientWordNum;
@@ -136,8 +143,8 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
   }
 
   @Override
-  public BigDecimal testTaskPersonalPayment(double precisionRate, String term) {
-    return getTaskPersonalPayment(getEfficientWordNum(precisionRate, term));
+  public BigDecimal testTaskPersonalPayment(AnnotationNew annotationNew, String term) {
+    return getTaskPersonalPayment(getEfficientWordNum(annotationNew, term));
   }
 
   private int getPriceRankByWordNum(int totalAnnotationWordNum) {

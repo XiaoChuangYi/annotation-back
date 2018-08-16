@@ -23,6 +23,12 @@ public interface AnnotationRepository
 
   List<AnnotationNew> findAllByStateIn(List<AnnotationStateEnum> annotationStateEnums, Sort sort);
 
+  @Query(
+      value =
+          "select annotation_new.* from annotation_new left join annotation_task_block on annotation_new.block_id = annotation_task_block.id where annotation_new.state = 'PRE_CLEAN' and annotation_new.delete_token = 0 and annotation_task_block.state in ('PRE_CLEAN', 'FINISHED');",
+      nativeQuery = true)
+  List<AnnotationNew> findAllPreClean();
+
   List<AnnotationNew> findAllByTaskIdEqualsAndBlockIdIn(long taskId, List<Long> blockIds);
 
   List<AnnotationNew> findAllByBlockIdIn(Set<Long> blockIds);
@@ -32,21 +38,21 @@ public interface AnnotationRepository
       nativeQuery = true)
   List<AnnotationSummary> findByStateGroup();
 
-  Integer countAllByAnnotationTypeInAndStateEquals(
+  Integer countAllByAnnotationTypeInAndState(
       List<AnnotationTypeEnum> annotationTypes, AnnotationStateEnum state);
 
   Integer countAllByStateIn(AnnotationStateEnum state);
 
   AnnotationNew findByTermEquals(String text);
 
-  Set<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEquals(long taskId, long assigneeId);
-
-  List<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+  List<AnnotationNew> findAllByTaskIdAndAssigneeAndStateIn(
       long taskId, long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
 
-  List<AnnotationNew> findByTaskIdEqualsAndStateIn(
+  List<AnnotationNew> findByTaskIdAndStateIn(
       long taskId, List<AnnotationStateEnum> annotationStateEnums);
 
-  List<AnnotationNew> findByAssigneeEqualsAndStateIn(
+  List<AnnotationNew> findByTaskId(long taskId);
+
+  List<AnnotationNew> findByAssigneeAndStateIn(
       long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
 }

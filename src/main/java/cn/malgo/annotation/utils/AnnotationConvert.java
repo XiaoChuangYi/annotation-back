@@ -182,7 +182,8 @@ public class AnnotationConvert {
     BeanUtils.copyProperties(annotationNew, annotationBratVO);
     annotationBratVO.setState(annotationNew.getState().name());
     annotationBratVO.setFinalAnnotation(finalBratJson);
-    annotationBratVO.setState(annotationNew.getState().name());
+    annotationBratVO.setPrecisionRate(annotationNew.getPrecisionRate());
+    annotationBratVO.setRecallRate(annotationNew.getRecallRate());
     return annotationBratVO;
   }
 

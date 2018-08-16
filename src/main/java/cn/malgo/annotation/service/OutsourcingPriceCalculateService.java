@@ -11,5 +11,5 @@ public interface OutsourcingPriceCalculateService {
 
   BigDecimal getUnitPriceByWordNum(int totalWordNum);
 
-  BigDecimal testTaskPersonalPayment(double precisionRate, String term);
+  BigDecimal testTaskPersonalPayment(AnnotationNew annotationNew, String term);
 }

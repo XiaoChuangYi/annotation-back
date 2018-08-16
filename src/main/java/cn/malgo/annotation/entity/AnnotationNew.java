@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -30,8 +31,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
       @Index(columnList = "assignee"),
       @Index(columnList = "state"),
       @Index(columnList = "delete_token"),
+      @Index(columnList = "state,delete_token"),
       @Index(columnList = "block_id"),
+      @Index(columnList = "task_id"),
+      @Index(columnList = "task_id,annotation_type"),
+      @Index(columnList = "task_id,assignee,annotation_type"),
     })
+@Where(clause = "delete_token = 0")
 @Getter
 @Setter
 @ToString(callSuper = true)
@@ -78,10 +84,10 @@ public class AnnotationNew extends BaseEntity {
   private Date expirationTime;
 
   @Column(name = "precision_rate")
-  private double precisionRate = 0;
+  private Double precisionRate;
 
   @Column(name = "recall_rate")
-  private double recallRate = 0;
+  private Double recallRate;
 
   @Column(name = "delete_token")
   private long deleteToken = 0;

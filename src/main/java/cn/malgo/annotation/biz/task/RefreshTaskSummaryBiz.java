@@ -39,7 +39,7 @@ public class RefreshTaskSummaryBiz
     if (optional.isPresent()) {
       final AnnotationTask annotationTask = optional.get();
       return new AnnotationTaskVO(
-          taskRepository.save(annotationSummaryService.updateTaskSummary(annotationTask)));
+          annotationSummaryService.updateTaskSummary(annotationTask.getId()));
     }
 
     throw new NotFoundException("task-not-found", request.getTaskId() + "未找到");

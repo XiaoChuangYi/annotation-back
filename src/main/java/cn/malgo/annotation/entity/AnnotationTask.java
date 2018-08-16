@@ -3,9 +3,7 @@ package cn.malgo.annotation.entity;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONType;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -93,15 +91,15 @@ public class AnnotationTask extends BaseEntity {
   @Setter
   private int restWordNum = 0; // 批次剩余标注总字数
 
-  @Column(name = "precision_rate", nullable = false, columnDefinition = "double default 0")
+  @Column(name = "precision_rate")
   @Getter
   @Setter
-  private double precisionRate = 0; // 批次准确率
+  private Double precisionRate; // 批次准确率
 
-  @Column(name = "recall_rate", nullable = false, columnDefinition = "double default 0")
+  @Column(name = "recall_rate")
   @Getter
   @Setter
-  private double recallRate = 0; // 批次召回率
+  private Double recallRate; // 批次召回率
 
   public TaskBlock addBlock(final AnnotationTaskBlock block) {
     final TaskBlock taskBlock = new TaskBlock(this, block);

@@ -14,6 +14,8 @@ import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -133,7 +135,11 @@ public class AnnotationEstimateQueryBiz
   public static class CurrentTaskOverviewPair {
     private final int taskTotalBranch;
     private final int taskTotalWordNum;
-    private final double taskPreciseRate;
-    private final double taskRecallRate;
+
+    @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
+    private final Double taskPreciseRate;
+
+    @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
+    private final Double taskRecallRate;
   }
 }

@@ -37,42 +37,6 @@ public class PersonalTaskSummaryRecordBiz
     this.outsourcingPriceCalculateService = outsourcingPriceCalculateService;
   }
 
-  @Override
-  protected void validateRequest(PersonalTaskSummaryRecordRequest request)
-      throws InvalidInputException {
-    if (request.getPageIndex() < 1) {
-      throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
-    }
-    if (request.getPageSize() <= 0) {
-      throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
-    }
-  }
-
-  @Override
-  protected PageVO<PersonalTaskRankSummaryVO> doBiz(
-      PersonalTaskSummaryRecordRequest request, UserDetails user) {
-    final Page<PersonalAnnotatedTotalWordNumRecord> page =
-        personalAnnotatedEstimatePriceRepository.findAll(
-            queryCondition(request),
-            PageRequest.of(request.getPageIndex() - 1, request.getPageSize()));
-    final PageVO<PersonalTaskRankSummaryVO> pageVO = new PageVO(page, false);
-    pageVO.setDataList(
-        page.getContent()
-            .parallelStream()
-            .map(
-                current -> {
-                  PersonalTaskRankSummaryVO personalTaskRankSummaryVO =
-                      new PersonalTaskRankSummaryVO();
-                  BeanUtils.copyProperties(current, personalTaskRankSummaryVO);
-                  personalTaskRankSummaryVO.setPayment(
-                      outsourcingPriceCalculateService.getPersonalPaymentByTaskRank(
-                          current.getTaskId(), current.getAssigneeId()));
-                  return personalTaskRankSummaryVO;
-                })
-            .collect(Collectors.toList()));
-    return pageVO;
-  }
-
   private static Specification<PersonalAnnotatedTotalWordNumRecord> queryCondition(
       PersonalTaskSummaryRecordRequest param) {
     return (Specification<PersonalAnnotatedTotalWordNumRecord>)
@@ -110,5 +74,54 @@ public class PersonalTaskSummaryRecordBiz
       default:
         return Pair.of(0d, 0d);
     }
+  }
+
+  @Override
+  protected void validateRequest(PersonalTaskSummaryRecordRequest request)
+      throws InvalidInputException {
+    if (request.getPageIndex() < 1) {
+      throw new InvalidInputException("invalid-page-index", "pageIndex应该大于等于1");
+    }
+    if (request.getPageSize() <= 0) {
+      throw new InvalidInputException("invalid-page-size", "pageSize应该大于等于0");
+    }
+  }
+
+  @Override
+  protected PageVO<PersonalTaskRankSummaryVO> doBiz(
+      PersonalTaskSummaryRecordRequest request, UserDetails user) {
+    final Page<PersonalAnnotatedTotalWordNumRecord> page =
+        personalAnnotatedEstimatePriceRepository.findAll(
+            queryCondition(request),
+            PageRequest.of(request.getPageIndex() - 1, request.getPageSize()));
+    final PageVO<PersonalTaskRankSummaryVO> pageVO = new PageVO(page, false);
+    pageVO.setDataList(
+        page.getContent()
+            .parallelStream()
+            .map(
+                current -> {
+                  PersonalTaskRankSummaryVO personalTaskRankSummaryVO =
+                      new PersonalTaskRankSummaryVO();
+                  BeanUtils.copyProperties(current, personalTaskRankSummaryVO);
+
+                  if (current.getPrecisionRate() == null || current.getRecallRate() == null) {
+                    personalTaskRankSummaryVO.setPrecisionRate(null);
+                  } else if (current.getPrecisionRate() + current.getRecallRate() == 0) {
+                    personalTaskRankSummaryVO.setPrecisionRate(0d);
+                  } else {
+                    personalTaskRankSummaryVO.setPrecisionRate(
+                        2
+                            * current.getPrecisionRate()
+                            * current.getRecallRate()
+                            / (current.getPrecisionRate() + current.getRecallRate()));
+                  }
+
+                  personalTaskRankSummaryVO.setPayment(
+                      outsourcingPriceCalculateService.getPersonalPaymentByTaskRank(
+                          current.getTaskId(), current.getAssigneeId()));
+                  return personalTaskRankSummaryVO;
+                })
+            .collect(Collectors.toList()));
+    return pageVO;
   }
 }
