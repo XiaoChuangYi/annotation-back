@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
 import cn.malgo.annotation.service.AnnotationFactory;
+import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.service.annotation.RequirePermission;
@@ -24,12 +25,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequirePermission(Permissions.ANNOTATE)
 public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object> {
-
   private final AnnotationRepository annotationRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
   private final CheckRelationEntityService checkRelationEntityService;
   private final AnnotationFactory annotationFactory;
   private final AnnotationBlockService annotationBlockService;
+  private final AnnotationSummaryService annotationSummaryService;
 
   @Autowired
   public AnnotationCommitBiz(
@@ -37,12 +38,14 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       final ExtractAddAtomicTermService extractAddAtomicTermService,
       final CheckRelationEntityService checkRelationEntityService,
       final AnnotationFactory annotationFactory,
-      final AnnotationBlockService annotationBlockService) {
+      final AnnotationBlockService annotationBlockService,
+      final AnnotationSummaryService annotationSummaryService) {
     this.annotationRepository = annotationRepository;
     this.extractAddAtomicTermService = extractAddAtomicTermService;
     this.checkRelationEntityService = checkRelationEntityService;
     this.annotationFactory = annotationFactory;
     this.annotationBlockService = annotationBlockService;
+    this.annotationSummaryService = annotationSummaryService;
   }
 
   @Override
@@ -85,6 +88,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
         extractAddAtomicTermService.extractAndAddAtomicTerm(annotationNew);
       }
       annotationBlockService.saveAnnotation(annotationRepository.save(annotationNew));
+      annotationSummaryService.updateTaskSummary(annotationNew.getTaskId());
       return null;
     }
     throw new NotFoundException("annotation-not-found", request.getId() + "不存在");

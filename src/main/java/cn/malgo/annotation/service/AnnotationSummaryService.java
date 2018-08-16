@@ -4,7 +4,7 @@ import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
 
 public interface AnnotationSummaryService {
-  AnnotationTask updateTaskSummary(AnnotationTask task);
+  AnnotationTask updateTaskSummary(long id);
 
   void updateTaskPersonalSummary(AnnotationTask task);
 

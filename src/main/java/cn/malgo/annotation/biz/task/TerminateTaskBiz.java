@@ -89,7 +89,7 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
             annotationTaskBlockRepository.save(block);
           });
       terminateAnnotationNew(annotationTask, blockSet);
-      annotationSummaryService.updateTaskSummary(annotationTask);
+      annotationSummaryService.updateTaskSummary(annotationTask.getId());
     }
     return null;
   }

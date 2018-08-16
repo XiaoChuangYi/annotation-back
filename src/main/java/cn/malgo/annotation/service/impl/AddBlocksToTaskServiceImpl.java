@@ -66,6 +66,6 @@ public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
         });
     annotationRepository.saveAll(annotationNews);
     return annotationTaskRepository.updateState(
-        annotationSummaryService.updateTaskSummary(annotationTask));
+        annotationSummaryService.updateTaskSummary(annotationTask.getId()));
   }
 }

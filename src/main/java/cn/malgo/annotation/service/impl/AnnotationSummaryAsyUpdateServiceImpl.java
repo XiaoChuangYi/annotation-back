@@ -1,8 +1,8 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationNew;
@@ -40,6 +40,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationRepository annotationRepository;
   private final AnnotationFactory annotationFactory;
+  private final AnnotationTaskRepository taskRepository;
   private final PersonalAnnotatedTotalWordNumRecordRepository
       personalAnnotatedEstimatePriceRepository;
 
@@ -47,11 +48,13 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationFactory annotationFactory,
       final AnnotationRepository annotationRepository,
+      final AnnotationTaskRepository taskRepository,
       final PersonalAnnotatedTotalWordNumRecordRepository
           personalAnnotatedEstimatePriceRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationRepository = annotationRepository;
     this.annotationFactory = annotationFactory;
+    this.taskRepository = taskRepository;
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
   }
 
@@ -184,8 +187,8 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
   @NotNull
   @Override
-  public AnnotationTask updateTaskSummary(final AnnotationTask annotationTask) {
-    return refreshTaskNumbers(annotationTask);
+  public AnnotationTask updateTaskSummary(long id) {
+    return taskRepository.save(refreshTaskNumbers(taskRepository.getOne(id)));
 
     //    final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
     //    final Map<Long, Annotation> blockMap =
@@ -301,13 +304,13 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
   private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {
     final Set<AnnotationTaskBlock> blocks = getBlocks(annotationTask.getId());
-    final Map<Long, Annotation> blockMap =
-        getBlockMap(
-            blocks,
-            Arrays.asList(
-                AnnotationTaskState.ANNOTATED,
-                AnnotationTaskState.PRE_CLEAN,
-                AnnotationTaskState.FINISHED));
+    //    final Map<Long, Annotation> blockMap =
+    //        getBlockMap(
+    //            blocks,
+    //            Arrays.asList(
+    //                AnnotationTaskState.ANNOTATED,
+    //                AnnotationTaskState.PRE_CLEAN,
+    //                AnnotationTaskState.FINISHED));
 
     annotationTask.setTotalBranchNum(
         getOverviewBranchNum(blocks, AnnotationEvaluateStateEnum.TOTAL));
@@ -324,32 +327,52 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
     annotationTask.setRestWordNum(getOverviewWordNum(blocks, AnnotationEvaluateStateEnum.REST));
 
-    final Pair<Double, Double> result =
-        getInConformity(annotationRepository.findAllByBlockIdIn(blockMap.keySet()), blockMap);
+    if (annotationTask.getState() == AnnotationTaskState.FINISHED) {
+      final List<AnnotationNew> annotations =
+          annotationRepository.findByTaskId(annotationTask.getId());
 
-    annotationTask.setPrecisionRate(result.getLeft());
-    annotationTask.setRecallRate(result.getRight());
+      if (annotations
+          .stream()
+          .anyMatch(
+              annotation ->
+                  annotation.getState() != AnnotationStateEnum.CLEANED
+                      && annotation.getState() != AnnotationStateEnum.PRE_CLEAN)) {
+        throw new IllegalStateException("invalid annotation state: " + annotationTask.getId());
+      }
+
+      if (checkStateIsCleaned(annotations)) {
+        annotationTask.setPrecisionRate(
+            annotations
+                .stream()
+                .mapToDouble(AnnotationNew::getPrecisionRate)
+                .average()
+                .getAsDouble());
+
+        annotationTask.setRecallRate(
+            annotations.stream().mapToDouble(AnnotationNew::getRecallRate).average().getAsDouble());
+      }
+    }
 
     return annotationTask;
   }
 
-  private Pair<Double, Double> getInConformity(
-      final List<AnnotationNew> annotationNews, final Map<Long, Annotation> blockMap) {
-    final List<Pair<Double, Double>> values =
-        annotationNews
-            .stream()
-            .filter(this::isAnnotated)
-            .map(
-                annotation ->
-                    getInConformity(
-                        this.annotationFactory.create(annotation),
-                        blockMap.get(annotation.getBlockId())))
-            .collect(Collectors.toList());
-
-    return Pair.of(
-        getAverageOrNull(values.stream().mapToDouble(Pair::getLeft)),
-        getAverageOrNull(values.stream().mapToDouble(Pair::getRight)));
-  }
+  //  private Pair<Double, Double> getInConformity(
+  //      final List<AnnotationNew> annotationNews, final Map<Long, Annotation> blockMap) {
+  //    final List<Pair<Double, Double>> values =
+  //        annotationNews
+  //            .stream()
+  //            .filter(this::isAnnotated)
+  //            .map(
+  //                annotation ->
+  //                    getInConformity(
+  //                        this.annotationFactory.create(annotation),
+  //                        blockMap.get(annotation.getBlockId())))
+  //            .collect(Collectors.toList());
+  //
+  //    return Pair.of(
+  //        getAverageOrNull(values.stream().mapToDouble(Pair::getLeft)),
+  //        getAverageOrNull(values.stream().mapToDouble(Pair::getRight)));
+  //  }
 
   private Double getAverageOrNull(DoubleStream stream) {
     final double average = stream.average().orElse(Double.NaN);
@@ -359,16 +382,16 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     return average;
   }
 
-  private Map<Long, Annotation> getBlockMap(List<AnnotationNew> annotationNews) {
-    return annotationTaskBlockRepository
-        .findAllById(
-            annotationNews
-                .parallelStream()
-                .map(annotationNew -> annotationNew.getBlockId())
-                .collect(Collectors.toList()))
-        .parallelStream()
-        .collect(Collectors.toMap(AnnotationTaskBlock::getId, this.annotationFactory::create));
-  }
+  //  private Map<Long, Annotation> getBlockMap(List<AnnotationNew> annotationNews) {
+  //    return annotationTaskBlockRepository
+  //        .findAllById(
+  //            annotationNews
+  //                .parallelStream()
+  //                .map(annotationNew -> annotationNew.getBlockId())
+  //                .collect(Collectors.toList()))
+  //        .parallelStream()
+  //        .collect(Collectors.toMap(AnnotationTaskBlock::getId, this.annotationFactory::create));
+  //  }
 
   private Map<Long, Annotation> getBlockMap(
       Set<AnnotationTaskBlock> blocks, List<AnnotationTaskState> annotationTaskStates) {

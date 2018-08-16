@@ -62,7 +62,7 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
         .forEach(
             task -> {
               annotationSummaryService.updateTaskPersonalSummary(task);
-              annotationSummaryService.updateTaskSummary(task);
+              annotationSummaryService.updateTaskSummary(task.getId());
             });
 
     // annotationTaskBlockRepository.copyDataToRelease();
