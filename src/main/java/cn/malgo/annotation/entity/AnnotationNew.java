@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
       @Index(columnList = "assignee"),
       @Index(columnList = "state"),
       @Index(columnList = "delete_token"),
+      @Index(columnList = "state,delete_token"),
       @Index(columnList = "block_id"),
       @Index(columnList = "task_id"),
       @Index(columnList = "task_id,annotation_type"),

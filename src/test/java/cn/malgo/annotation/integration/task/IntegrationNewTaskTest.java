@@ -24,7 +24,6 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
-import cn.malgo.annotation.request.CleanOutBlockRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
@@ -92,8 +91,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.PRE_CLEAN);
 
     TestTransaction.start();
-    cleanOutBlockBiz.process(
-        new CleanOutBlockRequest(taskId), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+    cleanOutBlockBiz.process(null, UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 

@@ -131,31 +131,22 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   }
 
   @Override
-  public void updateAnnotationPrecisionAndRecallRate(AnnotationTask task) {
-    final List<AnnotationNew> annotationNews =
-        annotationRepository.findByTaskIdAndStateIn(
-            task.getId(), Collections.singletonList(AnnotationStateEnum.PRE_CLEAN));
-    final Map<Long, Annotation> blockMap = getBlockMap(annotationNews);
-    annotationNews
-        .stream()
-        .filter(
-            annotationNew ->
-                annotationNew.getState() == AnnotationStateEnum.PRE_CLEAN
-                    && annotationNew.getPrecisionRate() == null
-                    && annotationNew.getRecallRate() == null)
-        .map(
-            annotationNew -> {
-              Pair<Double, Double> pair =
-                  getInConformity(
-                      this.annotationFactory.create(annotationNew),
-                      blockMap.getOrDefault(annotationNew.getBlockId(), null));
-              annotationNew.setPrecisionRate(pair.getLeft());
-              annotationNew.setRecallRate(pair.getRight());
-              annotationNew.setState(AnnotationStateEnum.CLEANED);
-              return annotationNew;
-            })
-        .collect(Collectors.toList());
-    annotationRepository.saveAll(annotationNews);
+  public void updateAnnotationPrecisionAndRecallRate(AnnotationNew annotation) {
+    if (annotation.getState() != AnnotationStateEnum.PRE_CLEAN
+        || annotation.getPrecisionRate() != null
+        || annotation.getRecallRate() != null) {
+      throw new IllegalStateException("invalid annotation state");
+    }
+
+    final Pair<Double, Double> pair =
+        getInConformity(
+            this.annotationFactory.create(annotation),
+            this.annotationFactory.create(
+                annotationTaskBlockRepository.getOne(annotation.getBlockId())));
+
+    annotation.setPrecisionRate(pair.getLeft());
+    annotation.setRecallRate(pair.getRight());
+    annotation.setState(AnnotationStateEnum.CLEANED);
   }
 
   private List<Long> getBlockIds(
@@ -163,7 +154,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     return annotationTaskBlockRepository
         .findByStateInAndTaskBlocks_Task_Id(annotationTaskStates, task.getId())
         .stream()
-        .map(annotationTaskBlock -> annotationTaskBlock.getId())
+        .map(BaseEntity::getId)
         .collect(Collectors.toList());
   }
 

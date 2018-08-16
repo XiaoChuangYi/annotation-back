@@ -16,7 +16,6 @@ import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.request.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.BatchDeleteEntityMultipleRequest;
-import cn.malgo.annotation.request.CleanOutBlockRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
@@ -183,10 +182,9 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 清洗指定批次的语料 */
-  @RequestMapping(value = "/clean-out-block", method = RequestMethod.GET)
+  @RequestMapping(value = "/clean-out-block", method = RequestMethod.POST)
   public Response cleanOutBlock(
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
-      CleanOutBlockRequest request) {
-    return new Response<>(cleanOutBlockBiz.process(request, userAccount));
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(cleanOutBlockBiz.process(null, userAccount));
   }
 }
