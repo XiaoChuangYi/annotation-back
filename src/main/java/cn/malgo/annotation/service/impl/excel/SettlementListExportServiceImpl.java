@@ -58,27 +58,43 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
       setExcelColumn(sheet);
       final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
+
       IntStream.range(0, annotationNews.size())
           .forEach(
               k -> {
                 final AnnotationNew annotationNew = annotationNews.get(k);
-                sheet.setColumnView(k, 16);
+                sheet.setColumnView(k + 1, 16);
                 try {
-                  sheet.setRowView(k, 350);
+                  sheet.setRowView(k + 1, 350);
                 } catch (RowsExceededException e) {
                   e.printStackTrace();
                 }
                 try {
                   sheet.addCell(
-                      new Label(0, k, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
+                      new Label(
+                          0, k + 1, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
                   sheet.addCell(
                       new Label(
-                          1, k, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
-                  sheet.addCell(new Label(2, k, String.valueOf(annotationNew.getId())));
-                  sheet.addCell(new Label(3, k, getCurrentAnnotatedWordNum(annotationNew) + "字"));
-                  sheet.addCell(new Label(4, k, annotationNew.getPrecisionRate() * 100 + "%"));
-                  sheet.addCell(new Label(5, k, "每100字2元"));
-                  sheet.addCell(new Label(6, k, getCurrentRecordTotalPrice(annotationNew) + "元"));
+                          1, k + 1, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
+                  sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
+                  sheet.addCell(
+                      new Label(3, k + 1, getCurrentAnnotatedWordNum(annotationNew) + "字"));
+
+                  sheet.addCell(
+                      new Label(
+                          4,
+                          k + 1,
+                          new BigDecimal(annotationNew.getPrecisionRate())
+                                      .setScale(2, BigDecimal.ROUND_HALF_UP)
+                                      .doubleValue()
+                                  * 100
+                              + "%"));
+
+                  sheet.addCell(new Label(5, k + 1, "每100字2元"));
+
+                  sheet.addCell(
+                      new Label(6, k + 1, getCurrentRecordTotalPrice(annotationNew) + "元"));
+
                 } catch (WriteException e) {
                   e.printStackTrace();
                 }
@@ -174,6 +190,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     return BigDecimal.valueOf(2)
         .multiply(BigDecimal.valueOf(annotationNew.getPrecisionRate()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
-        .divide(BigDecimal.valueOf(100));
+        .divide(BigDecimal.valueOf(100))
+        .setScale(2, BigDecimal.ROUND_HALF_UP);
   }
 }
