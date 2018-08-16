@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
@@ -22,14 +23,17 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationRepository annotationRepository;
   private final AnnotationSummaryService annotationSummaryService;
+  private final AnnotationTaskRepository taskRepository;
 
   public CleanOutBlockBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationRepository annotationRepository,
-      final AnnotationSummaryService annotationSummaryService) {
+      final AnnotationSummaryService annotationSummaryService,
+      final AnnotationTaskRepository taskRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationRepository = annotationRepository;
     this.annotationSummaryService = annotationSummaryService;
+    this.taskRepository = taskRepository;
   }
 
   @Override
@@ -52,6 +56,14 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
             .stream()
             .peek(block -> block.setState(AnnotationTaskState.FINISHED))
             .collect(Collectors.toList()));
+
+    taskRepository
+        .findByStateIn(Collections.singletonList(AnnotationTaskState.FINISHED))
+        .forEach(
+            task -> {
+              annotationSummaryService.updateTaskPersonalSummary(task);
+              annotationSummaryService.updateTaskSummary(task);
+            });
 
     // annotationTaskBlockRepository.copyDataToRelease();
     return null;

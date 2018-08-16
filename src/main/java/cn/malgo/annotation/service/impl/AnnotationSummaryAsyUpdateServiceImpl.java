@@ -31,7 +31,6 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -62,46 +61,59 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
   }
 
-  @NotNull
   @Override
   public void updateTaskPersonalSummary(final AnnotationTask task) {
-    annotationRepository
-        .findByTaskIdAndStateIn(
-            task.getId(), Collections.singletonList(AnnotationStateEnum.CLEANED))
+    if (task.getState() != AnnotationTaskState.FINISHED) {
+      throw new IllegalStateException("invalid task state: " + task.getId());
+    }
+
+    final List<AnnotationNew> annotations = annotationRepository.findByTaskId(task.getId());
+    if (annotations
+        .stream()
+        .anyMatch(
+            annotation ->
+                annotation.getState() != AnnotationStateEnum.CLEANED
+                    && annotation.getState() != AnnotationStateEnum.PRE_CLEAN)) {
+      throw new IllegalStateException("invalid annotation state: " + task.getId());
+    }
+
+    annotations
         .parallelStream()
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
         .entrySet()
-        .parallelStream()
         .forEach(
             entry -> {
               PersonalAnnotatedTotalWordNumRecord current =
                   personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
                       task.getId(), entry.getKey());
               final int annotatedTotalWordNum = getAnnotatedTermsLength(entry.getValue());
-              final int totalWordNum =
-                  getUnSubmitTermsLength(task.getId(), entry.getKey()) + annotatedTotalWordNum;
-              Pair<Double, Double> result =
-                  getInConformity(entry.getValue(), getBlockMap(entry.getValue()));
-              if (checkStateIsCleaned(entry.getValue())) {
-                result = new ImmutablePair<>(null, null);
-              }
+
               if (current == null) {
-                current =
-                    new PersonalAnnotatedTotalWordNumRecord(
-                        task.getId(),
-                        entry.getKey(),
-                        annotatedTotalWordNum,
-                        totalWordNum,
-                        result.getLeft(),
-                        result.getRight());
-              } else {
-                if (current.getPrecisionRate() == null || current.getRecallRate() == null) {
-                  current.setTotalWordNum(totalWordNum);
-                  current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
-                  current.setPrecisionRate(result.getLeft());
-                  current.setRecallRate(result.getRight());
-                }
+                current = new PersonalAnnotatedTotalWordNumRecord();
+                current.setTaskId(task.getId());
+                current.setAssigneeId(entry.getKey());
               }
+
+              current.setTotalWordNum(annotatedTotalWordNum);
+              current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
+
+              if (checkStateIsCleaned(entry.getValue())) {
+                current.setPrecisionRate(
+                    entry
+                        .getValue()
+                        .stream()
+                        .mapToDouble(AnnotationNew::getPrecisionRate)
+                        .average()
+                        .getAsDouble());
+                current.setRecallRate(
+                    entry
+                        .getValue()
+                        .stream()
+                        .mapToDouble(AnnotationNew::getRecallRate)
+                        .average()
+                        .getAsDouble());
+              }
+
               personalAnnotatedEstimatePriceRepository.save(current);
             });
   }

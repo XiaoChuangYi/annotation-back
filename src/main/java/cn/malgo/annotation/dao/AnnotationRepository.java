@@ -51,6 +51,8 @@ public interface AnnotationRepository
   List<AnnotationNew> findByTaskIdAndStateIn(
       long taskId, List<AnnotationStateEnum> annotationStateEnums);
 
+  List<AnnotationNew> findByTaskId(long taskId);
+
   List<AnnotationNew> findByAssigneeAndStateIn(
       long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
 }

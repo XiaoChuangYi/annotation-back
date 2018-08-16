@@ -99,7 +99,7 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
   /** f1计算公式：f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0 */
   private int getEfficientWordNum(AnnotationNew annotationNew, String term) {
     int efficientWordNum = 0;
-    Double f1;
+    double f1;
     if ((annotationNew.getPrecisionRate() + annotationNew.getRecallRate()) == 0) {
       f1 = 0d;
     } else {

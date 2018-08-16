@@ -8,7 +8,6 @@ import lombok.Data;
 
 @Data
 public class PersonalTaskRankSummaryVO {
-
   private long id;
 
   private long taskId;
@@ -19,9 +18,6 @@ public class PersonalTaskRankSummaryVO {
 
   @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
   private Double precisionRate;
-
-  @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
-  private Double recallRate;
 
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date createdTime;
