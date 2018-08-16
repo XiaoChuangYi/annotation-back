@@ -89,7 +89,7 @@ deploy-beta:
   variables:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9003
-    MAX_MEMORY: 768m
+    MAX_MEMORY: 1024m
   <<: *deploy_definition
 
 deploy-prod:
