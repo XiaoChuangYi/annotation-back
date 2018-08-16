@@ -76,7 +76,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
           }
           break;
         default:
-          throw new BusinessRuleException("invalid-state", "当前记录无法直接设定为'放弃'状态！");
+          throw new BusinessRuleException("invalid-state", "当前记录无法直接提交！");
       }
 
       annotationNew.setState(AnnotationStateEnum.SUBMITTED);
