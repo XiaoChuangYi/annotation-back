@@ -2,6 +2,7 @@ package cn.malgo.annotation.vo;
 
 import cn.malgo.annotation.entity.AnnotationTask;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +28,11 @@ public class AnnotationTaskVO {
   private int finishWordNum; // 已标注字数
   private int restBranch; // 剩余条数
   private int restWordNum; // 剩余标注字数
+
+  @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
   private Double preciseRate;
+
+  @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
   private Double recallRate;
 
   public AnnotationTaskVO(

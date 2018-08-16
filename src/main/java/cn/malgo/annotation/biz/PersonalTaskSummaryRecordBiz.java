@@ -64,6 +64,8 @@ public class PersonalTaskSummaryRecordBiz
                   PersonalTaskRankSummaryVO personalTaskRankSummaryVO =
                       new PersonalTaskRankSummaryVO();
                   BeanUtils.copyProperties(current, personalTaskRankSummaryVO);
+                  personalTaskRankSummaryVO.setPrecisionRate(current.getPrecisionRate());
+                  personalTaskRankSummaryVO.setRecallRate(current.getRecallRate());
                   personalTaskRankSummaryVO.setPayment(
                       outsourcingPriceCalculateService.getPersonalPaymentByTaskRank(
                           current.getTaskId(), current.getAssigneeId()));
