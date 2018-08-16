@@ -5,6 +5,7 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.service.AnnotationSummaryService;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -32,12 +33,11 @@ public class PersonalAnnotatedWordNumUpdater {
     log.info("updatePersonalAnnotatedWordNum, start: {}", new Date());
     getTasks()
         .parallelStream()
-        .forEach(task -> annotationSummaryService.updatePersonalAnnotatedWordNum(task));
+        .forEach(task -> annotationSummaryService.updateTaskPersonalSummary(task));
     log.info("updatePersonalAnnotatedWordNum, end: {}", new Date());
   }
 
   private List<AnnotationTask> getTasks() {
-    return taskRepository.findByStateIn(
-        Arrays.asList(AnnotationTaskState.DOING, AnnotationTaskState.ANNOTATED));
+    return taskRepository.findByStateIn(Collections.singletonList(AnnotationTaskState.FINISHED));
   }
 }

@@ -10,7 +10,6 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.service.AddBlocksToTaskService;
 import cn.malgo.annotation.service.AnnotationSummaryService;
-import cn.malgo.service.exception.BusinessRuleException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
