@@ -259,7 +259,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
       final Annotation annotation, final Annotation block) {
     if (annotation == null || block == null) {
       log.warn("calculate inconformity get null annotation: {} or block: {}", annotation, block);
-      return Pair.of(Double.NaN, Double.NaN);
+      return Pair.of(null, null);
     }
 
     final Map<String, EntitySummary> annotationEntities = getEntityMap(annotation);
