@@ -1,14 +1,19 @@
 package cn.malgo.annotation.vo;
 
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.entity.TaskBlock;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import com.alibaba.fastjson.JSONObject;
+import java.util.Comparator;
 import lombok.Value;
 
 @Value
 public class AnnotationTaskBlockResponse {
+
   private final long id;
+
+  private final long taskId;
 
   private final String text;
 
@@ -26,6 +31,17 @@ public class AnnotationTaskBlockResponse {
 
   public AnnotationTaskBlockResponse(final AnnotationTaskBlock block, boolean parseAnnotation) {
     this.id = block.getId();
+    this.taskId =
+        block.getTaskBlocks().size() > 0
+            ? block
+                .getTaskBlocks()
+                .stream()
+                .sorted(Comparator.comparing(TaskBlock::getCreatedTime))
+                .findFirst()
+                .get()
+                .getTask()
+                .getId()
+            : 0;
     this.text = block.getText();
     this.state = block.getState().name();
     this.annotationType = block.getAnnotationType();
