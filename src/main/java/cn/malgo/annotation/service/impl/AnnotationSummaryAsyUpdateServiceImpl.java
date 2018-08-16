@@ -340,7 +340,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         throw new IllegalStateException("invalid annotation state: " + annotationTask.getId());
       }
 
-      if (checkStateIsCleaned(annotations)) {
+      if (annotations.size() > 0 && checkStateIsCleaned(annotations)) {
         annotationTask.setPrecisionRate(
             annotations
                 .stream()
