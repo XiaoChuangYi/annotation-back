@@ -30,6 +30,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -65,7 +66,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   public void updateTaskPersonalSummary(final AnnotationTask task) {
     annotationRepository
         .findByTaskIdEqualsAndStateIn(
-            task.getId(), Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED))
+            task.getId(), Collections.singletonList(AnnotationStateEnum.CLEANED))
         .parallelStream()
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
         .entrySet()
@@ -75,12 +76,15 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
               PersonalAnnotatedTotalWordNumRecord current =
                   personalAnnotatedEstimatePriceRepository.findByTaskIdEqualsAndAssigneeIdEquals(
                       task.getId(), entry.getKey());
+              final int annotatedTotalWordNum = getAnnotatedTermsLength(entry.getValue());
+              final int totalWordNum =
+                  getUnSubmitTermsLength(task.getId(), entry.getKey()) + annotatedTotalWordNum;
+              Pair<Double, Double> result =
+                  getInConformity(entry.getValue(), getBlockMap(entry.getValue()));
+              if (checkStateIsCleaned(entry.getValue())) {
+                result = new ImmutablePair<>(null, null);
+              }
               if (current == null) {
-                final int annotatedTotalWordNum = getAnnotatedTermsLength(entry.getValue());
-                final int totalWordNum =
-                    getUnSubmitTermsLength(task.getId(), entry.getKey()) + annotatedTotalWordNum;
-                final Pair<Double, Double> result =
-                    getInConformity(entry.getValue(), getBlockMap(entry.getValue()));
                 current =
                     new PersonalAnnotatedTotalWordNumRecord(
                         task.getId(),
@@ -89,9 +93,22 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                         totalWordNum,
                         result.getLeft(),
                         result.getRight());
-                personalAnnotatedEstimatePriceRepository.save(current);
+              } else {
+                if (current.getPrecisionRate() == null || current.getRecallRate() == null) {
+                  current.setTotalWordNum(totalWordNum);
+                  current.setAnnotatedTotalWordNum(annotatedTotalWordNum);
+                  current.setPrecisionRate(result.getLeft());
+                  current.setRecallRate(result.getRight());
+                }
               }
+              personalAnnotatedEstimatePriceRepository.save(current);
             });
+  }
+
+  private boolean checkStateIsCleaned(final List<AnnotationNew> annotationNews) {
+    return annotationNews
+        .parallelStream()
+        .allMatch(annotationNew -> annotationNew.getState() == AnnotationStateEnum.CLEANED);
   }
 
   @Override
@@ -116,19 +133,15 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   public void updateAnnotationPrecisionAndRecallRate(AnnotationTask task) {
     final List<AnnotationNew> annotationNews =
         annotationRepository.findByTaskIdEqualsAndStateIn(
-            task.getId(),
-            Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
+            task.getId(), Collections.singletonList(AnnotationStateEnum.PRE_CLEAN));
     final Map<Long, Annotation> blockMap = getBlockMap(annotationNews);
     annotationNews
-        .parallelStream()
+        .stream()
         .filter(
             annotationNew ->
-                StringUtils.equalsAny(
-                        annotationNew.getState().name(),
-                        AnnotationStateEnum.PRE_CLEAN.name(),
-                        AnnotationStateEnum.CLEANED.name())
-                    && annotationNew.getPrecisionRate() == 0.0d
-                    && annotationNew.getRecallRate() == 0.0d)
+                annotationNew.getState() == AnnotationStateEnum.PRE_CLEAN
+                    && annotationNew.getPrecisionRate() == null
+                    && annotationNew.getRecallRate() == null)
         .map(
             annotationNew -> {
               Pair<Double, Double> pair =
@@ -137,6 +150,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                       blockMap.getOrDefault(annotationNew.getBlockId(), null));
               annotationNew.setPrecisionRate(pair.getLeft());
               annotationNew.setRecallRate(pair.getRight());
+              annotationNew.setState(AnnotationStateEnum.CLEANED);
               return annotationNew;
             })
         .collect(Collectors.toList());
@@ -244,7 +258,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
       final Annotation annotation, final Annotation block) {
     if (annotation == null || block == null) {
       log.warn("calculate inconformity get null annotation: {} or block: {}", annotation, block);
-      return Pair.of(1.0, 1.0);
+      return Pair.of(null, null);
     }
 
     final Map<String, EntitySummary> annotationEntities = getEntityMap(annotation);
@@ -254,14 +268,25 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         getRelations(annotation, annotationEntities);
     final Set<RelationEntitySummary> blockRelations = getRelations(block, blockEntities);
 
-    final Pair<Double, Double> entityResult =
-        getInConformity(annotationEntities.values(), blockEntities.values());
-    final Pair<Double, Double> relationResult =
-        getInConformity(annotationRelations, blockRelations);
-
+    final int sameEntityCount =
+        CollectionUtils.intersection(annotationEntities.values(), blockEntities.values()).size();
+    final int sameRelationCount =
+        CollectionUtils.intersection(annotationRelations, blockRelations).size();
+    if ((sameEntityCount + sameRelationCount) == 0) {
+      return Pair.of(0d, 0d);
+    }
     return Pair.of(
-        (entityResult.getLeft() + relationResult.getLeft()) / 2,
-        (entityResult.getRight() + relationResult.getRight()) / 2);
+        (sameEntityCount + sameRelationCount)
+            / (double) (annotationEntities.values().size() + annotationRelations.size()),
+        (sameEntityCount + sameRelationCount)
+            / (double) (blockEntities.values().size() + blockRelations.size()));
+    //    final Pair<Double, Double> entityResult =
+    //        getInConformity(annotationEntities.values(), blockEntities.values());
+    //    final Pair<Double, Double> relationResult =
+    //        getInConformity(annotationRelations, blockRelations);
+    //    return Pair.of(
+    //        (entityResult.getLeft() + relationResult.getLeft()) / 2,
+    //        (entityResult.getRight() + relationResult.getRight()) / 2);
   }
 
   private boolean isAnnotated(final AnnotationNew annotationNew) {
@@ -271,7 +296,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
     final AnnotationStateEnum state = annotationNew.getState();
     return StringUtils.equalsAny(
-        state.name(), AnnotationTaskState.PRE_CLEAN.name(), AnnotationTaskState.FINISHED.name());
+        state.name(), AnnotationStateEnum.CLEANED.name(), AnnotationStateEnum.PRE_CLEAN.name());
   }
 
   private AnnotationTask refreshTaskNumbers(final AnnotationTask annotationTask) {

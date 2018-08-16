@@ -3,9 +3,12 @@ package cn.malgo.annotation.biz;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
+import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.CleanOutBlockRequest;
+import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
@@ -19,13 +22,16 @@ import org.springframework.stereotype.Component;
 public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Object> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
-  private final AnnotationRepository annotationRepository;
+  private final AnnotationTaskRepository annotationTaskRepository;
+  private final AnnotationSummaryService annotationSummaryService;
 
   public CleanOutBlockBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final AnnotationRepository annotationRepository) {
+      final AnnotationTaskRepository annotationTaskRepository,
+      final AnnotationSummaryService annotationSummaryService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
-    this.annotationRepository = annotationRepository;
+    this.annotationTaskRepository = annotationTaskRepository;
+    this.annotationSummaryService = annotationSummaryService;
   }
 
   @Override
@@ -34,18 +40,26 @@ public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Obj
 
   @Override
   protected Object doBiz(CleanOutBlockRequest cleanOutBlockRequest, UserDetails user) {
-    annotationRepository.saveAll(
-        annotationRepository
-            .findByTaskIdEqualsAndStateIn(
-                cleanOutBlockRequest.getTaskId(),
-                Collections.singletonList(AnnotationStateEnum.PRE_CLEAN))
+    final AnnotationTask task = annotationTaskRepository.getOne(cleanOutBlockRequest.getTaskId());
+    if (task == null) {
+      throw new InvalidInputException("invalid-task-id", "无效的任务id");
+    }
+    if (task.getState() == AnnotationTaskState.FINISHED
+        && annotationTaskBlockRepository
+            .findByTaskBlocks_Task_IdEquals(task.getId())
             .parallelStream()
-            .map(
-                annotationNew -> {
-                  annotationNew.setState(AnnotationStateEnum.CLEANED);
-                  return annotationNew;
-                })
-            .collect(Collectors.toList()));
+            .allMatch(
+                annotationTaskBlock ->
+                    annotationTaskBlock.getState() == AnnotationTaskState.PRE_CLEAN)) {
+      // todo 计算准确率
+      annotationSummaryService.updateAnnotationPrecisionAndRecallRate(task);
+      updateBlockState(cleanOutBlockRequest);
+    }
+    // annotationTaskBlockRepository.copyDataToRelease();
+    return task;
+  }
+
+  private void updateBlockState(CleanOutBlockRequest cleanOutBlockRequest) {
     annotationTaskBlockRepository.saveAll(
         annotationTaskBlockRepository
             .findByStateInAndTaskBlocks_Task_Id(
@@ -58,7 +72,5 @@ public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Obj
                   return annotationTaskBlock;
                 })
             .collect(Collectors.toList()));
-    //    annotationTaskBlockRepository.copyDataToRelease();
-    return null;
   }
 }

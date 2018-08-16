@@ -45,8 +45,8 @@ public class PersonalAnnotatedTotalWordNumRecord extends BaseEntity {
   private int totalWordNum; // 批次总字数
 
   @Column(name = "precision_rate")
-  private double precisionRate = 0;
+  private Double precisionRate;
 
   @Column(name = "recall_rate")
-  private double recallRate = 0;
+  private Double recallRate;
 }

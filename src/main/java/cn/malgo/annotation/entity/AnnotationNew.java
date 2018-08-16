@@ -78,10 +78,10 @@ public class AnnotationNew extends BaseEntity {
   private Date expirationTime;
 
   @Column(name = "precision_rate")
-  private double precisionRate = 0;
+  private Double precisionRate;
 
   @Column(name = "recall_rate")
-  private double recallRate = 0;
+  private Double recallRate;
 
   @Column(name = "delete_token")
   private long deleteToken = 0;

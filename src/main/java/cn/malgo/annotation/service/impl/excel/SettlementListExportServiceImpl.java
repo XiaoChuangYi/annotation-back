@@ -173,6 +173,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
     return BigDecimal.valueOf(2)
         .multiply(BigDecimal.valueOf(annotationNew.getPrecisionRate()))
-        .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)));
+        .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
+        .divide(BigDecimal.valueOf(100));
   }
 }
