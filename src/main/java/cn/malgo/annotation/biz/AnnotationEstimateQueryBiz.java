@@ -133,7 +133,7 @@ public class AnnotationEstimateQueryBiz
   public static class CurrentTaskOverviewPair {
     private final int taskTotalBranch;
     private final int taskTotalWordNum;
-    private final double taskPreciseRate;
-    private final double taskRecallRate;
+    private final Double taskPreciseRate;
+    private final Double taskRecallRate;
   }
 }
