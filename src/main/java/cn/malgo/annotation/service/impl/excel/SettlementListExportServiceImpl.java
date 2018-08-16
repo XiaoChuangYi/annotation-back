@@ -153,16 +153,16 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     List<AnnotationNew> annotationNews;
     if (taskId != 0 && assigneeId == 0) {
       annotationNews =
-          annotationRepository.findByTaskIdEqualsAndStateIn(
+          annotationRepository.findByTaskIdAndStateIn(
               taskId, Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
     } else if (taskId == 0 && assigneeId != 0) {
       annotationNews =
-          annotationRepository.findByAssigneeEqualsAndStateIn(
+          annotationRepository.findByAssigneeAndStateIn(
               assigneeId,
               Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));
     } else {
       annotationNews =
-          annotationRepository.findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+          annotationRepository.findAllByTaskIdAndAssigneeAndStateIn(
               taskId,
               assigneeId,
               Arrays.asList(AnnotationStateEnum.PRE_CLEAN, AnnotationStateEnum.CLEANED));

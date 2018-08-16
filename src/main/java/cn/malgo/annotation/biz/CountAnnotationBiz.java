@@ -2,7 +2,6 @@ package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.CountAnnotationRequest;
 import cn.malgo.service.annotation.RequirePermission;
@@ -36,7 +35,7 @@ public class CountAnnotationBiz extends BaseBiz<CountAnnotationRequest, Integer>
 
     if (countAnnotationRequest.getAnnotationTypes().size() > 0) {
       num =
-          annotationRepository.countAllByAnnotationTypeInAndStateEquals(
+          annotationRepository.countAllByAnnotationTypeInAndState(
               countAnnotationRequest.getAnnotationTypes(), AnnotationStateEnum.UN_DISTRIBUTED);
     } else {
       num = annotationRepository.countAllByStateIn(AnnotationStateEnum.UN_DISTRIBUTED);

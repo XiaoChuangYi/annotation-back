@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -31,7 +32,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
       @Index(columnList = "state"),
       @Index(columnList = "delete_token"),
       @Index(columnList = "block_id"),
+      @Index(columnList = "task_id"),
+      @Index(columnList = "task_id,annotation_type"),
+      @Index(columnList = "task_id,assignee,annotation_type"),
     })
+@Where(clause = "delete_token = 0")
 @Getter
 @Setter
 @ToString(callSuper = true)

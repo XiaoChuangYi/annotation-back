@@ -58,7 +58,7 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
   @Override
   public BigDecimal getPersonalPaymentByTaskRank(long taskId, long assigneeId) {
     final List<AnnotationNew> annotationNews =
-        annotationRepository.findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+        annotationRepository.findAllByTaskIdAndAssigneeAndStateIn(
             taskId, assigneeId, Arrays.asList(AnnotationStateEnum.CLEANED));
     final int taskTotalEfficientWordNum =
         annotationNews

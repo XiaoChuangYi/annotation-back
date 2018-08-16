@@ -65,7 +65,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   @Override
   public void updateTaskPersonalSummary(final AnnotationTask task) {
     annotationRepository
-        .findByTaskIdEqualsAndStateIn(
+        .findByTaskIdAndStateIn(
             task.getId(), Collections.singletonList(AnnotationStateEnum.CLEANED))
         .parallelStream()
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
@@ -132,7 +132,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   @Override
   public void updateAnnotationPrecisionAndRecallRate(AnnotationTask task) {
     final List<AnnotationNew> annotationNews =
-        annotationRepository.findByTaskIdEqualsAndStateIn(
+        annotationRepository.findByTaskIdAndStateIn(
             task.getId(), Collections.singletonList(AnnotationStateEnum.PRE_CLEAN));
     final Map<Long, Annotation> blockMap = getBlockMap(annotationNews);
     annotationNews
@@ -168,7 +168,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
   private int getUnSubmitTermsLength(long taskId, long assigneeId) {
     return annotationRepository
-        .findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+        .findAllByTaskIdAndAssigneeAndStateIn(
             taskId,
             assigneeId,
             Arrays.asList(

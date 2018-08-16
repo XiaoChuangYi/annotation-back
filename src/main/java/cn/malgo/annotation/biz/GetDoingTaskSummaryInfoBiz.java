@@ -97,7 +97,7 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
               ? BigDecimal.valueOf(0)
               : predictAverageHighestPayment.divide(BigDecimal.valueOf(100)),
           annotationRepository
-              .findByTaskIdEqualsAndStateIn(
+              .findByTaskIdAndStateIn(
                   task.getId(), Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED))
               .parallelStream()
               .mapToInt(annotationNew -> annotationNew.getTerm().length())

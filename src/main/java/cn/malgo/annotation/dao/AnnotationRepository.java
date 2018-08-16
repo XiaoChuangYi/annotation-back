@@ -32,21 +32,19 @@ public interface AnnotationRepository
       nativeQuery = true)
   List<AnnotationSummary> findByStateGroup();
 
-  Integer countAllByAnnotationTypeInAndStateEquals(
+  Integer countAllByAnnotationTypeInAndState(
       List<AnnotationTypeEnum> annotationTypes, AnnotationStateEnum state);
 
   Integer countAllByStateIn(AnnotationStateEnum state);
 
   AnnotationNew findByTermEquals(String text);
 
-  Set<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEquals(long taskId, long assigneeId);
-
-  List<AnnotationNew> findAllByTaskIdEqualsAndAssigneeEqualsAndStateIn(
+  List<AnnotationNew> findAllByTaskIdAndAssigneeAndStateIn(
       long taskId, long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
 
-  List<AnnotationNew> findByTaskIdEqualsAndStateIn(
+  List<AnnotationNew> findByTaskIdAndStateIn(
       long taskId, List<AnnotationStateEnum> annotationStateEnums);
 
-  List<AnnotationNew> findByAssigneeEqualsAndStateIn(
+  List<AnnotationNew> findByAssigneeAndStateIn(
       long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
 }
