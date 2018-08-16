@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -258,7 +259,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
       final Annotation annotation, final Annotation block) {
     if (annotation == null || block == null) {
       log.warn("calculate inconformity get null annotation: {} or block: {}", annotation, block);
-      return Pair.of(null, null);
+      return Pair.of(Double.NaN, Double.NaN);
     }
 
     final Map<String, EntitySummary> annotationEntities = getEntityMap(annotation);
@@ -347,8 +348,16 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
             .collect(Collectors.toList());
 
     return Pair.of(
-        values.stream().mapToDouble(Pair::getLeft).average().orElse(0),
-        values.stream().mapToDouble(Pair::getRight).average().orElse(0));
+        getAverageOrNull(values.stream().mapToDouble(Pair::getLeft)),
+        getAverageOrNull(values.stream().mapToDouble(Pair::getRight)));
+  }
+
+  private Double getAverageOrNull(DoubleStream stream) {
+    final double average = stream.average().orElse(Double.NaN);
+    if (Double.isNaN(average)) {
+      return null;
+    }
+    return average;
   }
 
   private Map<Long, Annotation> getBlockMap(List<AnnotationNew> annotationNews) {
