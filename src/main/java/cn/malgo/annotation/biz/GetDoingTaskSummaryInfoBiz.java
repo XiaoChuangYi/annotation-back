@@ -75,13 +75,12 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
             .getUnitPriceByWordNum(taskAnnotatedTotalWordNum)
             .multiply(BigDecimal.valueOf(taskAnnotatedTotalWordNum));
     final BigDecimal predictAverageHighestPayment =
-        outsourcingPriceCalculateService
-            .getUnitPriceByWordNum(
-                taskStaffNum == 0 ? 0 : ((int) (taskTotalWordNum / taskStaffNum)))
-            .multiply(
-                taskStaffNum == 0
-                    ? BigDecimal.valueOf(0)
-                    : BigDecimal.valueOf(taskTotalWordNum / taskStaffNum));
+        taskStaffNum == 0
+            ? BigDecimal.valueOf(0)
+            : outsourcingPriceCalculateService
+                .getUnitPriceByWordNum(taskTotalWordNum)
+                .multiply(BigDecimal.valueOf(taskTotalWordNum))
+                .divide(BigDecimal.valueOf(taskStaffNum));
     return new TaskInfoVO(
         task.getName(),
         taskAnnotatedTotalWordNum,
