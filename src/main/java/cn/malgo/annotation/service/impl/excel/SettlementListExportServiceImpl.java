@@ -8,7 +8,6 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
-import cn.malgo.annotation.utils.AnnotationConvert;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -29,10 +28,12 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class SettlementListExportServiceImpl implements SettlementListExportService {
 
   private final UserAccountRepository userAccountRepository;
@@ -58,7 +59,6 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
       setExcelColumn(sheet);
       final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
-
       IntStream.range(0, annotationNews.size())
           .forEach(
               k -> {
@@ -93,7 +93,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                   sheet.addCell(new Label(5, k + 1, "每100字2元"));
 
                   sheet.addCell(
-                      new Label(6, k + 1, getCurrentRecordTotalPrice(annotationNew) + "元"));
+                      new Label(6, k + 1, getCurrentRecordTotalPrice(annotationNew) + ""));
 
                 } catch (WriteException e) {
                   e.printStackTrace();
@@ -134,10 +134,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
 
   @NotNull
   private int getCurrentAnnotatedWordNum(AnnotationNew annotationNew) {
-    return AnnotationConvert.getEntitiesFromAnnotation(annotationNew.getFinalAnnotation())
-        .stream()
-        .mapToInt(value -> value.getTerm().length())
-        .sum();
+    return annotationNew.getTerm().length();
   }
 
   private Map<Long, String> getTaskMap() {
@@ -187,8 +184,21 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
+    final Double f1;
+    if (annotationNew.getPrecisionRate() == null || annotationNew.getRecallRate() == null) {
+      f1 = 0d;
+    } else if (annotationNew.getPrecisionRate() + annotationNew.getRecallRate() == 0) {
+      f1 = 0d;
+    } else {
+      f1 =
+          2
+              * annotationNew.getPrecisionRate()
+              * annotationNew.getRecallRate()
+              / (annotationNew.getPrecisionRate() + annotationNew.getRecallRate());
+    }
+    log.info("f1:{}", f1);
     return BigDecimal.valueOf(2)
-        .multiply(BigDecimal.valueOf(annotationNew.getPrecisionRate()))
+        .multiply(BigDecimal.valueOf(f1.doubleValue()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
         .divide(BigDecimal.valueOf(100))
         .setScale(2, BigDecimal.ROUND_HALF_UP);
