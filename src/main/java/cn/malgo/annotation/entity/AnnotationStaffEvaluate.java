@@ -71,9 +71,9 @@ public class AnnotationStaffEvaluate extends BaseEntity {
   @Column(name = "abandon_word_num", nullable = false, columnDefinition = "int(11) default 0")
   private int abandonWordNum;
 
-  @Column(name = "precision_rate", nullable = false, columnDefinition = "double default 0")
-  private double precisionRate = 0; // 准确率
+  @Column(name = "precision_rate")
+  private Double precisionRate; // 准确率
 
-  @Column(name = "recall_rate", nullable = false, columnDefinition = "double default 0")
-  private double recallRate = 0; // 召回率
+  @Column(name = "recall_rate")
+  private Double recallRate; // 召回率
 }

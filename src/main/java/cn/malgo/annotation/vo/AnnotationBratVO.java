@@ -29,8 +29,8 @@ public class AnnotationBratVO {
   @JSONField(format = "yyyy-MM-dd HH:mm:ss")
   private Date expirationTime;
 
-  private double precisionRate;
-  private double recallRate;
+  private Double precisionRate;
+  private Double recallRate;
   private long deleteToken;
 
   private BigDecimal estimatePrice;

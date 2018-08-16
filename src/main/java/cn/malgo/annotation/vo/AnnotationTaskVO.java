@@ -27,8 +27,8 @@ public class AnnotationTaskVO {
   private int finishWordNum; // 已标注字数
   private int restBranch; // 剩余条数
   private int restWordNum; // 剩余标注字数
-  private double preciseRate;
-  private double recallRate;
+  private Double preciseRate;
+  private Double recallRate;
 
   public AnnotationTaskVO(
       long id, Date createdTime, Date lastModifiedTime, String name, String state) {
