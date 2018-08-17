@@ -50,7 +50,7 @@ public abstract class BaseErrorProvider implements AnnotationErrorProvider {
     final Set<String> fixLogs =
         annotationFixLogRepository
             .findAllFixedLogs(errors)
-            .stream()
+            .parallelStream()
             .map(AnnotationFixLog::getUniqueKey)
             .collect(Collectors.toSet());
 

@@ -81,7 +81,7 @@ public class AnnotationDocument {
     final Map<String, Entity> entityMap = DocumentUtils.getEntityMap(entities);
 
     return relationEntities
-        .stream()
+        .parallelStream()
         .filter(
             // 在这里使用^异或表示当前tag的集合对外的所有连接
             // 即source或target只能有一个在集合中

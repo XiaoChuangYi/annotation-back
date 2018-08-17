@@ -49,35 +49,37 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
     final List<String> terms =
         annotations
-            .stream()
+            .parallelStream()
             .flatMap(
                 annotation -> annotation.getDocument().getEntities().stream().map(Entity::getTerm))
             .filter(term -> StringUtils.isNotBlank(term) && !IGNORE_WORDS.contains(term))
             .collect(Collectors.toSet())
-            .stream()
+            .parallelStream()
             .sorted(comparator)
             .collect(Collectors.toList());
 
     for (final String term : terms) {
       final List<EntityListWithPosition> entityLists =
           annotations
-              .stream()
+              .parallelStream()
               .flatMap(annotation -> this.getTermEntities(annotation, term))
               .collect(Collectors.toList());
 
-      if (!entityLists.stream().allMatch(entityList -> entityList.getEntities().size() == 1)) {
+      if (!entityLists
+          .parallelStream()
+          .allMatch(entityList -> entityList.getEntities().size() == 1)) {
         // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
         final List<EntityListWithPosition> filtered =
             filterErrors(entityLists).collect(Collectors.toList());
         if (filtered
-                .stream()
+                .parallelStream()
                 .map(entityList -> entityList.getEntities().size())
                 .collect(Collectors.toSet())
                 .size()
             != 1) {
           return postProcess(
               filtered
-                  .stream()
+                  .parallelStream()
                   .map(
                       entityList ->
                           new WordErrorWithPosition(
@@ -221,7 +223,10 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
       final int end = index + targetTerm.length();
       final BratPosition position = new BratPosition(start, end);
 
-      if (document.getEntities().stream().anyMatch(entity -> entity.intersectWith(start, end))) {
+      if (document
+          .getEntities()
+          .parallelStream()
+          .anyMatch(entity -> entity.intersectWith(start, end))) {
         index = end;
         continue;
       }
@@ -234,7 +239,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
       }
 
       final Map<String, Entity> entityMap =
-          entities.stream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
+          entities.parallelStream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
 
       // 找到所有tag以及和这些tag有关的外部关联关系
       final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
@@ -250,7 +255,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
                     ? firstRelation.getSourceTag()
                     : firstRelation.getTargetTag());
         if (relations
-            .stream()
+            .parallelStream()
             .allMatch(
                 relation -> {
                   final Entity entity =
