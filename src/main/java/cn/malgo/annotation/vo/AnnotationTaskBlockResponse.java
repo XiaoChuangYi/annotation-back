@@ -36,7 +36,7 @@ public class AnnotationTaskBlockResponse {
             ? block
                 .getTaskBlocks()
                 .stream()
-                .sorted(Comparator.comparing(TaskBlock::getCreatedTime))
+                .sorted(Comparator.comparing(TaskBlock::getCreatedTime, Comparator.reverseOrder()))
                 .findFirst()
                 .get()
                 .getTask()
