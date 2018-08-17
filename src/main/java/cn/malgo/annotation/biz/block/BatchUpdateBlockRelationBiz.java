@@ -4,8 +4,8 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
-import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest;
-import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest.BlockRelation;
+import cn.malgo.annotation.request.block.BatchUpdateBlockRelationRequest;
+import cn.malgo.annotation.request.block.BatchUpdateBlockRelationRequest.BlockRelationUpdate;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
@@ -22,18 +22,18 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequirePermission(Permissions.ADMIN)
-public class BatchDeleteBlockRelationBiz
-    extends TransactionalBiz<BatchDeleteBlockRelationRequest, List<Long>> {
+public class BatchUpdateBlockRelationBiz
+    extends TransactionalBiz<BatchUpdateBlockRelationRequest, List<Long>> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
-  public BatchDeleteBlockRelationBiz(
+  public BatchUpdateBlockRelationBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
   }
 
   @Override
-  protected void validateRequest(BatchDeleteBlockRelationRequest request)
+  protected void validateRequest(BatchUpdateBlockRelationRequest request)
       throws InvalidInputException {
     if (request.getBlockRelationSet() == null || request.getBlockRelationSet().size() == 0) {
       throw new InvalidInputException("list-is-empty", "集合为空");
@@ -41,28 +41,28 @@ public class BatchDeleteBlockRelationBiz
   }
 
   @Override
-  protected List<Long> doBiz(BatchDeleteBlockRelationRequest request, UserDetails user) {
-    Map<Long, List<String>> batchDeleteMap =
+  protected List<Long> doBiz(BatchUpdateBlockRelationRequest request, UserDetails user) {
+    Map<Long, List<String>> batchUpdateMap =
         request
             .getBlockRelationSet()
             .stream()
-            .collect(Collectors.toMap(BlockRelation::getId, BlockRelation::getRTags));
+            .collect(Collectors.toMap(BlockRelationUpdate::getId, BlockRelationUpdate::getRTags));
     final Set<AnnotationTaskBlock> annotationTaskBlocks =
         annotationTaskBlockRepository.findByIdInAndStateIn(
-            batchDeleteMap.keySet(),
+            batchUpdateMap.keySet(),
             Arrays.asList(AnnotationTaskState.PRE_CLEAN, AnnotationTaskState.FINISHED));
-    if (batchDeleteMap.size() != annotationTaskBlocks.size()) {
-      log.warn("批量删除语料中存在非法ID: {}", batchDeleteMap.keySet());
+    if (batchUpdateMap.size() != annotationTaskBlocks.size()) {
+      log.warn("批量更新语料中存在非法ID: {}", batchUpdateMap.keySet());
     }
     annotationTaskBlocks
         .stream()
         .forEach(
             annotationTaskBlock -> {
-              final List<String> rTags = batchDeleteMap.get(annotationTaskBlock.getId());
+              final List<String> rTags = batchUpdateMap.get(annotationTaskBlock.getId());
               if (rTags.size() > 0) {
                 final String annotation =
-                    AnnotationConvert.batchDeleteRelationAnnotation(
-                        annotationTaskBlock.getAnnotation(), rTags);
+                    AnnotationConvert.batchUpdateRelationAnnotation(
+                        annotationTaskBlock.getAnnotation(), rTags, request.getNewType());
                 annotationTaskBlock.setAnnotation(annotation);
               }
             });

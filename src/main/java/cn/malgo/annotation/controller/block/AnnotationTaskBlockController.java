@@ -4,6 +4,7 @@ import cn.malgo.annotation.biz.CleanOutBlockBiz;
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockEntityMultipleBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockRelationBiz;
+import cn.malgo.annotation.biz.block.BatchUpdateBlockRelationBiz;
 import cn.malgo.annotation.biz.brat.ListOverlapEntityBiz;
 import cn.malgo.annotation.biz.brat.ListRelevanceAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
@@ -14,9 +15,10 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
-import cn.malgo.annotation.request.BatchDeleteBlockRelationRequest;
-import cn.malgo.annotation.request.BatchDeleteEntityMultipleRequest;
+import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest;
+import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
+import cn.malgo.annotation.request.block.BatchUpdateBlockRelationRequest;
 import cn.malgo.annotation.request.block.ListRelevanceAnnotationRequest;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
 import cn.malgo.annotation.request.brat.AddAnnotationGroupRequest;
@@ -51,6 +53,7 @@ public class AnnotationTaskBlockController extends BaseController {
   private final ListOverlapEntityBiz listOverlapEntityBiz;
   private final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz;
   private final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz;
+  private final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz;
   private final CleanOutBlockBiz cleanOutBlockBiz;
 
   public AnnotationTaskBlockController(
@@ -64,6 +67,7 @@ public class AnnotationTaskBlockController extends BaseController {
       final ListOverlapEntityBiz listOverlapEntityBiz,
       final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz,
       final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz,
+      final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz,
       final CleanOutBlockBiz cleanOutBlockBiz) {
     this.blockNerUpdater = blockNerUpdater;
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
@@ -75,6 +79,7 @@ public class AnnotationTaskBlockController extends BaseController {
     this.listOverlapEntityBiz = listOverlapEntityBiz;
     this.batchDeleteBlockEntityMultipleBiz = batchDeleteBlockEntityMultipleBiz;
     this.batchDeleteBlockRelationBiz = batchDeleteBlockRelationBiz;
+    this.batchUpdateBlockRelationBiz = batchUpdateBlockRelationBiz;
     this.cleanOutBlockBiz = cleanOutBlockBiz;
   }
 
@@ -179,6 +184,14 @@ public class AnnotationTaskBlockController extends BaseController {
       @RequestBody BatchDeleteBlockRelationRequest batchDeleteBlockRelationRequest) {
     return new Response<>(
         batchDeleteBlockRelationBiz.process(batchDeleteBlockRelationRequest, userAccount));
+  }
+
+  /** 批量更新关联类型 */
+  @RequestMapping(value = "/batch-update-relation", method = RequestMethod.POST)
+  public Response<List<Long>> batchUpdateRelation(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody BatchUpdateBlockRelationRequest request) {
+    return new Response<>(batchUpdateBlockRelationBiz.process(request, userAccount));
   }
 
   /** 清洗指定批次的语料 */
