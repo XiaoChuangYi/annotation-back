@@ -136,8 +136,8 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         .filter(
             relation -> {
               if (StringUtils.equalsAny(relation.getType(), "and", "coreference")
-                  && entityMap.get(relation.getSourceTag()).getStart()
-                      > entityMap.get(relation.getTargetTag()).getEnd()) {
+                  && entityMap.get(relation.getSourceTag()).getEnd()
+                      <= entityMap.get(relation.getTargetTag()).getStart()) {
                 return false;
               }
               return !legalRules.contains(
@@ -198,6 +198,9 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         .getDocument()
         .getRelationEntities()
         .parallelStream()
+        .filter(
+            relationEntity ->
+                !StringUtils.equalsAny(relationEntity.getType(), "and", "coreference"))
         .map(
             relation -> {
               final Entity source = entityMap.get(relation.getSourceTag());
