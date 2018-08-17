@@ -75,37 +75,6 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
     updateTaskState(annotationTaskBlockRepository.save(block));
   }
 
-  @Override
-  public void saveAnnotationAll(List<AnnotationNew> annotationNews) {
-    final List<Long> blockIds =
-        annotationNews
-            .stream()
-            .map(annotationNew -> annotationNew.getBlockId())
-            .collect(Collectors.toList());
-    final List<AnnotationTaskBlock> annotationTaskBlocks =
-        annotationTaskBlockRepository.findAllById(blockIds);
-    if (annotationNews.size() != annotationTaskBlocks.size()) {
-      log.warn("some annotation ids are invalid {}", blockIds);
-      return;
-    }
-    Map<Long, String> map =
-        annotationNews
-            .stream()
-            .collect(
-                Collectors.toMap(AnnotationNew::getBlockId, AnnotationNew::getFinalAnnotation));
-    annotationTaskBlocks
-        .stream()
-        .map(
-            annotationTaskBlock -> {
-              annotationTaskBlock.setAnnotation(map.get(annotationTaskBlock.getId()));
-              annotationTaskBlock.setState(AnnotationTaskState.ANNOTATED);
-              return annotationTaskBlock;
-            })
-        .collect(Collectors.toList());
-
-    batchUpdateTaskAndDocState(annotationTaskBlockRepository.saveAll(annotationTaskBlocks));
-  }
-
   private void batchUpdateTaskAndDocState(final List<AnnotationTaskBlock> blocks) {
     blocks
         .stream()

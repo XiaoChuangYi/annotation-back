@@ -65,37 +65,4 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
 
     return updateAnnotationAlgorithmRequest;
   }
-
-  @Override
-  public void batchExtractAndAddAtomicTerm(List<AnnotationNew> annotationNewList) {
-    final List<AtomicTerm> atomicTermList = atomicTermRepository.findAll();
-    final List<AtomicTerm> finalAtomicTerms =
-        annotationNewList
-            .stream()
-            .flatMap(
-                annotationNew -> {
-                  List<Entity> entities =
-                      AnnotationConvert.getEntitiesFromAnnotation(
-                          annotationNew.getManualAnnotation());
-                  entities.removeIf(
-                      current ->
-                          current.getType().endsWith("-unconfirmed")
-                              || atomicTermList
-                                  .stream()
-                                  .anyMatch(
-                                      atomicTerm ->
-                                          current.getType().equals(atomicTerm.getAnnotationType())
-                                              && current.getTerm().equals(atomicTerm.getTerm())));
-                  return entities
-                      .stream()
-                      .map(
-                          entity ->
-                              new AtomicTerm(
-                                  entity.getTerm(), entity.getType(), annotationNew.getId()))
-                      .collect(Collectors.toList())
-                      .stream();
-                })
-            .collect(Collectors.toList());
-    atomicTermRepository.saveAll(finalAtomicTerms.stream().distinct().collect(Collectors.toList()));
-  }
 }

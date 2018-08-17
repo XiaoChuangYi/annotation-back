@@ -8,6 +8,4 @@ import java.util.List;
 public interface ExtractAddAtomicTermService {
 
   UpdateAnnotationAlgorithmRequest extractAndAddAtomicTerm(AnnotationNew annotationNew);
-
-  void batchExtractAndAddAtomicTerm(List<AnnotationNew> combineList);
 }
