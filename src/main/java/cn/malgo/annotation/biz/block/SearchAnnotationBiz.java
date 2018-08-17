@@ -84,7 +84,7 @@ public class SearchAnnotationBiz
                                 new AnnotationErrorContext(
                                     annotation,
                                     new BratPosition(entity.getStart(), entity.getEnd()),
-                                    entity.getTerm())))
+                                    entity.getTag())))
             .collect(Collectors.toList());
 
     log.info("search annotations results {}", results.size());
