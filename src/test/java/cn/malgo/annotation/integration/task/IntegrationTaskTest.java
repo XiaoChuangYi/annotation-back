@@ -1,6 +1,5 @@
 package cn.malgo.annotation.integration.task;
 
-import cn.malgo.annotation.biz.brat.task.AnnotationExamineBiz;
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.task.CreateTaskBiz;
 import cn.malgo.annotation.dao.AnnotationRepository;
@@ -38,7 +37,6 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   @Autowired private OriginalDocRepository docRepository;
   @Autowired private CreateBlocksFromDocBiz createBlocksFromDocBiz;
   @Autowired private AnnotationTaskRepository taskRepository;
-  @Autowired private AnnotationExamineBiz annotationExamineBiz;
   @Autowired private AnnotationRepository annotationRepository;
 
   /**
@@ -275,13 +273,6 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
     annotationNew.setFinalAnnotation(annotation);
     annotationNew.setState(AnnotationStateEnum.SUBMITTED);
     annotationRepository.save(annotationNew);
-    TestTransaction.flagForCommit();
-    TestTransaction.end();
-
-    TestTransaction.start();
-    annotationExamineBiz.process(
-        new AnnotationStateRequest(annotationNew.getId()),
-        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
   }

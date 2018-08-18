@@ -56,7 +56,7 @@ public class IsolatedEntityErrorProvider extends BaseErrorProvider {
           .stream()
           .filter(
               entity ->
-                  !StringUtils.equalsAnyIgnoreCase(entity.getType(), "Time", "Duration")
+                  !StringUtils.equalsAnyIgnoreCase(entity.getType(), "Time", "Duration", "Surgery")
                       && !usedTags.contains(entity.getTag()))
           .forEach(
               entity -> {

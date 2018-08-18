@@ -41,6 +41,4 @@ public interface AnnotationBlockService {
       final AnnotationTaskBlock block,
       final AnnotationBlockActionEnum action,
       final String comment);
-
-  void saveAnnotationAll(final List<AnnotationNew> annotationNews);
 }

@@ -14,9 +14,5 @@ public interface AnnotationService {
   /** 批量指派标注数据给特定用户 */
   void designateAnnotationNew(DesignateAnnotationRequest designateAnnotationRequest);
 
-  /** 随机批量指派标注数据给用户 */
-  void randomDesignateAnnotationNew(
-      RandomDesignateAnnotationRequest randomDesignateAnnotationRequest);
-
   void oneKeyDesignateAnnotationNew(OneKeyDesignateAnnotationRequest request);
 }

@@ -1,4 +1,4 @@
-package cn.malgo.annotation.request;
+package cn.malgo.annotation.request.block;
 
 import java.util.List;
 import java.util.Set;

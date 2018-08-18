@@ -4,13 +4,11 @@ import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.UserAccount;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
-import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.service.exception.BusinessRuleException;
 import java.util.ArrayList;
@@ -166,30 +164,6 @@ public class AnnotationServiceImpl implements AnnotationService {
     calendar.setTime(new Date());
     calendar.add(Calendar.DAY_OF_MONTH, 2);
     return calendar;
-  }
-
-  /** 随机批量指派标注数据给用户 */
-  @Override
-  public void randomDesignateAnnotationNew(
-      RandomDesignateAnnotationRequest randomDesignateAnnotationRequest) {
-    // 第一步根据未分配状态，标注类型，以及num，查询出所有的标注
-    List<AnnotationNew> annotationCombineList =
-        annotationRepository.findAllByAnnotationTypeInAndStateEquals(
-            randomDesignateAnnotationRequest.getAnnotationTypes(),
-            AnnotationCombineStateEnum.unDistributed.name(),
-            PageRequest.of(0, randomDesignateAnnotationRequest.getNum()));
-
-    // 第二步(假)随机更新对应的标注的assignee
-    List<Integer> userIdList = randomDesignateAnnotationRequest.getUserIdList();
-    IntStream.range(0, annotationCombineList.size())
-        .forEach(
-            i -> {
-              int k = i % userIdList.size();
-              annotationCombineList.get(i).setAssignee(userIdList.get(k));
-              annotationCombineList.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
-              annotationCombineList.get(i).setExpirationTime(getExpirationTime().getTime());
-            });
-    annotationRepository.saveAll(annotationCombineList);
   }
 
   @Override

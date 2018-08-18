@@ -545,6 +545,23 @@ public class AnnotationConvert {
     return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
   }
 
+  /** 批量更新relation */
+  public static String batchUpdateRelationAnnotation(
+      String oldAnnotation, List<String> rTags, String newType) {
+    AnnotationDocument annotationDocument = new AnnotationDocument();
+    AnnotationDocumentManipulator.parseBratAnnotation(
+        oldAnnotation == null ? "" : oldAnnotation, annotationDocument);
+    annotationDocument
+        .getRelationEntities()
+        .forEach(
+            relationEntity -> {
+              if (rTags.contains(relationEntity.getTag())) {
+                relationEntity.setType(newType);
+              }
+            });
+    return AnnotationDocumentManipulator.toBratAnnotations(annotationDocument);
+  }
+
   /** 更新relations数组中指定的标注的类型 */
   public static String updateRelationAnnotation(String oldAnnotation, String rTag, String type) {
     AnnotationDocument annotationDocument = new AnnotationDocument();
