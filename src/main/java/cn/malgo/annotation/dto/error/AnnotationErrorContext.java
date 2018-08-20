@@ -30,13 +30,18 @@ public class AnnotationErrorContext implements FixAnnotationErrorContext {
   private int end;
   private Object info;
   private JSONObject annotation;
+  private Object infoText;
 
   public AnnotationErrorContext(
-      final Annotation annotation, final BratPosition position, final Object info) {
+      final Annotation annotation,
+      final BratPosition position,
+      final Object info,
+      final Object infoText) {
     this.id = annotation.getId();
     this.start = position.getStart();
     this.end = position.getEnd();
     this.info = info;
+    this.infoText = infoText;
 
     final AnnotationDocument document = annotation.getDocument();
     int start = this.start;
