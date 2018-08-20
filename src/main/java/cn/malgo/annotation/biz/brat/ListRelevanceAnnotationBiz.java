@@ -74,7 +74,8 @@ public class ListRelevanceAnnotationBiz
                     new AnnotationErrorContext(
                         annotationFactory.create(relation.getBlock()),
                         relation.bratPosition,
-                        relation.getRTag()))
+                        relation.getRTag(),
+                        null))
             .collect(Collectors.toList()));
     return pageVO;
   }
