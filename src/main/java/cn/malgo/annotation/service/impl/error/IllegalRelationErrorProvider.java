@@ -190,6 +190,18 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         != 1;
   }
 
+  private boolean filterSpecificType(RelationEntity relationEntity, Map<String, Entity> entityMap) {
+    if (StringUtils.equalsAny(relationEntity.getType(), "and", "coreference")) {
+      return false;
+    }
+    if (StringUtils.equalsAny(relationEntity.getType(), "belong-to")
+        && entityMap.get(relationEntity.getSourceTag()).getType().equals("Clinical-finding")
+        && entityMap.get(relationEntity.getSourceTag()).getType().equals("Observable-entity")) {
+      return false;
+    }
+    return true;
+  }
+
   @NotNull
   private Stream<Pair<RelationUniqueTerm, WordErrorWithPosition>> getUniqueRelations(
       final Annotation annotation) {
@@ -198,9 +210,7 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         .getDocument()
         .getRelationEntities()
         .parallelStream()
-        .filter(
-            relationEntity ->
-                !StringUtils.equalsAny(relationEntity.getType(), "and", "coreference"))
+        .filter(relationEntity -> filterSpecificType(relationEntity, entityMap))
         .map(
             relation -> {
               final Entity source = entityMap.get(relation.getSourceTag());
