@@ -17,6 +17,7 @@ import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.exception.InvalidInputException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -190,14 +191,26 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
         != 1;
   }
 
+  private static final String[] belongToSpecialTerms = {"表面", "切面"};
+
   private boolean filterSpecificType(RelationEntity relationEntity, Map<String, Entity> entityMap) {
     if (StringUtils.equalsAny(relationEntity.getType(), "and", "coreference")) {
       return false;
     }
+    final Entity source = entityMap.get(relationEntity.getSourceTag());
+    final Entity target = entityMap.get(relationEntity.getTargetTag());
     if (StringUtils.equalsAny(relationEntity.getType(), "belong-to")
-        && entityMap.get(relationEntity.getSourceTag()).getType().equals("Clinical-finding")
-        && entityMap.get(relationEntity.getSourceTag()).getType().equals("Observable-entity")) {
-      return false;
+        && StringUtils.equalsAny(source.getType(), "Clinical-finding", "Observable-entity")
+        && StringUtils.equalsAny(target.getType(), "Clinical-finding", "Observable-entity")) {
+      if (source.getType().equals("Observable-entity")
+          && Arrays.asList(belongToSpecialTerms).contains(source.getTerm())) {
+        return false;
+      } else if (target.getType().equals("Observable-entity")
+          && Arrays.asList(belongToSpecialTerms).contains(source.getTerm())) {
+        return false;
+      } else {
+        return true;
+      }
     }
     return true;
   }
