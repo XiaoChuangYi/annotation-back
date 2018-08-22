@@ -71,12 +71,13 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
         // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
         final List<EntityListWithPosition> filtered =
             filterErrors(entityLists).collect(Collectors.toList());
-        if (filtered
-                .parallelStream()
-                .map(entityList -> entityList.getEntities().size())
-                .collect(Collectors.toSet())
-                .size()
-            != 1) {
+        if (filtered.size() != 0
+            && filtered
+                    .parallelStream()
+                    .map(entityList -> entityList.getEntities().size())
+                    .collect(Collectors.toSet())
+                    .size()
+                != 1) {
           return postProcess(
               filtered
                   .parallelStream()
