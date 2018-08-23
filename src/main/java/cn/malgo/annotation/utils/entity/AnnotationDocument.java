@@ -36,12 +36,14 @@ public class AnnotationDocument {
    * @param position start & end
    * @return 完全包含在position范围内的所有entities
    */
-  public List<Entity> getEntitiesInside(final BratPosition position) {
+  public List<Entity> getEntitiesInside(final BratPosition position, boolean includeAnchor) {
     return entities
         .stream()
         .filter(
             entity ->
-                entity.getStart() >= position.getStart() && entity.getEnd() <= position.getEnd())
+                entity.getStart() >= position.getStart()
+                    && entity.getEnd() <= position.getEnd()
+                    && (includeAnchor || !StringUtils.equals(entity.getType(), "Anchor")))
         .collect(Collectors.toList());
   }
 
@@ -61,8 +63,10 @@ public class AnnotationDocument {
    * @param position start & end
    * @return 完全包含在position范围内的所有relations
    */
-  public List<RelationEntity> getRelationsInside(final BratPosition position) {
-    final Map<String, Entity> entityMap = DocumentUtils.getEntityMap(getEntitiesInside(position));
+  public List<RelationEntity> getRelationsInside(
+      final BratPosition position, boolean includeAnchor) {
+    final Map<String, Entity> entityMap =
+        DocumentUtils.getEntityMap(getEntitiesInside(position, includeAnchor));
     return relationEntities
         .stream()
         .filter(

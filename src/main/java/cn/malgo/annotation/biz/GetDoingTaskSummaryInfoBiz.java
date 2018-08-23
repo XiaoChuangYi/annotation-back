@@ -80,7 +80,7 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
             : outsourcingPriceCalculateService
                 .getUnitPriceByWordNum(taskTotalWordNum)
                 .multiply(BigDecimal.valueOf(taskTotalWordNum))
-                .divide(BigDecimal.valueOf(taskStaffNum));
+                .divide(BigDecimal.valueOf(taskStaffNum), 2, BigDecimal.ROUND_HALF_UP);
     return new TaskInfoVO(
         task.getName(),
         taskAnnotatedTotalWordNum,

@@ -103,6 +103,7 @@ public class AnnotationEstimateQueryBiz
               .stream()
               .map(
                   annotationStaffEvaluate ->
+                      // 暂定abandonBranchNum 为totalAbandonWordNum;暂定abandonWordNum为 当天放弃字数
                       new AnnotationEstimateVO(
                           annotationStaffEvaluate.getTaskId(),
                           annotationStaffEvaluate.getAssignee(),
