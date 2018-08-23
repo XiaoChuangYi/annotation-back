@@ -1,11 +1,13 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
@@ -32,6 +34,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,19 +47,24 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   private final AnnotationTaskRepository taskRepository;
   private final PersonalAnnotatedTotalWordNumRecordRepository
       personalAnnotatedEstimatePriceRepository;
+  private final AnnotationTaskRepository annotationTaskRepository;
+  private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
       final AnnotationFactory annotationFactory,
       final AnnotationRepository annotationRepository,
       final AnnotationTaskRepository taskRepository,
-      final PersonalAnnotatedTotalWordNumRecordRepository
-          personalAnnotatedEstimatePriceRepository) {
+      final PersonalAnnotatedTotalWordNumRecordRepository personalAnnotatedEstimatePriceRepository,
+      final AnnotationTaskRepository annotationTaskRepository,
+      final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationRepository = annotationRepository;
     this.annotationFactory = annotationFactory;
     this.taskRepository = taskRepository;
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
+    this.annotationTaskRepository = annotationTaskRepository;
+    this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
   }
 
   @Override
@@ -157,6 +165,112 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
     annotation.setPrecisionRate(pair.getLeft());
     annotation.setRecallRate(pair.getRight());
     annotation.setState(AnnotationStateEnum.CLEANED);
+  }
+
+  /** todo task/assignee级别 总字数，剩余字数，已标注字数；task/assignee/workDay级别的已标注字数 */
+  @Override
+  public void asyUpdateAnnotationStaffEvaluate(AnnotationTask task) {
+    log.info("asyncUpdateAnnotationEvaluate, start: {}", new Date());
+    final List<AnnotationNew> annotationNews = annotationRepository.findByTaskId(task.getId());
+    final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
+        getAnnotationStaffEvaluates(annotationNews, task);
+    annotationStaffEvaluates.forEach(
+        annotationStaffEvaluate -> {
+          final AnnotationStaffEvaluate updateAnnotationStaffEvaluate =
+              annotationStaffEvaluateRepository.findByTaskIdAndAssigneeAndWorkDay(
+                  annotationStaffEvaluate.getTaskId(),
+                  annotationStaffEvaluate.getAssignee(),
+                  annotationStaffEvaluate.getWorkDay());
+          if (updateAnnotationStaffEvaluate == null) {
+            final AnnotationStaffEvaluate current =
+                annotationStaffEvaluateRepository.save(annotationStaffEvaluate);
+            log.info("新增annotationStaffEvaluate，id为：{}", current.getId());
+          } else {
+            BeanUtils.copyProperties(annotationStaffEvaluate, updateAnnotationStaffEvaluate, "id");
+            annotationStaffEvaluateRepository.save(updateAnnotationStaffEvaluate);
+            log.info("更新annotationStaffEvaluate，id为：{}", updateAnnotationStaffEvaluate.getId());
+          }
+        });
+    log.info("asyncUpdateAnnotationEvaluate, end: {}", new Date());
+  }
+
+  private List<AnnotationStaffEvaluate> getAnnotationStaffEvaluates(
+      final List<AnnotationNew> annotationNews, final AnnotationTask task) {
+    final Map<Long, List<AnnotationNew>> assigneeMap =
+        annotationNews.stream().collect(Collectors.groupingBy(AnnotationNew::getAssignee));
+
+    return assigneeMap
+        .entrySet()
+        .stream()
+        .flatMap(
+            entry -> {
+              final int totalBranchNum =
+                  getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.TOTAL);
+              final int totalWordNum =
+                  getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.TOTAL);
+              final int restBranchNum =
+                  getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
+              final int restWordNum =
+                  getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
+
+              return entry
+                  .getValue()
+                  .stream()
+                  .collect(Collectors.groupingBy(ann -> getDate(ann.getCommitTimestamp())))
+                  .entrySet()
+                  .stream()
+                  .map(
+                      dateEntry ->
+                          new AnnotationStaffEvaluate(
+                              task.getId(),
+                              task.getName(),
+                              java.sql.Date.valueOf(dateEntry.getKey()),
+                              entry.getKey(),
+                              totalBranchNum,
+                              totalWordNum,
+                              getBranchNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                              getWordNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
+                              restBranchNum,
+                              restWordNum,
+                              0,
+                              0,
+                              null,
+                              null));
+            })
+        .collect(Collectors.toList());
+  }
+
+  private String getDate(Date timestamp) {
+    final Calendar calendar = Calendar.getInstance();
+    if (timestamp != null) {
+      calendar.setTime(timestamp);
+    }
+
+    return calendar.get(Calendar.YEAR)
+        + "-"
+        + (calendar.get(Calendar.MONTH) + 1)
+        + "-"
+        + calendar.get(Calendar.DATE);
+  }
+
+  private int getBranchNum(
+      final List<AnnotationNew> annotationNews, final AnnotationEvaluateStateEnum state) {
+    return annotationNews
+        .stream()
+        .filter(annotationNew -> state.getAnnotationStates().contains(annotationNew.getState()))
+        .collect(Collectors.toList())
+        .size();
+  }
+
+  private int getWordNum(
+      final List<AnnotationNew> annotationNews, final AnnotationEvaluateStateEnum state) {
+    return annotationNews
+        .stream()
+        .filter(annotationNew -> state.getAnnotationStates().contains(annotationNew.getState()))
+        .mapToInt(value -> value.getTerm().length())
+        .sum();
   }
 
   private List<Long> getBlockIds(

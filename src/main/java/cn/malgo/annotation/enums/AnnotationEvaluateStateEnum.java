@@ -12,7 +12,10 @@ public enum AnnotationEvaluateStateEnum {
           AnnotationTaskState.FINISHED,
           AnnotationTaskState.ANNOTATED,
           AnnotationTaskState.PRE_CLEAN),
-      Arrays.asList(AnnotationStateEnum.SUBMITTED)),
+      Arrays.asList(
+          AnnotationStateEnum.SUBMITTED,
+          AnnotationStateEnum.PRE_CLEAN,
+          AnnotationStateEnum.CLEANED)),
   REST(
       Arrays.asList(AnnotationTaskState.CREATED, AnnotationTaskState.DOING),
       Arrays.asList(AnnotationStateEnum.PRE_ANNOTATION, AnnotationStateEnum.ANNOTATION_PROCESSING));
