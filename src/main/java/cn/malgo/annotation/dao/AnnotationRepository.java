@@ -55,4 +55,7 @@ public interface AnnotationRepository
 
   List<AnnotationNew> findByAssigneeAndStateIn(
       long assigneeId, List<AnnotationStateEnum> annotationStateEnums);
+
+  List<AnnotationNew> findByTaskIdEqualsAndStateNotIn(
+      long taskId, List<AnnotationStateEnum> annotationStateEnums);
 }

@@ -171,7 +171,9 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   @Override
   public void asyUpdateAnnotationStaffEvaluate(AnnotationTask task) {
     log.info("asyncUpdateAnnotationEvaluate, start: {}", new Date());
-    final List<AnnotationNew> annotationNews = annotationRepository.findByTaskId(task.getId());
+    final List<AnnotationNew> annotationNews =
+        annotationRepository.findByTaskIdEqualsAndStateNotIn(
+            task.getId(), Arrays.asList(AnnotationStateEnum.UN_DISTRIBUTED));
     final List<AnnotationStaffEvaluate> annotationStaffEvaluates =
         getAnnotationStaffEvaluates(annotationNews, task);
     annotationStaffEvaluates.forEach(
