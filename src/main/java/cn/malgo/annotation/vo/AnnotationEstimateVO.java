@@ -20,7 +20,7 @@ public class AnnotationEstimateVO {
   private int currentAnnotatedWordNum;
   private int restBranch;
   private int restWordNum;
-  private int currentAbandonBranch;
+  private int totalAbandonWordNum;
   private int currentAbandonWordNum;
 
   private Double preciseRate;

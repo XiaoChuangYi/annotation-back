@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -139,6 +140,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
             annotationNew -> {
               annotationNew.setAssignee(0);
               annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
+              annotationNew.setExpirationTime(null);
               annotationRepository.save(annotationNew);
             });
   }
@@ -209,6 +211,9 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                   getBranchNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
               final int restWordNum =
                   getWordNum(entry.getValue(), AnnotationEvaluateStateEnum.REST);
+              // 暂定abandonBranchNum 为totalAbandonWordNum;暂定abandonWordNum为 当天放弃字数
+              final int totalAbandonWordNum =
+                  getAbandonWordNum(entry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED);
 
               return entry
                   .getValue()
@@ -231,8 +236,9 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                                   dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
                               restBranchNum,
                               restWordNum,
-                              0,
-                              0,
+                              totalAbandonWordNum,
+                              getAbandonWordNum(
+                                  dateEntry.getValue(), AnnotationEvaluateStateEnum.ANNOTATED),
                               null,
                               null));
             })
@@ -259,6 +265,18 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         .filter(annotationNew -> state.getAnnotationStates().contains(annotationNew.getState()))
         .collect(Collectors.toList())
         .size();
+  }
+
+  private int getAbandonWordNum(
+      final List<AnnotationNew> annotationNews, final AnnotationEvaluateStateEnum state) {
+    return annotationNews
+        .parallelStream()
+        .filter(
+            annotationNew ->
+                state.getAnnotationStates().contains(annotationNew.getState())
+                    && StringUtils.isBlank(annotationNew.getFinalAnnotation()))
+        .mapToInt(value -> value.getTerm().length())
+        .sum();
   }
 
   private int getWordNum(
