@@ -56,14 +56,6 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
     return AnnotationErrorEnum.ENTITY_CONSISTENCY;
   }
 
-  private Set<Long> getTermAnnotations(final String term, final List<Annotation> annotations) {
-    return annotations
-        .parallelStream()
-        .filter(ann -> StringUtils.contains(ann.getDocument().getText(), term))
-        .map(Annotation::getId)
-        .collect(Collectors.toSet());
-  }
-
   @Override
   public List<AlgorithmAnnotationWordError> find(final List<Annotation> annotations) {
     final Comparator<String> comparator = (lhs, rhs) -> rhs.length() - lhs.length();
@@ -119,11 +111,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
                         .parallelStream()
                         .flatMap(id -> this.getTermEntities(annotationMap.get(id), entry.getKey()))
                         .collect(Collectors.toList()))
-            .filter(
-                entityLists ->
-                    !entityLists
-                        .parallelStream()
-                        .allMatch(entityList -> entityList.getEntities().size() == 1))
+            .filter(entityLists -> !isSingleEntitySize(entityLists))
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
 
@@ -131,9 +119,14 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
     return postProcess(
         Lists.partition(entityListWithPosition, this.batchSize)
-            .stream()
+            .parallelStream()
             // 过滤已经被处理过的错误
             .flatMap(this::filterErrors)
+            .collect(Collectors.groupingBy(EntityListWithPosition::getTerm))
+            .values()
+            .parallelStream()
+            .filter(entityLists -> !isSingleEntitySize(entityLists))
+            .flatMap(Collection::stream)
             .map(
                 entityList ->
                     new WordErrorWithPosition(
@@ -254,6 +247,20 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
     annotation.setAnnotation(AnnotationDocumentManipulator.toBratAnnotations(document));
     return Collections.emptyList();
+  }
+
+  private Set<Long> getTermAnnotations(final String term, final List<Annotation> annotations) {
+    return annotations
+        .parallelStream()
+        .filter(ann -> StringUtils.contains(ann.getDocument().getText(), term))
+        .map(Annotation::getId)
+        .collect(Collectors.toSet());
+  }
+
+  private boolean isSingleEntitySize(List<EntityListWithPosition> entityLists) {
+    return entityLists
+        .parallelStream()
+        .allMatch(entityList -> entityList.getEntities().size() == 1);
   }
 
   private Stream<EntityListWithPosition> getTermEntities(
