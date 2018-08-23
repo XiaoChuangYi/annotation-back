@@ -60,7 +60,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
   public List<AlgorithmAnnotationWordError> find(final List<Annotation> annotations) {
     final Comparator<String> comparator = (lhs, rhs) -> rhs.length() - lhs.length();
 
-    final List<String> terms =
+    final Set<String> terms =
         annotations
             .parallelStream()
             .flatMap(
@@ -68,8 +68,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
             .filter(term -> StringUtils.isNotBlank(term) && !IGNORE_WORDS.contains(term))
             .collect(Collectors.toSet())
             .parallelStream()
-            .sorted(comparator)
-            .collect(Collectors.toList());
+            .collect(Collectors.toSet());
 
     log.info("get all terms size: {}", terms.size());
 
@@ -95,6 +94,8 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
         .forEach(
             entry -> entry.getValue().addAll(getTermAnnotations(entry.getKey(), newAnnotations)));
 
+    cachedTerms.keySet().removeIf(term -> !terms.contains(term));
+
     log.info("cached terms size: {}", cachedTerms.size());
 
     final Map<Long, Annotation> annotationMap =
@@ -111,7 +112,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
                         .parallelStream()
                         .flatMap(id -> this.getTermEntities(annotationMap.get(id), entry.getKey()))
                         .collect(Collectors.toList()))
-            .filter(entityLists -> !isSingleEntitySize(entityLists))
+            .filter(this::isEntityInconsistency)
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
 
@@ -125,7 +126,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
             .collect(Collectors.groupingBy(EntityListWithPosition::getTerm))
             .values()
             .parallelStream()
-            .filter(entityLists -> !isSingleEntitySize(entityLists))
+            .filter(this::isEntityInconsistency)
             .flatMap(Collection::stream)
             .map(
                 entityList ->
@@ -258,8 +259,14 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
         .collect(Collectors.toSet());
   }
 
-  private boolean isSingleEntitySize(List<EntityListWithPosition> entityLists) {
-    return entityLists.parallelStream().allMatch(entityList -> entityList.getEntitySize() == 1);
+  private boolean isEntityInconsistency(List<EntityListWithPosition> entityLists) {
+    final Set<Integer> sizes =
+        entityLists
+            .parallelStream()
+            .map(EntityListWithPosition::getEntitySize)
+            .collect(Collectors.toSet());
+
+    return sizes.contains(1) && sizes.size() != 1;
   }
 
   private Stream<EntityListWithPosition> getTermEntities(
