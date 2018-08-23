@@ -198,6 +198,7 @@ public class AnnotationServiceImpl implements AnnotationService {
                 int k = i % userIdList.size();
                 resultAnnotationNews.get(i).setAssignee(userIdList.get(k));
                 resultAnnotationNews.get(i).setState(AnnotationStateEnum.PRE_ANNOTATION);
+                resultAnnotationNews.get(i).setExpirationTime(getExpirationTime().getTime());
               });
       annotationRepository.saveAll(resultAnnotationNews);
     }

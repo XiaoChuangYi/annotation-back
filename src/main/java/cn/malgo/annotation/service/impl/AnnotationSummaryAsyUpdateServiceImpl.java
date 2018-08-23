@@ -27,11 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -47,7 +45,6 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   private final AnnotationTaskRepository taskRepository;
   private final PersonalAnnotatedTotalWordNumRecordRepository
       personalAnnotatedEstimatePriceRepository;
-  private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
 
   public AnnotationSummaryAsyUpdateServiceImpl(
@@ -56,14 +53,12 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
       final AnnotationRepository annotationRepository,
       final AnnotationTaskRepository taskRepository,
       final PersonalAnnotatedTotalWordNumRecordRepository personalAnnotatedEstimatePriceRepository,
-      final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.annotationRepository = annotationRepository;
     this.annotationFactory = annotationFactory;
     this.taskRepository = taskRepository;
     this.personalAnnotatedEstimatePriceRepository = personalAnnotatedEstimatePriceRepository;
-    this.annotationTaskRepository = annotationTaskRepository;
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
   }
 
