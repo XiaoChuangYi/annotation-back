@@ -11,4 +11,6 @@ public interface AnnotationSummaryService {
   void updateAnnotationStateByExpirationTime(AnnotationTask task);
 
   void updateAnnotationPrecisionAndRecallRate(AnnotationNew annotation);
+
+  void asyUpdateAnnotationStaffEvaluate(AnnotationTask task);
 }
