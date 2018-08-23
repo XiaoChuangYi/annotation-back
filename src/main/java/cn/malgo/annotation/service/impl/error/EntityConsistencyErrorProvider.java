@@ -131,7 +131,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
                 entityList ->
                     new WordErrorWithPosition(
                         entityList.getTerm(),
-                        entityList.getEntities().size() == 1 ? "单一实体" : "子图",
+                        entityList.getEntitySize() == 1 ? "单一实体" : "子图",
                         entityList.getPosition(),
                         entityList.getAnnotation(),
                         null))
@@ -222,11 +222,12 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
               "target"));
     }
 
-    final List<Entity> oldEntities = document.getEntitiesInside(new BratPosition(start, end));
+    final List<Entity> oldEntities =
+        document.getEntitiesInside(new BratPosition(start, end), false);
     final Map<String, Entity> oldEntityMap = DocumentUtils.getEntityMap(oldEntities);
     final List<RelationEntity> oldRelations = document.getRelationsOutsideToInside(oldEntities);
     final List<RelationEntity> invalidRelations =
-        document.getRelationsInside(new BratPosition(start, end));
+        document.getRelationsInside(new BratPosition(start, end), false);
     final String activeTag = createdEntities.get(activeEntity).getTag();
 
     document.getEntities().removeAll(oldEntities);
@@ -258,9 +259,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
   }
 
   private boolean isSingleEntitySize(List<EntityListWithPosition> entityLists) {
-    return entityLists
-        .parallelStream()
-        .allMatch(entityList -> entityList.getEntities().size() == 1);
+    return entityLists.parallelStream().allMatch(entityList -> entityList.getEntitySize() == 1);
   }
 
   private Stream<EntityListWithPosition> getTermEntities(
@@ -288,7 +287,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
       }
 
       // 找到所有在这个文本范围内的entity
-      final List<Entity> entities = document.getEntitiesInside(position);
+      final List<Entity> entities = document.getEntitiesInside(position, false);
       if (entities.size() == 0) {
         index = end;
         continue;
@@ -336,7 +335,19 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
   static class EntityListWithPosition implements AnnotationWithPosition {
     private final BratPosition position;
     private final Annotation annotation;
-    private final List<Entity> entities;
+    private final int entitySize;
+
+    public EntityListWithPosition(
+        final BratPosition position, final Annotation annotation, final List<Entity> entities) {
+      this.position = position;
+      this.annotation = annotation;
+      this.entitySize =
+          entities
+              .stream()
+              .map(entity -> new BratPosition(entity.getStart(), entity.getEnd()))
+              .collect(Collectors.toSet())
+              .size();
+    }
 
     String getTerm() {
       return annotation.getDocument().getText().substring(position.getStart(), position.getEnd());

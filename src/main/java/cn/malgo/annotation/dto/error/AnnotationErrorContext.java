@@ -59,7 +59,7 @@ public class AnnotationErrorContext implements FixAnnotationErrorContext {
 
     if (document.getRelationEntities().size() != 0) {
       // 包含关联
-      final List<Entity> entities = document.getEntitiesInside(position);
+      final List<Entity> entities = document.getEntitiesInside(position, true);
       final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
       start = Math.min(start, DocumentUtils.getMinStart(document, relations));
       end = Math.max(end, DocumentUtils.getMaxEnd(document, relations));
