@@ -19,28 +19,49 @@ import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 public class EntityConsistencyErrorProvider extends BaseErrorProvider {
+  private final int batchSize;
+  private Set<Long> cachedAnnotationIds = new HashSet<>(100000);
+  private Map<String, Set<Long>> cachedTerms = new HashMap<>(100000);
+
   public EntityConsistencyErrorProvider(
-      final AnnotationFixLogRepository annotationFixLogRepository) {
+      final AnnotationFixLogRepository annotationFixLogRepository,
+      @Value("${malgo.annotation.fix-log-batch-size}") final int batchSize) {
     super(annotationFixLogRepository);
+
+    this.batchSize = batchSize;
   }
 
   @Override
   public AnnotationErrorEnum getErrorEnum() {
     return AnnotationErrorEnum.ENTITY_CONSISTENCY;
+  }
+
+  private Set<Long> getTermAnnotations(final String term, final List<Annotation> annotations) {
+    return annotations
+        .parallelStream()
+        .filter(ann -> StringUtils.contains(ann.getDocument().getText(), term))
+        .map(Annotation::getId)
+        .collect(Collectors.toSet());
   }
 
   @Override
@@ -58,43 +79,71 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
             .sorted(comparator)
             .collect(Collectors.toList());
 
-    for (final String term : terms) {
-      final List<EntityListWithPosition> entityLists =
-          annotations
-              .parallelStream()
-              .flatMap(annotation -> this.getTermEntities(annotation, term))
-              .collect(Collectors.toList());
+    log.info("get all terms size: {}", terms.size());
 
-      if (!entityLists
-          .parallelStream()
-          .allMatch(entityList -> entityList.getEntities().size() == 1)) {
-        // 如果找到的entityList中存在不是整个子串的，则表示有不一致性
-        final List<EntityListWithPosition> filtered =
-            filterErrors(entityLists).collect(Collectors.toList());
-        if (filtered
-                .parallelStream()
-                .map(entityList -> entityList.getEntities().size())
-                .collect(Collectors.toSet())
-                .size()
-            != 1) {
-          return postProcess(
-              filtered
-                  .parallelStream()
-                  .map(
-                      entityList ->
-                          new WordErrorWithPosition(
-                              term,
-                              entityList.getEntities().size() == 1 ? "单一实体" : "子图",
-                              entityList.getPosition(),
-                              entityList.getAnnotation(),
-                              null))
-                  .collect(Collectors.toList()),
-              0);
-        }
-      }
-    }
+    cachedTerms.putAll(
+        terms
+            .parallelStream()
+            .filter(term -> !cachedTerms.containsKey(term))
+            .collect(
+                Collectors.toMap(term -> term, term -> getTermAnnotations(term, annotations))));
 
-    return Collections.emptyList();
+    final List<Annotation> newAnnotations =
+        annotations
+            .parallelStream()
+            .filter(ann -> !cachedAnnotationIds.contains(ann.getId()))
+            .collect(Collectors.toList());
+
+    cachedAnnotationIds.addAll(
+        newAnnotations.parallelStream().map(Annotation::getId).collect(Collectors.toSet()));
+
+    cachedTerms
+        .entrySet()
+        .parallelStream()
+        .forEach(
+            entry -> entry.getValue().addAll(getTermAnnotations(entry.getKey(), newAnnotations)));
+
+    log.info("cached terms size: {}", cachedTerms.size());
+
+    final Map<Long, Annotation> annotationMap =
+        annotations.parallelStream().collect(Collectors.toMap(Annotation::getId, ann -> ann));
+
+    final List<EntityListWithPosition> entityListWithPosition =
+        cachedTerms
+            .entrySet()
+            .parallelStream()
+            .map(
+                entry ->
+                    entry
+                        .getValue()
+                        .parallelStream()
+                        .flatMap(id -> this.getTermEntities(annotationMap.get(id), entry.getKey()))
+                        .collect(Collectors.toList()))
+            .filter(
+                entityLists ->
+                    !entityLists
+                        .parallelStream()
+                        .allMatch(entityList -> entityList.getEntities().size() == 1))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+
+    log.info("get all possible entities size: {}", entityListWithPosition.size());
+
+    return postProcess(
+        Lists.partition(entityListWithPosition, this.batchSize)
+            .stream()
+            // 过滤已经被处理过的错误
+            .flatMap(this::filterErrors)
+            .map(
+                entityList ->
+                    new WordErrorWithPosition(
+                        entityList.getTerm(),
+                        entityList.getEntities().size() == 1 ? "单一实体" : "子图",
+                        entityList.getPosition(),
+                        entityList.getAnnotation(),
+                        null))
+            .collect(Collectors.toList()),
+        0);
   }
 
   @Override
@@ -211,7 +260,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
       final Annotation annotation, final String targetTerm) {
     final AnnotationDocument document = annotation.getDocument();
 
-    if (!StringUtils.contains(document.getText(), targetTerm)) {
+    if (document.getEntities().size() == 0) {
       return Stream.empty();
     }
 
@@ -281,5 +330,9 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
     private final BratPosition position;
     private final Annotation annotation;
     private final List<Entity> entities;
+
+    String getTerm() {
+      return annotation.getDocument().getText().substring(position.getStart(), position.getEnd());
+    }
   }
 }
