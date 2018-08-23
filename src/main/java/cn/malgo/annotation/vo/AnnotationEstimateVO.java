@@ -23,6 +23,6 @@ public class AnnotationEstimateVO {
   private int currentAbandonBranch;
   private int currentAbandonWordNum;
 
-  private double preciseRate;
-  private double recallRate;
+  private Double preciseRate;
+  private Double recallRate;
 }
