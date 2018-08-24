@@ -1,12 +1,14 @@
 package cn.malgo.annotation.biz;
 
 import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.UserAccount;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
@@ -17,12 +19,14 @@ import cn.malgo.service.exception.InvalidInputException;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.Predicate;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,14 +41,17 @@ public class AnnotationEstimateQueryBiz
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
   private final UserAccountRepository userAccountRepository;
   private final AnnotationTaskRepository taskRepository;
+  private final AnnotationRepository annotationRepository;
 
   public AnnotationEstimateQueryBiz(
       final UserAccountRepository userAccountRepository,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
-      final AnnotationTaskRepository taskRepository) {
+      final AnnotationTaskRepository taskRepository,
+      final AnnotationRepository annotationRepository) {
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
     this.userAccountRepository = userAccountRepository;
     this.taskRepository = taskRepository;
+    this.annotationRepository = annotationRepository;
   }
 
   private static Specification<AnnotationStaffEvaluate> queryAnnotationStaffEvaluateCondition(
@@ -66,32 +73,31 @@ public class AnnotationEstimateQueryBiz
   }
 
   @Override
-  protected void validateRequest(AnnotationEstimateQueryRequest annotationEstimateQueryRequest)
+  protected void validateRequest(AnnotationEstimateQueryRequest request)
       throws InvalidInputException {
-    if (annotationEstimateQueryRequest.getTaskId() <= 0) {
+    if (request.getTaskId() <= 0) {
       throw new InvalidInputException("invalid-task-id", "无效的参数taskId");
     }
 
-    if (annotationEstimateQueryRequest.getPageIndex() <= 0) {
+    if (request.getPageIndex() <= 0) {
       throw new InvalidInputException("invalid-page-index", "无效的参数pageIndex");
     }
 
-    if (annotationEstimateQueryRequest.getPageSize() <= 0) {
+    if (request.getPageSize() <= 0) {
       throw new InvalidInputException("invalid-page-size", "无效的参数pageSize");
     }
   }
 
   @Override
-  public AnnotationStaffEvaluateVO doBiz(
-      AnnotationEstimateQueryRequest annotationEstimateQueryRequest) {
-    final int pageIndex = annotationEstimateQueryRequest.getPageIndex() - 1;
+  public AnnotationStaffEvaluateVO doBiz(AnnotationEstimateQueryRequest request) {
+    final int pageIndex = request.getPageIndex() - 1;
     Page<AnnotationStaffEvaluate> page =
         annotationStaffEvaluateRepository.findAll(
-            queryAnnotationStaffEvaluateCondition(annotationEstimateQueryRequest),
-            PageRequest.of(pageIndex, annotationEstimateQueryRequest.getPageSize()));
+            queryAnnotationStaffEvaluateCondition(request),
+            PageRequest.of(pageIndex, request.getPageSize()));
     final PageVO<AnnotationEstimateVO> pageVO = new PageVO<>(page.getTotalElements());
     final List<AnnotationStaffEvaluate> annotationStaffEvaluates = page.getContent();
-    final AnnotationTask task = taskRepository.getOne(annotationEstimateQueryRequest.getTaskId());
+    final AnnotationTask task = taskRepository.getOne(request.getTaskId());
     if (annotationStaffEvaluates.size() > 0) {
       final Map<Long, String> userMap =
           userAccountRepository
@@ -122,20 +128,34 @@ public class AnnotationEstimateQueryBiz
                           annotationStaffEvaluate.getRecallRate()))
               .collect(Collectors.toList()));
     }
-
+    final int totalAbandonWordNum =
+        annotationRepository
+            .findByTaskIdAndStateIn(
+                request.getTaskId(),
+                Arrays.asList(
+                    AnnotationStateEnum.SUBMITTED,
+                    AnnotationStateEnum.PRE_CLEAN,
+                    AnnotationStateEnum.CLEANED))
+            .parallelStream()
+            .filter(annotationNew -> StringUtils.isBlank(annotationNew.getFinalAnnotation()))
+            .mapToInt(value -> value.getTerm().length())
+            .sum();
     return new AnnotationStaffEvaluateVO(
         pageVO,
         new CurrentTaskOverviewPair(
             task.getTotalBranchNum(),
             task.getTotalWordNum(),
+            totalAbandonWordNum,
             task.getPrecisionRate(),
             task.getRecallRate()));
   }
 
   @Value
   public static class CurrentTaskOverviewPair {
+
     private final int taskTotalBranch;
     private final int taskTotalWordNum;
+    private final int taskTotalAbandonWordNum;
 
     @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
     private final Double taskPreciseRate;
