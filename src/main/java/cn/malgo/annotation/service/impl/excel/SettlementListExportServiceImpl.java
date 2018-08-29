@@ -196,7 +196,6 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
               * annotationNew.getRecallRate()
               / (annotationNew.getPrecisionRate() + annotationNew.getRecallRate());
     }
-    log.info("f1:{}", f1);
     return BigDecimal.valueOf(2)
         .multiply(BigDecimal.valueOf(f1.doubleValue()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
