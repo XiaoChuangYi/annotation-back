@@ -1,6 +1,7 @@
 package cn.malgo.annotation.controller.block;
 
 import cn.malgo.annotation.biz.CleanOutBlockBiz;
+import cn.malgo.annotation.biz.block.AnnotationBlockBatchAbandonBiz;
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockEntityMultipleBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockRelationBiz;
@@ -15,6 +16,7 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
+import cn.malgo.annotation.request.block.BatchAbandonBlockRequest;
 import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
@@ -55,6 +57,7 @@ public class AnnotationTaskBlockController extends BaseController {
   private final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz;
   private final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz;
   private final CleanOutBlockBiz cleanOutBlockBiz;
+  private final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz;
 
   public AnnotationTaskBlockController(
       final BlockNerUpdater blockNerUpdater,
@@ -68,7 +71,8 @@ public class AnnotationTaskBlockController extends BaseController {
       final BatchDeleteBlockEntityMultipleBiz batchDeleteBlockEntityMultipleBiz,
       final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz,
       final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz,
-      final CleanOutBlockBiz cleanOutBlockBiz) {
+      final CleanOutBlockBiz cleanOutBlockBiz,
+      final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz) {
     this.blockNerUpdater = blockNerUpdater;
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
@@ -81,6 +85,7 @@ public class AnnotationTaskBlockController extends BaseController {
     this.batchDeleteBlockRelationBiz = batchDeleteBlockRelationBiz;
     this.batchUpdateBlockRelationBiz = batchUpdateBlockRelationBiz;
     this.cleanOutBlockBiz = cleanOutBlockBiz;
+    this.annotationBlockBatchAbandonBiz = annotationBlockBatchAbandonBiz;
   }
 
   // ADMIN ACTIONS
@@ -199,5 +204,13 @@ public class AnnotationTaskBlockController extends BaseController {
   public Response cleanOutBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
     return new Response<>(cleanOutBlockBiz.process(null, userAccount));
+  }
+
+  /** 批量放弃未处理状态的语料 */
+  @RequestMapping(value = "/batch-abandon-block", method = RequestMethod.POST)
+  public Response batchAbandonBlock(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+      @RequestBody BatchAbandonBlockRequest request) {
+    return new Response<>(annotationBlockBatchAbandonBiz.process(request, userAccount));
   }
 }

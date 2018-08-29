@@ -9,6 +9,7 @@ import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,11 +44,11 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
       case 0:
         return BigDecimal.valueOf(0);
       case 1:
-        return BigDecimal.valueOf(2 * currentWordLength);
-      case 2:
         return BigDecimal.valueOf(3 * currentWordLength);
-      case 3:
+      case 2:
         return BigDecimal.valueOf(4 * currentWordLength);
+      case 3:
+        return BigDecimal.valueOf(5 * currentWordLength);
       case 4:
         return BigDecimal.valueOf(6 * currentWordLength);
       default:
@@ -63,6 +64,7 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
     final int taskTotalEfficientWordNum =
         annotationNews
             .parallelStream()
+            .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
             .mapToInt(annotationNew -> getEfficientWordNum(annotationNew, annotationNew.getTerm()))
             .sum();
     return getTaskPersonalPayment(taskTotalEfficientWordNum);
@@ -70,27 +72,27 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
 
   private BigDecimal getTaskPersonalPayment(int taskTotalEfficientWordNum) {
     if (0 < taskTotalEfficientWordNum && taskTotalEfficientWordNum < 20000) {
-      return BigDecimal.valueOf(2)
+      return BigDecimal.valueOf(3)
           .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum))
           .divide(BigDecimal.valueOf(100));
     } else if (taskTotalEfficientWordNum >= 20000 && taskTotalEfficientWordNum < 30000) {
-      return BigDecimal.valueOf(3)
+      return BigDecimal.valueOf(4)
           .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 20000))
           .divide(BigDecimal.valueOf(100))
-          .add(BigDecimal.valueOf(400));
+          .add(BigDecimal.valueOf(600));
     } else if (taskTotalEfficientWordNum >= 30000 && taskTotalEfficientWordNum < 40000) {
-      return BigDecimal.valueOf(4)
+      return BigDecimal.valueOf(5)
           .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 30000))
           .divide(BigDecimal.valueOf(100))
-          .add(BigDecimal.valueOf(400))
-          .add(BigDecimal.valueOf(300));
+          .add(BigDecimal.valueOf(600))
+          .add(BigDecimal.valueOf(400));
     } else if (taskTotalEfficientWordNum >= 40000) {
       return BigDecimal.valueOf(6)
           .multiply(BigDecimal.valueOf(taskTotalEfficientWordNum - 40000))
           .divide(BigDecimal.valueOf(100))
+          .add(BigDecimal.valueOf(600))
           .add(BigDecimal.valueOf(400))
-          .add(BigDecimal.valueOf(300))
-          .add(BigDecimal.valueOf(400));
+          .add(BigDecimal.valueOf(500));
     } else {
       return BigDecimal.valueOf(0);
     }
@@ -130,11 +132,11 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
       case 0:
         return BigDecimal.valueOf(0);
       case 1:
-        return BigDecimal.valueOf(2);
-      case 2:
         return BigDecimal.valueOf(3);
-      case 3:
+      case 2:
         return BigDecimal.valueOf(4);
+      case 3:
+        return BigDecimal.valueOf(5);
       case 4:
         return BigDecimal.valueOf(6);
       default:
