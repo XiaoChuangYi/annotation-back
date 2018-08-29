@@ -49,6 +49,6 @@ public class IntegrationPriceCalculateTest extends AbstractTransactionalTestNGSp
                 0L,
                 ""),
             sb.toString());
-    assertEquals(result, BigDecimal.valueOf(440.16));
+    assertEquals(result, BigDecimal.valueOf(640.16));
   }
 }
