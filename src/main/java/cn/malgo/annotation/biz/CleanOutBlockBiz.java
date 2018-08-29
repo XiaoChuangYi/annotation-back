@@ -15,10 +15,12 @@ import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequirePermission(Permissions.ADMIN)
+@Slf4j
 public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationRepository annotationRepository;
@@ -42,20 +44,24 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
   @Override
   protected Object doBiz(Void req, UserDetails user) {
     final List<AnnotationNew> annotations = annotationRepository.findAllPreClean();
+    log.info("start cleaning out all pre clean annotations: {}", annotations.size());
     annotationRepository.saveAll(
         annotations
             .stream()
             .peek(annotationSummaryService::updateAnnotationPrecisionAndRecallRate)
             .collect(Collectors.toList()));
+    log.info("call annotation news saved", annotations.size());
 
     final List<AnnotationTaskBlock> blocks =
         annotationTaskBlockRepository.findAllByStateIn(
             Collections.singletonList(AnnotationTaskState.PRE_CLEAN));
+    log.info("start changing block states", blocks.size());
     annotationTaskBlockRepository.saveAll(
         blocks
             .stream()
             .peek(block -> block.setState(AnnotationTaskState.FINISHED))
             .collect(Collectors.toList()));
+    log.info("block states all changed");
 
     taskRepository
         .findByStateIn(Collections.singletonList(AnnotationTaskState.FINISHED))
@@ -64,6 +70,7 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
               annotationSummaryService.updateTaskPersonalSummary(task);
               annotationSummaryService.updateTaskSummary(task.getId());
             });
+    log.info("all task summary updated");
 
     // annotationTaskBlockRepository.copyDataToRelease();
     return null;
