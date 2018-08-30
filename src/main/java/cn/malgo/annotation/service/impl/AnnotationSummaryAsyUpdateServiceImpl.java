@@ -81,6 +81,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
     annotations
         .parallelStream()
+        .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
         .entrySet()
         .forEach(
@@ -392,6 +393,7 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
         annotationTask.setPrecisionRate(
             annotations
                 .stream()
+                .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
                 .mapToDouble(AnnotationNew::getPrecisionRate)
                 .average()
                 .getAsDouble());
