@@ -61,7 +61,11 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       workbook = Workbook.createWorkbook(response.getOutputStream());
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
       setExcelColumn(sheet);
+
       final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
+      final Map<Long, String> taskMap = getTaskMap();
+      final Map<Long, String> userMap = getUserMap();
+
       IntStream.range(0, annotationNews.size())
           .forEach(
               k -> {
@@ -72,16 +76,16 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                 } catch (RowsExceededException e) {
                   e.printStackTrace();
                 }
+
                 try {
                   // 批次
                   sheet.addCell(
-                      new Label(
-                          0, k + 1, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
+                      new Label(0, k + 1, taskMap.getOrDefault(annotationNew.getTaskId(), "无批次")));
 
                   // 姓名
                   sheet.addCell(
                       new Label(
-                          1, k + 1, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
+                          1, k + 1, userMap.getOrDefault(annotationNew.getAssignee(), "无名氏")));
 
                   // ID
                   sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
