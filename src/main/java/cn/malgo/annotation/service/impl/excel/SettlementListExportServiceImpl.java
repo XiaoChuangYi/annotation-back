@@ -22,6 +22,8 @@ import jxl.format.Colour;
 import jxl.format.UnderlineStyle;
 import jxl.format.VerticalAlignment;
 import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.NumberFormats;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
@@ -70,30 +72,43 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                   e.printStackTrace();
                 }
                 try {
+                  // 批次
                   sheet.addCell(
                       new Label(
                           0, k + 1, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
+
+                  // 姓名
                   sheet.addCell(
                       new Label(
                           1, k + 1, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
-                  sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
-                  sheet.addCell(
-                      new Label(3, k + 1, getCurrentAnnotatedWordNum(annotationNew) + "字"));
 
+                  // ID
+                  sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
+
+                  // 字数
                   sheet.addCell(
-                      new Label(
+                      new Number(
+                          3,
+                          k + 1,
+                          getCurrentAnnotatedWordNum(annotationNew),
+                          new WritableCellFormat(NumberFormats.PERCENT_FLOAT)));
+
+                  // F1
+                  sheet.addCell(
+                      new Number(
                           4,
                           k + 1,
-                          new BigDecimal(annotationNew.getPrecisionRate())
-                                      .setScale(2, BigDecimal.ROUND_HALF_UP)
-                                      .doubleValue()
-                                  * 100
-                              + "%"));
+                          new BigDecimal(getF1(annotationNew))
+                              .setScale(2, BigDecimal.ROUND_HALF_UP)
+                              .doubleValue()));
 
-                  sheet.addCell(new Label(5, k + 1, "每100字2元"));
+                  // 单价
+                  sheet.addCell(new Label(5, k + 1, "每100字3元"));
 
+                  // 当前条价格
                   sheet.addCell(
-                      new Label(6, k + 1, getCurrentRecordTotalPrice(annotationNew) + ""));
+                      new Number(
+                          6, k + 1, getCurrentRecordTotalPrice(annotationNew).doubleValue()));
 
                 } catch (WriteException e) {
                   e.printStackTrace();
@@ -184,22 +199,23 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
-    final Double f1;
-    if (annotationNew.getPrecisionRate() == null || annotationNew.getRecallRate() == null) {
-      f1 = 0d;
-    } else if (annotationNew.getPrecisionRate() + annotationNew.getRecallRate() == 0) {
-      f1 = 0d;
-    } else {
-      f1 =
-          2
-              * annotationNew.getPrecisionRate()
-              * annotationNew.getRecallRate()
-              / (annotationNew.getPrecisionRate() + annotationNew.getRecallRate());
-    }
-    return BigDecimal.valueOf(2)
-        .multiply(BigDecimal.valueOf(f1.doubleValue()))
+    return BigDecimal.valueOf(3)
+        .multiply(BigDecimal.valueOf(getF1(annotationNew)))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
         .divide(BigDecimal.valueOf(100))
         .setScale(2, BigDecimal.ROUND_HALF_UP);
+  }
+
+  private double getF1(final AnnotationNew annotationNew) {
+    final Double precisionRate = annotationNew.getPrecisionRate();
+    final Double recallRate = annotationNew.getRecallRate();
+
+    if (precisionRate == null || recallRate == null) {
+      return 0d;
+    } else if (precisionRate + recallRate == 0) {
+      return 0d;
+    } else {
+      return 2 * precisionRate * recallRate / (precisionRate + recallRate);
+    }
   }
 }
