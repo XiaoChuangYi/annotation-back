@@ -9,7 +9,6 @@ import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -64,7 +63,6 @@ public class OutsourcingPriceCalculateServiceImpl implements OutsourcingPriceCal
     final int taskTotalEfficientWordNum =
         annotationNews
             .parallelStream()
-            .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
             .mapToInt(annotationNew -> getEfficientWordNum(annotationNew, annotationNew.getTerm()))
             .sum();
     return getTaskPersonalPayment(taskTotalEfficientWordNum);
