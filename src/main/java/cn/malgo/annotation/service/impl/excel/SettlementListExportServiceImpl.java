@@ -1,5 +1,6 @@
 package cn.malgo.annotation.service.impl.excel;
 
+import cn.malgo.annotation.constants.OutsourcePriceConsts;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
@@ -10,6 +11,7 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +33,6 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -98,7 +99,7 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                       new Number(
                           4,
                           k + 1,
-                          new BigDecimal(getF1(annotationNew))
+                          new BigDecimal(annotationNew.getF1())
                               .setScale(2, BigDecimal.ROUND_HALF_UP)
                               .doubleValue()));
 
@@ -115,13 +116,10 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                 }
               });
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (RowsExceededException e) {
-      e.printStackTrace();
-    } catch (WriteException e) {
+    } catch (IOException | WriteException e) {
       e.printStackTrace();
     }
+
     if (workbook != null) {
       workbook.write();
       workbook.close();
@@ -147,7 +145,6 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     sheet.addCell(new Label(0, 0, "麦歌标注系统结算清单", titleFormat));
   }
 
-  @NotNull
   private int getCurrentAnnotatedWordNum(AnnotationNew annotationNew) {
     return annotationNew.getTerm().length();
   }
@@ -199,23 +196,9 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
-    return BigDecimal.valueOf(3)
-        .multiply(BigDecimal.valueOf(getF1(annotationNew)))
+    return BigDecimal.valueOf(OutsourcePriceConsts.PRICE_STAGES.get(0).getPrice())
+        .multiply(BigDecimal.valueOf(annotationNew.getF1()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
-        .divide(BigDecimal.valueOf(100))
-        .setScale(2, BigDecimal.ROUND_HALF_UP);
-  }
-
-  private double getF1(final AnnotationNew annotationNew) {
-    final Double precisionRate = annotationNew.getPrecisionRate();
-    final Double recallRate = annotationNew.getRecallRate();
-
-    if (precisionRate == null || recallRate == null) {
-      return 0d;
-    } else if (precisionRate + recallRate == 0) {
-      return 0d;
-    } else {
-      return 2 * precisionRate * recallRate / (precisionRate + recallRate);
-    }
+        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
   }
 }

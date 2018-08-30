@@ -4,6 +4,7 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.service.entity.BaseEntity;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.alibaba.fastjson.annotation.JSONType;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -93,4 +94,17 @@ public class AnnotationNew extends BaseEntity {
   private long deleteToken = 0;
 
   @Transient private String userName;
+
+  public double getF1() {
+    final Double precisionRate = getPrecisionRate();
+    final Double recallRate = getRecallRate();
+
+    if (precisionRate == null || recallRate == null) {
+      return 0d;
+    } else if (precisionRate + recallRate == 0) {
+      return 0d;
+    } else {
+      return 2 * precisionRate * recallRate / (precisionRate + recallRate);
+    }
+  }
 }
