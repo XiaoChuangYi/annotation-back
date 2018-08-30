@@ -91,21 +91,15 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                   sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
 
                   // 字数
-                  sheet.addCell(
-                      new Number(
-                          3,
-                          k + 1,
-                          getCurrentAnnotatedWordNum(annotationNew),
-                          new WritableCellFormat(NumberFormats.PERCENT_FLOAT)));
+                  sheet.addCell(new Number(3, k + 1, getCurrentAnnotatedWordNum(annotationNew)));
 
                   // F1
                   sheet.addCell(
                       new Number(
                           4,
                           k + 1,
-                          new BigDecimal(annotationNew.getF1())
-                              .setScale(2, BigDecimal.ROUND_HALF_UP)
-                              .doubleValue()));
+                          annotationNew.getF1(),
+                          new WritableCellFormat(NumberFormats.PERCENT_FLOAT)));
 
                   // 单价
                   sheet.addCell(new Label(5, k + 1, "每100字3元"));
