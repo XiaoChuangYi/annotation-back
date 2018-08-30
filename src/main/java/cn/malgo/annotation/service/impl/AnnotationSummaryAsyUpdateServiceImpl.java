@@ -81,7 +81,6 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
 
     annotations
         .parallelStream()
-        .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
         .collect(Collectors.groupingBy(AnnotationNew::getAssignee))
         .entrySet()
         .forEach(
@@ -105,16 +104,22 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                     entry
                         .getValue()
                         .stream()
+                        .filter(
+                            annotationNew ->
+                                StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
                         .mapToDouble(AnnotationNew::getPrecisionRate)
                         .average()
-                        .getAsDouble());
+                        .orElse(0));
                 current.setRecallRate(
                     entry
                         .getValue()
                         .stream()
+                        .filter(
+                            annotationNew ->
+                                StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
                         .mapToDouble(AnnotationNew::getRecallRate)
                         .average()
-                        .getAsDouble());
+                        .orElse(0));
               }
 
               personalAnnotatedEstimatePriceRepository.save(current);
@@ -147,18 +152,19 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
   }
 
   @Override
-  public void updateAnnotationPrecisionAndRecallRate(AnnotationNew annotation) {
+  public void updateAnnotationPrecisionAndRecallRate(
+      final AnnotationNew annotation, final Map<Long, AnnotationTaskBlock> blockMap) {
     if (annotation.getState() != AnnotationStateEnum.PRE_CLEAN
         || annotation.getPrecisionRate() != null
-        || annotation.getRecallRate() != null) {
-      throw new IllegalStateException("invalid annotation state");
+        || annotation.getRecallRate() != null
+        || !blockMap.containsKey(annotation.getBlockId())) {
+      throw new IllegalStateException("invalid annotation state or block not found");
     }
 
     final Pair<Double, Double> pair =
         getInConformity(
             this.annotationFactory.create(annotation),
-            this.annotationFactory.create(
-                annotationTaskBlockRepository.getOne(annotation.getBlockId())));
+            this.annotationFactory.create(blockMap.get(annotation.getBlockId())));
 
     annotation.setPrecisionRate(pair.getLeft());
     annotation.setRecallRate(pair.getRight());
@@ -396,10 +402,15 @@ public class AnnotationSummaryAsyUpdateServiceImpl implements AnnotationSummaryS
                 .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
                 .mapToDouble(AnnotationNew::getPrecisionRate)
                 .average()
-                .getAsDouble());
+                .orElse(0));
 
         annotationTask.setRecallRate(
-            annotations.stream().mapToDouble(AnnotationNew::getRecallRate).average().getAsDouble());
+            annotations
+                .stream()
+                .filter(annotationNew -> StringUtils.isNotBlank(annotationNew.getFinalAnnotation()))
+                .mapToDouble(AnnotationNew::getRecallRate)
+                .average()
+                .orElse(0));
       }
     }
 
