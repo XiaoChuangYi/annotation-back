@@ -14,6 +14,7 @@ import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -44,11 +45,22 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
   @Override
   protected Object doBiz(Void req, UserDetails user) {
     final List<AnnotationNew> annotations = annotationRepository.findAllPreClean();
+    final Map<Long, AnnotationTaskBlock> blockMap =
+        annotationTaskBlockRepository
+            .findAllById(
+                annotations
+                    .parallelStream()
+                    .map(AnnotationNew::getBlockId)
+                    .collect(Collectors.toSet()))
+            .stream()
+            .collect(Collectors.toMap(AnnotationTaskBlock::getId, block -> block));
     log.info("start cleaning out all pre clean annotations: {}", annotations.size());
     annotationRepository.saveAll(
         annotations
             .stream()
-            .peek(annotationSummaryService::updateAnnotationPrecisionAndRecallRate)
+            .peek(
+                ann ->
+                    annotationSummaryService.updateAnnotationPrecisionAndRecallRate(ann, blockMap))
             .collect(Collectors.toList()));
     log.info("call annotation news saved", annotations.size());
 

@@ -1,5 +1,6 @@
 package cn.malgo.annotation.service.impl.excel;
 
+import cn.malgo.annotation.constants.OutsourcePriceConsts;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.dao.UserAccountRepository;
@@ -10,6 +11,7 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ import jxl.format.Colour;
 import jxl.format.UnderlineStyle;
 import jxl.format.VerticalAlignment;
 import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.NumberFormats;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
 import jxl.write.WritableSheet;
@@ -29,7 +33,6 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,7 +61,11 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
       workbook = Workbook.createWorkbook(response.getOutputStream());
       WritableSheet sheet = workbook.createSheet("麦歌标注系统结算清单", 0);
       setExcelColumn(sheet);
+
       final List<AnnotationNew> annotationNews = getAnnotationNews(taskId, assigneeId);
+      final Map<Long, String> taskMap = getTaskMap();
+      final Map<Long, String> userMap = getUserMap();
+
       IntStream.range(0, annotationNews.size())
           .forEach(
               k -> {
@@ -69,44 +76,48 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
                 } catch (RowsExceededException e) {
                   e.printStackTrace();
                 }
-                try {
-                  sheet.addCell(
-                      new Label(
-                          0, k + 1, getTaskMap().getOrDefault(annotationNew.getTaskId(), "无批次")));
-                  sheet.addCell(
-                      new Label(
-                          1, k + 1, getUserMap().getOrDefault(annotationNew.getAssignee(), "无名氏")));
-                  sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
-                  sheet.addCell(
-                      new Label(3, k + 1, getCurrentAnnotatedWordNum(annotationNew) + "字"));
 
+                try {
+                  // 批次
+                  sheet.addCell(
+                      new Label(0, k + 1, taskMap.getOrDefault(annotationNew.getTaskId(), "无批次")));
+
+                  // 姓名
                   sheet.addCell(
                       new Label(
+                          1, k + 1, userMap.getOrDefault(annotationNew.getAssignee(), "无名氏")));
+
+                  // ID
+                  sheet.addCell(new Label(2, k + 1, String.valueOf(annotationNew.getId())));
+
+                  // 字数
+                  sheet.addCell(new Number(3, k + 1, getCurrentAnnotatedWordNum(annotationNew)));
+
+                  // F1
+                  sheet.addCell(
+                      new Number(
                           4,
                           k + 1,
-                          new BigDecimal(annotationNew.getPrecisionRate())
-                                      .setScale(2, BigDecimal.ROUND_HALF_UP)
-                                      .doubleValue()
-                                  * 100
-                              + "%"));
+                          annotationNew.getF1(),
+                          new WritableCellFormat(NumberFormats.PERCENT_FLOAT)));
 
-                  sheet.addCell(new Label(5, k + 1, "每100字2元"));
+                  // 单价
+                  sheet.addCell(new Label(5, k + 1, "每100字3元"));
 
+                  // 当前条价格
                   sheet.addCell(
-                      new Label(6, k + 1, getCurrentRecordTotalPrice(annotationNew) + ""));
+                      new Number(
+                          6, k + 1, getCurrentRecordTotalPrice(annotationNew).doubleValue()));
 
                 } catch (WriteException e) {
                   e.printStackTrace();
                 }
               });
 
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (RowsExceededException e) {
-      e.printStackTrace();
-    } catch (WriteException e) {
+    } catch (IOException | WriteException e) {
       e.printStackTrace();
     }
+
     if (workbook != null) {
       workbook.write();
       workbook.close();
@@ -132,7 +143,6 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
     sheet.addCell(new Label(0, 0, "麦歌标注系统结算清单", titleFormat));
   }
 
-  @NotNull
   private int getCurrentAnnotatedWordNum(AnnotationNew annotationNew) {
     return annotationNew.getTerm().length();
   }
@@ -184,23 +194,9 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private BigDecimal getCurrentRecordTotalPrice(final AnnotationNew annotationNew) {
-    final Double f1;
-    if (annotationNew.getPrecisionRate() == null || annotationNew.getRecallRate() == null) {
-      f1 = 0d;
-    } else if (annotationNew.getPrecisionRate() + annotationNew.getRecallRate() == 0) {
-      f1 = 0d;
-    } else {
-      f1 =
-          2
-              * annotationNew.getPrecisionRate()
-              * annotationNew.getRecallRate()
-              / (annotationNew.getPrecisionRate() + annotationNew.getRecallRate());
-    }
-    log.info("f1:{}", f1);
-    return BigDecimal.valueOf(2)
-        .multiply(BigDecimal.valueOf(f1.doubleValue()))
+    return BigDecimal.valueOf(OutsourcePriceConsts.PRICE_STAGES.get(0).getPrice())
+        .multiply(BigDecimal.valueOf(annotationNew.getF1()))
         .multiply(BigDecimal.valueOf(getCurrentAnnotatedWordNum(annotationNew)))
-        .divide(BigDecimal.valueOf(100))
-        .setScale(2, BigDecimal.ROUND_HALF_UP);
+        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
   }
 }
