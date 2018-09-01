@@ -31,6 +31,7 @@
     <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
     <pageHelper-autoconfigure.version>1.2.5</pageHelper-autoconfigure.version>
     <pageHelper.version>5.1.4</pageHelper.version>
+    <auth-common.version>0.0.7-SNAPSHOT</auth-common.version>
   </properties>
 
   <dependencies>
@@ -91,6 +92,12 @@
       <groupId>net.sourceforge.jexcelapi</groupId>
       <artifactId>jxl</artifactId>
       <version>2.6.12</version>
+    </dependency>
+
+    <dependency>
+      <groupId>cn.malgo.auth.common</groupId>
+      <artifactId>java-auth-common</artifactId>
+      <version>${auth-common.version}</version>
     </dependency>
 
   </dependencies>

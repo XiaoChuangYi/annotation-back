@@ -9,6 +9,7 @@ import cn.malgo.annotation.biz.task.ListAnnotationTaskBlockBiz;
 import cn.malgo.annotation.biz.task.ListTaskDetailsBiz;
 import cn.malgo.annotation.biz.task.RefreshTaskSummaryBiz;
 import cn.malgo.annotation.biz.task.TerminateTaskBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
@@ -22,6 +23,7 @@ import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
 import cn.malgo.annotation.vo.AnnotationTaskDetailVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.annotation.vo.TaskInfoVO;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
@@ -34,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2/task")
-public class AnnotationTaskController extends BaseController {
+public class AnnotationTaskController {
 
   private final CreateTaskBiz createTaskBiz;
   private final AddBlocksToTaskBiz addBlocksToTaskBiz;
@@ -67,6 +69,7 @@ public class AnnotationTaskController extends BaseController {
     this.getDoingTaskSummaryInfoBiz = getDoingTaskSummaryInfoBiz;
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_INSERT)
   @RequestMapping(value = "/create", method = RequestMethod.POST)
   public Response<AnnotationTaskVO> create(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -74,6 +77,7 @@ public class AnnotationTaskController extends BaseController {
     return new Response<>(createTaskBiz.process(request, userAccount));
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_INSERT)
   @RequestMapping(value = "/add-blocks-to-task", method = RequestMethod.POST)
   public Response addBlocksToTask(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -82,6 +86,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 查询任务列表 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_LIST)
   @RequestMapping(value = "/list-annotation-tasks", method = RequestMethod.GET)
   public Response<PageVO<AnnotationTaskVO>> listAnnotationTask(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -90,6 +95,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 查询任务详情列表 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_DETAILS)
   @RequestMapping(value = "/list-task-details/{id}", method = RequestMethod.GET)
   public Response<AnnotationTaskDetailVO> listTaskDetails(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -99,6 +105,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 查询任务block列表 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_LIST)
   @RequestMapping(value = "/list-annotation-task-block", method = RequestMethod.GET)
   public Response<PageVO<AnnotationTaskBlockResponse>> listAnnotationTaskBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -108,6 +115,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 结束任务 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_TERMINATE)
   @RequestMapping(value = "/terminate-task", method = RequestMethod.POST)
   public Response terminateTask(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -116,6 +124,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 未覆盖度语料查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_UN_COVERAGE)
   @RequestMapping(value = "/get-un-covered-block", method = RequestMethod.GET)
   public Response<List<AnnotationTaskBlockResponse>> getUnCoveredBlocks(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -123,6 +132,7 @@ public class AnnotationTaskController extends BaseController {
     return new Response<>(getUnCoveredBlockBiz.process(getUnCoveredBlockRequest, userAccount));
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_SUMMARY_TASK_REFRESH)
   @RequestMapping(value = "/refresh-task-summary", method = RequestMethod.POST)
   public Response<AnnotationTaskVO> refreshTaskSummary(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -131,6 +141,7 @@ public class AnnotationTaskController extends BaseController {
   }
 
   /** 标注人员未结束批次统计数据查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_SUMMARY_DOING_TASK)
   @RequestMapping(value = "/get-doing-task-summary", method = RequestMethod.GET)
   public Response<TaskInfoVO> getDoingTaskSummary(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
