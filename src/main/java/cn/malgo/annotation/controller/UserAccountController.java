@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/v2")
 @Slf4j
 public class UserAccountController extends BaseController {
+
   private final ListUserAccountBiz listUserAccountBiz;
   private final AddUserAccountBiz addUserAccountBiz;
   private final ModifyUserPasswordBiz modifyUserPasswordBiz;

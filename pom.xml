@@ -24,14 +24,13 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-
-    <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
     <malgo.base-definition.version>2.1.0-SNAPSHOT</malgo.base-definition.version>
     <malgo.common-utils.version>2.1.0-SNAPSHOT</malgo.common-utils.version>
     <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
     <pageHelper-autoconfigure.version>1.2.5</pageHelper-autoconfigure.version>
     <pageHelper.version>5.1.4</pageHelper.version>
     <auth-common.version>0.0.7-SNAPSHOT</auth-common.version>
+    <spring-cloud.version>Finchley.SR1</spring-cloud.version>
   </properties>
 
   <dependencies>
@@ -98,6 +97,21 @@
       <groupId>cn.malgo.auth.common</groupId>
       <artifactId>java-auth-common</artifactId>
       <version>${auth-common.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-config-server</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
     </dependency>
 
   </dependencies>
