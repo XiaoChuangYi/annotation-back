@@ -28,12 +28,6 @@ public class BatchDeleteBlockBratTypeBiz extends BaseBiz<BatchDeleteBlockBratTyp
     if (request.getId() < 1) {
       throw new InvalidInputException("invalid-id", "无效的参数的id");
     }
-    if (request.getTags().size() == 0) {
-      throw new InvalidInputException("invalid-tags", "参数tags集合为空");
-    }
-    if (request.getRTags().size() == 0) {
-      throw new InvalidInputException("invalid-r-tags", "参数rTags集合为空");
-    }
   }
 
   @Override
