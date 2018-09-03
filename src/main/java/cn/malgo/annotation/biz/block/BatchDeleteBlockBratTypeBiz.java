@@ -4,6 +4,7 @@ import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.request.block.BatchDeleteBlockBratTypeRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class BatchDeleteBlockBratTypeBiz extends BaseBiz<BatchDeleteBlockBratTypeRequest, Object> {
+public class BatchDeleteBlockBratTypeBiz
+    extends BaseBiz<BatchDeleteBlockBratTypeRequest, AnnotationBlockBratVO> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
 
@@ -31,9 +33,9 @@ public class BatchDeleteBlockBratTypeBiz extends BaseBiz<BatchDeleteBlockBratTyp
   }
 
   @Override
-  protected Object doBiz(BatchDeleteBlockBratTypeRequest request, UserDetails userDetails) {
-    final AnnotationTaskBlock annotationTaskBlock =
-        annotationTaskBlockRepository.getOne(request.getId());
+  protected AnnotationBlockBratVO doBiz(
+      BatchDeleteBlockBratTypeRequest request, UserDetails userDetails) {
+    AnnotationTaskBlock annotationTaskBlock = annotationTaskBlockRepository.getOne(request.getId());
     if (annotationTaskBlock == null) {
       throw new BusinessRuleException(
           "there is no record corresponding to the current id", "没有当前id对应的记录");
@@ -43,6 +45,7 @@ public class BatchDeleteBlockBratTypeBiz extends BaseBiz<BatchDeleteBlockBratTyp
             annotationTaskBlock.getAnnotation(), request.getRTags());
     newAnnotation = AnnotationConvert.batchDeleteEntityAnnotation(newAnnotation, request.getTags());
     annotationTaskBlock.setAnnotation(newAnnotation);
-    return annotationTaskBlockRepository.save(annotationTaskBlock);
+    annotationTaskBlock = annotationTaskBlockRepository.save(annotationTaskBlock);
+    return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
   }
 }
