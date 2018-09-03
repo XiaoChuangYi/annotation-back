@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = "cn.malgo")
+@EnableDiscoveryClient
 @EnableFeignClients
 @EnableJpaAuditing
 @EnableScheduling
-@EnableDiscoveryClient
 public class AnnotationCombineApplication {
   public static void main(String[] args) {
     SpringApplication.run(AnnotationCombineApplication.class, args);
