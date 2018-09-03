@@ -10,7 +10,7 @@
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker pull $PULL_REPO"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker stop $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
     - ssh -p22 root@$CI_ENVIRONMENT_URL "docker rm -f $REPO_NAME-$CI_ENVIRONMENT_NAME || true"
-    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always -p $BIND_ADDRESS:9001 --name $REPO_NAME-$CI_ENVIRONMENT_NAME -m $MAX_MEMORY --env=MAX_MEMORY=$MAX_MEMORY --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
+    - ssh -p22 root@$CI_ENVIRONMENT_URL "docker run -d --restart=always -p $BIND_ADDRESS:9001 --name $REPO_NAME-$CI_ENVIRONMENT_NAME --env=MAX_MEMORY=$MAX_MEMORY --env=MEMORY_NEW_RATIO=$MEMORY_NEW_RATIO --log-driver=syslog -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/log4j2-spring.xml:/usr/src/app/log4j2-spring.xml -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/logs:/usr/src/logs -v /root/$REPO_NAME-$CI_ENVIRONMENT_NAME/application-prod.properties:/usr/src/app/application-prod.properties $PULL_REPO"
 
 stages:
   - package
@@ -75,6 +75,7 @@ deploy-test:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.199:9002
     MAX_MEMORY: 768m
+    MEMORY_NEW_RATIO: 4
   <<: *deploy_definition
 
 deploy-beta:
@@ -90,6 +91,7 @@ deploy-beta:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9003
     MAX_MEMORY: 1024m
+    MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
 
 deploy-prod:
@@ -107,4 +109,5 @@ deploy-prod:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9002
     MAX_MEMORY: 4096m
+    MEMORY_NEW_RATIO: 3
   <<: *deploy_definition

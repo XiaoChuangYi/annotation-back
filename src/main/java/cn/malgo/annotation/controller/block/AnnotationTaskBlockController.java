@@ -3,6 +3,7 @@ package cn.malgo.annotation.controller.block;
 import cn.malgo.annotation.biz.CleanOutBlockBiz;
 import cn.malgo.annotation.biz.block.AnnotationBlockBatchAbandonBiz;
 import cn.malgo.annotation.biz.block.AnnotationBlockResetToAnnotationBiz;
+import cn.malgo.annotation.biz.block.BatchDeleteBlockBratTypeBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockEntityMultipleBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockRelationBiz;
 import cn.malgo.annotation.biz.block.BatchUpdateBlockRelationBiz;
@@ -17,6 +18,7 @@ import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.request.block.BatchAbandonBlockRequest;
+import cn.malgo.annotation.request.block.BatchDeleteBlockBratTypeRequest;
 import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
@@ -34,6 +36,7 @@ import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
+import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,6 +61,7 @@ public class AnnotationTaskBlockController extends BaseController {
   private final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz;
   private final CleanOutBlockBiz cleanOutBlockBiz;
   private final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz;
+  private final BatchDeleteBlockBratTypeBiz batchDeleteBlockBratTypeBiz;
 
   public AnnotationTaskBlockController(
       final BlockNerUpdater blockNerUpdater,
@@ -72,7 +76,8 @@ public class AnnotationTaskBlockController extends BaseController {
       final BatchDeleteBlockRelationBiz batchDeleteBlockRelationBiz,
       final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz,
       final CleanOutBlockBiz cleanOutBlockBiz,
-      final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz) {
+      final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz,
+      final BatchDeleteBlockBratTypeBiz batchDeleteBlockBratTypeBiz) {
     this.blockNerUpdater = blockNerUpdater;
     this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
@@ -86,6 +91,7 @@ public class AnnotationTaskBlockController extends BaseController {
     this.batchUpdateBlockRelationBiz = batchUpdateBlockRelationBiz;
     this.cleanOutBlockBiz = cleanOutBlockBiz;
     this.annotationBlockBatchAbandonBiz = annotationBlockBatchAbandonBiz;
+    this.batchDeleteBlockBratTypeBiz = batchDeleteBlockBratTypeBiz;
   }
 
   // ADMIN ACTIONS
@@ -212,5 +218,11 @@ public class AnnotationTaskBlockController extends BaseController {
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       @RequestBody BatchAbandonBlockRequest request) {
     return new Response<>(annotationBlockBatchAbandonBiz.process(request, userAccount));
+  }
+
+  /** 批量删除指定id，对应的tag标签和rTag标签 */
+  @RequestMapping(value = "/batch-delete-block-brat-type", method = RequestMethod.POST)
+  public Response batchDeleteBlockBratType(@RequestBody BatchDeleteBlockBratTypeRequest request) {
+    return new Response<>(batchDeleteBlockBratTypeBiz.process(request, null));
   }
 }
