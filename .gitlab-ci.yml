@@ -75,6 +75,7 @@ deploy-test:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.199:9002
     MAX_MEMORY: 768m
+    MEMORY_NEW_RATIO: 4
   <<: *deploy_definition
 
 deploy-beta:
@@ -90,6 +91,7 @@ deploy-beta:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9003
     MAX_MEMORY: 1024m
+    MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
 
 deploy-prod:
@@ -107,4 +109,5 @@ deploy-prod:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9002
     MAX_MEMORY: 4096m
+    MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
