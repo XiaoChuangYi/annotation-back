@@ -65,7 +65,7 @@ public class GetUnCoveredBlockBiz
     }
     return annotationTaskBlocks
         .stream()
-        .map(block -> new AnnotationTaskBlockResponse(block, false))
+        .map(block -> new AnnotationTaskBlockResponse(block, "", false))
         .collect(Collectors.toList());
   }
 }
