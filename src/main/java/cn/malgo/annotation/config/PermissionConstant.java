@@ -4,6 +4,7 @@ package cn.malgo.annotation.config;
 public class PermissionConstant {
 
   public static final String ANNOTATION_BLOCK_LIST = "annotation:block:list";
+  public static final String ANNOTATION_BLOCK_DETAIL = "annotation:block:detail";
   public static final String ANNOTATION_BLOCK_UN_COVERAGE = "annotation:block:un-coverage";
   public static final String ANNOTATION_BLOCK_IMPORT = "annotation:block:insert"; // 新增语料
   public static final String ANNOTATION_BLOCK_INSERT = "annotation:block:add-to-batch"; // 添加语料到批次
@@ -22,6 +23,10 @@ public class PermissionConstant {
       "annotation:block:entity-search"; // 实体查询
   public static final String ANNOTATION_BLOCK_RELATION_SEARCH =
       "annotation:block:entity-search"; // 关联查询
+
+  public static final String ANNOTAITON_UPDATE_BLOCK_NER = "annotation:block:update-block-ner";
+  public static final String ANNOTAITON_UPDATE_BLOCK_NER_RATE =
+      "annotation:block:update-block-ner-rate";
 
   public static final String ANNOTATION_TYPE_LIST = "annotation:type:list"; // 标注类型列表
 
