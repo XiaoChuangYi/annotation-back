@@ -78,6 +78,11 @@ public class AnnotationTaskBlock extends BaseEntity {
   @NonNull
   private AnnotationTypeEnum annotationType;
 
+  @Getter
+  @Setter
+  @Column(name = "assignee", nullable = false)
+  private long assignee = 0L;
+
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "doc", orphanRemoval = true)
   @Getter
   private List<OriginalDocBlock> docBlocks = new ArrayList<>();
