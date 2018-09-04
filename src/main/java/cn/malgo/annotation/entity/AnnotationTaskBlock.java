@@ -80,7 +80,7 @@ public class AnnotationTaskBlock extends BaseEntity {
 
   @Getter
   @Setter
-  @Column(name = "assignee", nullable = false)
+  @Column(name = "assignee", nullable = false, columnDefinition = "BIGINT(20) default 0")
   private long assignee = 0L;
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "doc", orphanRemoval = true)
