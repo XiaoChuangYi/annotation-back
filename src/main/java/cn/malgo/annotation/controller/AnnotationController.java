@@ -7,6 +7,7 @@ import cn.malgo.annotation.biz.OneKeyDesignateAnnotationBiz;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
 import cn.malgo.annotation.biz.task.OneKeyAddBlocksToTaskBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
@@ -15,6 +16,7 @@ import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnTypeVO;
 import cn.malgo.annotation.vo.AnnotationBratVO;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
@@ -56,6 +58,7 @@ public class AnnotationController extends BaseController {
   }
 
   /** 条件，分页查询annotation列表 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_LIST)
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationBratVO>> listAnnotationCombine(
       ListAnnotationRequest request,
@@ -64,6 +67,7 @@ public class AnnotationController extends BaseController {
   }
 
   /** 根据Annotation的idList，以及用户id，批量指派给特定的用户 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DESIGNATE)
   @RequestMapping(value = "/designate-task-annotation", method = RequestMethod.POST)
   public Response designateTaskAnnotation(
       @RequestBody DesignateAnnotationRequest designateAnnotationRequest,
@@ -72,12 +76,14 @@ public class AnnotationController extends BaseController {
   }
 
   /** 查询分词标注类型列表 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TYPE_LIST)
   @RequestMapping(value = "/list-type", method = RequestMethod.GET)
   public Response<List<AnTypeVO>> listType() {
     return new Response<>(listAnTypeBiz.process(null, null));
   }
 
   /** 待标注/任务回收功能 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_RECYCLE)
   @RequestMapping(value = "/annotation-recycle", method = RequestMethod.POST)
   public Response annotationRecycle(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -86,6 +92,7 @@ public class AnnotationController extends BaseController {
   }
 
   /** 一键指派标注 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DESIGNATE)
   @RequestMapping(value = "/one-key-designate", method = RequestMethod.POST)
   public Response oneKeyDesignate(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -94,6 +101,7 @@ public class AnnotationController extends BaseController {
   }
 
   /** 一键添加语料到批次 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_INSERT)
   @RequestMapping(value = "/one-key-add-blocks-to-task", method = RequestMethod.POST)
   public Response oneKeyAddBlocksToTask(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -102,6 +110,7 @@ public class AnnotationController extends BaseController {
   }
 
   /** 获取未指派语料总字数 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UNDISTRIBUTED_WORD_NUM)
   @RequestMapping(value = "/get-un-distributed-word-num", method = RequestMethod.GET)
   public Response getUnDistributedWordNum(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {

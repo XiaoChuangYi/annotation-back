@@ -3,6 +3,7 @@ package cn.malgo.annotation.controller.task;
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.doc.ImportDocBiz;
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.entity.OriginalDoc;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.CreateBlocksFromDocVO;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
@@ -44,6 +46,7 @@ public class OriginalDocController extends BaseController {
     this.listOriginalDocBiz = listOriginalDocBiz;
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_DOC_IMPORT)
   @RequestMapping(value = "/import", method = RequestMethod.POST)
   public Response<List<OriginalDoc>> importDocs(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -56,6 +59,7 @@ public class OriginalDocController extends BaseController {
     return new Response<>(importDocBiz.process(request, permission -> true));
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_IMPORT)
   @RequestMapping(value = "/create-blocks", method = RequestMethod.POST)
   public Response<CreateBlocksFromDocVO> createBlocks(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -64,6 +68,7 @@ public class OriginalDocController extends BaseController {
   }
 
   /** 原始文本查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_DOC_LIST)
   @RequestMapping(value = "/list-doc", method = RequestMethod.GET)
   public Response<PageVO<OriginalDoc>> listOriginalDoc(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,

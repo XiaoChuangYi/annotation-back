@@ -8,6 +8,9 @@ public class PermissionConstant {
   public static final String ANNOTATION_BLOCK_UN_COVERAGE = "annotation:block:un-coverage";
   public static final String ANNOTATION_BLOCK_IMPORT = "annotation:block:insert"; // 新增语料
   public static final String ANNOTATION_BLOCK_INSERT = "annotation:block:add-to-batch"; // 添加语料到批次
+  public static final String ANNOTATION_BLOCK_ADD = "annotation:block:add"; // 添加语料到批次
+  public static final String ANNOTATION_BLOCK_DELETE = "annotation:block:delete";
+  public static final String ANNOTATION_BLOCK_UPDATE = "annotation:block:update";
   public static final String ANNOTATION_BLOCK_ABANDON = "annotation:block:abandon"; // 语料放弃
   public static final String ANNOTATION_BLOCK_BATCH_ENTITY_DELETE =
       "annotation:block:batch-entity-delete"; // 语料实体批量删除
@@ -23,6 +26,8 @@ public class PermissionConstant {
       "annotation:block:entity-search"; // 实体查询
   public static final String ANNOTATION_BLOCK_RELATION_SEARCH =
       "annotation:block:entity-search"; // 关联查询
+  public static final String ANNOTATION_BLOCK_OVERLAP_SEARCH =
+      "annotation:block:overlap-entity-search"; // 重叠实体查询
 
   public static final String ANNOTAITON_UPDATE_BLOCK_NER = "annotation:block:update-block-ner";
   public static final String ANNOTAITON_UPDATE_BLOCK_NER_RATE =
@@ -55,4 +60,10 @@ public class PermissionConstant {
   public static final String ANNOTATION_SUMMARY_DOING_TASK =
       "annotation:summary:doing-task"; // 进行中批次评估
   public static final String ANNOTATION_SUMMARY_TASK_REFRESH = "annotation:summary:refresh-task";
+
+  public static final String ANNOTATION_DOC_IMPORT = "annotation:doc:import";
+  public static final String ANNOTATION_DOC_LIST = "annotation:doc:list";
+
+  public static final String ANNOTATION_SUMMARY_EXPORT_EXCEL = "annotation:summary:excel-export";
+  public static final String ANNOTATION_SUMMARY_PERSONAL = "annotation:summary:person";
 }

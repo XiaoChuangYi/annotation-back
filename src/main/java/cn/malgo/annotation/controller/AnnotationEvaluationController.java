@@ -1,10 +1,12 @@
 package cn.malgo.annotation.controller;
 
 import cn.malgo.annotation.biz.AnnotationEstimateQueryBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -22,6 +24,7 @@ public class AnnotationEvaluationController extends BaseController {
     this.annotationEstimateQueryBiz = annotationEstimateQueryBiz;
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_SUMMARY_STAFF_ESTIMATE)
   @RequestMapping(value = "/query-annotation-estimate", method = RequestMethod.GET)
   public Response<AnnotationStaffEvaluateVO> queryAnnotationEstimate(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
