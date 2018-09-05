@@ -9,7 +9,6 @@ import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
-import cn.malgo.annotation.service.feigns.UserCenterClient;
 import cn.malgo.service.exception.BusinessRuleException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,13 +35,14 @@ import org.springframework.stereotype.Service;
 public class AnnotationServiceImpl implements AnnotationService {
 
   private final AnnotationRepository annotationRepository;
-  private final UserCenterClient userCenterClient;
+  private final UserCenterServiceImpl userCenterService;
 
   @Autowired
   public AnnotationServiceImpl(
-      final UserCenterClient userCenterClient, final AnnotationRepository annotationRepository) {
+      final UserCenterServiceImpl userCenterService,
+      final AnnotationRepository annotationRepository) {
     this.annotationRepository = annotationRepository;
-    this.userCenterClient = userCenterClient;
+    this.userCenterService = userCenterService;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -129,8 +129,8 @@ public class AnnotationServiceImpl implements AnnotationService {
 
     if (page.getTotalElements() > 0) {
       final Map<Long, String> userMap =
-          userCenterClient
-              .getUsers()
+          userCenterService
+              .getUsersByUserCenter()
               .stream()
               .collect(Collectors.toMap(User::getUserId, User::getNickName));
 

@@ -10,6 +10,7 @@ import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.service.feigns.UserCenterClient;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
@@ -39,17 +40,17 @@ public class AnnotationEstimateQueryBiz
     extends BaseBiz<AnnotationEstimateQueryRequest, AnnotationStaffEvaluateVO> {
 
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
-  private final UserCenterClient userCenterClient;
+  private final UserCenterService userCenterService;
   private final AnnotationTaskRepository taskRepository;
   private final AnnotationRepository annotationRepository;
 
   public AnnotationEstimateQueryBiz(
-      final UserCenterClient userCenterClient,
+      final UserCenterService userCenterService,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
       final AnnotationTaskRepository taskRepository,
       final AnnotationRepository annotationRepository) {
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
-    this.userCenterClient = userCenterClient;
+    this.userCenterService = userCenterService;
     this.taskRepository = taskRepository;
     this.annotationRepository = annotationRepository;
   }
@@ -100,8 +101,8 @@ public class AnnotationEstimateQueryBiz
     final AnnotationTask task = taskRepository.getOne(request.getTaskId());
     if (annotationStaffEvaluates.size() > 0) {
       final Map<Long, String> userMap =
-          userCenterClient
-              .getUsers()
+          userCenterService
+              .getUsersByUserCenter()
               .stream()
               .collect(Collectors.toMap(User::getUserId, User::getNickName));
       pageVO.setDataList(

@@ -8,6 +8,7 @@ import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
+import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.service.feigns.UserCenterClient;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -39,15 +40,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SettlementListExportServiceImpl implements SettlementListExportService {
 
-  private final UserCenterClient userCenterClient;
+  private final UserCenterService userCenterService;
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationRepository annotationRepository;
 
   public SettlementListExportServiceImpl(
-      final UserCenterClient userCenterClient,
+      final UserCenterService userCenterService,
       final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationRepository annotationRepository) {
-    this.userCenterClient = userCenterClient;
+    this.userCenterService = userCenterService;
     this.annotationTaskRepository = annotationTaskRepository;
     this.annotationRepository = annotationRepository;
   }
@@ -161,8 +162,8 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private Map<Long, String> getUserMap() {
-    return userCenterClient
-        .getUsers()
+    return userCenterService
+        .getUsersByUserCenter()
         .parallelStream()
         .collect(Collectors.toMap(User::getUserId, User::getNickName));
   }
