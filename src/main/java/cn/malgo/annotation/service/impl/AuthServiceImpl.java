@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 
-import cn.malgo.annotation.config.Consts;
 import cn.malgo.annotation.service.AuthService;
-import cn.malgo.annotation.utils.PostUtil;
+import cn.malgo.common.auth.AuthConstants;
 import cn.malgo.common.auth.RedisConfigService;
+import cn.malgo.common.auth.util.PostUtil;
 import lombok.extern.slf4j.Slf4j;
 /**
  * TODO 登录用户中心
@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
 			String ticket = data.getString("ticket");
 			if (StringUtils.isBlank(ticket))
 				return false;
-			redisConfigService.set(Consts.SYSTEM_TICKET, ticket);
+			redisConfigService.set(AuthConstants.ALL_SYSTEM_TICKET, ticket);
 			return true;
 		} catch (Exception e) {
 			log.error("AuthServiceImpl error", e);
