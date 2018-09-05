@@ -49,7 +49,7 @@ public class AnnotationBlockBatchAbandonBiz
             .stream()
             .map(
                 annotationTaskBlock -> {
-                  annotationTaskBlock.setState(AnnotationTaskState.PRE_CLEAN);
+                  annotationTaskBlock.setState(AnnotationTaskState.FINISHED);
                   annotationTaskBlock.setAnnotation("");
                   return annotationTaskBlock;
                 })
