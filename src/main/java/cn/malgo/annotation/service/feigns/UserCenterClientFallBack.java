@@ -1,5 +1,6 @@
 package cn.malgo.annotation.service.feigns;
 
+import cn.malgo.annotation.vo.UserInfo;
 import feign.hystrix.FallbackFactory;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,7 @@ public class UserCenterClientFallBack implements FallbackFactory<UserCenterClien
   public UserCenterClient create(Throwable cause) {
     return () -> {
       log.error("调用用户中心列表接口：{}；失败原因：{};", "/api/user/list-users", cause.getMessage());
-      return Collections.emptyList();
+      return new UserInfo();
     };
   }
 }

@@ -10,6 +10,7 @@ import cn.malgo.annotation.biz.task.ListTaskDetailsBiz;
 import cn.malgo.annotation.biz.task.RefreshTaskSummaryBiz;
 import cn.malgo.annotation.biz.task.TerminateTaskBiz;
 import cn.malgo.annotation.config.PermissionConstant;
+import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.request.task.GetUnCoveredBlockRequest;
@@ -35,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v2/task")
-public class AnnotationTaskController {
+public class AnnotationTaskController extends BaseController {
 
   private final CreateTaskBiz createTaskBiz;
   private final AddBlocksToTaskBiz addBlocksToTaskBiz;

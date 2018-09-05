@@ -31,7 +31,7 @@
     <docker.image.prefix>registry.cn-hangzhou.aliyuncs.com/malgo</docker.image.prefix>
     <pageHelper-autoconfigure.version>1.2.5</pageHelper-autoconfigure.version>
     <pageHelper.version>5.1.4</pageHelper.version>
-    <auth-common.version>0.10.2-SNAPSHOT</auth-common.version>
+    <auth-common.version>0.10.3-SNAPSHOT</auth-common.version>
   </properties>
 
   <dependencies>
