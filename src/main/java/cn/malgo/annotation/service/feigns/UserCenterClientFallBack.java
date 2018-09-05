@@ -2,7 +2,6 @@ package cn.malgo.annotation.service.feigns;
 
 import cn.malgo.annotation.vo.UserInfo;
 import feign.hystrix.FallbackFactory;
-import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
