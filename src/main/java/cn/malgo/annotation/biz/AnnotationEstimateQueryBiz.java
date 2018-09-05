@@ -4,13 +4,13 @@ import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationStaffEvaluate;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.service.feigns.UserCenterClient;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
 import cn.malgo.service.annotation.RequirePermission;
@@ -39,17 +39,17 @@ public class AnnotationEstimateQueryBiz
     extends BaseBiz<AnnotationEstimateQueryRequest, AnnotationStaffEvaluateVO> {
 
   private final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository;
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterClient userCenterClient;
   private final AnnotationTaskRepository taskRepository;
   private final AnnotationRepository annotationRepository;
 
   public AnnotationEstimateQueryBiz(
-      final UserAccountRepository userAccountRepository,
+      final UserCenterClient userCenterClient,
       final AnnotationStaffEvaluateRepository annotationStaffEvaluateRepository,
       final AnnotationTaskRepository taskRepository,
       final AnnotationRepository annotationRepository) {
     this.annotationStaffEvaluateRepository = annotationStaffEvaluateRepository;
-    this.userAccountRepository = userAccountRepository;
+    this.userCenterClient = userCenterClient;
     this.taskRepository = taskRepository;
     this.annotationRepository = annotationRepository;
   }
@@ -100,10 +100,10 @@ public class AnnotationEstimateQueryBiz
     final AnnotationTask task = taskRepository.getOne(request.getTaskId());
     if (annotationStaffEvaluates.size() > 0) {
       final Map<Long, String> userMap =
-          userAccountRepository
-              .findAll()
+          userCenterClient
+              .getUsers()
               .stream()
-              .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+              .collect(Collectors.toMap(User::getUserId, User::getNickName));
       pageVO.setDataList(
           annotationStaffEvaluates
               .stream()

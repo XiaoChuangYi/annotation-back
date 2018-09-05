@@ -1,15 +1,15 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationNew;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
+import cn.malgo.annotation.service.feigns.UserCenterClient;
 import cn.malgo.service.exception.BusinessRuleException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,14 +36,13 @@ import org.springframework.stereotype.Service;
 public class AnnotationServiceImpl implements AnnotationService {
 
   private final AnnotationRepository annotationRepository;
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterClient userCenterClient;
 
   @Autowired
   public AnnotationServiceImpl(
-      final UserAccountRepository userAccountRepository,
-      final AnnotationRepository annotationRepository) {
-    this.userAccountRepository = userAccountRepository;
+      final UserCenterClient userCenterClient, final AnnotationRepository annotationRepository) {
     this.annotationRepository = annotationRepository;
+    this.userCenterClient = userCenterClient;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -130,10 +129,10 @@ public class AnnotationServiceImpl implements AnnotationService {
 
     if (page.getTotalElements() > 0) {
       final Map<Long, String> userMap =
-          userAccountRepository
-              .findAll()
+          userCenterClient
+              .getUsers()
               .stream()
-              .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+              .collect(Collectors.toMap(User::getUserId, User::getNickName));
 
       page.getContent()
           .forEach(

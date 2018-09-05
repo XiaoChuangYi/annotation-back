@@ -12,6 +12,7 @@ import cn.malgo.annotation.biz.brat.block.AddBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.DeleteBlockAnnotationBiz;
 import cn.malgo.annotation.biz.brat.block.GetAnnotationBlockBiz;
 import cn.malgo.annotation.biz.brat.block.UpdateBlockAnnotationBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.controller.BaseController;
 import cn.malgo.annotation.cron.BlockNerUpdater;
@@ -30,6 +31,7 @@ import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.annotation.vo.ResetBlockToAnnotationResponse;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
@@ -46,7 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnnotationTaskBlockController extends BaseController {
 
   private final BlockNerUpdater blockNerUpdater;
-  private final AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz;
   private final GetAnnotationBlockBiz getAnnotationBlockBiz;
   private final AddBlockAnnotationBiz addBlockAnnotationBiz;
   private final DeleteBlockAnnotationBiz deleteBlockAnnotationBiz;
@@ -61,7 +62,6 @@ public class AnnotationTaskBlockController extends BaseController {
 
   public AnnotationTaskBlockController(
       final BlockNerUpdater blockNerUpdater,
-      final AnnotationBlockResetToAnnotationBiz annotationBlockResetToAnnotationBiz,
       final GetAnnotationBlockBiz getAnnotationBlockBiz,
       final AddBlockAnnotationBiz addBlockAnnotationBiz,
       final DeleteBlockAnnotationBiz deleteBlockAnnotationBiz,
@@ -74,7 +74,6 @@ public class AnnotationTaskBlockController extends BaseController {
       final CleanOutBlockBiz cleanOutBlockBiz,
       final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz) {
     this.blockNerUpdater = blockNerUpdater;
-    this.annotationBlockResetToAnnotationBiz = annotationBlockResetToAnnotationBiz;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
     this.addBlockAnnotationBiz = addBlockAnnotationBiz;
     this.deleteBlockAnnotationBiz = deleteBlockAnnotationBiz;
@@ -88,7 +87,7 @@ public class AnnotationTaskBlockController extends BaseController {
     this.annotationBlockBatchAbandonBiz = annotationBlockBatchAbandonBiz;
   }
 
-  // ADMIN ACTIONS
+  @PermissionAnno(PermissionConstant.ANNOTAITON_UPDATE_BLOCK_NER)
   @RequestMapping(value = "/update-block-ner", method = RequestMethod.POST)
   public Response<Boolean> updateBlockNer(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
@@ -100,6 +99,7 @@ public class AnnotationTaskBlockController extends BaseController {
     return new Response<>(true);
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTAITON_UPDATE_BLOCK_NER_RATE)
   @RequestMapping(value = "/update-block-ner-rate", method = RequestMethod.POST)
   public Response<Boolean> updateBlockNerRate(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
@@ -112,16 +112,18 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** ANNOTATED或FINISHED状态的block可以被打回重新标注或审核 */
-  @RequestMapping(value = "/reset-block-to-annotation", method = RequestMethod.POST)
-  public Response<ResetBlockToAnnotationResponse> resetBlockToAnnotation(
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
-      @RequestBody ResetAnnotationBlockRequest resetAnnotationBlockRequest) {
-    return new Response<>(
-        new ResetBlockToAnnotationResponse(
-            annotationBlockResetToAnnotationBiz.process(resetAnnotationBlockRequest, userAccount)));
-  }
+  //  @RequestMapping(value = "/reset-block-to-annotation", method = RequestMethod.POST)
+  //  public Response<ResetBlockToAnnotationResponse> resetBlockToAnnotation(
+  //      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
+  //      @RequestBody ResetAnnotationBlockRequest resetAnnotationBlockRequest) {
+  //    return new Response<>(
+  //        new ResetBlockToAnnotationResponse(
+  //            annotationBlockResetToAnnotationBiz.process(resetAnnotationBlockRequest,
+  // userAccount)));
+  //  }
 
   /** 获取block标注 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_DETAIL)
   @RequestMapping(value = "/get-block-annotation/{id}", method = RequestMethod.GET)
   public Response<AnnotationBlockBratVO> getBlockAnnotation(
       @PathVariable("id") long id,
@@ -131,6 +133,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 新增block标注 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ADD)
   @RequestMapping(value = "/add-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> addBlockAnnotation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -139,6 +142,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 删除block标注 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_DELETE)
   @RequestMapping(value = "/delete-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> deleteBlockAnnotation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -148,6 +152,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 更新block标注 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_UPDATE)
   @RequestMapping(value = "/update-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> updateBlockAnnotation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -157,6 +162,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 五元组查询block关联查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_RELATION_SEARCH)
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationErrorContext>> listBlockRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -166,6 +172,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** overlap entity block查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_OVERLAP_SEARCH)
   @RequestMapping(value = "/list-overlap-entity-block", method = RequestMethod.GET)
   public Response<PageVO<AnnotationBlockBratVO>> listOverlapEntityBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -174,6 +181,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 批量删除block一词多义实体 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_ENTITY_DELETE)
   @RequestMapping(value = "/batch-delete-multiple-entity", method = RequestMethod.POST)
   public Response<List<Long>> batchDeleteMultipleEntity(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -183,6 +191,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 批量删除关联标注关系 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_RELATION_DELETE)
   @RequestMapping(value = "/batch-delete-relation", method = RequestMethod.POST)
   public Response<List<Long>> batchDeleteRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -192,6 +201,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 批量更新关联类型 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_RELATION_UPDATE)
   @RequestMapping(value = "/batch-update-relation", method = RequestMethod.POST)
   public Response<List<Long>> batchUpdateRelation(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
@@ -200,6 +210,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 清洗指定批次的语料 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_CLEANED)
   @RequestMapping(value = "/clean-out-block", method = RequestMethod.POST)
   public Response cleanOutBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
@@ -207,6 +218,7 @@ public class AnnotationTaskBlockController extends BaseController {
   }
 
   /** 批量放弃未处理状态的语料 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ABANDON)
   @RequestMapping(value = "/batch-abandon-block", method = RequestMethod.POST)
   public Response batchAbandonBlock(
       @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,

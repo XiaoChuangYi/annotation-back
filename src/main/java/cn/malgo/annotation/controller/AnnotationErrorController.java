@@ -3,6 +3,7 @@ package cn.malgo.annotation.controller;
 import cn.malgo.annotation.biz.block.FindAnnotationErrorBiz;
 import cn.malgo.annotation.biz.block.FixAnnotationBiz;
 import cn.malgo.annotation.biz.block.SearchAnnotationBiz;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.dto.error.AnnotationWordError;
 import cn.malgo.annotation.dto.error.FixAnnotationResult;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.request.FixAnnotationErrorRequest;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.vo.AnnotationErrorVO;
 import cn.malgo.annotation.vo.FixAnnotationResponse;
+import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
@@ -40,6 +42,7 @@ public class AnnotationErrorController extends BaseController {
     this.searchAnnotationBiz = searchAnnotationBiz;
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ERROR_SEARCH)
   @RequestMapping(value = "/annotation/errors", method = RequestMethod.GET)
   public Response<AnnotationErrorVO> getAnnotationErrors(
       FindAnnotationErrorRequest request,
@@ -56,6 +59,7 @@ public class AnnotationErrorController extends BaseController {
             errors.size()));
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ENTITY_SEARCH)
   @RequestMapping(value = "/annotation/search", method = RequestMethod.GET)
   public Response<List<AnnotationErrorContext>> searchAnnotations(
       SearchAnnotationRequest request,
@@ -63,6 +67,7 @@ public class AnnotationErrorController extends BaseController {
     return new Response<>(searchAnnotationBiz.process(request, userAccount));
   }
 
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ERROR_FIX)
   @RequestMapping(value = "/annotation/fix-errors", method = RequestMethod.POST)
   public Response<FixAnnotationResponse> fixAnnotationError(
       @RequestBody FixAnnotationErrorRequest request,
