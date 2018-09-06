@@ -1,5 +1,7 @@
 package cn.malgo.annotation.biz.brat.task;
 
+import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
@@ -11,9 +13,11 @@ import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AlgorithmAnnotationVO;
 import cn.malgo.service.biz.BaseBiz;
+import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.DependencyServiceException;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -90,14 +94,20 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   @Override
-  protected AlgorithmAnnotationVO doBiz(final GetAutoAnnotationRequest request) {
+  protected AlgorithmAnnotationVO doBiz(
+      final GetAutoAnnotationRequest request, final UserDetails user) {
     final Optional<AnnotationNew> optional = annotationRepository.findById(request.getId());
 
     if (optional.isPresent()) {
       final AnnotationNew annotation = optional.get();
+      BaseAnnotationBiz.checkPermission(annotation, user);
       switch (annotation.getState()) {
         case PRE_ANNOTATION:
         case ANNOTATION_PROCESSING:
+          if (!user.hasPermission(Permissions.ANNOTATE)) {
+            throw new BusinessRuleException("permission-denied", "无权限");
+          }
+
           switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType().ordinal())) {
             case wordPos:
               // 分词

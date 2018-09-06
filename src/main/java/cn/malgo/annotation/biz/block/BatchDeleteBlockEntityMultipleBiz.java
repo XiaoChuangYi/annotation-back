@@ -1,13 +1,16 @@
 package cn.malgo.annotation.biz.block;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest.EntityMultipleType;
 import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequirePermission(Permissions.ADMIN)
 public class BatchDeleteBlockEntityMultipleBiz
     extends TransactionalBiz<BatchDeleteEntityMultipleRequest, List<Long>> {
 
@@ -38,7 +42,7 @@ public class BatchDeleteBlockEntityMultipleBiz
   }
 
   @Override
-  protected List<Long> doBiz(BatchDeleteEntityMultipleRequest request) {
+  protected List<Long> doBiz(BatchDeleteEntityMultipleRequest request, UserDetails user) {
     Map<Long, List<String>> batchDeleteMap =
         request
             .getEntityMultipleTypeSet()

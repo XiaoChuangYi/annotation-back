@@ -56,7 +56,8 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
-            AnnotationTypeEnum.wordPos.ordinal()));
+            AnnotationTypeEnum.wordPos.ordinal()),
+        null);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -113,12 +114,14 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
-            AnnotationTypeEnum.wordPos.ordinal()));
+            AnnotationTypeEnum.wordPos.ordinal()),
+        null);
 
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
-            AnnotationTypeEnum.relation.ordinal()));
+            AnnotationTypeEnum.relation.ordinal()),
+        null);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -206,7 +209,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   }
 
   private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
-    final AnnotationTaskVO task = createTaskBiz.process(new CreateTaskRequest("test-task"));
+    final AnnotationTaskVO task = createTaskBiz.process(new CreateTaskRequest("test-task"), null);
 
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);

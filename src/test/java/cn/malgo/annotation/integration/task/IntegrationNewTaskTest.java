@@ -29,6 +29,8 @@ import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
+import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
+import cn.malgo.annotation.service.impl.UserAccountServiceImpl.DefaultUserDetails;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.service.entity.BaseEntity;
 import java.util.Collections;
@@ -77,7 +79,8 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     commitAnnotation(annotationRepository.findByTermEquals(SAMPLE_TEXT));
 
     TestTransaction.start();
-    terminateTaskBiz.process(new TerminateTaskRequest(taskId));
+    terminateTaskBiz.process(
+        new TerminateTaskRequest(taskId), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -88,7 +91,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.PRE_CLEAN);
 
     TestTransaction.start();
-    cleanOutBlockBiz.process(null);
+    cleanOutBlockBiz.process(null, UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -113,7 +116,8 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.DOING);
 
     TestTransaction.start();
-    terminateTaskBiz.process(new TerminateTaskRequest(taskId));
+    terminateTaskBiz.process(
+        new TerminateTaskRequest(taskId), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -169,7 +173,9 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
   /** 验证标准，状态和数量 创建任务和doc */
   private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
     final AnnotationTaskVO task =
-        createTaskBiz.process(new CreateTaskRequest("test-task-20180810"));
+        createTaskBiz.process(
+            new CreateTaskRequest("test-task-20180810"),
+            UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);
     assertEquals(task.getState(), AnnotationTaskState.CREATED.name());
@@ -193,7 +199,8 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     addBlocksToTaskBiz.process(
         new AddBlocksToTaskRequest(
             taskVO.getId(),
-            taskBlocks.stream().map(BaseEntity::getId).collect(Collectors.toList())));
+            taskBlocks.stream().map(BaseEntity::getId).collect(Collectors.toList())),
+        DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
   }
@@ -203,7 +210,8 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     TestTransaction.start();
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
-            Collections.singleton(doc.getId()), AnnotationTypeEnum.relation.ordinal()));
+            Collections.singleton(doc.getId()), AnnotationTypeEnum.relation.ordinal()),
+        DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -234,7 +242,8 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     TestTransaction.start();
     preAnnotationRecycleBiz.process(
         new AnnotationRecycleRequest(
-            Collections.singletonList(annotationRepository.findByTermEquals(SAMPLE_TEXT).getId())));
+            Collections.singletonList(annotationRepository.findByTermEquals(SAMPLE_TEXT).getId())),
+        DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -248,7 +257,9 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     TestTransaction.start();
     annotationNew.setState(AnnotationStateEnum.PRE_ANNOTATION);
     annotationNew = annotationRepository.save(annotationNew);
-    annotationCommitBiz.process(new CommitAnnotationRequest(annotationNew.getId()));
+    annotationCommitBiz.process(
+        new CommitAnnotationRequest(annotationNew.getId()),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 

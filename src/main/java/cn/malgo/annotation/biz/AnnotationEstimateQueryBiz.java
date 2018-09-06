@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationStaffEvaluateRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
@@ -10,8 +11,10 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationEstimateQueryRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.UserCenterService;
+import cn.malgo.annotation.service.feigns.UserCenterClient;
 import cn.malgo.annotation.vo.AnnotationEstimateVO;
 import cn.malgo.annotation.vo.AnnotationStaffEvaluateVO;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import com.alibaba.fastjson.annotation.JSONField;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequirePermission(Permissions.ADMIN)
 public class AnnotationEstimateQueryBiz
     extends BaseBiz<AnnotationEstimateQueryRequest, AnnotationStaffEvaluateVO> {
 

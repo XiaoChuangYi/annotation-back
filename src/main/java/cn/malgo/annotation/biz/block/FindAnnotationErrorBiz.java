@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.block;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AlgorithmAnnotationWordError;
@@ -10,6 +11,7 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.FindAnnotationErrorRequest;
 import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.Arrays;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequirePermission(Permissions.ADMIN)
 public class FindAnnotationErrorBiz
     extends BaseBiz<FindAnnotationErrorRequest, List<AnnotationWordError>> {
 

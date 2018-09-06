@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
+import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
@@ -7,6 +8,7 @@ import cn.malgo.annotation.service.RelationOperateService;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.exception.NotFoundException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.Resource;
@@ -29,10 +31,11 @@ public abstract class BaseRelationBiz<REQ extends BaseAnnotationRequest, Annotat
   }
 
   @Override
-  protected AnnotationCombineBratVO doBiz(final REQ req) {
+  protected AnnotationCombineBratVO doBiz(final REQ req, final UserDetails user) {
     Optional<AnnotationNew> optional = annotationRepository.findById(req.getId());
     if (optional.isPresent()) {
       final AnnotationNew annotationNew = optional.get();
+      BaseAnnotationBiz.checkPermission(annotationNew, user);
       return doInternalProcess(relationOperateService, annotationNew, req);
     }
     throw new NotFoundException("annotation-not-found", req.getId() + "未找到");

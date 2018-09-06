@@ -7,6 +7,7 @@ import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -29,7 +30,7 @@ public abstract class BaseBlockAnnotationBiz<
   }
 
   @Override
-  protected AnnotationBlockBratVO doBiz(REQ req) {
+  protected AnnotationBlockBratVO doBiz(REQ req, UserDetails user) {
     final Optional<AnnotationTaskBlock> optional =
         annotationTaskBlockRepository.findById(req.getId());
 

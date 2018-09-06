@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -12,6 +13,7 @@ import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class ListRelevanceAnnotationBiz
     extends BaseBiz<ListRelevanceAnnotationRequest, PageVO<AnnotationErrorContext>> {

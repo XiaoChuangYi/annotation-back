@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
@@ -10,16 +11,19 @@ import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.exception.NotFoundException;
+import cn.malgo.service.model.UserDetails;
 import java.util.Date;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequirePermission(Permissions.ANNOTATE)
 public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object> {
   private final AnnotationRepository annotationRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;
@@ -56,7 +60,7 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
   }
 
   @Override
-  protected Object doBiz(CommitAnnotationRequest request) {
+  protected Object doBiz(CommitAnnotationRequest request, UserDetails user) {
     Optional<AnnotationNew> optional = annotationRepository.findById(request.getId());
 
     if (optional.isPresent()) {
@@ -70,9 +74,9 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
       switch (annotationNew.getState()) {
         case PRE_ANNOTATION:
         case ANNOTATION_PROCESSING:
-          //          if (annotationNew.getAssignee() != user.getId()) {
-          //            throw new BusinessRuleException("permission-denied", "当前用户没有权限操作该条记录！");
-          //          }
+          if (annotationNew.getAssignee() != user.getId()) {
+            throw new BusinessRuleException("permission-denied", "当前用户没有权限操作该条记录！");
+          }
           break;
         default:
           throw new BusinessRuleException("invalid-state", "当前记录无法直接提交！");

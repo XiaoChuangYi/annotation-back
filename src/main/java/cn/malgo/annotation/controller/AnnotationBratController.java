@@ -13,13 +13,14 @@ import cn.malgo.annotation.request.brat.*;
 import cn.malgo.annotation.vo.RelationLimitRuleVO;
 import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class AnnotationBratController {
+public class AnnotationBratController extends BaseController {
 
   private final GetAutoAnnotationBiz getAutoAnnotationBiz;
   private final AddAnnotationBiz addAnnotationBiz;
@@ -50,53 +51,69 @@ public class AnnotationBratController {
   }
 
   /** 获取算法服务的预标注结果 */
-  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DETAIL)
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_SINGLE)
   @RequestMapping(value = "/get-auto-annotation", method = RequestMethod.GET)
-  public Response getAutoAnnotation(@RequestParam("id") long id) {
-    return new Response<>(getAutoAnnotationBiz.process(new GetAutoAnnotationRequest(id)));
+  public Response getAutoAnnotation(
+      @RequestParam("id") long id,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(
+        getAutoAnnotationBiz.process(new GetAutoAnnotationRequest(id), userAccount));
   }
 
   /** 标注entities处理，新增标注的接口，不过算法api */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_INSERT)
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
-  public Response addAnnotation(@RequestBody AddAnnotationGroupRequest request) {
-    return new Response<>(addAnnotationBiz.process(request));
+  public Response addAnnotation(
+      @RequestBody AddAnnotationGroupRequest request,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(addAnnotationBiz.process(request, userAccount));
   }
 
   /** entities处理，更新标注 ，不过算法api */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UPDATE)
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
-  public Response updateAnnotation(@RequestBody UpdateAnnotationGroupRequest request) {
-    return new Response<>(updateAnnotationBiz.process(request));
+  public Response updateAnnotation(
+      @RequestBody UpdateAnnotationGroupRequest request,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(updateAnnotationBiz.process(request, userAccount));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DELETE)
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
-  public Response deleteAnnotation(@RequestBody DeleteAnnotationGroupRequest request) {
-    return new Response<>(deleteAnnotationBiz.process(request));
+  public Response deleteAnnotation(
+      @RequestBody DeleteAnnotationGroupRequest request,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(deleteAnnotationBiz.process(request, userAccount));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_INSERT)
   @RequestMapping(value = "/add-relation", method = RequestMethod.POST)
-  public Response addRelation(@RequestBody AddRelationRequest addRelationRequest) {
-    return new Response<>(addRelationBiz.process(addRelationRequest));
+  public Response addRelation(
+      @RequestBody AddRelationRequest addRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(addRelationBiz.process(addRelationRequest, userAccount));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DELETE)
   @RequestMapping(value = "/delete-relation", method = RequestMethod.POST)
-  public Response deleteRelation(@RequestBody DeleteRelationRequest deleteRelationRequest) {
-    return new Response<>(deleteRelationBiz.process(deleteRelationRequest));
+  public Response deleteRelation(
+      @RequestBody DeleteRelationRequest deleteRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(deleteRelationBiz.process(deleteRelationRequest, userAccount));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UPDATE)
   @RequestMapping(value = "/update-relation", method = RequestMethod.POST)
-  public Response updateRelation(@RequestBody UpdateRelationRequest updateRelationRequest) {
-    return new Response<>(updateRelationBiz.process(updateRelationRequest));
+  public Response updateRelation(
+      @RequestBody UpdateRelationRequest updateRelationRequest,
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(updateRelationBiz.process(updateRelationRequest, userAccount));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_RELATION_LIMIT_RULE)
   @RequestMapping(value = "/list-relation-limit", method = RequestMethod.GET)
-  public Response<RelationLimitRuleVO> listRelationLimit() {
-    return new Response<>(listRelationLimitRuleBiz.process(null));
+  public Response<RelationLimitRuleVO> listRelationLimit(
+      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
+    return new Response<>(listRelationLimitRuleBiz.process(null, userAccount));
   }
 }

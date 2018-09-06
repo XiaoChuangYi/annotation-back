@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -11,6 +12,7 @@ import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import cn.malgo.service.model.UserDetails;
 import com.alibaba.fastjson.JSONObject;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +54,12 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
   }
 
   @Override
-  protected PageVO<AnnotationBratVO> doBiz(ListAnnotationRequest request) {
+  protected PageVO<AnnotationBratVO> doBiz(ListAnnotationRequest request, UserDetails user) {
     request.setPageIndex(request.getPageIndex() - 1);
 
-    //    if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
-    //      request.setUserId(user.getId());
-    //    }
+    if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
+      request.setUserId(user.getId());
+    }
 
     final Page<AnnotationNew> page = annotationService.listAnnotationNew(request);
 

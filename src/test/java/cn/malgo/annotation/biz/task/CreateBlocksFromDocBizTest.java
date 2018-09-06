@@ -6,6 +6,7 @@ import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.service.OriginalDocService;
+import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
 import java.util.Collections;
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
@@ -38,7 +39,9 @@ public class CreateBlocksFromDocBizTest {
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
-    createBlocksFromDocBiz.process(new CreateBlocksFromDocRequest(Collections.singleton(1L), 0));
+    createBlocksFromDocBiz.process(
+        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
   }
@@ -49,7 +52,9 @@ public class CreateBlocksFromDocBizTest {
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
-    createBlocksFromDocBiz.process(new CreateBlocksFromDocRequest(Collections.singleton(1L), 0));
+    createBlocksFromDocBiz.process(
+        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0),
+        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
   }

@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.block;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -8,6 +9,7 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.SearchAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.core.definition.brat.BratPosition;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@RequirePermission(Permissions.ADMIN)
 public class SearchAnnotationBiz
     extends BaseBiz<SearchAnnotationRequest, List<AnnotationErrorContext>> {
   private final AnnotationFactory annotationFactory;

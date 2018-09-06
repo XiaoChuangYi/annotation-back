@@ -1,11 +1,13 @@
 package cn.malgo.annotation.biz.brat.block;
 
+import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
+import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@RequirePermission(Permissions.ADMIN)
 public class GetAnnotationBlockBiz
     extends BaseBiz<GetAutoAnnotationRequest, AnnotationBlockBratVO> {
 
