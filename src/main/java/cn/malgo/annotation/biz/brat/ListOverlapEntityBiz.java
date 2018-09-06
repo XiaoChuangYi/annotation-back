@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
@@ -9,17 +8,14 @@ import cn.malgo.annotation.request.ListOverlapEntityRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
-@RequirePermission(Permissions.ADMIN)
 @Component
 public class ListOverlapEntityBiz
     extends BaseBiz<ListOverlapEntityRequest, PageVO<AnnotationBlockBratVO>> {
@@ -45,8 +41,7 @@ public class ListOverlapEntityBiz
   }
 
   @Override
-  protected PageVO<AnnotationBlockBratVO> doBiz(
-      ListOverlapEntityRequest listOverlapEntityRequest, UserDetails user) {
+  protected PageVO<AnnotationBlockBratVO> doBiz(ListOverlapEntityRequest listOverlapEntityRequest) {
     final int skip =
         (listOverlapEntityRequest.getPageIndex() - 1) * listOverlapEntityRequest.getPageSize();
     final int limit = listOverlapEntityRequest.getPageSize();

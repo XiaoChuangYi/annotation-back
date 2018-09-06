@@ -1,19 +1,14 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
-import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-@RequirePermission(Permissions.ADMIN)
 public class OneKeyDesignateAnnotationBiz
     extends TransactionalBiz<OneKeyDesignateAnnotationRequest, Object> {
 
@@ -35,7 +30,7 @@ public class OneKeyDesignateAnnotationBiz
   }
 
   @Override
-  protected Object doBiz(OneKeyDesignateAnnotationRequest request, UserDetails user) {
+  protected Object doBiz(OneKeyDesignateAnnotationRequest request) {
     annotationService.oneKeyDesignateAnnotationNew(request);
     return "一键指派成功！";
   }

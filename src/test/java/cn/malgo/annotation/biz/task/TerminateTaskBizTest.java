@@ -10,7 +10,6 @@ import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
-import cn.malgo.annotation.service.impl.UserAccountServiceImpl.DefaultUserDetails;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,7 +60,7 @@ public class TerminateTaskBizTest extends AbstractTransactionalTestNGSpringConte
     assertEquals(countRowsInTable("task_block"), 2);
 
     TestTransaction.start();
-    terminateTaskBiz.process(new TerminateTaskRequest(taskId), DefaultUserDetails.ADMIN);
+    terminateTaskBiz.process(new TerminateTaskRequest(taskId));
     TestTransaction.flagForCommit();
     TestTransaction.end();
 

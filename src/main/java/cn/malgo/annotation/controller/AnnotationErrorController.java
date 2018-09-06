@@ -15,10 +15,8 @@ import cn.malgo.annotation.vo.FixAnnotationResponse;
 import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
-import cn.malgo.service.model.UserDetails;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class AnnotationErrorController extends BaseController {
+public class AnnotationErrorController {
 
   private final FindAnnotationErrorBiz findAnnotationErrorBiz;
   private final FixAnnotationBiz fixAnnotationBiz;
@@ -44,10 +42,8 @@ public class AnnotationErrorController extends BaseController {
 
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ERROR_SEARCH)
   @RequestMapping(value = "/annotation/errors", method = RequestMethod.GET)
-  public Response<AnnotationErrorVO> getAnnotationErrors(
-      FindAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    final List<AnnotationWordError> errors = findAnnotationErrorBiz.process(request, userAccount);
+  public Response<AnnotationErrorVO> getAnnotationErrors(FindAnnotationErrorRequest request) {
+    final List<AnnotationWordError> errors = findAnnotationErrorBiz.process(request);
     if (errors.size() != 0 && request.getErrorIndex() >= errors.size()) {
       throw new BusinessRuleException("index-exceed", "索引超出数据范围");
     }
@@ -61,18 +57,15 @@ public class AnnotationErrorController extends BaseController {
 
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ENTITY_SEARCH)
   @RequestMapping(value = "/annotation/search", method = RequestMethod.GET)
-  public Response<List<AnnotationErrorContext>> searchAnnotations(
-      SearchAnnotationRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    return new Response<>(searchAnnotationBiz.process(request, userAccount));
+  public Response<List<AnnotationErrorContext>> searchAnnotations(SearchAnnotationRequest request) {
+    return new Response<>(searchAnnotationBiz.process(request));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ERROR_FIX)
   @RequestMapping(value = "/annotation/fix-errors", method = RequestMethod.POST)
   public Response<FixAnnotationResponse> fixAnnotationError(
-      @RequestBody FixAnnotationErrorRequest request,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount) {
-    final List<FixAnnotationResult> results = this.fixAnnotationBiz.process(request, userAccount);
+      @RequestBody FixAnnotationErrorRequest request) {
+    final List<FixAnnotationResult> results = this.fixAnnotationBiz.process(request);
     return new Response<>(new FixAnnotationResponse(results));
   }
 }

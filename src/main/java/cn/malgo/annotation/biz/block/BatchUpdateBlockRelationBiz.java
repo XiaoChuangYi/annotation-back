@@ -1,16 +1,13 @@
 package cn.malgo.annotation.biz.block;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.block.BatchUpdateBlockRelationRequest;
 import cn.malgo.annotation.request.block.BatchUpdateBlockRelationRequest.BlockRelationUpdate;
 import cn.malgo.annotation.utils.AnnotationConvert;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-@RequirePermission(Permissions.ADMIN)
 public class BatchUpdateBlockRelationBiz
     extends TransactionalBiz<BatchUpdateBlockRelationRequest, List<Long>> {
 
@@ -41,7 +37,7 @@ public class BatchUpdateBlockRelationBiz
   }
 
   @Override
-  protected List<Long> doBiz(BatchUpdateBlockRelationRequest request, UserDetails user) {
+  protected List<Long> doBiz(BatchUpdateBlockRelationRequest request) {
     Map<Long, List<String>> batchUpdateMap =
         request
             .getBlockRelationSet()

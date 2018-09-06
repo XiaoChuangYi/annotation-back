@@ -7,7 +7,6 @@ import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -71,7 +70,7 @@ public class ListAnnotationTaskBiz
   }
 
   @Override
-  protected PageVO<AnnotationTaskVO> doBiz(ListAnnotationTaskRequest request, UserDetails user) {
+  protected PageVO<AnnotationTaskVO> doBiz(ListAnnotationTaskRequest request) {
     if (request.isAll()) {
       final List<AnnotationTask> tasks = annotationTaskRepository.findAll();
       return new PageVO<>(

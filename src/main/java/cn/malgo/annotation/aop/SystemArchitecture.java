@@ -3,7 +3,6 @@ package cn.malgo.annotation.aop;
 import cn.malgo.annotation.request.brat.BaseAnnotationRequest;
 import cn.malgo.annotation.utils.OpLoggerUtil;
 import cn.malgo.service.exception.MalgoServiceException;
-import cn.malgo.service.model.UserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
@@ -43,7 +42,6 @@ public class SystemArchitecture {
   @Pointcut(
       "execution(* cn.malgo.annotation.service.*.*(..))"
           + " && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..))"
-          + " && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))"
           + " && !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
   public void serviceLayer() {}
 
@@ -90,8 +88,7 @@ public class SystemArchitecture {
         anId = ((BaseAnnotationRequest) args[0]).getId();
       }
       String[] methodArr = className.split("\\.");
-      final long userId =
-          args[1] != null && (args[1] instanceof UserDetails) ? ((UserDetails) args[1]).getId() : 0;
+      final long userId = 0;
       OpLoggerUtil.info(
           userId,
           methodArr[methodArr.length - 1].replace("Biz", ""),
@@ -124,10 +121,7 @@ public class SystemArchitecture {
       }
       String[] methodArr = className.split("\\.");
       OpLoggerUtil.info(
-          args[1] != null && (args[1] instanceof UserDetails) ? ((UserDetails) args[1]).getId() : 0,
-          methodArr[methodArr.length - 1].replace("Biz", ""),
-          ex.getMessage(),
-          anId);
+          0, methodArr[methodArr.length - 1].replace("Biz", ""), ex.getMessage(), anId);
     }
     log.info("类名：{}；异常信息：{}；", className, ex);
   }

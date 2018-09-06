@@ -10,7 +10,6 @@ import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.annotation.vo.TaskInfoVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +40,7 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
   protected void validateRequest(Void aVoid) throws InvalidInputException {}
 
   @Override
-  protected TaskInfoVO doBiz(Void aVoid, UserDetails user) {
+  protected TaskInfoVO doBiz(Void aVoid) {
 
     final List<AnnotationTask> annotationTasks =
         annotationTaskRepository.findByStateIn(
@@ -66,7 +65,7 @@ public class GetDoingTaskSummaryInfoBiz extends BaseBiz<Void, TaskInfoVO> {
             .parallelStream()
             .filter(
                 annotationNew ->
-                    annotationNew.getAssignee() == user.getId()
+                    annotationNew.getAssignee() == 1
                         && annotationNew.getState() == AnnotationStateEnum.SUBMITTED)
             .mapToInt(value -> value.getTerm().length())
             .sum();

@@ -4,10 +4,8 @@ import cn.malgo.annotation.biz.SettlementListExportBiz;
 import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.request.SettlementListExportRequest;
 import cn.malgo.common.auth.PermissionAnno;
-import cn.malgo.service.model.UserDetails;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class ExcelController extends BaseController {
+public class ExcelController {
 
   private final SettlementListExportBiz settlementListExportBiz;
 
@@ -29,9 +27,8 @@ public class ExcelController extends BaseController {
   @ResponseBody
   public void exportSettlementList(
       SettlementListExportRequest settlementListExportRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       HttpServletResponse servletResponse) {
     settlementListExportRequest.setServletResponse(servletResponse);
-    settlementListExportBiz.process(settlementListExportRequest, userAccount);
+    settlementListExportBiz.process(settlementListExportRequest);
   }
 }

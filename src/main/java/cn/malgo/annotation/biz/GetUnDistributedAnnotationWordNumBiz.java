@@ -1,19 +1,15 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class GetUnDistributedAnnotationWordNumBiz extends BaseBiz<Void, Integer> {
 
   private final AnnotationRepository annotationRepository;
@@ -26,7 +22,7 @@ public class GetUnDistributedAnnotationWordNumBiz extends BaseBiz<Void, Integer>
   protected void validateRequest(Void aVoid) throws InvalidInputException {}
 
   @Override
-  protected Integer doBiz(Void aVoid, UserDetails user) {
+  protected Integer doBiz(Void aVoid) {
     return annotationRepository
         .findAllByStateIn(
             Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED),

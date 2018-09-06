@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.doc;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
@@ -8,10 +7,8 @@ import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.service.OriginalDocService;
 import cn.malgo.annotation.vo.CreateBlocksFromDocVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@RequirePermission(Permissions.ADMIN)
 public class CreateBlocksFromDocBiz
     extends TransactionalBiz<CreateBlocksFromDocRequest, CreateBlocksFromDocVO> {
   private final OriginalDocRepository docRepository;
@@ -45,8 +41,7 @@ public class CreateBlocksFromDocBiz
   }
 
   @Override
-  protected CreateBlocksFromDocVO doBiz(
-      final CreateBlocksFromDocRequest request, final UserDetails user) {
+  protected CreateBlocksFromDocVO doBiz(final CreateBlocksFromDocRequest request) {
     final AnnotationTypeEnum annotationType =
         AnnotationTypeEnum.getByValue(request.getAnnotationType());
 

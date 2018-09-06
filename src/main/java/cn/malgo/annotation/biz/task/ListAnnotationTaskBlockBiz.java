@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -10,10 +9,8 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -29,7 +26,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class ListAnnotationTaskBlockBiz
     extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlockResponse>> {
 
@@ -117,8 +113,7 @@ public class ListAnnotationTaskBlockBiz
   }
 
   @Override
-  protected PageVO<AnnotationTaskBlockResponse> doBiz(
-      ListAnnotationTaskBlockRequest request, UserDetails user) {
+  protected PageVO<AnnotationTaskBlockResponse> doBiz(ListAnnotationTaskBlockRequest request) {
     PageRequest page = PageRequest.of(request.getPageIndex() - 1, request.getPageSize());
 
     if (request.getStates() != null

@@ -8,7 +8,6 @@ import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import cn.malgo.annotation.vo.PersonalTaskRankSummaryVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
-import cn.malgo.service.model.UserDetails;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,8 +87,7 @@ public class PersonalTaskSummaryRecordBiz
   }
 
   @Override
-  protected PageVO<PersonalTaskRankSummaryVO> doBiz(
-      PersonalTaskSummaryRecordRequest request, UserDetails user) {
+  protected PageVO<PersonalTaskRankSummaryVO> doBiz(PersonalTaskSummaryRecordRequest request) {
     final Page<PersonalAnnotatedTotalWordNumRecord> page =
         personalAnnotatedEstimatePriceRepository.findAll(
             queryCondition(request),
