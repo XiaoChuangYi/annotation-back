@@ -12,7 +12,6 @@ import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AlgorithmAnnotationVO;
 import cn.malgo.service.biz.BaseBiz;
-import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.DependencyServiceException;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
@@ -92,6 +91,11 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
 
+  private AlgorithmAnnotationVO getDiseaseAnnotationVO(AnnotationNew annotation) {
+    return new AlgorithmAnnotationVO(
+        annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
+  }
+
   @Override
   protected AlgorithmAnnotationVO doBiz(
       final GetAutoAnnotationRequest request, final UserDetails user) {
@@ -113,6 +117,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
 
             case relation:
               return getRelationAnnotationVO(annotation);
+
+            case disease:
+              return getDiseaseAnnotationVO(annotation);
           }
 
         default:

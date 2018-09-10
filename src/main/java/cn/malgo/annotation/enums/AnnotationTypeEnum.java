@@ -3,7 +3,8 @@ package cn.malgo.annotation.enums;
 public enum AnnotationTypeEnum {
   wordPos("分词"), // 0
   sentence("分句"), // 1
-  relation("关联"); // 2
+  relation("关联"), // 2
+  disease("疾病");
 
   private final String name;
 
