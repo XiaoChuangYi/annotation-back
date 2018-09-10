@@ -28,14 +28,14 @@ public class UserCenterServiceImpl implements UserCenterService {
 
   @Override
   public List<User> getUsersByUserCenter() {
-    if (redisConfigService.exists(AuthConstants.ALL_SYSTEM_TICKET)) {
+    //    if (redisConfigService.exists(AuthConstants.ALL_SYSTEM_TICKET)) {
+    //      return userCenterClient.getUsers().getUsers();
+    //    } else {
+    if (authService.login()) {
       return userCenterClient.getUsers().getUsers();
     } else {
-      if (authService.login()) {
-        return userCenterClient.getUsers().getUsers();
-      } else {
-        throw new BusinessRuleException("", "用户中心登陆失败，无法获取用户信息！");
-      }
+      throw new BusinessRuleException("", "用户中心登陆失败，无法获取用户信息！");
     }
+    //  }
   }
 }
