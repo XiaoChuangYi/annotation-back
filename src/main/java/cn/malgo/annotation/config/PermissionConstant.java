@@ -69,4 +69,6 @@ public class PermissionConstant {
 
   public static final String ANNOTATION_SUMMARY_EXPORT_EXCEL = "annotation:summary:excel-export";
   public static final String ANNOTATION_SUMMARY_PERSONAL = "annotation:summary:person";
+
+  public static final String ANNOTATION_USER_LIST = "annotation:user:list";
 }

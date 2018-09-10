@@ -61,6 +61,7 @@ public class AnnotationBratController {
   }
 
   /** 用户列表查询 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_USER_LIST)
   @RequestMapping(value = "/list-user-account", method = RequestMethod.GET)
   public Response listUserAccount(HttpServletRequest servletRequest) {
     final UserDetails userDetails =
