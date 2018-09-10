@@ -4,6 +4,7 @@ import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.service.AuthService;
 import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.service.feigns.UserCenterClient;
+import cn.malgo.annotation.vo.UserInfo;
 import cn.malgo.common.auth.AuthConstants;
 import cn.malgo.common.auth.RedisConfigService;
 import cn.malgo.service.exception.BusinessRuleException;
@@ -32,7 +33,11 @@ public class UserCenterServiceImpl implements UserCenterService {
     //      return userCenterClient.getUsers().getUsers();
     //    } else {
     if (authService.login()) {
-      return userCenterClient.getUsers().getUsers();
+      final UserInfo userInfo = userCenterClient.getUsers();
+      if (userInfo == null) {
+        throw new BusinessRuleException("", "无法获取用户中心用户信息，请重刷！");
+      }
+      return userInfo.getUsers();
     } else {
       throw new BusinessRuleException("", "用户中心登陆失败，无法获取用户信息！");
     }

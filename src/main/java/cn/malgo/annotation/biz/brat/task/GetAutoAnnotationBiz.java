@@ -103,10 +103,6 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       switch (annotation.getState()) {
         case PRE_ANNOTATION:
         case ANNOTATION_PROCESSING:
-//          if (!user.hasPermission(Permissions.ANNOTATE)) {
-//            throw new BusinessRuleException("permission-denied", "无权限");
-//          }
-
           switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType().ordinal())) {
             case wordPos:
               // 分词
