@@ -31,6 +31,7 @@ import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.service.entity.BaseEntity;
+import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,8 +78,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     commitAnnotation(annotationRepository.findByTermEquals(SAMPLE_TEXT));
 
     TestTransaction.start();
-    terminateTaskBiz.process(
-        new TerminateTaskRequest(taskId), null);
+    terminateTaskBiz.process(new TerminateTaskRequest(taskId), null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -114,8 +114,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.DOING);
 
     TestTransaction.start();
-    terminateTaskBiz.process(
-        new TerminateTaskRequest(taskId), null);
+    terminateTaskBiz.process(new TerminateTaskRequest(taskId), null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -171,9 +170,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
   /** 验证标准，状态和数量 创建任务和doc */
   private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
     final AnnotationTaskVO task =
-        createTaskBiz.process(
-            new CreateTaskRequest("test-task-20180810"),
-            null);
+        createTaskBiz.process(new CreateTaskRequest("test-task-20180810"), null);
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);
     assertEquals(task.getState(), AnnotationTaskState.CREATED.name());
@@ -257,7 +254,17 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     annotationNew = annotationRepository.save(annotationNew);
     annotationCommitBiz.process(
         new CommitAnnotationRequest(annotationNew.getId()),
-        null);
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return 0;
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return false;
+          }
+        });
     TestTransaction.flagForCommit();
     TestTransaction.end();
 

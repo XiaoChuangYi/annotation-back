@@ -2,7 +2,6 @@ package cn.malgo.annotation.integration.task;
 
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.OriginalDocRepository;
-import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
