@@ -15,9 +15,9 @@ public class PermissionConstant {
   public static final String ANNOTATION_BLOCK_BATCH_ENTITY_DELETE =
       "annotation:block:batch-entity-delete"; // 语料实体批量删除
   public static final String ANNOTATION_BLOCK_BATCH_RELATION_DELETE =
-      "annotation:block:batch-entity-delete"; // 语料关联批量删除
+      "annotation:block:batch-relation-delete"; // 语料关联批量删除
   public static final String ANNOTATION_BLOCK_BATCH_RELATION_UPDATE =
-      "annotation:block:batch-entity-update"; // 语料关联批量更新
+      "annotation:block:batch-relation-update"; // 语料关联批量更新
   public static final String ANNOTATION_BLOCK_ERROR_FIX = "annotation:block:error-fix"; // 错误修复
   public static final String ANNOTATION_BLOCK_ERROR_SEARCH =
       "annotation:block:error-search"; // 错误查询
@@ -25,12 +25,12 @@ public class PermissionConstant {
   public static final String ANNOTATION_BLOCK_ENTITY_SEARCH =
       "annotation:block:entity-search"; // 实体查询
   public static final String ANNOTATION_BLOCK_RELATION_SEARCH =
-      "annotation:block:entity-search"; // 关联查询
+      "annotation:block:relation-search"; // 关联查询
   public static final String ANNOTATION_BLOCK_OVERLAP_SEARCH =
       "annotation:block:overlap-entity-search"; // 重叠实体查询
 
-  public static final String ANNOTAITON_UPDATE_BLOCK_NER = "annotation:block:update-block-ner";
-  public static final String ANNOTAITON_UPDATE_BLOCK_NER_RATE =
+  public static final String ANNOTATION_UPDATE_BLOCK_NER = "annotation:block:update-block-ner";
+  public static final String ANNOTATION_UPDATE_BLOCK_NER_RATE =
       "annotation:block:update-block-ner-rate";
 
   public static final String ANNOTATION_TYPE_LIST = "annotation:type:list"; // 标注类型列表
@@ -39,7 +39,8 @@ public class PermissionConstant {
       "annotation:relation-rule:list"; // 关联限制规则列表
 
   public static final String ANNOTATION_TASK_LIST = "annotation:task:list"; // 标注列表
-  public static final String ANNOTATION_TASK_SINGLE = "annotation:task:single"; // 单条标注
+  public static final String ANNOTATION_TASK_LIST_ALL = "annotation:task:list-all"; // 标注列表
+  public static final String ANNOTATION_TASK_DETAIL = "annotation:task:detail"; // 标注详情
   public static final String ANNOTATION_TASK_INSERT = "annotation:task:insert"; // 标注新增
   public static final String ANNOTATION_TASK_UPDATE = "annotation:task:update"; // 标注更新
   public static final String ANNOTATION_TASK_DELETE = "annotation:task:list"; // 标注删除

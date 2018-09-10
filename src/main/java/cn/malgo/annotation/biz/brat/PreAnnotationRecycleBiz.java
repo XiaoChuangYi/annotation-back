@@ -1,11 +1,9 @@
 package cn.malgo.annotation.biz.brat;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -14,7 +12,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class PreAnnotationRecycleBiz extends BaseBiz<AnnotationRecycleRequest, Object> {
 
   private final AnnotationRepository annotationRepository;

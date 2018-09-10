@@ -1,12 +1,10 @@
 package cn.malgo.annotation.biz.doc;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.entity.BaseEntity;
 import cn.malgo.service.exception.InvalidInputException;
@@ -22,7 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class ListOriginalDocBiz extends BaseBiz<ListDocRequest, PageVO<OriginalDoc>> {
   private final OriginalDocRepository originalDocRepository;
 

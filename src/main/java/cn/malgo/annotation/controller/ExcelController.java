@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/api/v2")
 @Slf4j
-public class ExcelController extends BaseController {
+public class ExcelController{
 
   private final SettlementListExportBiz settlementListExportBiz;
 
@@ -29,9 +29,8 @@ public class ExcelController extends BaseController {
   @ResponseBody
   public void exportSettlementList(
       SettlementListExportRequest settlementListExportRequest,
-      @ModelAttribute(value = "userAccount", binding = false) UserDetails userAccount,
       HttpServletResponse servletResponse) {
     settlementListExportRequest.setServletResponse(servletResponse);
-    settlementListExportBiz.process(settlementListExportRequest, userAccount);
+    settlementListExportBiz.process(settlementListExportRequest, null);
   }
 }

@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.brat.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
@@ -11,7 +10,6 @@ import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
@@ -23,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ANNOTATE)
 public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object> {
   private final AnnotationRepository annotationRepository;
   private final ExtractAddAtomicTermService extractAddAtomicTermService;

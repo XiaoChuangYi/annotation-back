@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.block;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
@@ -17,7 +16,6 @@ import cn.malgo.annotation.service.AnnotationErrorFactory;
 import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationFixLogService;
 import cn.malgo.core.definition.Entity;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
@@ -31,7 +29,6 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-@RequirePermission(Permissions.ADMIN)
 public class FixAnnotationBiz
     extends TransactionalBiz<FixAnnotationErrorRequest, List<FixAnnotationResult>> {
 

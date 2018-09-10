@@ -1,7 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
 import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
@@ -104,9 +103,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       switch (annotation.getState()) {
         case PRE_ANNOTATION:
         case ANNOTATION_PROCESSING:
-          if (!user.hasPermission(Permissions.ANNOTATE)) {
-            throw new BusinessRuleException("permission-denied", "无权限");
-          }
+//          if (!user.hasPermission(Permissions.ANNOTATE)) {
+//            throw new BusinessRuleException("permission-denied", "无权限");
+//          }
 
           switch (AnnotationTypeEnum.getByValue(annotation.getAnnotationType().ordinal())) {
             case wordPos:

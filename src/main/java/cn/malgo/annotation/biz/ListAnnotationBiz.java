@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.constants.Permissions;
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -57,7 +57,7 @@ public class ListAnnotationBiz extends BaseBiz<ListAnnotationRequest, PageVO<Ann
   protected PageVO<AnnotationBratVO> doBiz(ListAnnotationRequest request, UserDetails user) {
     request.setPageIndex(request.getPageIndex() - 1);
 
-    if (!user.hasPermission(Permissions.EXAMINE) && !user.hasPermission(Permissions.ADMIN)) {
+    if (!user.hasPermission(PermissionConstant.ANNOTATION_TASK_LIST_ALL)) {
       request.setUserId(user.getId());
     }
 
