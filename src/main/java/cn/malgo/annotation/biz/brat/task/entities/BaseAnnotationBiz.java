@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 
 public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, AnnotationBratVO>
     extends BaseBiz<REQ, AnnotationBratVO> {
+
   @Resource private AnnotationRepository annotationRepository;
 
   @Resource private AnnotationFactory annotationFactory;
@@ -27,10 +28,6 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
 
       case PRE_ANNOTATION:
       case ANNOTATION_PROCESSING:
-//        if (!user.hasPermission(Permissions.ANNOTATE)) {
-//          throw new BusinessRuleException("permission-denied", user.getId() + "无权限");
-//        }
-
         if (user.getId() != annotation.getAssignee()) {
           throw new BusinessRuleException("permission-denied", user.getId() + "无权限");
         }

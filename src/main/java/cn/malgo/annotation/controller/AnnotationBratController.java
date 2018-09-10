@@ -86,46 +86,138 @@ public class AnnotationBratController {
   /** 获取算法服务的预标注结果 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DETAIL)
   @RequestMapping(value = "/get-auto-annotation", method = RequestMethod.GET)
-  public Response getAutoAnnotation(@RequestParam("id") long id) {
-    return new Response<>(getAutoAnnotationBiz.process(new GetAutoAnnotationRequest(id), null));
+  public Response getAutoAnnotation(
+      @RequestParam("id") long id, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(
+        getAutoAnnotationBiz.process(new GetAutoAnnotationRequest(id), userDetails));
   }
 
   /** 标注entities处理，新增标注的接口，不过算法api */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_INSERT)
   @RequestMapping(value = "/add-annotation", method = RequestMethod.POST)
-  public Response addAnnotation(@RequestBody AddAnnotationGroupRequest request) {
-    return new Response<>(addAnnotationBiz.process(request, null));
+  public Response addAnnotation(
+      @RequestBody AddAnnotationGroupRequest request, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(addAnnotationBiz.process(request, userDetails));
   }
 
   /** entities处理，更新标注 ，不过算法api */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UPDATE)
   @RequestMapping(value = "/update-annotation", method = RequestMethod.POST)
-  public Response updateAnnotation(@RequestBody UpdateAnnotationGroupRequest request) {
-    return new Response<>(updateAnnotationBiz.process(request, null));
+  public Response updateAnnotation(
+      @RequestBody UpdateAnnotationGroupRequest request, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(updateAnnotationBiz.process(request, userDetails));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DELETE)
   @RequestMapping(value = "/delete-annotation", method = RequestMethod.POST)
-  public Response deleteAnnotation(@RequestBody DeleteAnnotationGroupRequest request) {
-    return new Response<>(deleteAnnotationBiz.process(request, null));
+  public Response deleteAnnotation(
+      @RequestBody DeleteAnnotationGroupRequest request, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(deleteAnnotationBiz.process(request, userDetails));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_INSERT)
   @RequestMapping(value = "/add-relation", method = RequestMethod.POST)
-  public Response addRelation(@RequestBody AddRelationRequest addRelationRequest) {
-    return new Response<>(addRelationBiz.process(addRelationRequest, null));
+  public Response addRelation(
+      @RequestBody AddRelationRequest addRelationRequest, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(addRelationBiz.process(addRelationRequest, userDetails));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DELETE)
   @RequestMapping(value = "/delete-relation", method = RequestMethod.POST)
-  public Response deleteRelation(@RequestBody DeleteRelationRequest deleteRelationRequest) {
-    return new Response<>(deleteRelationBiz.process(deleteRelationRequest, null));
+  public Response deleteRelation(
+      @RequestBody DeleteRelationRequest deleteRelationRequest, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(deleteRelationBiz.process(deleteRelationRequest, userDetails));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UPDATE)
   @RequestMapping(value = "/update-relation", method = RequestMethod.POST)
-  public Response updateRelation(@RequestBody UpdateRelationRequest updateRelationRequest) {
-    return new Response<>(updateRelationBiz.process(updateRelationRequest, null));
+  public Response updateRelation(
+      @RequestBody UpdateRelationRequest updateRelationRequest, HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(updateRelationBiz.process(updateRelationRequest, userDetails));
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_RELATION_LIMIT_RULE)
