@@ -16,6 +16,8 @@ public class PermissionConstant {
       "annotation:block:batch-entity-delete"; // 语料实体批量删除
   public static final String ANNOTATION_BLOCK_BATCH_RELATION_DELETE =
       "annotation:block:batch-relation-delete"; // 语料关联批量删除
+  public static final String ANNOTATION_BLOCK_BATCH_DELETE =
+      "annotation:block:batch-delete"; // 语料关联批量更新
   public static final String ANNOTATION_BLOCK_BATCH_RELATION_UPDATE =
       "annotation:block:batch-relation-update"; // 语料关联批量更新
   public static final String ANNOTATION_BLOCK_ERROR_FIX = "annotation:block:error-fix"; // 错误修复

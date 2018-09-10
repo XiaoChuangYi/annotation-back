@@ -13,7 +13,11 @@ import cn.malgo.annotation.request.brat.*;
 import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.vo.RelationLimitRuleVO;
 import cn.malgo.common.auth.PermissionAnno;
+import cn.malgo.common.auth.user.UserDetailService;
 import cn.malgo.service.model.Response;
+import cn.malgo.service.model.UserDetails;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +35,7 @@ public class AnnotationBratController {
   private final DeleteRelationBiz deleteRelationBiz;
   private final ListRelationLimitRuleBiz listRelationLimitRuleBiz;
   private final UserCenterService userCenterService;
+  private final UserDetailService userDetailService;
 
   public AnnotationBratController(
       GetAutoAnnotationBiz getAutoAnnotationBiz,
@@ -41,7 +46,8 @@ public class AnnotationBratController {
       UpdateRelationBiz updateRelationBiz,
       DeleteRelationBiz deleteRelationBiz,
       ListRelationLimitRuleBiz listRelationLimitRuleBiz,
-      final UserCenterService userCenterService) {
+      final UserCenterService userCenterService,
+      final UserDetailService userDetailService) {
     this.getAutoAnnotationBiz = getAutoAnnotationBiz;
     this.addAnnotationBiz = addAnnotationBiz;
     this.updateAnnotationBiz = updateAnnotationBiz;
@@ -51,12 +57,30 @@ public class AnnotationBratController {
     this.deleteRelationBiz = deleteRelationBiz;
     this.listRelationLimitRuleBiz = listRelationLimitRuleBiz;
     this.userCenterService = userCenterService;
+    this.userDetailService = userDetailService;
   }
 
   /** 用户列表查询 */
   @RequestMapping(value = "/list-user-account", method = RequestMethod.GET)
-  public Response listUserAccount() {
-    return new Response<>(userCenterService.getUsersByUserCenter());
+  public Response listUserAccount(HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(
+        userCenterService
+            .getUsersByUserCenter()
+            .parallelStream()
+            .filter(user -> user.getUserId() != userDetails.getId())
+            .collect(Collectors.toList()));
   }
 
   /** 获取算法服务的预标注结果 */

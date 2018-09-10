@@ -236,6 +236,7 @@ public class AnnotationTaskBlockController {
   }
 
   /** 批量删除指定id，对应的tag标签和rTag标签 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_DELETE)
   @RequestMapping(value = "/batch-delete-block-brat-type", method = RequestMethod.POST)
   public Response batchDeleteBlockBratType(@RequestBody BatchDeleteBlockBratTypeRequest request) {
     return new Response<>(batchDeleteBlockBratTypeBiz.process(request, null));
