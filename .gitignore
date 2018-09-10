@@ -13,3 +13,8 @@ log4j2-test.xml
 /logs
 .project
 .classpath
+
+.gitlab-ci.yml
+APP-META/Dockerfile
+APP-META/start.sh
+src/main/resources/templates/

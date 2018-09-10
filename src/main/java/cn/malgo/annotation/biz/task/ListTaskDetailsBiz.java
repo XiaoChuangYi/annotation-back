@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ListTaskDetailsBiz extends BaseBiz<ListTaskDetailRequest, AnnotationTaskDetailVO> {
+
   private final AnnotationTaskRepository annotationTaskRepository;
 
   public ListTaskDetailsBiz(final AnnotationTaskRepository annotationTaskRepository) {
@@ -35,7 +36,7 @@ public class ListTaskDetailsBiz extends BaseBiz<ListTaskDetailRequest, Annotatio
         annotationTask
             .getTaskBlocks()
             .stream()
-            .map(taskBlock -> new AnnotationTaskBlockResponse(taskBlock.getBlock(), false))
+            .map(taskBlock -> new AnnotationTaskBlockResponse(taskBlock.getBlock(), "", false))
             .collect(Collectors.toList());
     return new AnnotationTaskDetailVO(
         annotationTask.getName(), annotationTask.getState().name(), blocks);

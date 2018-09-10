@@ -36,6 +36,6 @@ public class UserCenterServiceImpl implements UserCenterService {
     } else {
       throw new BusinessRuleException("", "用户中心登陆失败，无法获取用户信息！");
     }
-    //  }
   }
+  //  }
 }

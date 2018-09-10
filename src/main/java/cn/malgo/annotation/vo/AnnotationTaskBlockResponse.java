@@ -25,11 +25,14 @@ public class AnnotationTaskBlockResponse {
 
   private final double nerFreshRate;
 
-  public AnnotationTaskBlockResponse(final AnnotationTaskBlock block) {
-    this(block, true);
+  private final String assignee;
+
+  public AnnotationTaskBlockResponse(final AnnotationTaskBlock block, final String assignee) {
+    this(block, assignee, true);
   }
 
-  public AnnotationTaskBlockResponse(final AnnotationTaskBlock block, boolean parseAnnotation) {
+  public AnnotationTaskBlockResponse(
+      final AnnotationTaskBlock block, String assignee, boolean parseAnnotation) {
     this.id = block.getId();
     this.taskId =
         block.getTaskBlocks().size() > 0
@@ -46,7 +49,7 @@ public class AnnotationTaskBlockResponse {
     this.state = block.getState().name();
     this.annotationType = block.getAnnotationType();
     this.nerFreshRate = block.getNerFreshRate();
-
+    this.assignee = assignee;
     if (parseAnnotation) {
       this.annotation =
           AnnotationConvert.convertAnnotation2BratFormat(

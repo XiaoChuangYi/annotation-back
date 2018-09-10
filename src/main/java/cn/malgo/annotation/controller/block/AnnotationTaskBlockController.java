@@ -2,6 +2,7 @@ package cn.malgo.annotation.controller.block;
 
 import cn.malgo.annotation.biz.CleanOutBlockBiz;
 import cn.malgo.annotation.biz.block.AnnotationBlockBatchAbandonBiz;
+import cn.malgo.annotation.biz.block.BatchDeleteBlockBratTypeBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockEntityMultipleBiz;
 import cn.malgo.annotation.biz.block.BatchDeleteBlockRelationBiz;
 import cn.malgo.annotation.biz.block.BatchUpdateBlockRelationBiz;
@@ -15,6 +16,7 @@ import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.cron.BlockNerUpdater;
 import cn.malgo.annotation.dto.error.AnnotationErrorContext;
 import cn.malgo.annotation.request.block.BatchAbandonBlockRequest;
+import cn.malgo.annotation.request.block.BatchDeleteBlockBratTypeRequest;
 import cn.malgo.annotation.request.block.BatchDeleteBlockRelationRequest;
 import cn.malgo.annotation.request.block.BatchDeleteEntityMultipleRequest;
 import cn.malgo.annotation.request.ListOverlapEntityRequest;
@@ -55,7 +57,7 @@ public class AnnotationTaskBlockController {
   private final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz;
   private final CleanOutBlockBiz cleanOutBlockBiz;
   private final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz;
-
+  private final BatchDeleteBlockBratTypeBiz batchDeleteBlockBratTypeBiz;
 
   private final UserDetailService userDetailService;
 
@@ -72,7 +74,8 @@ public class AnnotationTaskBlockController {
       final BatchUpdateBlockRelationBiz batchUpdateBlockRelationBiz,
       final CleanOutBlockBiz cleanOutBlockBiz,
       final AnnotationBlockBatchAbandonBiz annotationBlockBatchAbandonBiz,
-      final UserDetailService userDetailService) {
+      final UserDetailService userDetailService,
+      final BatchDeleteBlockBratTypeBiz batchDeleteBlockBratTypeBiz) {
     this.blockNerUpdater = blockNerUpdater;
     this.getAnnotationBlockBiz = getAnnotationBlockBiz;
     this.addBlockAnnotationBiz = addBlockAnnotationBiz;
@@ -85,24 +88,25 @@ public class AnnotationTaskBlockController {
     this.batchUpdateBlockRelationBiz = batchUpdateBlockRelationBiz;
     this.cleanOutBlockBiz = cleanOutBlockBiz;
     this.annotationBlockBatchAbandonBiz = annotationBlockBatchAbandonBiz;
+    this.batchDeleteBlockBratTypeBiz = batchDeleteBlockBratTypeBiz;
     this.userDetailService = userDetailService;
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER)
   @RequestMapping(value = "/update-block-ner", method = RequestMethod.POST)
-  public Response<Boolean> updateBlockNer(
-      final HttpServletRequest request) {
-    final UserDetails userDetails = new UserDetails() {
-      @Override
-      public long getId() {
-        return userDetailService.getUserDetails(request).getId();
-      }
+  public Response<Boolean> updateBlockNer(final HttpServletRequest request) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(request).getId();
+          }
 
-      @Override
-      public boolean hasPermission(String permission) {
-        return userDetailService.getUserDetails(request).hasPermission(permission);
-      }
-    };
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(request).hasPermission(permission);
+          }
+        };
     if (!userDetails.hasPermission(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER)) {
       throw new BusinessRuleException("permission-deinied", "无权限");
     }
@@ -112,19 +116,19 @@ public class AnnotationTaskBlockController {
 
   @PermissionAnno(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER_RATE)
   @RequestMapping(value = "/update-block-ner-rate", method = RequestMethod.POST)
-  public Response<Boolean> updateBlockNerRate(
-      final HttpServletRequest request) {
-    final UserDetails userDetails = new UserDetails() {
-      @Override
-      public long getId() {
-        return userDetailService.getUserDetails(request).getId();
-      }
+  public Response<Boolean> updateBlockNerRate(final HttpServletRequest request) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(request).getId();
+          }
 
-      @Override
-      public boolean hasPermission(String permission) {
-        return userDetailService.getUserDetails(request).hasPermission(permission);
-      }
-    };
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(request).hasPermission(permission);
+          }
+        };
     if (!userDetails.hasPermission(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER_RATE)) {
       throw new BusinessRuleException("permission-deinied", "无权限");
     }
@@ -144,20 +148,14 @@ public class AnnotationTaskBlockController {
   // userDetails)));
   //  }
 
-  /**
-   * 获取block标注
-   */
+  /** 获取block标注 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_DETAIL)
   @RequestMapping(value = "/get-block-annotation/{id}", method = RequestMethod.GET)
-  public Response<AnnotationBlockBratVO> getBlockAnnotation(
-      @PathVariable("id") long id) {
-    return new Response<>(
-        getAnnotationBlockBiz.process(new GetAutoAnnotationRequest(id), null));
+  public Response<AnnotationBlockBratVO> getBlockAnnotation(@PathVariable("id") long id) {
+    return new Response<>(getAnnotationBlockBiz.process(new GetAutoAnnotationRequest(id), null));
   }
 
-  /**
-   * 新增block标注
-   */
+  /** 新增block标注 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ADD)
   @RequestMapping(value = "/add-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> addBlockAnnotation(
@@ -165,42 +163,31 @@ public class AnnotationTaskBlockController {
     return new Response<>(addBlockAnnotationBiz.process(addAnnotationGroupRequest, null));
   }
 
-  /**
-   * 删除block标注
-   */
+  /** 删除block标注 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_DELETE)
   @RequestMapping(value = "/delete-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> deleteBlockAnnotation(
       @RequestBody DeleteAnnotationGroupRequest deleteAnnotationGroupRequest) {
-    return new Response<>(
-        deleteBlockAnnotationBiz.process(deleteAnnotationGroupRequest, null));
+    return new Response<>(deleteBlockAnnotationBiz.process(deleteAnnotationGroupRequest, null));
   }
 
-  /**
-   * 更新block标注
-   */
+  /** 更新block标注 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_UPDATE)
   @RequestMapping(value = "/update-block-annotation", method = RequestMethod.POST)
   public Response<AnnotationBlockBratVO> updateBlockAnnotation(
       @RequestBody UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
-    return new Response<>(
-        updateBlockAnnotationBiz.process(updateAnnotationGroupRequest, null));
+    return new Response<>(updateBlockAnnotationBiz.process(updateAnnotationGroupRequest, null));
   }
 
-  /**
-   * 五元组查询block关联查询
-   */
+  /** 五元组查询block关联查询 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_RELATION_SEARCH)
   @RequestMapping(value = "/list-block-relation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationErrorContext>> listBlockRelation(
       ListRelevanceAnnotationRequest listRelevanceAnnotationRequest) {
-    return new Response<>(
-        listRelevanceAnnotationBiz.process(listRelevanceAnnotationRequest, null));
+    return new Response<>(listRelevanceAnnotationBiz.process(listRelevanceAnnotationRequest, null));
   }
 
-  /**
-   * overlap entity block查询
-   */
+  /** overlap entity block查询 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_OVERLAP_SEARCH)
   @RequestMapping(value = "/list-overlap-entity-block", method = RequestMethod.GET)
   public Response<PageVO<AnnotationBlockBratVO>> listOverlapEntityBlock(
@@ -208,9 +195,7 @@ public class AnnotationTaskBlockController {
     return new Response<>(listOverlapEntityBiz.process(listOverlapEntityRequest, null));
   }
 
-  /**
-   * 批量删除block一词多义实体
-   */
+  /** 批量删除block一词多义实体 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_ENTITY_DELETE)
   @RequestMapping(value = "/batch-delete-multiple-entity", method = RequestMethod.POST)
   public Response<List<Long>> batchDeleteMultipleEntity(
@@ -219,9 +204,7 @@ public class AnnotationTaskBlockController {
         batchDeleteBlockEntityMultipleBiz.process(batchDeleteEntityMultipleRequest, null));
   }
 
-  /**
-   * 批量删除关联标注关系
-   */
+  /** 批量删除关联标注关系 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_RELATION_DELETE)
   @RequestMapping(value = "/batch-delete-relation", method = RequestMethod.POST)
   public Response<List<Long>> batchDeleteRelation(
@@ -230,9 +213,7 @@ public class AnnotationTaskBlockController {
         batchDeleteBlockRelationBiz.process(batchDeleteBlockRelationRequest, null));
   }
 
-  /**
-   * 批量更新关联类型
-   */
+  /** 批量更新关联类型 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_BATCH_RELATION_UPDATE)
   @RequestMapping(value = "/batch-update-relation", method = RequestMethod.POST)
   public Response<List<Long>> batchUpdateRelation(
@@ -240,22 +221,23 @@ public class AnnotationTaskBlockController {
     return new Response<>(batchUpdateBlockRelationBiz.process(request, null));
   }
 
-  /**
-   * 清洗指定批次的语料
-   */
+  /** 清洗指定批次的语料 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BATCH_CLEANED)
   @RequestMapping(value = "/clean-out-block", method = RequestMethod.POST)
   public Response cleanOutBlock() {
     return new Response<>(cleanOutBlockBiz.process(null, null));
   }
 
-  /**
-   * 批量放弃未处理状态的语料
-   */
+  /** 批量放弃未处理状态的语料 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_ABANDON)
   @RequestMapping(value = "/batch-abandon-block", method = RequestMethod.POST)
-  public Response batchAbandonBlock(
-      @RequestBody BatchAbandonBlockRequest request) {
+  public Response batchAbandonBlock(@RequestBody BatchAbandonBlockRequest request) {
     return new Response<>(annotationBlockBatchAbandonBiz.process(request, null));
+  }
+
+  /** 批量删除指定id，对应的tag标签和rTag标签 */
+  @RequestMapping(value = "/batch-delete-block-brat-type", method = RequestMethod.POST)
+  public Response batchDeleteBlockBratType(@RequestBody BatchDeleteBlockBratTypeRequest request) {
+    return new Response<>(batchDeleteBlockBratTypeBiz.process(request, null));
   }
 }

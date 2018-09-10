@@ -156,7 +156,8 @@ public class AnnotationConvert {
         annotationTaskBlock.getCreatedTime(),
         annotationTaskBlock.getLastModified(),
         annotationTaskBlock.getState().name(),
-        annotationTaskBlock.getText());
+        annotationTaskBlock.getText(),
+        annotationTaskBlock.getAssignee());
   }
 
   /** 将分词标注数据装载到前端vo对象中 */

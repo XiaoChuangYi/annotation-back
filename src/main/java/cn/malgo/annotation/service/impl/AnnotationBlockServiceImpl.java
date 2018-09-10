@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class AnnotationBlockServiceImpl implements AnnotationBlockService {
+
   private final AnnotationRepository annotationRepository;
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskRepository annotationTaskRepository;
@@ -71,6 +72,7 @@ public class AnnotationBlockServiceImpl implements AnnotationBlockService {
 
     block.setAnnotation(annotationNew.getFinalAnnotation());
     block.setState(AnnotationTaskState.ANNOTATED);
+    block.setAssignee(annotationNew.getAssignee());
 
     updateTaskState(annotationTaskBlockRepository.save(block));
   }
