@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Service
 public class AnnotationErrorFactoryImpl implements AnnotationErrorFactory {
+
   private final ApplicationContext applicationContext;
   private final Map<AnnotationErrorEnum, AnnotationErrorProvider> providerMap = new HashMap<>();
 
@@ -25,7 +26,9 @@ public class AnnotationErrorFactoryImpl implements AnnotationErrorFactory {
         applicationContext.getBeansOfType(AnnotationErrorProvider.class);
 
     for (AnnotationErrorProvider provider : providerMap.values()) {
-      this.providerMap.put(provider.getErrorEnum(), provider);
+      for (AnnotationErrorEnum annotationErrorEnum : provider.getErrorEnums()) {
+        this.providerMap.put(annotationErrorEnum, provider);
+      }
     }
   }
 

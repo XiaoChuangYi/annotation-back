@@ -33,6 +33,7 @@ import static cn.malgo.annotation.constants.AnnotationErrorConsts.IGNORE_WORD_TY
 @Service
 @Slf4j
 public class NewWordErrorProvider extends BaseErrorProvider {
+
   private static final Pattern[] IGNORE_WORD_PATTERNS =
       new Pattern[] {
         // numbers
@@ -88,8 +89,8 @@ public class NewWordErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.NEW_WORD;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Collections.singletonList(AnnotationErrorEnum.NEW_WORD);
   }
 
   @Override

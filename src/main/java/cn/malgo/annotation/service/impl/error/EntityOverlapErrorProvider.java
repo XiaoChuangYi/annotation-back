@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class EntityOverlapErrorProvider extends BaseErrorProvider {
+
   private final int batchSize;
 
   public EntityOverlapErrorProvider(
@@ -28,8 +30,8 @@ public class EntityOverlapErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.ENTITY_OVERLAP;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Collections.singletonList(AnnotationErrorEnum.ENTITY_OVERLAP);
   }
 
   @Override

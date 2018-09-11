@@ -8,6 +8,7 @@ import cn.malgo.annotation.enums.AnnotationErrorEnum;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.brat.BratPosition;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class IsolatedEntityErrorProvider extends BaseErrorProvider {
+
   private final int batchSize;
 
   public IsolatedEntityErrorProvider(
@@ -30,8 +32,8 @@ public class IsolatedEntityErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.ISOLATED_ENTITY;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Collections.singletonList(AnnotationErrorEnum.ISOLATED_ENTITY);
   }
 
   @Override

@@ -13,7 +13,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.util.List;
 
 public interface AnnotationErrorProvider {
-  AnnotationErrorEnum getErrorEnum();
+
+  List<AnnotationErrorEnum> getErrorEnums();
 
   List<AlgorithmAnnotationWordError> find(List<Annotation> annotations);
 
