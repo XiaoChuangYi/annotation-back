@@ -43,7 +43,6 @@ public class SystemArchitecture {
   @Pointcut(
       "execution(* cn.malgo.annotation.service.*.*(..))"
           + " && !execution(* cn.malgo.annotation.service.AnnotationFactory.*(..))"
-          + " && !execution(* cn.malgo.annotation.service.UserAccountService.*(..))"
           + " && !execution(* cn.malgo.annotation.service.feigns.*.*(..))")
   public void serviceLayer() {}
 

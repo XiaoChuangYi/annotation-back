@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/** Created by cjl on 2018/5/30. */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ListUserAccountRequest {
-  private int pageIndex;
-  private int pageSize;
-  private boolean all;
+public class RemoteLoginRequest {
+
+  String nickname;
+
+  String password;
 }

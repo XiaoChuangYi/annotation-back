@@ -1,13 +1,11 @@
 package cn.malgo.annotation.biz.block;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationBlockActionEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.block.ResetAnnotationBlockRequest;
 import cn.malgo.annotation.service.AnnotationBlockService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class AnnotationBlockResetToAnnotationBiz
     extends TransactionalBiz<ResetAnnotationBlockRequest, List<Long>> {

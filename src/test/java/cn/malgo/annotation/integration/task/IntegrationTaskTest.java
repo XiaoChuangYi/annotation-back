@@ -10,10 +10,8 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.enums.OriginalDocState;
-import cn.malgo.annotation.request.AnnotationStateRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
-import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +29,7 @@ import static org.testng.Assert.*;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContextTests {
+
   private static final String SAMPLE_TEXT = "这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长";
 
   @Autowired private CreateTaskBiz createTaskBiz;
@@ -58,7 +57,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.wordPos.ordinal()),
-        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+        null);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -116,13 +115,13 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.wordPos.ordinal()),
-        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+        null);
 
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
             Collections.singleton(taskAndDoc.getRight().getId()),
             AnnotationTypeEnum.relation.ordinal()),
-        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+        null);
 
     TestTransaction.flagForCommit();
     TestTransaction.end();
@@ -210,9 +209,7 @@ public class IntegrationTaskTest extends AbstractTransactionalTestNGSpringContex
   }
 
   private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
-    final AnnotationTaskVO task =
-        createTaskBiz.process(
-            new CreateTaskRequest("test-task"), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+    final AnnotationTaskVO task = createTaskBiz.process(new CreateTaskRequest("test-task"), null);
 
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);

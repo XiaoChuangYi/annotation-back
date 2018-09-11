@@ -1,18 +1,16 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.entity.TaskBlock;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.task.ListAnnotationTaskBlockRequest;
 import cn.malgo.annotation.result.PageVO;
+import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -25,7 +23,6 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -33,18 +30,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class ListAnnotationTaskBlockBiz
     extends BaseBiz<ListAnnotationTaskBlockRequest, PageVO<AnnotationTaskBlockResponse>> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterService userCenterService;
 
   public ListAnnotationTaskBlockBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final UserAccountRepository userAccountRepository) {
+      final UserCenterService userCenterService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
-    this.userAccountRepository = userAccountRepository;
+    this.userCenterService = userCenterService;
   }
 
   private Specification<AnnotationTaskBlock> queryAnnotationTaskBlockCondition(
@@ -138,10 +134,10 @@ public class ListAnnotationTaskBlockBiz
               Sort.by(Direction.DESC, "nerFreshRate"));
     }
     final Map<Long, String> longStringMap =
-        userAccountRepository
-            .findAll()
+        userCenterService
+            .getUsersByUserCenter()
             .parallelStream()
-            .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+            .collect(Collectors.toMap(User::getUserId, User::getNickName));
     return new PageVO<>(
         annotationTaskBlockRepository
             .findAll(queryAnnotationTaskBlockCondition(request), page)

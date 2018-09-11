@@ -1,9 +1,7 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.request.SettlementListExportRequest;
 import cn.malgo.annotation.service.SettlementListExportService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-@RequirePermission(Permissions.ADMIN)
 public class SettlementListExportBiz extends BaseBiz<SettlementListExportRequest, Object> {
 
   private final SettlementListExportService settlementListExportService;

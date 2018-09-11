@@ -1,15 +1,13 @@
 package cn.malgo.annotation.biz.brat.block;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
+import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.Map;
@@ -20,18 +18,17 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class GetAnnotationBlockBiz
     extends BaseBiz<GetAutoAnnotationRequest, AnnotationBlockBratVO> {
 
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterService userCenterService;
 
   public GetAnnotationBlockBiz(
       final AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      final UserAccountRepository userAccountRepository) {
+      final UserCenterService userCenterService) {
     this.annotationTaskBlockRepository = annotationTaskBlockRepository;
-    this.userAccountRepository = userAccountRepository;
+    this.userCenterService = userCenterService;
   }
 
   @Override
@@ -49,10 +46,10 @@ public class GetAnnotationBlockBiz
     if (optional.isPresent()) {
       final AnnotationTaskBlock annotationTaskBlock = optional.get();
       final Map<Long, String> longStringMap =
-          userAccountRepository
-              .findAll()
+          userCenterService
+              .getUsersByUserCenter()
               .parallelStream()
-              .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+              .collect(Collectors.toMap(User::getUserId, User::getNickName));
       if (StringUtils.equalsAny(
           annotationTaskBlock.getState().name(),
           AnnotationTaskState.ANNOTATED.name(),

@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class EntityConsistencyErrorProvider extends BaseErrorProvider {
+
   private final int batchSize;
   private Set<Long> cachedAnnotationIds = new HashSet<>(100000);
   private Map<String, Set<Long>> cachedTerms = new HashMap<>(100000);
@@ -52,8 +53,8 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.ENTITY_CONSISTENCY;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Collections.singletonList(AnnotationErrorEnum.ENTITY_CONSISTENCY);
   }
 
   @Override
@@ -340,6 +341,7 @@ public class EntityConsistencyErrorProvider extends BaseErrorProvider {
 
   @lombok.Value
   static class EntityListWithPosition implements AnnotationWithPosition {
+
     private final BratPosition position;
     private final Annotation annotation;
     private final int entitySize;

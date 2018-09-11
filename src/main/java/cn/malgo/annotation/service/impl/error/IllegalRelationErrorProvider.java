@@ -46,8 +46,8 @@ public class IllegalRelationErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.ILLEGAL_RELATION;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Collections.singletonList(AnnotationErrorEnum.ILLEGAL_RELATION);
   }
 
   @Override

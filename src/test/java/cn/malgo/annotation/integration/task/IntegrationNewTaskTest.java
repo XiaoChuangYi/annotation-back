@@ -29,10 +29,9 @@ import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.CreateTaskRequest;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
-import cn.malgo.annotation.service.impl.UserAccountServiceImpl;
-import cn.malgo.annotation.service.impl.UserAccountServiceImpl.DefaultUserDetails;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.service.entity.BaseEntity;
+import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,8 +78,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     commitAnnotation(annotationRepository.findByTermEquals(SAMPLE_TEXT));
 
     TestTransaction.start();
-    terminateTaskBiz.process(
-        new TerminateTaskRequest(taskId), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+    terminateTaskBiz.process(new TerminateTaskRequest(taskId), null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -91,7 +89,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.PRE_CLEAN);
 
     TestTransaction.start();
-    cleanOutBlockBiz.process(null, UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+    cleanOutBlockBiz.process(null, null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -116,8 +114,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.DOING);
 
     TestTransaction.start();
-    terminateTaskBiz.process(
-        new TerminateTaskRequest(taskId), UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+    terminateTaskBiz.process(new TerminateTaskRequest(taskId), null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -173,9 +170,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
   /** 验证标准，状态和数量 创建任务和doc */
   private Pair<AnnotationTaskVO, OriginalDoc> createTaskAndDoc() {
     final AnnotationTaskVO task =
-        createTaskBiz.process(
-            new CreateTaskRequest("test-task-20180810"),
-            UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+        createTaskBiz.process(new CreateTaskRequest("test-task-20180810"), null);
     assertNotNull(task);
     assertNotEquals(task.getId(), 0);
     assertEquals(task.getState(), AnnotationTaskState.CREATED.name());
@@ -200,7 +195,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         new AddBlocksToTaskRequest(
             taskVO.getId(),
             taskBlocks.stream().map(BaseEntity::getId).collect(Collectors.toList())),
-        DefaultUserDetails.ADMIN);
+        null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
   }
@@ -211,7 +206,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     createBlocksFromDocBiz.process(
         new CreateBlocksFromDocRequest(
             Collections.singleton(doc.getId()), AnnotationTypeEnum.relation.ordinal()),
-        DefaultUserDetails.ADMIN);
+        null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -243,7 +238,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     preAnnotationRecycleBiz.process(
         new AnnotationRecycleRequest(
             Collections.singletonList(annotationRepository.findByTermEquals(SAMPLE_TEXT).getId())),
-        DefaultUserDetails.ADMIN);
+        null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
@@ -259,7 +254,17 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
     annotationNew = annotationRepository.save(annotationNew);
     annotationCommitBiz.process(
         new CommitAnnotationRequest(annotationNew.getId()),
-        UserAccountServiceImpl.DefaultUserDetails.ADMIN);
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return 0;
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return false;
+          }
+        });
     TestTransaction.flagForCommit();
     TestTransaction.end();
 

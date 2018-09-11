@@ -14,6 +14,7 @@ import cn.malgo.core.definition.Entity;
 import cn.malgo.core.definition.brat.BratPosition;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
+
   private final int batchSize;
 
   public EntityMultipleTypeErrorProvider(
@@ -41,8 +43,9 @@ public class EntityMultipleTypeErrorProvider extends BaseErrorProvider {
   }
 
   @Override
-  public AnnotationErrorEnum getErrorEnum() {
-    return AnnotationErrorEnum.ENTITY_MULTIPLE_TYPE;
+  public List<AnnotationErrorEnum> getErrorEnums() {
+    return Arrays.asList(
+        AnnotationErrorEnum.ENTITY_MULTIPLE_TYPE, AnnotationErrorEnum.DISEASE_MULTIPLE_TYPE);
   }
 
   @Override

@@ -42,6 +42,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
     callSuper = true)
 @JSONType(ignores = {"docBlocks", "taskBlocks", "nerResult"})
 public class AnnotationTaskBlock extends BaseEntity {
+
   @Column(name = "text", nullable = false, updatable = false, columnDefinition = "MEDIUMTEXT")
   @Getter
   @Setter
@@ -82,6 +83,11 @@ public class AnnotationTaskBlock extends BaseEntity {
   @Setter
   @Column(name = "assignee", nullable = false, columnDefinition = "BIGINT(20) default 0")
   private long assignee = 0L;
+
+  @Getter
+  @Setter
+  @Column(name = "memo", columnDefinition = "varchar(512)")
+  private String memo;
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "doc", orphanRemoval = true)
   @Getter

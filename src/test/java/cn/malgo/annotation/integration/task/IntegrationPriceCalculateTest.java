@@ -6,12 +6,10 @@ import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;
 import java.math.BigDecimal;
 import java.util.Date;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
-import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;

@@ -3,12 +3,13 @@ package cn.malgo.annotation.service.impl.excel;
 import cn.malgo.annotation.constants.OutsourcePriceConsts;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.service.SettlementListExportService;
+import cn.malgo.annotation.service.UserCenterService;
+import cn.malgo.annotation.service.feigns.UserCenterClient;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -39,15 +40,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SettlementListExportServiceImpl implements SettlementListExportService {
 
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterService userCenterService;
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AnnotationRepository annotationRepository;
 
   public SettlementListExportServiceImpl(
-      final UserAccountRepository userAccountRepository,
+      final UserCenterService userCenterService,
       final AnnotationTaskRepository annotationTaskRepository,
       final AnnotationRepository annotationRepository) {
-    this.userAccountRepository = userAccountRepository;
+    this.userCenterService = userCenterService;
     this.annotationTaskRepository = annotationTaskRepository;
     this.annotationRepository = annotationRepository;
   }
@@ -155,10 +156,10 @@ public class SettlementListExportServiceImpl implements SettlementListExportServ
   }
 
   private Map<Long, String> getUserMap() {
-    return userAccountRepository
-        .findAll()
+    return userCenterService
+        .getUsersByUserCenter()
         .parallelStream()
-        .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+        .collect(Collectors.toMap(User::getUserId, User::getNickName));
   }
 
   private void setExcelColumn(final WritableSheet sheet) throws WriteException {

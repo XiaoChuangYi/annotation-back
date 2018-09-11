@@ -1,13 +1,15 @@
 package cn.malgo.annotation.vo;
 
+import cn.malgo.annotation.dto.User;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AlgorithmAnnotationVO {
-  private String autoAnnotation;
-  private AnnotationBratVO annotationNewBratVO;
+@NoArgsConstructor
+public class UserInfo {
+
+  private List<User> users;
 }

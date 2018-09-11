@@ -1,9 +1,8 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.dao.UserAccountRepository;
+import cn.malgo.annotation.dto.User;
 import cn.malgo.annotation.entity.AnnotationNew;
-import cn.malgo.annotation.entity.UserAccount;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.DesignateAnnotationRequest;
@@ -36,14 +35,14 @@ import org.springframework.stereotype.Service;
 public class AnnotationServiceImpl implements AnnotationService {
 
   private final AnnotationRepository annotationRepository;
-  private final UserAccountRepository userAccountRepository;
+  private final UserCenterServiceImpl userCenterService;
 
   @Autowired
   public AnnotationServiceImpl(
-      final UserAccountRepository userAccountRepository,
+      final UserCenterServiceImpl userCenterService,
       final AnnotationRepository annotationRepository) {
-    this.userAccountRepository = userAccountRepository;
     this.annotationRepository = annotationRepository;
+    this.userCenterService = userCenterService;
   }
 
   /** spring-boot-jpa 自定义查询 */
@@ -130,10 +129,10 @@ public class AnnotationServiceImpl implements AnnotationService {
 
     if (page.getTotalElements() > 0) {
       final Map<Long, String> userMap =
-          userAccountRepository
-              .findAll()
+          userCenterService
+              .getUsersByUserCenter()
               .stream()
-              .collect(Collectors.toMap(UserAccount::getId, UserAccount::getAccountName));
+              .collect(Collectors.toMap(User::getUserId, User::getNickName));
 
       page.getContent()
           .forEach(

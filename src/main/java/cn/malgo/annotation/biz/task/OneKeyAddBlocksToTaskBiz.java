@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
@@ -9,7 +8,6 @@ import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.service.AddBlocksToTaskService;
 import cn.malgo.annotation.utils.BlockBatchIterator;
 import cn.malgo.annotation.vo.AddBlocksToTaskVO;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -21,7 +19,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class OneKeyAddBlocksToTaskBiz
     extends TransactionalBiz<OneKeyAddBlocksToTaskRequest, AddBlocksToTaskVO> {
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;

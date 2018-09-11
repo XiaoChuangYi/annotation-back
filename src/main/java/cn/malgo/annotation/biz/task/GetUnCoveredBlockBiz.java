@@ -1,12 +1,10 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.GetUnCoveredBlockRequest;
 import cn.malgo.annotation.vo.AnnotationTaskBlockResponse;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
@@ -21,7 +19,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 @Slf4j
 public class GetUnCoveredBlockBiz
     extends BaseBiz<GetUnCoveredBlockRequest, List<AnnotationTaskBlockResponse>> {

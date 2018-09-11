@@ -1,6 +1,5 @@
 package cn.malgo.annotation.biz.task;
 
-import cn.malgo.annotation.constants.Permissions;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
@@ -12,7 +11,6 @@ import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.task.TerminateTaskRequest;
 import cn.malgo.annotation.service.AnnotationSummaryService;
-import cn.malgo.service.annotation.RequirePermission;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.exception.InvalidInputException;
@@ -27,7 +25,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequirePermission(Permissions.ADMIN)
 public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Object> {
 
   private final AnnotationTaskRepository annotationTaskRepository;
