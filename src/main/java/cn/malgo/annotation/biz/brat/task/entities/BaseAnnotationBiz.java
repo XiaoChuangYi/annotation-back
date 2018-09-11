@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat.task.entities;
 
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationNew;
@@ -28,8 +29,10 @@ public abstract class BaseAnnotationBiz<REQ extends BaseAnnotationRequest, Annot
 
       case PRE_ANNOTATION:
       case ANNOTATION_PROCESSING:
-        if (user.getId() != annotation.getAssignee()) {
-          throw new BusinessRuleException("permission-denied", user.getId() + "无权限");
+        if (!user.hasPermission(PermissionConstant.ANNOTATION_TASK_DESIGNATE)) {
+          if (user.getId() != annotation.getAssignee()) {
+            throw new BusinessRuleException("permission-denied", user.getId() + "无权限");
+          }
         }
 
         break;
