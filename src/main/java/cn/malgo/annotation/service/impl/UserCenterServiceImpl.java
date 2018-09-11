@@ -34,8 +34,8 @@ public class UserCenterServiceImpl implements UserCenterService {
     //    } else {
     if (authService.login()) {
       final UserInfo userInfo = userCenterClient.getUsers();
-      if (userInfo == null) {
-        throw new BusinessRuleException("", "无法获取用户中心用户信息，请重刷！");
+      if (userInfo == null || userInfo.getUsers() == null) {
+        throw new BusinessRuleException("", "无法获取用户中心用户信息，请刷新！");
       }
       return userInfo.getUsers();
     } else {
