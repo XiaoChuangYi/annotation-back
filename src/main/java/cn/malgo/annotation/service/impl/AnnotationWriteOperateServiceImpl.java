@@ -56,8 +56,15 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                   addAnnotationGroupRequest.getTargetTag(),
                   addAnnotationGroupRequest.getRelation());
         }
-
         break;
+      case disease:
+        annotation =
+            AnnotationConvert.handleCrossAnnotation(
+                oldAnnotation,
+                addAnnotationGroupRequest.getTerm(),
+                addAnnotationGroupRequest.getType(),
+                addAnnotationGroupRequest.getStartPosition(),
+                addAnnotationGroupRequest.getEndPosition());
     }
     return annotation;
   }
@@ -90,6 +97,11 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
         }
         break;
       case sentence:
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        break;
+      case disease:
         annotation =
             AnnotationConvert.deleteEntitiesAnnotation(
                 oldAnnotation, deleteAnnotationGroupRequest.getTag());
@@ -127,7 +139,15 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
               AnnotationConvert.updateRelationAnnotation(
                   oldAnnotation, request.getReTag(), request.getRelation());
         }
-
+        break;
+      case disease:
+        annotation =
+            AnnotationConvert.handleCrossAnnotation(
+                oldAnnotation,
+                request.getTerm(),
+                request.getNewType(),
+                request.getStartPosition(),
+                request.getEndPosition());
         break;
     }
     return annotation;
