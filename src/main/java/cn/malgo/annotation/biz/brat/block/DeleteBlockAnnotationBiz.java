@@ -2,9 +2,10 @@ package cn.malgo.annotation.biz.brat.block;
 
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.request.brat.DeleteAnnotationGroupRequest;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
+import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.exception.InvalidInputException;
@@ -14,14 +15,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeleteBlockAnnotationBiz
     extends BaseBlockAnnotationBiz<DeleteAnnotationGroupRequest, AnnotationBlockBratVO> {
-
-  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationWriteOperateService annotationWriteOperateService;
 
   public DeleteBlockAnnotationBiz(
-      AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      AnnotationWriteOperateService annotationWriteOperateService) {
-    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationFactory annotationFactory,
+      final ExtractAddAtomicTermService extractAddAtomicTermService,
+      final AnnotationWriteOperateService annotationWriteOperateService) {
+    super(annotationTaskBlockRepository, annotationFactory, extractAddAtomicTermService);
+
     this.annotationWriteOperateService = annotationWriteOperateService;
   }
 
@@ -43,11 +45,7 @@ public class DeleteBlockAnnotationBiz
             deleteAnnotationGroupRequest,
             annotationTaskBlock.getAnnotation(),
             annotationTaskBlock.getAnnotationType().ordinal());
-    annotationTaskBlock.setAnnotation(annotation);
-    if (annotationTaskBlock.getState() == AnnotationTaskState.CREATED) {
-      annotationTaskBlock.setState(AnnotationTaskState.PRE_CLEAN);
-    }
-    annotationTaskBlockRepository.save(annotationTaskBlock);
-    return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
+    return AnnotationConvert.convert2AnnotationBlockBratVO(
+        saveAnnotation(annotationTaskBlock, annotation));
   }
 }

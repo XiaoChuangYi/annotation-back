@@ -2,6 +2,7 @@ package cn.malgo.annotation.biz.brat.task;
 
 import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.AnnotationRepository;
+import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
@@ -64,9 +65,10 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
 
     if (optional.isPresent()) {
       final AnnotationNew annotationNew = optional.get();
+      final Annotation annotation = annotationFactory.create(annotationNew);
+
       if (annotationNew.getAnnotationType() == AnnotationTypeEnum.relation
-          && checkRelationEntityService.hasIsolatedAnchor(
-              annotationFactory.create(annotationNew))) {
+          && checkRelationEntityService.hasIsolatedAnchor(annotation)) {
         throw new BusinessRuleException("has-isolated-anchor-type", "含有孤立锚点，无法提交！");
       }
 
@@ -85,8 +87,9 @@ public class AnnotationCommitBiz extends BaseBiz<CommitAnnotationRequest, Object
 
       annotationNew.setState(AnnotationStateEnum.SUBMITTED);
       annotationNew.setCommitTimestamp(new Date());
-      if (annotationNew.getAnnotationType() == AnnotationTypeEnum.wordPos) { // 分词标注提交
-        extractAddAtomicTermService.extractAndAddAtomicTerm(annotationNew);
+      if (annotationNew.getAnnotationType() == AnnotationTypeEnum.wordPos
+          || annotationNew.getAnnotationType() == AnnotationTypeEnum.disease) { // 分词或疾病属性标注提交
+        extractAddAtomicTermService.extractAndAddAtomicTerm(annotation);
       }
       annotationBlockService.saveAnnotation(annotationRepository.save(annotationNew));
       annotationSummaryService.updateTaskSummary(annotationNew.getTaskId());

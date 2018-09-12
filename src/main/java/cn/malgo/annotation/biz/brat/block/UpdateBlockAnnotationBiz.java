@@ -3,13 +3,14 @@ package cn.malgo.annotation.biz.brat.block;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
+import cn.malgo.annotation.service.AnnotationFactory;
 import cn.malgo.annotation.service.AnnotationWriteOperateService;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.CheckRelationEntityService;
+import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.exception.BusinessRuleException;
@@ -22,17 +23,19 @@ public class UpdateBlockAnnotationBiz
     extends BaseBlockAnnotationBiz<UpdateAnnotationGroupRequest, AnnotationBlockBratVO> {
 
   private final AnnotationWriteOperateService annotationWriteOperateService;
-  private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService;
   private final CheckRelationEntityService checkRelationEntityService;
 
   public UpdateBlockAnnotationBiz(
-      AnnotationWriteOperateService annotationWriteOperateService,
-      AnnotationTaskBlockRepository annotationTaskBlockRepository,
-      CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService,
-      CheckRelationEntityService checkRelationEntityService) {
+      final AnnotationTaskBlockRepository annotationTaskBlockRepository,
+      final AnnotationFactory annotationFactory,
+      final ExtractAddAtomicTermService extractAddAtomicTermService,
+      final AnnotationWriteOperateService annotationWriteOperateService,
+      final CheckLegalRelationBeforeAddService checkLegalRelationBeforeAddService,
+      final CheckRelationEntityService checkRelationEntityService) {
+    super(annotationTaskBlockRepository, annotationFactory, extractAddAtomicTermService);
+
     this.annotationWriteOperateService = annotationWriteOperateService;
-    this.annotationTaskBlockRepository = annotationTaskBlockRepository;
     this.checkLegalRelationBeforeAddService = checkLegalRelationBeforeAddService;
     this.checkRelationEntityService = checkRelationEntityService;
   }
@@ -72,14 +75,8 @@ public class UpdateBlockAnnotationBiz
             updateAnnotationGroupRequest,
             annotationTaskBlock.getAnnotation(),
             annotationTaskBlock.getAnnotationType().ordinal());
-    annotationTaskBlock.setAnnotation(annotation);
-
-    if (annotationTaskBlock.getState() == AnnotationTaskState.CREATED) {
-      annotationTaskBlock.setState(AnnotationTaskState.PRE_CLEAN);
-    }
-
-    annotationTaskBlockRepository.save(annotationTaskBlock);
-    return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
+    return AnnotationConvert.convert2AnnotationBlockBratVO(
+        saveAnnotation(annotationTaskBlock, annotation));
   }
 
   private void checkRuleBeforeUpdateRelation(
