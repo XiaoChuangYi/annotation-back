@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz.brat.block;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
+import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateAnnotationGroupRequest;
 import cn.malgo.annotation.request.brat.UpdateAnnotationRequest;
@@ -72,6 +73,11 @@ public class UpdateBlockAnnotationBiz
             annotationTaskBlock.getAnnotation(),
             annotationTaskBlock.getAnnotationType().ordinal());
     annotationTaskBlock.setAnnotation(annotation);
+
+    if (annotationTaskBlock.getState() == AnnotationTaskState.CREATED) {
+      annotationTaskBlock.setState(AnnotationTaskState.PRE_CLEAN);
+    }
+
     annotationTaskBlockRepository.save(annotationTaskBlock);
     return AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
   }
