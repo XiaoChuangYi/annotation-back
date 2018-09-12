@@ -63,25 +63,8 @@ public class AnnotationBratController {
   /** 用户列表查询 */
   @PermissionAnno(PermissionConstant.ANNOTATION_USER_LIST)
   @RequestMapping(value = "/list-user-account", method = RequestMethod.GET)
-  public Response listUserAccount(HttpServletRequest servletRequest) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(servletRequest).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-          }
-        };
-    return new Response<>(
-        userCenterService
-            .getUsersByUserCenter()
-            .parallelStream()
-            .filter(user -> user.getUserId() != userDetails.getId())
-            .collect(Collectors.toList()));
+  public Response listUserAccount() {
+    return new Response<>(userCenterService.getUsersByUserCenter());
   }
 
   /** 获取算法服务的预标注结果 */
