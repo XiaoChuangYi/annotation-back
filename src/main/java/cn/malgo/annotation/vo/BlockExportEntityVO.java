@@ -22,6 +22,7 @@ public class BlockExportEntityVO {
 
     private long id;
     private String text;
+    private String comment;
     private List<EntityDetail> entities;
 
     public EntityInfo(AnnotationTaskBlock annotationTaskBlock) {
@@ -29,6 +30,7 @@ public class BlockExportEntityVO {
           AnnotationConvert.getEntitiesFromAnnotation(annotationTaskBlock.getAnnotation());
       this.id = annotationTaskBlock.getId();
       this.text = annotationTaskBlock.getText();
+      this.comment = annotationTaskBlock.getMemo();
       this.entities =
           entities
               .parallelStream()

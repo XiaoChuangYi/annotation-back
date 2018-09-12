@@ -25,6 +25,7 @@ public class AuthConfig implements WebMvcConfigurer {
         .excludePathPatterns("/api/v2/import")
         .excludePathPatterns("/api/v2/doc/import")
         .excludePathPatterns("/api/v2/list-type")
+        .excludePathPatterns("/api/block/export-entities")
         .excludePathPatterns("/static/*");
     registry
         .addInterceptor(new PermissionInterceptor(redisConfigService))
@@ -33,6 +34,7 @@ public class AuthConfig implements WebMvcConfigurer {
         .excludePathPatterns("/api/v2/import")
         .excludePathPatterns("/api/v2/doc/import")
         .excludePathPatterns("/api/v2/list-type")
+        .excludePathPatterns("/api/block/export-entities")
         .excludePathPatterns("/static/*");
   }
 }
