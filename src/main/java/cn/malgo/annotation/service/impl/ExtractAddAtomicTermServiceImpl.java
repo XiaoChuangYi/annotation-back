@@ -3,6 +3,7 @@ package cn.malgo.annotation.service.impl;
 import cn.malgo.annotation.dao.AtomicTermRepository;
 import cn.malgo.annotation.dto.Annotation;
 import cn.malgo.annotation.entity.AtomicTerm;
+import cn.malgo.annotation.service.AtomicTermSegmentService;
 import cn.malgo.annotation.service.ExtractAddAtomicTermService;
 import cn.malgo.annotation.utils.AnnotationConvert;
 import cn.malgo.core.definition.Entity;
@@ -13,9 +14,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermService {
   private final AtomicTermRepository atomicTermRepository;
+  private final AtomicTermSegmentService atomicTermSegmentService;
 
-  public ExtractAddAtomicTermServiceImpl(AtomicTermRepository atomicTermRepository) {
+  public ExtractAddAtomicTermServiceImpl(
+      final AtomicTermRepository atomicTermRepository,
+      final AtomicTermSegmentService atomicTermSegmentService) {
     this.atomicTermRepository = atomicTermRepository;
+    this.atomicTermSegmentService = atomicTermSegmentService;
   }
 
   @Override
@@ -49,6 +54,7 @@ public class ExtractAddAtomicTermServiceImpl implements ExtractAddAtomicTermServ
               .collect(Collectors.toList());
       if (atomicTerms.size() > 0) {
         atomicTermRepository.saveAll(atomicTerms);
+        atomicTermSegmentService.addAtomicTerms(annotation.getAnnotationType(), atomicTerms);
       }
     }
   }
