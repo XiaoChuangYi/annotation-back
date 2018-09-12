@@ -40,14 +40,16 @@ def main(db_host, db_user, db_password, db_name):
     with session.begin():
         for index, row in df.iterrows():
             icd: str = row[0]
+            name: str = row[2]
+
             state = 'CREATED'
 
             if icd.startswith('U') or icd.startswith('V') or icd.startswith('W') or icd.startswith('X') or icd.startswith('Y') or icd.startswith('Z'):
                 state = 'FINISHED'
-            elif '后遗症' in row[2] or '术后' in row[2] or '伴' in row[2] or '并' in row[2]:
+            elif '后遗症' in name or '术后' in name or '伴' in name or '并' in name:
                 state = 'FINISHED'
 
-            session.add(AnnotationTaskBlock(annotation_type=3, text=row[2], state=state, memo=json.dumps({
+            session.add(AnnotationTaskBlock(annotation_type=3, text=name.strip(), state=state, memo=json.dumps({
                 'icd': icd
             })))
 
