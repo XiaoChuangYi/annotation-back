@@ -11,11 +11,10 @@ import cn.malgo.annotation.vo.AnnotationBlockBratVO;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class GetAnnotationBlockBiz
@@ -45,16 +44,19 @@ public class GetAnnotationBlockBiz
         annotationTaskBlockRepository.findById(baseAnnotationRequest.getId());
     if (optional.isPresent()) {
       final AnnotationTaskBlock annotationTaskBlock = optional.get();
-      final Map<Long, String> longStringMap =
-          userCenterService
-              .getUsersByUserCenter()
-              .parallelStream()
-              .collect(Collectors.toMap(User::getUserId, User::getNickName));
+      final String state = annotationTaskBlock.getState().name();
+
       if (StringUtils.equalsAny(
-          annotationTaskBlock.getState().name(),
+          state,
+          AnnotationTaskState.CREATED.name(),
           AnnotationTaskState.ANNOTATED.name(),
           AnnotationTaskState.PRE_CLEAN.name(),
           AnnotationTaskState.FINISHED.name())) {
+        final Map<Long, String> longStringMap =
+            userCenterService
+                .getUsersByUserCenter()
+                .parallelStream()
+                .collect(Collectors.toMap(User::getUserId, User::getNickName));
         AnnotationBlockBratVO annotationBlockBratVO =
             AnnotationConvert.convert2AnnotationBlockBratVO(annotationTaskBlock);
         annotationBlockBratVO.setAssignee(

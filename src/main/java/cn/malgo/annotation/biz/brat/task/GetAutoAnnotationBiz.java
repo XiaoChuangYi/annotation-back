@@ -5,36 +5,43 @@ import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.annotation.entity.AnnotationNew;
-import cn.malgo.annotation.enums.AnnotationCombineStateEnum;
+import cn.malgo.annotation.enums.AnnotationStateEnum;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.GetAutoAnnotationRequest;
 import cn.malgo.annotation.service.AlgorithmApiService;
+import cn.malgo.annotation.service.AtomicTermSegmentService;
 import cn.malgo.annotation.utils.AnnotationConvert;
+import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
+import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.annotation.vo.AlgorithmAnnotationVO;
+import cn.malgo.core.definition.Entity;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.DependencyServiceException;
 import cn.malgo.service.exception.InternalServerException;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
 public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, AlgorithmAnnotationVO> {
-
   private final AlgorithmApiService algorithmApiService;
+  private final AtomicTermSegmentService atomicTermSegmentService;
   private final AnnotationRepository annotationRepository;
 
   @Autowired
   public GetAutoAnnotationBiz(
-      AlgorithmApiService algorithmApiService, AnnotationRepository annotationRepository) {
+      final AlgorithmApiService algorithmApiService,
+      final AtomicTermSegmentService atomicTermSegmentService,
+      final AnnotationRepository annotationRepository) {
     this.algorithmApiService = algorithmApiService;
+    this.atomicTermSegmentService = atomicTermSegmentService;
     this.annotationRepository = annotationRepository;
   }
 
@@ -57,7 +64,7 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getWordAnnotationVO(AnnotationNew annotation) {
-    if (annotation.getState().equals(AnnotationCombineStateEnum.preAnnotation.name())) {
+    if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
       final UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
           getUpdateAnnotationAlgorithm(annotation);
       final List<AutoAnnotation> finalAnnotationList =
@@ -92,6 +99,17 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getDiseaseAnnotationVO(AnnotationNew annotation) {
+    if (StringUtils.isBlank(annotation.getFinalAnnotation())) {
+      final List<Entity> entities =
+          atomicTermSegmentService.seg(annotation.getAnnotationType(), annotation.getTerm());
+      if (entities.size() != 0) {
+        annotation.setFinalAnnotation(
+            AnnotationDocumentManipulator.toBratAnnotations(
+                new AnnotationDocument(annotation.getTerm(), new ArrayList<>(), entities)));
+        annotationRepository.save(annotation);
+      }
+    }
+
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }

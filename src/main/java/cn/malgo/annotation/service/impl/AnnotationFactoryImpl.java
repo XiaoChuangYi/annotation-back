@@ -19,6 +19,7 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     switch (block.getState()) {
+      case CREATED:
       case ANNOTATED:
       case PRE_CLEAN:
       case FINISHED:
@@ -84,12 +85,12 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
 
     @Override
     public long getId() {
-      return 0;
+      return annotationNew.getBlockId();
     }
 
     @Override
     public AnnotationTypeEnum getAnnotationType() {
-      return null;
+      return annotationNew.getAnnotationType();
     }
 
     @Override
@@ -98,14 +99,14 @@ public class AnnotationFactoryImpl implements AnnotationFactory {
     }
 
     @Override
-    protected String getText() {
-      return null;
-    }
-
-    @Override
     public void setAnnotation(String annotation) {
       super.setAnnotation(annotation);
       annotationNew.setFinalAnnotation(annotation);
+    }
+
+    @Override
+    protected String getText() {
+      return annotationNew.getTerm();
     }
   }
 

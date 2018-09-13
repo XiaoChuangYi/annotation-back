@@ -1,15 +1,18 @@
 package cn.malgo.annotation;
 
+import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
+import cn.malgo.annotation.dto.AnnotationSummary;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AtomicTerm;
-import com.alibaba.fastjson.JSON;
-import cn.malgo.annotation.dao.AnnotationRepository;
-import cn.malgo.annotation.dto.AnnotationSummary;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.ListAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
+import com.alibaba.fastjson.JSON;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.List;
 
 @SpringBootTest
 @Slf4j
@@ -57,11 +57,11 @@ public class AnnotationCombineApplicationTests extends AbstractTestNGSpringConte
   @Test(enabled = false)
   public void testAtomicTerm() {
     List<AtomicTerm> atomicTermList = new ArrayList<>();
-    AtomicTerm atomicTerm = new AtomicTerm("a", "body-structure", 1);
+    AtomicTerm atomicTerm = new AtomicTerm("a", "body-structure", 1L, AnnotationTypeEnum.wordPos);
     atomicTermList.add(atomicTerm);
-    atomicTerm = new AtomicTerm("a", "body-structure", 2);
+    atomicTerm = new AtomicTerm("a", "body-structure", 2L, AnnotationTypeEnum.wordPos);
     atomicTermList.add(atomicTerm);
-    atomicTerm = new AtomicTerm("b", "Error", 3);
+    atomicTerm = new AtomicTerm("b", "Error", 3L, AnnotationTypeEnum.wordPos);
     atomicTermList.add(atomicTerm);
     log.info("result：" + atomicTermList.stream().distinct().collect(Collectors.toList()));
   }
