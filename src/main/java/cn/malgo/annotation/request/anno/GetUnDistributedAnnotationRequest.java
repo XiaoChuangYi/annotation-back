@@ -1,5 +1,6 @@
 package cn.malgo.annotation.request.anno;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetUnDistributedAnnotationRequest {
 
-  private String annotationType;
+  private List<String> annotationTypes;
 }

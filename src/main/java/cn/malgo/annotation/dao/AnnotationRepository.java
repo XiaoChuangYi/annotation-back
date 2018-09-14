@@ -23,9 +23,9 @@ public interface AnnotationRepository
 
   List<AnnotationNew> findAllByStateIn(List<AnnotationStateEnum> annotationStateEnums, Sort sort);
 
-  List<AnnotationNew> findAllByStateInAndAnnotationTypeEquals(
+  List<AnnotationNew> findAllByStateInAndAnnotationTypeIn(
       List<AnnotationStateEnum> annotationStateEnums,
-      AnnotationTypeEnum annotationTypeEnum,
+      List<AnnotationTypeEnum> annotationTypeEnums,
       Sort sort);
 
   @Query(

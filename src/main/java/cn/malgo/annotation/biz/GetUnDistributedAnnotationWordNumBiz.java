@@ -8,7 +8,7 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.Collections;
-import org.apache.commons.lang3.StringUtils;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
@@ -26,17 +26,21 @@ public class GetUnDistributedAnnotationWordNumBiz
   @Override
   protected void validateRequest(GetUnDistributedAnnotationRequest request)
       throws InvalidInputException {
-    if (StringUtils.isBlank(request.getAnnotationType())) {
-      throw new InvalidInputException("invalid-annotation-type", "无效的参数annotationType");
+    if (request.getAnnotationTypes() == null || request.getAnnotationTypes().size() == 0) {
+      throw new InvalidInputException("annotation-types-is-empty", "无效的参数annotationTypes");
     }
   }
 
   @Override
   protected Integer doBiz(GetUnDistributedAnnotationRequest request, UserDetails user) {
     return annotationRepository
-        .findAllByStateInAndAnnotationTypeEquals(
+        .findAllByStateInAndAnnotationTypeIn(
             Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED),
-            AnnotationTypeEnum.valueOf(request.getAnnotationType()),
+            request
+                .getAnnotationTypes()
+                .parallelStream()
+                .map(AnnotationTypeEnum::valueOf)
+                .collect(Collectors.toList()),
             Sort.by(Direction.ASC, "state"))
         .parallelStream()
         .mapToInt(annotationNew -> annotationNew.getTerm().length())

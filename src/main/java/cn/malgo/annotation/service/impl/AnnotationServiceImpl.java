@@ -168,8 +168,13 @@ public class AnnotationServiceImpl implements AnnotationService {
   @Override
   public void oneKeyDesignateAnnotationNew(OneKeyDesignateAnnotationRequest request) {
     final List<AnnotationNew> annotationNews =
-        annotationRepository.findAllByStateIn(
+        annotationRepository.findAllByStateInAndAnnotationTypeIn(
             Collections.singletonList(AnnotationStateEnum.UN_DISTRIBUTED),
+            request
+                .getAnnotationTypes()
+                .parallelStream()
+                .map(AnnotationTypeEnum::valueOf)
+                .collect(Collectors.toList()),
             Sort.by(Direction.DESC, "createdTime"));
     if (annotationNews.size() > 0) {
       if (request.getDesignateWordNum()
