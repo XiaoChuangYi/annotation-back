@@ -6,6 +6,8 @@ import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.request.block.CleanOutBlockRequest;
 import cn.malgo.annotation.service.AnnotationSummaryService;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
@@ -19,7 +21,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
+public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Object> {
+
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationRepository annotationRepository;
   private final AnnotationSummaryService annotationSummaryService;
@@ -37,11 +40,17 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
   }
 
   @Override
-  protected void validateRequest(Void req) throws InvalidInputException {}
+  protected void validateRequest(CleanOutBlockRequest request) throws InvalidInputException {}
 
   @Override
-  protected Object doBiz(Void req, UserDetails user) {
-    final List<AnnotationNew> annotations = annotationRepository.findAllPreClean();
+  protected Object doBiz(CleanOutBlockRequest request, UserDetails user) {
+    final List<AnnotationNew> annotations =
+        annotationRepository.findAllPreClean(
+            request
+                .getAnnotationTypes()
+                .parallelStream()
+                .map(AnnotationTypeEnum::valueOf)
+                .collect(Collectors.toList()));
     final Map<Long, AnnotationTaskBlock> blockMap =
         annotationTaskBlockRepository
             .findAllById(
@@ -62,8 +71,13 @@ public class CleanOutBlockBiz extends TransactionalBiz<Void, Object> {
     log.info("call annotation news saved", annotations.size());
 
     final List<AnnotationTaskBlock> blocks =
-        annotationTaskBlockRepository.findAllByStateIn(
-            Collections.singletonList(AnnotationTaskState.PRE_CLEAN));
+        annotationTaskBlockRepository.findAllByStateInAndAnnotationTypeIn(
+            Collections.singletonList(AnnotationTaskState.PRE_CLEAN),
+            request
+                .getAnnotationTypes()
+                .parallelStream()
+                .map(AnnotationTypeEnum::valueOf)
+                .collect(Collectors.toList()));
     log.info("start changing block states", blocks.size());
     annotationTaskBlockRepository.saveAll(
         blocks

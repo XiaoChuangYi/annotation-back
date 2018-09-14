@@ -72,6 +72,9 @@ public interface AnnotationTaskBlockRepository
 
   List<AnnotationTaskBlock> findAllByStateIn(List<AnnotationTaskState> stateList);
 
+  List<AnnotationTaskBlock> findAllByStateInAndAnnotationTypeIn(
+      List<AnnotationTaskState> stateList, List<AnnotationTypeEnum> annotationTypeEnums);
+
   Page<AnnotationTaskBlock> findAllByAnnotationTypeAndStateIn(
       final AnnotationTypeEnum annotationType, List<AnnotationTaskState> stateList, Pageable page);
 
