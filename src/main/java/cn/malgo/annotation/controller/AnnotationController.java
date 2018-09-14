@@ -9,8 +9,9 @@ import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
 import cn.malgo.annotation.biz.task.OneKeyAddBlocksToTaskBiz;
 import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
-import cn.malgo.annotation.request.DesignateAnnotationRequest;
-import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.anno.DesignateAnnotationRequest;
+import cn.malgo.annotation.request.anno.GetUnDistributedAnnotationRequest;
+import cn.malgo.annotation.request.anno.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
 import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.result.PageVO;
@@ -61,31 +62,27 @@ public class AnnotationController {
     this.userDetailService = userDetailService;
   }
 
-  /**
-   * 条件，分页查询annotation列表
-   */
+  /** 条件，分页查询annotation列表 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_LIST)
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationBratVO>> listAnnotationCombine(
-      ListAnnotationRequest request,
-      final HttpServletRequest servletRequest) {
-    final UserDetails userDetails = new UserDetails() {
-      @Override
-      public long getId() {
-        return userDetailService.getUserDetails(servletRequest).getId();
-      }
+      ListAnnotationRequest request, final HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
 
-      @Override
-      public boolean hasPermission(String permission) {
-        return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-      }
-    };
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
     return new Response<>(listAnnotationBiz.process(request, userDetails));
   }
 
-  /**
-   * 根据Annotation的idList，以及用户id，批量指派给特定的用户
-   */
+  /** 根据Annotation的idList，以及用户id，批量指派给特定的用户 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DESIGNATE)
   @RequestMapping(value = "/designate-task-annotation", method = RequestMethod.POST)
   public Response designateTaskAnnotation(
@@ -93,18 +90,14 @@ public class AnnotationController {
     return new Response<>(designateAnnotationBiz.process(designateAnnotationRequest, null));
   }
 
-  /**
-   * 查询分词标注类型列表
-   */
+  /** 查询分词标注类型列表 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TYPE_LIST)
   @RequestMapping(value = "/list-type", method = RequestMethod.GET)
   public Response<List<AnTypeVO>> listType() {
     return new Response<>(listAnTypeBiz.process(null, null));
   }
 
-  /**
-   * 待标注/任务回收功能
-   */
+  /** 待标注/任务回收功能 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_RECYCLE)
   @RequestMapping(value = "/annotation-recycle", method = RequestMethod.POST)
   public Response annotationRecycle(
@@ -112,30 +105,24 @@ public class AnnotationController {
     return new Response<>(preAnnotationRecycleBiz.process(annotationRecycleRequest, null));
   }
 
-  /**
-   * 一键指派标注
-   */
+  /** 一键指派标注 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_DESIGNATE)
   @RequestMapping(value = "/one-key-designate", method = RequestMethod.POST)
   public Response oneKeyDesignate(@RequestBody OneKeyDesignateAnnotationRequest request) {
     return new Response<>(oneKeyDesignateAnnotationBiz.process(request, null));
   }
 
-  /**
-   * 一键添加语料到批次
-   */
+  /** 一键添加语料到批次 */
   @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_INSERT)
   @RequestMapping(value = "/one-key-add-blocks-to-task", method = RequestMethod.POST)
   public Response oneKeyAddBlocksToTask(@RequestBody OneKeyAddBlocksToTaskRequest request) {
     return new Response<>(oneKeyAddBlocksToTaskBiz.process(request, null));
   }
 
-  /**
-   * 获取未指派语料总字数
-   */
+  /** 获取未指派语料总字数 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_UNDISTRIBUTED_WORD_NUM)
   @RequestMapping(value = "/get-un-distributed-word-num", method = RequestMethod.GET)
-  public Response getUnDistributedWordNum() {
-    return new Response(getUnDistributedAnnotationWordNumBiz.process(null, null));
+  public Response getUnDistributedWordNum(GetUnDistributedAnnotationRequest request) {
+    return new Response(getUnDistributedAnnotationWordNumBiz.process(request, null));
   }
 }

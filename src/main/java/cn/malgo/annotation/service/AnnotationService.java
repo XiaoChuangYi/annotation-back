@@ -1,10 +1,9 @@
 package cn.malgo.annotation.service;
 
 import cn.malgo.annotation.entity.AnnotationNew;
-import cn.malgo.annotation.request.DesignateAnnotationRequest;
-import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.anno.DesignateAnnotationRequest;
+import cn.malgo.annotation.request.anno.ListAnnotationRequest;
 import cn.malgo.annotation.request.OneKeyDesignateAnnotationRequest;
-import cn.malgo.annotation.request.RandomDesignateAnnotationRequest;
 import org.springframework.data.domain.Page;
 
 public interface AnnotationService {

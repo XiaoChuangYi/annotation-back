@@ -1,6 +1,6 @@
 package cn.malgo.annotation.biz;
 
-import cn.malgo.annotation.request.DesignateAnnotationRequest;
+import cn.malgo.annotation.request.anno.DesignateAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InternalServerException;

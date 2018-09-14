@@ -4,7 +4,7 @@ import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
-import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.anno.ListAnnotationRequest;
 import cn.malgo.annotation.result.PageVO;
 import cn.malgo.annotation.service.AnnotationService;
 import cn.malgo.annotation.service.OutsourcingPriceCalculateService;

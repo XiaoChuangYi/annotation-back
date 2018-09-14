@@ -23,6 +23,11 @@ public interface AnnotationRepository
 
   List<AnnotationNew> findAllByStateIn(List<AnnotationStateEnum> annotationStateEnums, Sort sort);
 
+  List<AnnotationNew> findAllByStateInAndAnnotationTypeEquals(
+      List<AnnotationStateEnum> annotationStateEnums,
+      AnnotationTypeEnum annotationTypeEnum,
+      Sort sort);
+
   @Query(
       value =
           "select annotation_new.* from annotation_new left join annotation_task_block on annotation_new.block_id = annotation_task_block.id where annotation_new.state = 'PRE_CLEAN' and annotation_new.delete_token = 0 and annotation_task_block.state in ('PRE_CLEAN', 'FINISHED');",

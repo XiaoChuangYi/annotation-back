@@ -1,13 +1,15 @@
-package cn.malgo.annotation.request;
+package cn.malgo.annotation.request.anno;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SetUserStateRequest {
+public class DesignateAnnotationRequest {
   private long userId;
-  private String currentState;
+  private List<Long> idList;
 }
