@@ -49,7 +49,7 @@ public class CleanOutBlockBiz extends TransactionalBiz<CleanOutBlockRequest, Obj
             request
                 .getAnnotationTypes()
                 .parallelStream()
-                .map(AnnotationTypeEnum::valueOf)
+                .map(s -> AnnotationTypeEnum.valueOf(s).ordinal())
                 .collect(Collectors.toList()));
     final Map<Long, AnnotationTaskBlock> blockMap =
         annotationTaskBlockRepository

@@ -32,7 +32,7 @@ public interface AnnotationRepository
       value =
           "select annotation_new.* from annotation_new left join annotation_task_block on annotation_new.block_id = annotation_task_block.id where annotation_new.state = 'PRE_CLEAN' and annotation_new.delete_token = 0 and annotation_task_block.state in ('PRE_CLEAN', 'FINISHED') AND annotation_task_block.annotation_type IN (?1)",
       nativeQuery = true)
-  List<AnnotationNew> findAllPreClean(List<AnnotationTypeEnum> annotationTypeEnums);
+  List<AnnotationNew> findAllPreClean(List<Integer> annotationTypeEnums);
 
   List<AnnotationNew> findAllByTaskIdEqualsAndBlockIdIn(long taskId, List<Long> blockIds);
 

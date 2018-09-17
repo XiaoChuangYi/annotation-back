@@ -24,6 +24,7 @@ import cn.malgo.annotation.enums.AnnotationTaskState;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
+import cn.malgo.annotation.request.block.CleanOutBlockRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.annotation.request.task.AddBlocksToTaskRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
@@ -32,6 +33,8 @@ import cn.malgo.annotation.request.task.TerminateTaskRequest;
 import cn.malgo.annotation.vo.AnnotationTaskVO;
 import cn.malgo.service.entity.BaseEntity;
 import cn.malgo.service.model.UserDetails;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +51,7 @@ import org.testng.annotations.Test;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringContextTests {
+
   private static final String SAMPLE_TEXT = "这是第一句话，这是第二句话，这是第三句话而且足够长足够长足够长足够长足够长";
 
   @Autowired private CreateTaskBiz createTaskBiz;
@@ -89,7 +93,9 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.PRE_CLEAN);
 
     TestTransaction.start();
-    cleanOutBlockBiz.process(null, null);
+    CleanOutBlockRequest request = new CleanOutBlockRequest();
+    request.setAnnotationTypes(Arrays.asList(new String[] {"disease", "relation"}));
+    cleanOutBlockBiz.process(request, null);
     TestTransaction.flagForCommit();
     TestTransaction.end();
 
