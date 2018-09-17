@@ -1,6 +1,7 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.User;
+import cn.malgo.annotation.request.GetUsersRequest;
 import cn.malgo.annotation.service.AuthService;
 import cn.malgo.annotation.service.UserCenterService;
 import cn.malgo.annotation.service.feigns.UserCenterClient;
@@ -33,7 +34,7 @@ public class UserCenterServiceImpl implements UserCenterService {
     //      return userCenterClient.getUsers().getUsers();
     //    } else {
     if (authService.login()) {
-      final UserInfo userInfo = userCenterClient.getUsers();
+      final UserInfo userInfo = userCenterClient.getUsers(new GetUsersRequest("annotation"));
       if (userInfo == null || userInfo.getUsers() == null) {
         throw new BusinessRuleException("", "无法获取用户中心用户信息，请刷新！");
       }

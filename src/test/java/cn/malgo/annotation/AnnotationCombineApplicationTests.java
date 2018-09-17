@@ -7,7 +7,7 @@ import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.entity.AnnotationTask;
 import cn.malgo.annotation.entity.AtomicTerm;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
-import cn.malgo.annotation.request.ListAnnotationRequest;
+import cn.malgo.annotation.request.anno.ListAnnotationRequest;
 import cn.malgo.annotation.service.AnnotationService;
 import com.alibaba.fastjson.JSON;
 import java.util.ArrayList;

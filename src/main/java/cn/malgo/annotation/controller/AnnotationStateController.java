@@ -1,7 +1,9 @@
 package cn.malgo.annotation.controller;
 
+import cn.malgo.annotation.biz.brat.task.AnnotationBatchCommitBiz;
 import cn.malgo.annotation.biz.brat.task.AnnotationCommitBiz;
 import cn.malgo.annotation.config.PermissionConstant;
+import cn.malgo.annotation.request.anno.BatchCommitAnnotationRequest;
 import cn.malgo.annotation.request.brat.CommitAnnotationRequest;
 import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.common.auth.user.UserDetailService;
@@ -18,32 +20,54 @@ public class AnnotationStateController {
 
   private final AnnotationCommitBiz annotationCommitBiz;
   private final UserDetailService userDetailService;
+  private final AnnotationBatchCommitBiz annotationBatchCommitBiz;
 
-  public AnnotationStateController(final AnnotationCommitBiz annotationCommitBiz,
-      final UserDetailService userDetailService) {
+  public AnnotationStateController(
+      final AnnotationCommitBiz annotationCommitBiz,
+      final UserDetailService userDetailService,
+      final AnnotationBatchCommitBiz annotationBatchCommitBiz) {
     this.annotationCommitBiz = annotationCommitBiz;
     this.userDetailService = userDetailService;
+    this.annotationBatchCommitBiz = annotationBatchCommitBiz;
   }
 
-  /**
-   * 标注人员提交
-   */
+  /** 标注人员提交 */
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_COMMIT)
   @RequestMapping(value = "/commit-annotation", method = RequestMethod.POST)
   public Response commitAnnotation(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       final HttpServletRequest request) {
-    final UserDetails userDetails = new UserDetails() {
-      @Override
-      public long getId() {
-        return userDetailService.getUserDetails(request).getId();
-      }
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(request).getId();
+          }
 
-      @Override
-      public boolean hasPermission(String permission) {
-        return userDetailService.getUserDetails(request).hasPermission(permission);
-      }
-    };
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(request).hasPermission(permission);
+          }
+        };
     return new Response<>(annotationCommitBiz.process(commitAnnotationRequest, userDetails));
+  }
+
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_BATCH_COMMIT)
+  @RequestMapping(value = "/batch-commit-annotation", method = RequestMethod.POST)
+  public Response batchCommitAnnotation(
+      @RequestBody BatchCommitAnnotationRequest request, final HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response<>(annotationBatchCommitBiz.process(request, userDetails));
   }
 }

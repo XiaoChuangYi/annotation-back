@@ -1,4 +1,4 @@
-package cn.malgo.annotation.request;
+package cn.malgo.annotation.request.anno;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class SetUserStateRequest {
-  private long userId;
-  private String currentState;
+@NoArgsConstructor
+public class GetUsersRequest {
+  private String rank;
 }

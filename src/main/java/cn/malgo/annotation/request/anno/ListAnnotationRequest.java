@@ -1,4 +1,4 @@
-package cn.malgo.annotation.request;
+package cn.malgo.annotation.request.anno;
 
 import java.sql.Date;
 import lombok.AllArgsConstructor;

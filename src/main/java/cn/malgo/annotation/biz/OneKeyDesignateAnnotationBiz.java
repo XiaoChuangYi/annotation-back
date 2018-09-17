@@ -28,6 +28,9 @@ public class OneKeyDesignateAnnotationBiz
     if (request.getDesignateWordNum() <= 0) {
       throw new InvalidInputException("invalid-designate-word-num", "无效的designateWordNum");
     }
+    if (request.getAnnotationTypes() == null || request.getAnnotationTypes().size() == 0) {
+      throw new InvalidInputException("annotation-types-is-empty", "无效的参数annotationTypes");
+    }
   }
 
   @Override
