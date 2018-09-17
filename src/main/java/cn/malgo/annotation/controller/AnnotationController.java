@@ -6,9 +6,11 @@ import cn.malgo.annotation.biz.ListAnnotationBiz;
 import cn.malgo.annotation.biz.OneKeyDesignateAnnotationBiz;
 import cn.malgo.annotation.biz.brat.ListAnTypeBiz;
 import cn.malgo.annotation.biz.brat.PreAnnotationRecycleBiz;
+import cn.malgo.annotation.biz.brat.task.BatchDeleteAnnotationBratTypeBiz;
 import cn.malgo.annotation.biz.task.OneKeyAddBlocksToTaskBiz;
 import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.request.AnnotationRecycleRequest;
+import cn.malgo.annotation.request.anno.BatchDeleteAnnotationBratTypeRequest;
 import cn.malgo.annotation.request.anno.DesignateAnnotationRequest;
 import cn.malgo.annotation.request.anno.GetUnDistributedAnnotationRequest;
 import cn.malgo.annotation.request.anno.ListAnnotationRequest;
@@ -43,6 +45,8 @@ public class AnnotationController {
   private final GetUnDistributedAnnotationWordNumBiz getUnDistributedAnnotationWordNumBiz;
   private final UserDetailService userDetailService;
 
+  private final BatchDeleteAnnotationBratTypeBiz batchDeleteAnnotationBratTypeBiz;
+
   public AnnotationController(
       final ListAnnotationBiz listAnnotationBiz,
       final DesignateAnnotationBiz designateAnnotationBiz,
@@ -51,7 +55,8 @@ public class AnnotationController {
       final OneKeyDesignateAnnotationBiz oneKeyDesignateAnnotationBiz,
       final OneKeyAddBlocksToTaskBiz oneKeyAddBlocksToTaskBiz,
       final GetUnDistributedAnnotationWordNumBiz getUnDistributedAnnotationWordNumBiz,
-      final UserDetailService userDetailService) {
+      final UserDetailService userDetailService,
+      final BatchDeleteAnnotationBratTypeBiz batchDeleteAnnotationBratTypeBiz) {
     this.listAnnotationBiz = listAnnotationBiz;
     this.designateAnnotationBiz = designateAnnotationBiz;
     this.listAnTypeBiz = listAnTypeBiz;
@@ -60,6 +65,7 @@ public class AnnotationController {
     this.oneKeyAddBlocksToTaskBiz = oneKeyAddBlocksToTaskBiz;
     this.getUnDistributedAnnotationWordNumBiz = getUnDistributedAnnotationWordNumBiz;
     this.userDetailService = userDetailService;
+    this.batchDeleteAnnotationBratTypeBiz = batchDeleteAnnotationBratTypeBiz;
   }
 
   /** 条件，分页查询annotation列表 */
@@ -124,5 +130,12 @@ public class AnnotationController {
   @RequestMapping(value = "/get-un-distributed-word-num", method = RequestMethod.GET)
   public Response getUnDistributedWordNum(GetUnDistributedAnnotationRequest request) {
     return new Response(getUnDistributedAnnotationWordNumBiz.process(request, null));
+  }
+
+  /** 批量删除标注标签 */
+  @RequestMapping(value = "/batch-delete-annotation-type", method = RequestMethod.POST)
+  public Response batchDeleteAnnotationType(
+      @RequestBody BatchDeleteAnnotationBratTypeRequest request) {
+    return new Response(batchDeleteAnnotationBratTypeBiz.process(request, null));
   }
 }
