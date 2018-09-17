@@ -46,7 +46,9 @@ public class PermissionConstant {
   public static final String ANNOTATION_TASK_INSERT = "annotation:task:insert"; // 标注新增
   public static final String ANNOTATION_TASK_UPDATE = "annotation:task:update"; // 标注更新
   public static final String ANNOTATION_TASK_DELETE = "annotation:task:list"; // 标注删除
+  public static final String ANNOTATION_TASK_BATCH_DELETE = "annotation:task:batch-delete"; // 批量删除
   public static final String ANNOTATION_TASK_COMMIT = "annotation:task:commit"; // 标注提交
+  public static final String ANNOTATION_TASK_BATCH_COMMIT = "annotation:task:batch-commit"; // 标注提交
   public static final String ANNOTATION_TASK_RECYCLE = "annotation:task:recycle"; // 标注回收
   public static final String ANNOTATION_TASK_DESIGNATE = "annotation:task:designate"; // 标注指派
   public static final String ANNOTATION_TASK_UNDISTRIBUTED_WORD_NUM =

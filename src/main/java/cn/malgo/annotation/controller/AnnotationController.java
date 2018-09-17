@@ -133,6 +133,7 @@ public class AnnotationController {
   }
 
   /** 批量删除标注标签 */
+  @PermissionAnno(PermissionConstant.ANNOTATION_TASK_BATCH_DELETE)
   @RequestMapping(value = "/batch-delete-annotation-type", method = RequestMethod.POST)
   public Response batchDeleteAnnotationType(
       @RequestBody BatchDeleteAnnotationBratTypeRequest request) {
