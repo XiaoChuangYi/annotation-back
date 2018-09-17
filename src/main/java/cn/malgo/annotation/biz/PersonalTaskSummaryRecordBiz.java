@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz;
 
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.PersonalAnnotatedTotalWordNumRecordRepository;
 import cn.malgo.annotation.entity.PersonalAnnotatedTotalWordNumRecord;
 import cn.malgo.annotation.request.PersonalTaskSummaryRecordRequest;
@@ -90,6 +91,9 @@ public class PersonalTaskSummaryRecordBiz
   @Override
   protected PageVO<PersonalTaskRankSummaryVO> doBiz(
       PersonalTaskSummaryRecordRequest request, UserDetails user) {
+    if (!user.hasPermission(PermissionConstant.ANNOTATION_TASK_DESIGNATE)) {
+      request.setAssigneeId(user.getId());
+    }
     final Page<PersonalAnnotatedTotalWordNumRecord> page =
         personalAnnotatedEstimatePriceRepository.findAll(
             queryCondition(request),
