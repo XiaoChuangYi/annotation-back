@@ -70,8 +70,8 @@ public final class BlockBatchIterator implements Iterator<List<AnnotationTaskBlo
   public List<AnnotationTaskBlock> next() {
     final int currentPage = pageIndex.getAndAdd(1);
     return taskBlockRepository
-        .findAllByAnnotationTypeAndStateIn(
-            AnnotationTypeEnum.relation, states, PageRequest.of(currentPage, pageSize, sort))
+        .findAllByAnnotationTypeInAndStateIn(
+            annotationTypeEnums, states, PageRequest.of(currentPage, pageSize, sort))
         .getContent();
   }
 }
