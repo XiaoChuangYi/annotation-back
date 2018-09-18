@@ -136,7 +136,20 @@ public class AnnotationController {
   @PermissionAnno(PermissionConstant.ANNOTATION_TASK_BATCH_DELETE)
   @RequestMapping(value = "/batch-delete-annotation-type", method = RequestMethod.POST)
   public Response batchDeleteAnnotationType(
-      @RequestBody BatchDeleteAnnotationBratTypeRequest request) {
-    return new Response(batchDeleteAnnotationBratTypeBiz.process(request, null));
+      @RequestBody BatchDeleteAnnotationBratTypeRequest request,
+      HttpServletRequest servletRequest) {
+    final UserDetails userDetails =
+        new UserDetails() {
+          @Override
+          public long getId() {
+            return userDetailService.getUserDetails(servletRequest).getId();
+          }
+
+          @Override
+          public boolean hasPermission(String permission) {
+            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
+          }
+        };
+    return new Response(batchDeleteAnnotationBratTypeBiz.process(request, userDetails));
   }
 }
