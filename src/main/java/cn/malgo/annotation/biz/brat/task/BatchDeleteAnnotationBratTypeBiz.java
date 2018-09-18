@@ -1,5 +1,6 @@
 package cn.malgo.annotation.biz.brat.task;
 
+import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.request.anno.BatchDeleteAnnotationBratTypeRequest;
@@ -38,6 +39,11 @@ public class BatchDeleteAnnotationBratTypeBiz
           "there is no record corresponding to the current id", "没有当前id对应的记录");
     }
     AnnotationNew annotationNew = optional.get();
+    if (!user.hasPermission(PermissionConstant.ANNOTATION_TASK_DESIGNATE)) {
+      if (annotationNew.getAssignee() != user.getId()) {
+        throw new BusinessRuleException("permission-denied", "当前用户没有权限操作该条记录！");
+      }
+    }
     String newAnnotation =
         AnnotationConvert.batchDeleteRelationAnnotation(
             annotationNew.getFinalAnnotation(), request.getRTags());
