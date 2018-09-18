@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TerminateTaskRequest {
   private long taskId;
+  private boolean forceTerminate;
 }

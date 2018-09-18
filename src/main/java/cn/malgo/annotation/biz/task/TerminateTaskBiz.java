@@ -55,12 +55,14 @@ public class TerminateTaskBiz extends TransactionalBiz<TerminateTaskRequest, Obj
 
   @Override
   protected Object doBiz(TerminateTaskRequest request, UserDetails user) {
-    if (annotationTaskBlockRepository.countAnnotationTaskBlocksByStateIn(
-            Collections.singletonList(AnnotationTaskState.PRE_CLEAN))
-        > 0) {
+    if (!request.isForceTerminate()
+        && annotationTaskBlockRepository.countAnnotationTaskBlocksByStateIn(
+                Collections.singletonList(AnnotationTaskState.PRE_CLEAN))
+            > 0) {
       throw new BusinessRuleException(
           "no linguistic data to be cleaned is allowed before ending batch", "结束批次前，不允许存在待清洗的语料");
     }
+
     final Optional<AnnotationTask> optional =
         annotationTaskRepository.findById(request.getTaskId());
     if (optional.isPresent()) {
