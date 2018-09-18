@@ -10,6 +10,7 @@ import cn.malgo.common.auth.AuthConstants;
 import cn.malgo.common.auth.RedisConfigService;
 import cn.malgo.service.exception.BusinessRuleException;
 import java.util.List;
+import lombok.Synchronized;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +30,7 @@ public class UserCenterServiceImpl implements UserCenterService {
   }
 
   @Override
+  @Synchronized
   public List<User> getUsersByUserCenter() {
     //    if (redisConfigService.exists(AuthConstants.ALL_SYSTEM_TICKET)) {
     //      return userCenterClient.getUsers().getUsers();

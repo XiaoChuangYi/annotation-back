@@ -50,7 +50,7 @@ def main(db_host, db_user, db_password, db_name):
                 state = 'FINISHED'
 
             session.add(AnnotationTaskBlock(annotation_type=3, text=name.strip(), state=state, memo=json.dumps({
-                'icd': icd
+                'pingan_icd': icd
             })))
 
 
