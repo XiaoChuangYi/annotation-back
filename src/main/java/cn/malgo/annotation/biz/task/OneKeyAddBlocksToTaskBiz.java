@@ -4,6 +4,7 @@ import cn.malgo.annotation.dao.AnnotationTaskBlockRepository;
 import cn.malgo.annotation.dao.AnnotationTaskRepository;
 import cn.malgo.annotation.entity.AnnotationTaskBlock;
 import cn.malgo.annotation.enums.AnnotationTaskState;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.task.OneKeyAddBlocksToTaskRequest;
 import cn.malgo.annotation.service.AddBlocksToTaskService;
 import cn.malgo.annotation.utils.BlockBatchIterator;
@@ -12,8 +13,10 @@ import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import cn.malgo.service.model.UserDetails;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OneKeyAddBlocksToTaskBiz
     extends TransactionalBiz<OneKeyAddBlocksToTaskRequest, AddBlocksToTaskVO> {
+
   private final AnnotationTaskBlockRepository annotationTaskBlockRepository;
   private final AnnotationTaskRepository annotationTaskRepository;
   private final AddBlocksToTaskService addBlocksToTaskService;
@@ -55,7 +59,12 @@ public class OneKeyAddBlocksToTaskBiz
             annotationTaskBlockRepository,
             Collections.singletonList(AnnotationTaskState.CREATED),
             1000,
-            Sort.by(Direction.DESC, "nerFreshRate"));
+            Sort.by(Direction.DESC, "nerFreshRate"),
+            request
+                .getAnnotationTypes()
+                .parallelStream()
+                .map(AnnotationTypeEnum::valueOf)
+                .collect(Collectors.toList()));
 
     final List<AnnotationTaskBlock> blocks = new ArrayList<>();
     int wordNum = request.getTotalWordNum();
