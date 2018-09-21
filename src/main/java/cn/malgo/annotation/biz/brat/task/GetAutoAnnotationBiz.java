@@ -103,6 +103,9 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
       final List<Entity> entities =
           atomicTermSegmentService.seg(annotation.getAnnotationType(), annotation.getTerm());
       if (entities.size() != 0) {
+        if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
+          annotation.setState(AnnotationStateEnum.ANNOTATION_PROCESSING);
+        }
         annotation.setFinalAnnotation(
             AnnotationDocumentManipulator.toBratAnnotations(
                 new AnnotationDocument(annotation.getTerm(), new ArrayList<>(), entities)));
