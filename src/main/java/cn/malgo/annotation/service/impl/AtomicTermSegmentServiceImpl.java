@@ -5,27 +5,24 @@ import cn.malgo.annotation.entity.AtomicTerm;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.service.AtomicTermSegmentService;
 import cn.malgo.core.definition.Entity;
-import java.io.IOException;
+import com.hankcs.hanlp.dictionary.CustomDictionary;
+import com.hankcs.hanlp.seg.common.Term;
+import com.hankcs.hanlp.tokenizer.SpeedTokenizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.stereotype.Service;
-import org.wltea.analyzer.cfg.DefaultConfig;
-import org.wltea.analyzer.dic.Dictionary;
-import org.wltea.analyzer.lucene.IKAnalyzer;
 
 @Service
 @Slf4j
 public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
   private final AtomicTermRepository atomicTermRepository;
-  private final HashMap<String, String> wordTypes = new HashMap<>(10000);
-  private IKAnalyzer analyzer;
+  private final Map<String, String> wordTypes = new HashMap<>(10000);
 
   public AtomicTermSegmentServiceImpl(final AtomicTermRepository atomicTermRepository) {
     this.atomicTermRepository = atomicTermRepository;
@@ -33,67 +30,56 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
 
   @PostConstruct
   public void init() {
-    final List<String> words = new ArrayList<>();
-
     for (final AtomicTerm atomicTerm : atomicTermRepository.findAll()) {
       if (atomicTerm.getAnnotationType() == AnnotationTypeEnum.disease) {
-        words.add(atomicTerm.getTerm());
+        CustomDictionary.add(atomicTerm.getTerm(), atomicTerm.getAnType() + " 1");
         wordTypes.put(atomicTerm.getTerm(), atomicTerm.getAnType());
       }
     }
 
-    Dictionary.initial(DefaultConfig.getInstance());
-    Dictionary dict = Dictionary.getSingleton();
-    dict.addWords(words);
-
-    this.analyzer = new IKAnalyzer(true);
+    SpeedTokenizer.SEGMENT.enableOffset(true);
+    SpeedTokenizer.SEGMENT.enableCustomDictionaryForcing(true);
+    SpeedTokenizer.SEGMENT.enablePartOfSpeechTagging(true);
   }
 
   @Override
   public List<Entity> seg(final AnnotationTypeEnum annotationType, final String text) {
     if (annotationType != AnnotationTypeEnum.disease) {
-      log.warn("unsupported annotation type {}", annotationType);
+      log.warn("不支持的标注类型: {}", annotationType);
       return new ArrayList<>();
     }
 
-    TokenStream ts = null;
-    try {
-      final List<Entity> result = new ArrayList<>();
+    final List<Term> segment = SpeedTokenizer.segment(text);
+    if (segment == null) {
+      log.warn("{} 分词结果未null", text);
+      return new ArrayList<>();
+    }
 
-      ts = analyzer.tokenStream("title", text);
-      final CharTermAttribute cta = ts.addAttribute(CharTermAttribute.class);
-      ts.reset();
-
-      int i = 0, index = 0;
-      while (ts.incrementToken()) {
-        i++;
-
-        final String term = cta.toString();
-        final int start = text.indexOf(term, index);
-
-        if (wordTypes.containsKey(term)) {
-          result.add(new Entity("T" + i, start, start + term.length(), wordTypes.get(term), term));
-        }
-
-        index = start + term.length();
+    final List<Entity> entities = new ArrayList<>(segment.size());
+    for (int i = 1; i < segment.size() + 1; ++i) {
+      final Term term = segment.get(i);
+      if (wordTypes.containsKey(term.word)) {
+        entities.add(
+            new Entity(
+                "T" + i,
+                term.offset,
+                term.offset + term.length(),
+                wordTypes.get(term.word),
+                term.word));
       }
-
-      return result;
-    } catch (IOException e) {
-      log.warn("segment failed", e);
-      return new ArrayList<>();
-    } finally {
-      IOUtils.closeQuietly(ts);
     }
+    return entities;
   }
 
   @Override
   public void addAtomicTerms(
       final AnnotationTypeEnum annotationType, final List<AtomicTerm> newTerms) {
     if (annotationType == AnnotationTypeEnum.disease) {
-      Dictionary.getSingleton()
-          .addWords(newTerms.stream().map(AtomicTerm::getTerm).collect(Collectors.toList()));
-      newTerms.forEach(term -> wordTypes.put(term.getTerm(), term.getAnType()));
+      newTerms.forEach(
+          atomicTerm -> {
+            CustomDictionary.add(atomicTerm.getTerm(), atomicTerm.getAnType() + " 1");
+            wordTypes.put(atomicTerm.getTerm(), atomicTerm.getAnType());
+          });
     }
   }
 }
