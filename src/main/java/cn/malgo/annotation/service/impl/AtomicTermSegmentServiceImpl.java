@@ -72,7 +72,7 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
         final int start = text.indexOf(term, index);
 
         if (wordTypes.containsKey(term)) {
-          result.add(new Entity("T" + i, start, start + term.length(), term, wordTypes.get(term)));
+          result.add(new Entity("T" + i, start, start + term.length(), wordTypes.get(term), term));
         }
 
         index = start + term.length();
