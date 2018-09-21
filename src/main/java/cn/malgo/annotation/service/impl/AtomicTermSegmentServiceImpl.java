@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.stereotype.Service;
@@ -55,10 +56,11 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
       return new ArrayList<>();
     }
 
+    TokenStream ts = null;
     try {
       final List<Entity> result = new ArrayList<>();
 
-      final TokenStream ts = analyzer.tokenStream("title", text);
+      ts = analyzer.tokenStream("title", text);
       final CharTermAttribute cta = ts.addAttribute(CharTermAttribute.class);
       ts.reset();
 
@@ -80,6 +82,8 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
     } catch (IOException e) {
       log.warn("segment failed", e);
       return new ArrayList<>();
+    } finally {
+      IOUtils.closeQuietly(ts);
     }
   }
 
