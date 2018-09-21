@@ -57,7 +57,7 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
 
     final List<Entity> entities = new ArrayList<>(segment.size());
     for (int i = 1; i < segment.size() + 1; ++i) {
-      final Term term = segment.get(i);
+      final Term term = segment.get(i - 1);
       if (wordTypes.containsKey(term.word)) {
         entities.add(
             new Entity(
