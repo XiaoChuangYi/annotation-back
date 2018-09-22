@@ -66,6 +66,8 @@ public class AtomicTermSegmentServiceImpl implements AtomicTermSegmentService {
                 term.offset + term.length(),
                 wordTypes.get(term.word),
                 term.word));
+      } else if (log.isDebugEnabled()) {
+        log.debug("{} not found in atomic terms", term.word);
       }
     }
     return entities;
