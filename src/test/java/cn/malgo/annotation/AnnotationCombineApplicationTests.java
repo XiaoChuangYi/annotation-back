@@ -24,6 +24,7 @@ import org.testng.annotations.Test;
 @SpringBootTest
 @Slf4j
 public class AnnotationCombineApplicationTests extends AbstractTestNGSpringContextTests {
+
   @Autowired private AnnotationService annotationService;
   @Autowired private AnnotationRepository annotationRepository;
   @Autowired private AnnotationTaskRepository taskRepository;

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/v2/doc")
 @Slf4j
 public class OriginalDocController {
+
   private final String secretKey;
   private final ImportDocBiz importDocBiz;
   private final CreateBlocksFromDocBiz createBlocksFromDocBiz;
@@ -45,27 +46,16 @@ public class OriginalDocController {
     this.importDocBiz = importDocBiz;
     this.createBlocksFromDocBiz = createBlocksFromDocBiz;
     this.listOriginalDocBiz = listOriginalDocBiz;
-    this.userDetailService=userDetailService;
+    this.userDetailService = userDetailService;
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_DOC_IMPORT)
   @RequestMapping(value = "/import", method = RequestMethod.POST)
   public Response<List<OriginalDoc>> importDocs(
-      final HttpServletRequest servletRequest,
-      @RequestBody ImportDocRequest request) {
-    final UserDetails userDetails = new UserDetails() {
-      @Override
-      public long getId() {
-        return userDetailService.getUserDetails(servletRequest).getId();
-      }
-
-      @Override
-      public boolean hasPermission(String permission) {
-        return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-      }
-    };
-    if (!StringUtils.equals(request.getSecretKey(), this.secretKey) && !userDetails
-        .hasPermission(PermissionConstant.ANNOTATION_DOC_IMPORT)) {
+      final HttpServletRequest servletRequest, @RequestBody ImportDocRequest request) {
+    final UserDetails userDetails = userDetailService.getUserDetails(servletRequest);
+    if (!StringUtils.equals(request.getSecretKey(), this.secretKey)
+        && !userDetails.hasPermission(PermissionConstant.ANNOTATION_DOC_IMPORT)) {
       throw new BusinessRuleException("permission-denied", "secret key or admin role required");
     }
 
@@ -82,8 +72,7 @@ public class OriginalDocController {
   /** 原始文本查询 */
   @PermissionAnno(PermissionConstant.ANNOTATION_DOC_LIST)
   @RequestMapping(value = "/list-doc", method = RequestMethod.GET)
-  public Response<PageVO<OriginalDoc>> listOriginalDoc(
-      ListDocRequest listDocRequest) {
+  public Response<PageVO<OriginalDoc>> listOriginalDoc(ListDocRequest listDocRequest) {
     return new Response<>(listOriginalDocBiz.process(listDocRequest, null));
   }
 }

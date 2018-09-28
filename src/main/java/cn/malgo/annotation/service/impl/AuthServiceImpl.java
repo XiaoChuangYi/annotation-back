@@ -1,13 +1,12 @@
 package cn.malgo.annotation.service.impl;
 
+import cn.malgo.annotation.service.LocalRedisService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 
 import cn.malgo.annotation.service.AuthService;
-import cn.malgo.common.auth.AuthConstants;
-import cn.malgo.common.auth.RedisConfigService;
 import cn.malgo.common.auth.util.PostUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,11 +28,11 @@ public class AuthServiceImpl implements AuthService {
   @Value("${cn.malgo.auth.password}")
   private String password;
 
-  private RedisConfigService redisConfigService;
+  private LocalRedisService localRedisService;
 
-  public AuthServiceImpl(RedisConfigService redisConfigService) {
+  public AuthServiceImpl(LocalRedisService localRedisService) {
     super();
-    this.redisConfigService = redisConfigService;
+    this.localRedisService = localRedisService;
   }
 
   /** 系统登录用户中心 */
@@ -56,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
       if (StringUtils.isBlank(ticket)) {
         return false;
       }
-      redisConfigService.set(AuthConstants.ALL_SYSTEM_TICKET, ticket);
+      localRedisService.setTicket(ticket);
       return true;
     } catch (Exception e) {
       log.error("AuthServiceImpl error", e);
