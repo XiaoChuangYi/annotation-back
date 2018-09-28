@@ -39,8 +39,7 @@ public class CreateBlocksFromDocBizTest {
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
     createBlocksFromDocBiz.process(
-        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0),
-        null);
+        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0), null);
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
   }
@@ -52,8 +51,7 @@ public class CreateBlocksFromDocBizTest {
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.IMPORTED);
 
     createBlocksFromDocBiz.process(
-        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0),
-        null);
+        new CreateBlocksFromDocRequest(Collections.singleton(1L), 0), null);
 
     Assert.assertEquals(originalDoc.getState(), OriginalDocState.PROCESSING);
   }
