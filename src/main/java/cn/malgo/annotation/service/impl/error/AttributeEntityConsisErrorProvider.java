@@ -9,6 +9,7 @@ import cn.malgo.annotation.dto.error.FixAnnotationEntity;
 import cn.malgo.annotation.dto.error.FixAnnotationErrorData;
 import cn.malgo.annotation.dto.error.WordErrorWithPosition;
 import cn.malgo.annotation.enums.AnnotationErrorEnum;
+import cn.malgo.annotation.service.impl.error.EntityConsistencyErrorProvider.EntityListWithPosition;
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
@@ -237,45 +238,9 @@ public class AttributeEntityConsisErrorProvider extends BaseErrorProvider {
         index = end;
         continue;
       }
-
-      final Map<String, Entity> entityMap =
-          entities.parallelStream().collect(Collectors.toMap(Entity::getTag, entity -> entity));
-
-      // 找到所有tag以及和这些tag有关的外部关联关系
-      final List<RelationEntity> relations = document.getRelationsOutsideToInside(entities);
-
-      if (relations.size() == 0) {
-        // 如果没有外部关联，则表示这是一个合法的对应子图
-        results.add(new EntityConsistencyErrorProvider.EntityListWithPosition(position, annotation,
-            entities));
-      } else {
-        final RelationEntity firstRelation = relations.get(0);
-        final Entity targetEntity =
-            entityMap.get(
-                entityMap.containsKey(firstRelation.getSourceTag())
-                    ? firstRelation.getSourceTag()
-                    : firstRelation.getTargetTag());
-        if (relations
-            .parallelStream()
-            .allMatch(
-                relation -> {
-                  final Entity entity =
-                      entityMap.get(
-                          entityMap.containsKey(relation.getSourceTag())
-                              ? relation.getSourceTag()
-                              : relation.getTargetTag());
-                  return entity.getStart() == targetEntity.getStart()
-                      && entity.getEnd() == targetEntity.getEnd();
-                })) {
-          results.add(
-              new EntityConsistencyErrorProvider.EntityListWithPosition(position, annotation,
-                  entities));
-        }
-      }
-
       index = end;
+      results.add(new EntityListWithPosition(position, annotation, entities));
     }
-
     return results.stream();
   }
 }
