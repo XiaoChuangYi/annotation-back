@@ -1,7 +1,6 @@
 package cn.malgo.annotation.service.feigns;
 
-import cn.malgo.common.auth.AuthConstants;
-import cn.malgo.common.auth.RedisConfigService;
+import cn.malgo.annotation.service.LocalRedisService;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.stereotype.Component;
@@ -9,15 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class FeignInterceptor implements RequestInterceptor {
 
-  private RedisConfigService redisConfigService;
+  private LocalRedisService localRedisService;
 
-  public FeignInterceptor(final RedisConfigService redisConfigService) {
-    this.redisConfigService = redisConfigService;
+  public FeignInterceptor(final LocalRedisService localRedisService) {
+    this.localRedisService = localRedisService;
   }
 
   @Override
   public void apply(RequestTemplate template) {
-    final String ticket = redisConfigService.getStr(AuthConstants.ALL_SYSTEM_TICKET);
+    final String ticket = localRedisService.getTicket();
     template.header("ticket", ticket);
   }
 }

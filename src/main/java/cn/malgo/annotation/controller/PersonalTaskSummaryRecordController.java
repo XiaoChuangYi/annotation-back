@@ -34,18 +34,7 @@ public class PersonalTaskSummaryRecordController {
   @RequestMapping(value = "/get-personal-summary", method = RequestMethod.GET)
   public Response<PageVO<PersonalTaskRankSummaryVO>> getPersonalSummary(
       PersonalTaskSummaryRecordRequest request, HttpServletRequest servletRequest) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(servletRequest).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(servletRequest);
     return new Response<>(personalTaskSummaryRecordBiz.process(request, userDetails));
   }
 }

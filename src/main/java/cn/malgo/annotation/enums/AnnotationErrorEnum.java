@@ -16,10 +16,15 @@ public enum AnnotationErrorEnum {
   // 关联：实体重叠
   ENTITY_OVERLAP(AnnotationTypeEnum.relation, false, true),
   // 疾病：同一实体不同类型
-  DISEASE_MULTIPLE_TYPE(AnnotationTypeEnum.disease, true, true);
-  @Getter private final AnnotationTypeEnum annotationType;
-  @Getter private final boolean canFix;
-  @Getter private final boolean canReset;
+  DISEASE_MULTIPLE_TYPE(AnnotationTypeEnum.disease, true, true),
+  //属性拆分：实体一致性
+  ATTRIBUTE_MULTIPLE_TYPE(AnnotationTypeEnum.disease, true, true);
+  @Getter
+  private final AnnotationTypeEnum annotationType;
+  @Getter
+  private final boolean canFix;
+  @Getter
+  private final boolean canReset;
 
   AnnotationErrorEnum(
       final AnnotationTypeEnum annotationType, final boolean canFix, final boolean canReset) {

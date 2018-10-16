@@ -96,18 +96,7 @@ public class AnnotationTaskBlockController {
   @PermissionAnno(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER)
   @RequestMapping(value = "/update-block-ner", method = RequestMethod.POST)
   public Response<Boolean> updateBlockNer(final HttpServletRequest request) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(request).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(request).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(request);
     if (!userDetails.hasPermission(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER)) {
       throw new BusinessRuleException("permission-deinied", "无权限");
     }
@@ -118,18 +107,7 @@ public class AnnotationTaskBlockController {
   @PermissionAnno(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER_RATE)
   @RequestMapping(value = "/update-block-ner-rate", method = RequestMethod.POST)
   public Response<Boolean> updateBlockNerRate(final HttpServletRequest request) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(request).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(request).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(request);
     if (!userDetails.hasPermission(PermissionConstant.ANNOTATION_UPDATE_BLOCK_NER_RATE)) {
       throw new BusinessRuleException("permission-deinied", "无权限");
     }

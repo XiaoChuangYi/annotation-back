@@ -73,18 +73,7 @@ public class AnnotationController {
   @RequestMapping(value = "/list-annotation", method = RequestMethod.GET)
   public Response<PageVO<AnnotationBratVO>> listAnnotationCombine(
       ListAnnotationRequest request, final HttpServletRequest servletRequest) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(servletRequest).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(servletRequest);
     return new Response<>(listAnnotationBiz.process(request, userDetails));
   }
 
@@ -138,18 +127,7 @@ public class AnnotationController {
   public Response batchDeleteAnnotationType(
       @RequestBody BatchDeleteAnnotationBratTypeRequest request,
       HttpServletRequest servletRequest) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(servletRequest).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(servletRequest);
     return new Response(batchDeleteAnnotationBratTypeBiz.process(request, userDetails));
   }
 }

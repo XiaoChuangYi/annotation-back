@@ -37,18 +37,7 @@ public class AnnotationStateController {
   public Response commitAnnotation(
       @RequestBody CommitAnnotationRequest commitAnnotationRequest,
       final HttpServletRequest request) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(request).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(request).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(request);
     return new Response<>(annotationCommitBiz.process(commitAnnotationRequest, userDetails));
   }
 
@@ -56,18 +45,7 @@ public class AnnotationStateController {
   @RequestMapping(value = "/batch-commit-annotation", method = RequestMethod.POST)
   public Response batchCommitAnnotation(
       @RequestBody BatchCommitAnnotationRequest request, final HttpServletRequest servletRequest) {
-    final UserDetails userDetails =
-        new UserDetails() {
-          @Override
-          public long getId() {
-            return userDetailService.getUserDetails(servletRequest).getId();
-          }
-
-          @Override
-          public boolean hasPermission(String permission) {
-            return userDetailService.getUserDetails(servletRequest).hasPermission(permission);
-          }
-        };
+    final UserDetails userDetails = userDetailService.getUserDetails(servletRequest);
     return new Response<>(annotationBatchCommitBiz.process(request, userDetails));
   }
 }
