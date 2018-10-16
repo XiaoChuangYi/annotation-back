@@ -13,7 +13,6 @@ import cn.malgo.annotation.service.impl.error.EntityConsistencyErrorProvider.Ent
 import cn.malgo.annotation.utils.AnnotationDocumentManipulator;
 import cn.malgo.annotation.utils.entity.AnnotationDocument;
 import cn.malgo.core.definition.Entity;
-import cn.malgo.core.definition.RelationEntity;
 import cn.malgo.core.definition.brat.BratPosition;
 import cn.malgo.service.exception.InvalidInputException;
 import com.google.common.collect.Lists;
