@@ -66,7 +66,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
   @Autowired private AnnotationTaskBlockRepository annotationTaskBlockRepository;
   @Autowired private AnnotationTaskRepository annotationTaskRepository;
 
-  @Test
+  @Test(enabled = false)
   public void testTaskProcessFlow() {
     final Pair<AnnotationTaskVO, OriginalDoc> taskAndDoc = createTaskAndDoc();
     final List<AnnotationTaskBlock> taskBlocks = createBlocks(taskAndDoc.getRight());
@@ -106,7 +106,7 @@ public class IntegrationNewTaskTest extends AbstractTransactionalTestNGSpringCon
         AnnotationTaskState.FINISHED);
   }
 
-  @Test
+  @Test(enabled = false)
   public void testTerminateTaskProcess() {
     final Pair<AnnotationTaskVO, OriginalDoc> taskAndDoc = createTaskAndDoc();
     final List<AnnotationTaskBlock> taskBlocks = createBlocks(taskAndDoc.getRight());
