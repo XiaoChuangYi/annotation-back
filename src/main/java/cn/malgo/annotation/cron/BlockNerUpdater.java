@@ -57,12 +57,12 @@ public class BlockNerUpdater {
     return term;
   }
 
-  @Scheduled(cron = "${malgo.config.ner-update-cron}")
+  //  @Scheduled(cron = "${malgo.config.ner-update-cron}")
   public void updateBlockNer() {
     forkJoinPool.submit(this::updateNerInner);
   }
 
-  @Scheduled(cron = "${malgo.config.block-rate-update-cron}")
+  //  @Scheduled(cron = "${malgo.config.block-rate-update-cron}")
   public void updateBlockNerRate() {
     forkJoinPool.submit(this::updateBlockNerRateInner);
   }
