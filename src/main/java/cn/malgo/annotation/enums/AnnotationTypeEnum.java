@@ -4,7 +4,8 @@ public enum AnnotationTypeEnum {
   wordPos("分词"), // 0
   sentence("分句"), // 1
   relation("关联"), // 2
-  disease("疾病");
+  disease("疾病"), // 3
+  drug("药品"); // 4
 
   private final String name;
 

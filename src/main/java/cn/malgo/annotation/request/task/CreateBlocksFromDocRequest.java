@@ -1,7 +1,6 @@
 package cn.malgo.annotation.request.task;
 
 import lombok.Data;
-import lombok.Value;
 
 import java.util.Set;
 
