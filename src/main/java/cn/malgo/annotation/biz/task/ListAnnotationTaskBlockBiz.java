@@ -133,18 +133,20 @@ public class ListAnnotationTaskBlockBiz
               request.getPageSize(),
               Sort.by(Direction.DESC, "nerFreshRate"));
     }
-    final Map<Long, String> longStringMap =
-        userCenterService
-            .getUsersByUserCenter()
-            .parallelStream()
-            .collect(Collectors.toMap(User::getUserId, User::getNickName));
+    //    final Map<Long, String> longStringMap =
+    //        userCenterService
+    //            .getUsersByUserCenter()
+    //            .parallelStream()
+    //            .collect(Collectors.toMap(User::getUserId, User::getNickName));
     return new PageVO<>(
         annotationTaskBlockRepository
             .findAll(queryAnnotationTaskBlockCondition(request), page)
             .map(
                 annotationTaskBlock ->
                     new AnnotationTaskBlockResponse(
-                        annotationTaskBlock,
-                        longStringMap.getOrDefault(annotationTaskBlock.getAssignee(), ""))));
+                        annotationTaskBlock, ""
+                        //
+                        // longStringMap.getOrDefault(annotationTaskBlock.getAssignee(), "")
+                        )));
   }
 }

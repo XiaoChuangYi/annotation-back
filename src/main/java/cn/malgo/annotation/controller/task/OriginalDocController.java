@@ -1,6 +1,7 @@
 package cn.malgo.annotation.controller.task;
 
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
+import cn.malgo.annotation.biz.doc.CreateBlocksFromDocFastBiz;
 import cn.malgo.annotation.biz.doc.ImportDocBiz;
 import cn.malgo.annotation.biz.doc.ImportJsonDocBiz;
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
@@ -41,6 +42,7 @@ public class OriginalDocController {
   private final ListOriginalDocBiz listOriginalDocBiz;
   private final UserDetailService userDetailService;
   private final OriginalDocRepository originalDocRepository;
+  private final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz;
 
   public OriginalDocController(
       @Value("${malgo.internal.secret-key}") String secretKey,
@@ -49,7 +51,8 @@ public class OriginalDocController {
       final ListOriginalDocBiz listOriginalDocBiz,
       final UserDetailService userDetailService,
       final OriginalDocRepository originalDocRepository,
-      final ImportJsonDocBiz importJsonDocBiz) {
+      final ImportJsonDocBiz importJsonDocBiz,
+      final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz) {
     this.secretKey = secretKey;
     this.importDocBiz = importDocBiz;
     this.createBlocksFromDocBiz = createBlocksFromDocBiz;
@@ -57,6 +60,7 @@ public class OriginalDocController {
     this.userDetailService = userDetailService;
     this.originalDocRepository = originalDocRepository;
     this.importJsonDocBiz = importJsonDocBiz;
+    this.createBlocksFromDocFastBiz = createBlocksFromDocFastBiz;
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_DOC_IMPORT)
@@ -79,7 +83,7 @@ public class OriginalDocController {
 
   //  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_IMPORT)
   @RequestMapping(value = "/create-blocks", method = RequestMethod.POST)
-  public Response<CreateBlocksFromDocVO> createBlocks() {
+  public Response<Object> createBlocks() {
     final CreateBlocksFromDocRequest request =
         new CreateBlocksFromDocRequest(
             originalDocRepository
@@ -88,7 +92,7 @@ public class OriginalDocController {
                 .map(originalDoc -> originalDoc.getId())
                 .collect(Collectors.toSet()),
             AnnotationTypeEnum.drug.ordinal());
-    return new Response<>(createBlocksFromDocBiz.process(request, null));
+    return new Response<>(createBlocksFromDocFastBiz.process(request, null));
   }
 
   /** 原始文本查询 */

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, AlgorithmAnnotationVO> {
+
   private final AlgorithmApiService algorithmApiService;
   private final AtomicTermSegmentService atomicTermSegmentService;
   private final AnnotationRepository annotationRepository;
@@ -114,6 +115,12 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
 
+  private AlgorithmAnnotationVO getDrugAnnotationVO(AnnotationNew annotation) {
+    // TODO 过算法的关联算法
+    return new AlgorithmAnnotationVO(
+        annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
+  }
+
   @Override
   protected AlgorithmAnnotationVO doBiz(
       final GetAutoAnnotationRequest request, final UserDetails user) {
@@ -138,6 +145,8 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
 
             case disease:
               return getDiseaseAnnotationVO(annotation);
+            case drug:
+              return getDrugAnnotationVO(annotation);
           }
 
         default:
