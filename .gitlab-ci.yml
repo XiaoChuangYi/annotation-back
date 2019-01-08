@@ -113,7 +113,7 @@ deploy-preprod:
     - hotfix
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9003
+    BIND_ADDRESS: 172.16.209.197:9009
     MAX_MEMORY: 4096m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
