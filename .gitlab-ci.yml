@@ -16,7 +16,7 @@ stages:
   - package
   - build
   - deploy_test
-  - deploy-preprod
+  - deploy_preprod
   - deploy_prod
 
 variables:
