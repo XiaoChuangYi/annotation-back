@@ -61,7 +61,7 @@ docker-build:
   only:
     - develop
     - release
-    - hotfix
+    - /^hotfix\-[0-9]+$/
     - master
     - /^feature\/.*$/
 
@@ -94,13 +94,13 @@ deploy-test:
     - /^feature\/.*$/
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9003
+    BIND_ADDRESS: 172.16.209.197:9021
     MAX_MEMORY: 1024m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
 
 deploy-preprod:
-  stage: deploy-preprod
+  stage: deploy_preprod
   tags:
     - deploy
   environment:
@@ -110,10 +110,10 @@ deploy-preprod:
   only:
     - master
     - relesae
-    - hotfix
+    - /^hotfix\-[0-9]+$/
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9009
+    BIND_ADDRESS: 172.16.209.197:9022
     MAX_MEMORY: 4096m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
@@ -130,7 +130,7 @@ deploy-prod:
     - master
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9002
+    BIND_ADDRESS: 172.16.209.197:9023
     MAX_MEMORY: 4096m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
