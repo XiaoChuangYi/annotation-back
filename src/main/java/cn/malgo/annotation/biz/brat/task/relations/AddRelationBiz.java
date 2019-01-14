@@ -1,6 +1,7 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.AddRelationRequest;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.RelationOperateService;
@@ -42,7 +43,11 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
       RelationOperateService relationOperateService,
       AnnotationNew annotationNew,
       AddRelationRequest addRelationRequest) {
-    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(addRelationRequest)) {
+    if ((annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+            || annotationNew.getAnnotationType().ordinal()
+                == AnnotationTypeEnum.medicine_books.ordinal())
+        && checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
+            addRelationRequest)) {
       throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");
     }
 

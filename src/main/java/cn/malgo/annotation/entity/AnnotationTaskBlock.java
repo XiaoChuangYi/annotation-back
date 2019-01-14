@@ -96,4 +96,23 @@ public class AnnotationTaskBlock extends BaseEntity {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "block", orphanRemoval = true)
   @Getter
   private List<TaskBlock> taskBlocks = new ArrayList<>();
+
+  public AnnotationTaskBlock(
+      String text,
+      String annotation,
+      String nerResult,
+      double nerFreshRate,
+      AnnotationTaskState state,
+      AnnotationTypeEnum annotationType,
+      long assignee,
+      String memo) {
+    this.text = text;
+    this.annotation = annotation;
+    this.nerResult = nerResult;
+    this.nerFreshRate = nerFreshRate;
+    this.state = state;
+    this.annotationType = annotationType;
+    this.assignee = assignee;
+    this.memo = memo;
+  }
 }

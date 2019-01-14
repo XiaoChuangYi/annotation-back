@@ -16,7 +16,7 @@ stages:
   - package
   - build
   - deploy_test
-  - deploy_beta
+  - deploy_preprod
   - deploy_prod
 
 variables:
@@ -41,6 +41,8 @@ maven-build:
       - target/.version
   only:
     - develop
+    - release
+    - hotfix
     - master
     - /^feature\/.*$/
 
@@ -58,8 +60,27 @@ docker-build:
     - docker push $PUSH_REPO
   only:
     - develop
+    - release
+    - /^hotfix\-[0-9]+$/
     - master
     - /^feature\/.*$/
+
+#deploy-test:
+#  stage: deploy_test
+#  tags:
+#    - deploy
+#  environment:
+#    name: test
+#    url: 121.196.212.109
+#  when: on_success
+#  only:
+#    - develop
+#  variables:
+#    GIT_STRATEGY: none
+#    BIND_ADDRESS: 172.16.209.199:9002
+#    MAX_MEMORY: 768m
+#    MEMORY_NEW_RATIO: 4
+#  <<: *deploy_definition
 
 deploy-test:
   stage: deploy_test
@@ -67,30 +88,33 @@ deploy-test:
     - deploy
   environment:
     name: test
-    url: 121.196.212.109
-  when: on_success
-  only:
-    - develop
-  variables:
-    GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.199:9002
-    MAX_MEMORY: 768m
-    MEMORY_NEW_RATIO: 4
-  <<: *deploy_definition
-
-deploy-beta:
-  stage: deploy_beta
-  tags:
-    - deploy
-  environment:
-    name: beta
     url: 118.31.10.105
   only:
+    - develop
     - /^feature\/.*$/
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9003
+    BIND_ADDRESS: 172.16.209.197:9021
     MAX_MEMORY: 1024m
+    MEMORY_NEW_RATIO: 3
+  <<: *deploy_definition
+
+deploy-preprod:
+  stage: deploy_preprod
+  tags:
+    - deploy
+  environment:
+    name: preprod
+    url: 118.31.10.105
+  when: manual
+  only:
+    - master
+    - relesae
+    - /^hotfix\-[0-9]+$/
+  variables:
+    GIT_STRATEGY: none
+    BIND_ADDRESS: 172.16.209.197:9022
+    MAX_MEMORY: 4096m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
 
@@ -103,11 +127,10 @@ deploy-prod:
     url: 118.31.10.105
   when: manual
   only:
-    - develop
     - master
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.197:9002
+    BIND_ADDRESS: 172.16.209.197:9023
     MAX_MEMORY: 4096m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition

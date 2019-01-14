@@ -1,10 +1,15 @@
 package cn.malgo.annotation.controller.task;
 
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
+import cn.malgo.annotation.biz.doc.CreateBlocksFromDocFastBiz;
 import cn.malgo.annotation.biz.doc.ImportDocBiz;
+import cn.malgo.annotation.biz.doc.ImportJsonDocBiz;
+import cn.malgo.annotation.biz.doc.ImportTxtDocBiz;
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
 import cn.malgo.annotation.config.PermissionConstant;
+import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.ImportDocRequest;
@@ -16,6 +21,7 @@ import cn.malgo.service.exception.BusinessRuleException;
 import cn.malgo.service.model.Response;
 import cn.malgo.service.model.UserDetails;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -32,21 +38,33 @@ public class OriginalDocController {
 
   private final String secretKey;
   private final ImportDocBiz importDocBiz;
+  private final ImportJsonDocBiz importJsonDocBiz;
   private final CreateBlocksFromDocBiz createBlocksFromDocBiz;
   private final ListOriginalDocBiz listOriginalDocBiz;
   private final UserDetailService userDetailService;
+  private final OriginalDocRepository originalDocRepository;
+  private final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz;
+  private final ImportTxtDocBiz importTxtDocBiz;
 
   public OriginalDocController(
       @Value("${malgo.internal.secret-key}") String secretKey,
       final ImportDocBiz importDocBiz,
       final CreateBlocksFromDocBiz createBlocksFromDocBiz,
       final ListOriginalDocBiz listOriginalDocBiz,
-      final UserDetailService userDetailService) {
+      final UserDetailService userDetailService,
+      final OriginalDocRepository originalDocRepository,
+      final ImportJsonDocBiz importJsonDocBiz,
+      final ImportTxtDocBiz importTxtDocBiz,
+      final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz) {
     this.secretKey = secretKey;
     this.importDocBiz = importDocBiz;
     this.createBlocksFromDocBiz = createBlocksFromDocBiz;
     this.listOriginalDocBiz = listOriginalDocBiz;
     this.userDetailService = userDetailService;
+    this.originalDocRepository = originalDocRepository;
+    this.importJsonDocBiz = importJsonDocBiz;
+    this.createBlocksFromDocFastBiz = createBlocksFromDocFastBiz;
+    this.importTxtDocBiz = importTxtDocBiz;
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_DOC_IMPORT)
@@ -62,11 +80,28 @@ public class OriginalDocController {
     return new Response<>(importDocBiz.process(request, permission -> true));
   }
 
-  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_IMPORT)
+  @RequestMapping(value = "/import-sanJiu", method = RequestMethod.POST)
+  public Response<Object> importDocs() {
+    return new Response<>(importJsonDocBiz.process(null, null));
+  }
+
+  @RequestMapping(value = "/import-txt", method = RequestMethod.POST)
+  public Response<Object> importTxtDocs() {
+    return new Response<>(importTxtDocBiz.process(null, null));
+  }
+
+  //  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_IMPORT)
   @RequestMapping(value = "/create-blocks", method = RequestMethod.POST)
-  public Response<CreateBlocksFromDocVO> createBlocks(
-      @RequestBody CreateBlocksFromDocRequest request) {
-    return new Response<>(createBlocksFromDocBiz.process(request, null));
+  public Response<Object> createBlocks() {
+    final CreateBlocksFromDocRequest request =
+        new CreateBlocksFromDocRequest(
+            originalDocRepository
+                .findAllBySourceEquals("万方|诊疗指南|教材")
+                .parallelStream()
+                .map(originalDoc -> originalDoc.getId())
+                .collect(Collectors.toSet()),
+            AnnotationTypeEnum.medicine_books.ordinal());
+    return new Response<>(createBlocksFromDocFastBiz.process(request, null));
   }
 
   /** 原始文本查询 */

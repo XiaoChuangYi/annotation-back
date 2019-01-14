@@ -65,6 +65,25 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 addAnnotationGroupRequest.getStartPosition(),
                 addAnnotationGroupRequest.getEndPosition(),
                 addAnnotationGroupRequest.getTerm());
+        break;
+      case drug:
+        annotation =
+            AnnotationConvert.addRelationEntitiesAnnotation(
+                oldAnnotation,
+                addAnnotationGroupRequest.getType(),
+                addAnnotationGroupRequest.getStartPosition(),
+                addAnnotationGroupRequest.getEndPosition(),
+                addAnnotationGroupRequest.getTerm());
+        break;
+      case medicine_books:
+        annotation =
+            AnnotationConvert.addRelationEntitiesAnnotation(
+                oldAnnotation,
+                addAnnotationGroupRequest.getType(),
+                addAnnotationGroupRequest.getStartPosition(),
+                addAnnotationGroupRequest.getEndPosition(),
+                addAnnotationGroupRequest.getTerm());
+        break;
     }
     return annotation;
   }
@@ -106,6 +125,16 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
             AnnotationConvert.deleteEntitiesAnnotation(
                 oldAnnotation, deleteAnnotationGroupRequest.getTag());
         break;
+      case drug:
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        break;
+      case medicine_books:
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        break;
     }
     return annotation;
   }
@@ -141,6 +170,16 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
         }
         break;
       case disease:
+        annotation =
+            AnnotationConvert.updateEntitiesAnnotation(
+                oldAnnotation, request.getTag(), request.getNewType());
+        break;
+      case drug:
+        annotation =
+            AnnotationConvert.updateEntitiesAnnotation(
+                oldAnnotation, request.getTag(), request.getNewType());
+        break;
+      case medicine_books:
         annotation =
             AnnotationConvert.updateEntitiesAnnotation(
                 oldAnnotation, request.getTag(), request.getNewType());

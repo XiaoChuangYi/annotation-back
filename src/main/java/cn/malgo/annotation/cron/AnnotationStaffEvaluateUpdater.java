@@ -26,7 +26,7 @@ public class AnnotationStaffEvaluateUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = "${malgo.config.staff-evaluate-cron}")
+  //  @Scheduled(cron = "${malgo.config.staff-evaluate-cron}")
   @Transactional
   public void updateAnnotationStateByExpirationTime() {
     log.info("updateAnnotationStateByExpirationTime, start: {}", new Date());

@@ -1,6 +1,7 @@
 package cn.malgo.annotation.biz.brat.task.relations;
 
 import cn.malgo.annotation.entity.AnnotationNew;
+import cn.malgo.annotation.enums.AnnotationTypeEnum;
 import cn.malgo.annotation.request.brat.UpdateRelationRequest;
 import cn.malgo.annotation.service.CheckLegalRelationBeforeAddService;
 import cn.malgo.annotation.service.RelationOperateService;
@@ -37,7 +38,10 @@ public class UpdateRelationBiz extends BaseRelationBiz<UpdateRelationRequest, An
       RelationOperateService relationOperateService,
       AnnotationNew annotationNew,
       UpdateRelationRequest request) {
-    if (checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(request)) {
+    if ((annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+            || annotationNew.getAnnotationType().ordinal()
+                == AnnotationTypeEnum.medicine_books.ordinal())
+        && checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(request)) {
       throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
     }
 

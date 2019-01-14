@@ -26,7 +26,7 @@ public class AnnotationNewFilterByExpirationTimeUpdater {
     this.annotationSummaryService = annotationSummaryService;
   }
 
-  @Scheduled(cron = "${malgo.config.expiration-time-cron}")
+  //  @Scheduled(cron = "${malgo.config.expiration-time-cron}")
   @Transactional
   public void updateAnnotationStateByExpirationTime() {
     log.info("updateAnnotationStateByExpirationTime, start: {}", new Date());
