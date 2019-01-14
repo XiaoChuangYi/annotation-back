@@ -4,6 +4,7 @@ import cn.malgo.annotation.biz.doc.CreateBlocksFromDocBiz;
 import cn.malgo.annotation.biz.doc.CreateBlocksFromDocFastBiz;
 import cn.malgo.annotation.biz.doc.ImportDocBiz;
 import cn.malgo.annotation.biz.doc.ImportJsonDocBiz;
+import cn.malgo.annotation.biz.doc.ImportTxtDocBiz;
 import cn.malgo.annotation.biz.doc.ListOriginalDocBiz;
 import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.OriginalDocRepository;
@@ -43,6 +44,7 @@ public class OriginalDocController {
   private final UserDetailService userDetailService;
   private final OriginalDocRepository originalDocRepository;
   private final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz;
+  private final ImportTxtDocBiz importTxtDocBiz;
 
   public OriginalDocController(
       @Value("${malgo.internal.secret-key}") String secretKey,
@@ -52,6 +54,7 @@ public class OriginalDocController {
       final UserDetailService userDetailService,
       final OriginalDocRepository originalDocRepository,
       final ImportJsonDocBiz importJsonDocBiz,
+      final ImportTxtDocBiz importTxtDocBiz,
       final CreateBlocksFromDocFastBiz createBlocksFromDocFastBiz) {
     this.secretKey = secretKey;
     this.importDocBiz = importDocBiz;
@@ -61,6 +64,7 @@ public class OriginalDocController {
     this.originalDocRepository = originalDocRepository;
     this.importJsonDocBiz = importJsonDocBiz;
     this.createBlocksFromDocFastBiz = createBlocksFromDocFastBiz;
+    this.importTxtDocBiz = importTxtDocBiz;
   }
 
   @PermissionAnno(PermissionConstant.ANNOTATION_DOC_IMPORT)
@@ -81,17 +85,22 @@ public class OriginalDocController {
     return new Response<>(importJsonDocBiz.process(null, null));
   }
 
+  @RequestMapping(value = "/import-txt", method = RequestMethod.POST)
+  public Response<Object> importTxtDocs() {
+    return new Response<>(importTxtDocBiz.process(null, null));
+  }
+
   //  @PermissionAnno(PermissionConstant.ANNOTATION_BLOCK_IMPORT)
   @RequestMapping(value = "/create-blocks", method = RequestMethod.POST)
   public Response<Object> createBlocks() {
     final CreateBlocksFromDocRequest request =
         new CreateBlocksFromDocRequest(
             originalDocRepository
-                .findAllBySourceEquals("三九")
+                .findAllBySourceEquals("万方|诊疗指南|教材")
                 .parallelStream()
                 .map(originalDoc -> originalDoc.getId())
                 .collect(Collectors.toSet()),
-            AnnotationTypeEnum.drug.ordinal());
+            AnnotationTypeEnum.medicine_books.ordinal());
     return new Response<>(createBlocksFromDocFastBiz.process(request, null));
   }
 

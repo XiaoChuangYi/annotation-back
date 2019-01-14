@@ -43,7 +43,9 @@ public class AddRelationBiz extends BaseRelationBiz<AddRelationRequest, Annotati
       RelationOperateService relationOperateService,
       AnnotationNew annotationNew,
       AddRelationRequest addRelationRequest) {
-    if (annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+    if ((annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+            || annotationNew.getAnnotationType().ordinal()
+                == AnnotationTypeEnum.medicine_books.ordinal())
         && checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeAdd(
             addRelationRequest)) {
       throw new InvalidInputException("illegal-relation-can-not-add", "该关系被关联规则限制，无法新增");

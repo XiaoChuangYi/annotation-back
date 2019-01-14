@@ -38,7 +38,9 @@ public class UpdateRelationBiz extends BaseRelationBiz<UpdateRelationRequest, An
       RelationOperateService relationOperateService,
       AnnotationNew annotationNew,
       UpdateRelationRequest request) {
-    if (annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+    if ((annotationNew.getAnnotationType().ordinal() == AnnotationTypeEnum.relation.ordinal()
+            || annotationNew.getAnnotationType().ordinal()
+                == AnnotationTypeEnum.medicine_books.ordinal())
         && checkLegalRelationBeforeAddService.checkRelationIsNotLegalBeforeUpdate(request)) {
       throw new InvalidInputException("illegal-relation-can-not-update", "该关系被关联规则限制，无法更新");
     }

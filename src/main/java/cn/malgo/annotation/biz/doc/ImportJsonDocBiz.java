@@ -7,6 +7,8 @@ import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -34,7 +36,12 @@ public class ImportJsonDocBiz extends TransactionalBiz<Void, Object> {
 
   @Override
   protected Object doBiz(Void aVoid) {
-    final List<Pair<String, String>> pairs = FileUtil.getDirectoryContent(sanJiuPath, false);
+    List<Pair<String, String>> pairs = Collections.emptyList();
+    try {
+      pairs = FileUtil.getContent(sanJiuPath, false);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     return originalDocRepository.saveAll(
         pairs
             .parallelStream()

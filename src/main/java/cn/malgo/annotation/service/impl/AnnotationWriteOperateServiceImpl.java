@@ -75,6 +75,15 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 addAnnotationGroupRequest.getEndPosition(),
                 addAnnotationGroupRequest.getTerm());
         break;
+      case medicine_books:
+        annotation =
+            AnnotationConvert.addRelationEntitiesAnnotation(
+                oldAnnotation,
+                addAnnotationGroupRequest.getType(),
+                addAnnotationGroupRequest.getStartPosition(),
+                addAnnotationGroupRequest.getEndPosition(),
+                addAnnotationGroupRequest.getTerm());
+        break;
     }
     return annotation;
   }
@@ -120,6 +129,12 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
         annotation =
             AnnotationConvert.deleteEntitiesAnnotation(
                 oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        break;
+      case medicine_books:
+        annotation =
+            AnnotationConvert.deleteEntitiesAnnotation(
+                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        break;
     }
     return annotation;
   }
@@ -160,6 +175,11 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 oldAnnotation, request.getTag(), request.getNewType());
         break;
       case drug:
+        annotation =
+            AnnotationConvert.updateEntitiesAnnotation(
+                oldAnnotation, request.getTag(), request.getNewType());
+        break;
+      case medicine_books:
         annotation =
             AnnotationConvert.updateEntitiesAnnotation(
                 oldAnnotation, request.getTag(), request.getNewType());

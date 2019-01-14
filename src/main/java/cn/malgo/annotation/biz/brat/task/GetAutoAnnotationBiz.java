@@ -116,7 +116,11 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getDrugAnnotationVO(AnnotationNew annotation) {
-    // TODO 过算法的关联算法
+    return new AlgorithmAnnotationVO(
+        annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
+  }
+
+  private AlgorithmAnnotationVO getMedicalBooksAnnotationVO(AnnotationNew annotation) {
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }
@@ -147,6 +151,8 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
               return getDiseaseAnnotationVO(annotation);
             case drug:
               return getDrugAnnotationVO(annotation);
+            case medicine_books:
+              return getMedicalBooksAnnotationVO(annotation);
           }
 
         default:

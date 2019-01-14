@@ -5,16 +5,21 @@
 // import java.sql.*;
 //
 // class ImportAnnotations {
+//
 //  public static void main(String[] args) {
 //    try {
 //      final Connection buildConnection =
 //          DriverManager.getConnection(
 //
+//
 // "jdbc:mysql://rm-bp1it0w59f9n2hquj5o.mysql.rds.aliyuncs.com:3306/annotation_build?useUnicode=true&characterEncoding=utf8&useSSL=false",
 //              "annotation_build",
 //              "2y5zO037f8QLuVzD");
-//      copySentences(buildConnection);
-//      copyWords(buildConnection);
+//      final Connection testConnection = DriverManager.getConnection(
+//
+// "jdbc:mysql://rm-bp1it0w59f9n2hquj5o.mysql.rds.aliyuncs.com:3306/annotation_test?useUnicode=true&characterEncoding=utf8&useSSL=false",
+//          "annotation_test", "2lOROrFdt96aSzNt");
+//      copyOriginalDoc(buildConnection, testConnection);
 //    } catch (SQLException e) {
 //      e.printStackTrace();
 //    }
@@ -62,7 +67,7 @@
 //    final ResultSet queryResult =
 //        queryStmt.executeQuery(
 //            "select term, final_annotation, state, gmt_created, gmt_modified from
-// annotation_word_pos");
+//            annotation_word_pos");
 //    while (queryResult.next()) {
 //      final String state = queryResult.getString("state");
 //      final String term = queryResult.getString("term");
@@ -84,7 +89,8 @@
 //    }
 //  }
 //
-//  private static void copySentences(Connection connection) throws SQLException {
+//  private static void copyOriginalDoc(Connection buildConnection, Connection testConnection)
+//      throws SQLException {
 //    final Statement queryStmt = connection.createStatement();
 //    final PreparedStatement insertStmt =
 //        connection.prepareStatement(
@@ -126,7 +132,7 @@
 //    final ResultSet queryResult =
 //        queryStmt.executeQuery(
 //            "select origin_text, annotation_text, final_annotation_text, state, gmt_created,
-// gmt_modified from annotation_sentence");
+//            gmt_modified from annotation_sentence");
 //    while (queryResult.next()) {
 //      final String state = queryResult.getString("state");
 //
