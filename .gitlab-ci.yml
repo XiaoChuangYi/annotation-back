@@ -42,7 +42,7 @@ maven-build:
   only:
     - develop
     - release
-    - hotfix
+    - /^hotfix\-[0-9]+$/
     - master
     - /^feature\/.*$/
 
