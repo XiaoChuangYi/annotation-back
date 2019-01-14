@@ -67,22 +67,40 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 addAnnotationGroupRequest.getTerm());
         break;
       case drug:
-        annotation =
-            AnnotationConvert.addRelationEntitiesAnnotation(
-                oldAnnotation,
-                addAnnotationGroupRequest.getType(),
-                addAnnotationGroupRequest.getStartPosition(),
-                addAnnotationGroupRequest.getEndPosition(),
-                addAnnotationGroupRequest.getTerm());
+        if (addAnnotationGroupRequest.isAddEntity()) {
+          annotation =
+              AnnotationConvert.addRelationEntitiesAnnotation(
+                  oldAnnotation,
+                  addAnnotationGroupRequest.getType(),
+                  addAnnotationGroupRequest.getStartPosition(),
+                  addAnnotationGroupRequest.getEndPosition(),
+                  addAnnotationGroupRequest.getTerm());
+        } else {
+          annotation =
+              AnnotationConvert.addRelationsAnnotation(
+                  oldAnnotation,
+                  addAnnotationGroupRequest.getSourceTag(),
+                  addAnnotationGroupRequest.getTargetTag(),
+                  addAnnotationGroupRequest.getRelation());
+        }
         break;
       case medicine_books:
-        annotation =
-            AnnotationConvert.addRelationEntitiesAnnotation(
-                oldAnnotation,
-                addAnnotationGroupRequest.getType(),
-                addAnnotationGroupRequest.getStartPosition(),
-                addAnnotationGroupRequest.getEndPosition(),
-                addAnnotationGroupRequest.getTerm());
+        if (addAnnotationGroupRequest.isAddEntity()) {
+          annotation =
+              AnnotationConvert.addRelationEntitiesAnnotation(
+                  oldAnnotation,
+                  addAnnotationGroupRequest.getType(),
+                  addAnnotationGroupRequest.getStartPosition(),
+                  addAnnotationGroupRequest.getEndPosition(),
+                  addAnnotationGroupRequest.getTerm());
+        } else {
+          annotation =
+              AnnotationConvert.addRelationsAnnotation(
+                  oldAnnotation,
+                  addAnnotationGroupRequest.getSourceTag(),
+                  addAnnotationGroupRequest.getTargetTag(),
+                  addAnnotationGroupRequest.getRelation());
+        }
         break;
     }
     return annotation;
@@ -126,14 +144,26 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 oldAnnotation, deleteAnnotationGroupRequest.getTag());
         break;
       case drug:
-        annotation =
-            AnnotationConvert.deleteEntitiesAnnotation(
-                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        if (StringUtils.isBlank(deleteAnnotationGroupRequest.getReTag())) {
+          annotation =
+              AnnotationConvert.deleteEntitiesAnnotation(
+                  oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        } else {
+          annotation =
+              AnnotationConvert.deleteRelationsAnnotation(
+                  oldAnnotation, deleteAnnotationGroupRequest.getReTag());
+        }
         break;
       case medicine_books:
-        annotation =
-            AnnotationConvert.deleteEntitiesAnnotation(
-                oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        if (StringUtils.isBlank(deleteAnnotationGroupRequest.getReTag())) {
+          annotation =
+              AnnotationConvert.deleteEntitiesAnnotation(
+                  oldAnnotation, deleteAnnotationGroupRequest.getTag());
+        } else {
+          annotation =
+              AnnotationConvert.deleteRelationsAnnotation(
+                  oldAnnotation, deleteAnnotationGroupRequest.getReTag());
+        }
         break;
     }
     return annotation;
@@ -175,14 +205,26 @@ public class AnnotationWriteOperateServiceImpl implements AnnotationWriteOperate
                 oldAnnotation, request.getTag(), request.getNewType());
         break;
       case drug:
-        annotation =
-            AnnotationConvert.updateEntitiesAnnotation(
-                oldAnnotation, request.getTag(), request.getNewType());
+        if (request.isUpdatingEntity()) {
+          annotation =
+              AnnotationConvert.updateEntitiesAnnotation(
+                  oldAnnotation, request.getTag(), request.getNewType());
+        } else {
+          annotation =
+              AnnotationConvert.updateRelationAnnotation(
+                  oldAnnotation, request.getReTag(), request.getRelation());
+        }
         break;
       case medicine_books:
-        annotation =
-            AnnotationConvert.updateEntitiesAnnotation(
-                oldAnnotation, request.getTag(), request.getNewType());
+        if (request.isUpdatingEntity()) {
+          annotation =
+              AnnotationConvert.updateEntitiesAnnotation(
+                  oldAnnotation, request.getTag(), request.getNewType());
+        } else {
+          annotation =
+              AnnotationConvert.updateRelationAnnotation(
+                  oldAnnotation, request.getReTag(), request.getRelation());
+        }
         break;
     }
     return annotation;
