@@ -50,7 +50,10 @@ public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
                   String name = jsonObject.getString("title");
                   return jsonArray
                       .parallelStream()
-                      .map(o -> new OriginalDoc(name, o.toString(), "json", "万方|诊疗指南|教材"))
+                      .map(
+                          o ->
+                              new OriginalDoc(
+                                  name, name + "\n" + o.toString(), "json", "万方|诊疗指南|教材"))
                       .collect(Collectors.toList())
                       .stream();
                 })

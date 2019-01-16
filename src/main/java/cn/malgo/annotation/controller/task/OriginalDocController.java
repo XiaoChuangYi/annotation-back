@@ -14,7 +14,6 @@ import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.ImportDocRequest;
 import cn.malgo.annotation.result.PageVO;
-import cn.malgo.annotation.vo.CreateBlocksFromDocVO;
 import cn.malgo.common.auth.PermissionAnno;
 import cn.malgo.common.auth.user.UserDetailService;
 import cn.malgo.service.exception.BusinessRuleException;
