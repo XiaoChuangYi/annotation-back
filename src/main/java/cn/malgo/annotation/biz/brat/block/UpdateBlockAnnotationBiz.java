@@ -67,7 +67,8 @@ public class UpdateBlockAnnotationBiz
   AnnotationBlockBratVO doInternalProcess(
       AnnotationTaskBlock annotationTaskBlock,
       UpdateAnnotationGroupRequest updateAnnotationGroupRequest) {
-    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation) {
+    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation
+        || annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.medicine_books) {
       checkRuleBeforeUpdateRelation(updateAnnotationGroupRequest, annotationTaskBlock);
     }
     final String annotation =

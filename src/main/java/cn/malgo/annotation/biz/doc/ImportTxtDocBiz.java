@@ -5,6 +5,8 @@ import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.utils.FileUtil;
 import cn.malgo.service.biz.TransactionalBiz;
 import cn.malgo.service.exception.InvalidInputException;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
 
   private final OriginalDocRepository originalDocRepository;
-  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-11_疾病语料";
+  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-16_第一批清洗";
 
   public ImportTxtDocBiz(final OriginalDocRepository originalDocRepository) {
     this.originalDocRepository = originalDocRepository;
@@ -41,13 +43,17 @@ public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
                 pair ->
                     StringUtils.isNotBlank(pair.getLeft())
                         && StringUtils.isNotBlank(pair.getRight()))
-            .map(
-                pair ->
-                    new OriginalDoc(
-                        StringUtils.substring(pair.getLeft(), 0, 512),
-                        pair.getRight().replaceAll("【", "").replaceAll("】", ""),
-                        "txt",
-                        "万方|诊疗指南|教材"))
+            .flatMap(
+                pair -> {
+                  JSONObject jsonObject = JSONObject.parseObject(pair.getRight());
+                  JSONArray jsonArray = jsonObject.getJSONArray("content");
+                  String name = jsonObject.getString("title");
+                  return jsonArray
+                      .parallelStream()
+                      .map(o -> new OriginalDoc(name, o.toString(), "json", "万方|诊疗指南|教材"))
+                      .collect(Collectors.toList())
+                      .stream();
+                })
             .collect(Collectors.toList()));
   }
 }

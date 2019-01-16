@@ -77,7 +77,8 @@ public class AddBlockAnnotationBiz
   @Override
   AnnotationBlockBratVO doInternalProcess(
       AnnotationTaskBlock annotationTaskBlock, AddAnnotationGroupRequest request) {
-    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation) {
+    if (annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.relation
+        || annotationTaskBlock.getAnnotationType() == AnnotationTypeEnum.medicine_books) {
       checkRuleBeforeAddRelation(request, annotationTaskBlock);
     }
     final String annotation =
