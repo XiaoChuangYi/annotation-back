@@ -3,6 +3,7 @@ package cn.malgo.annotation.biz.brat.task;
 import cn.malgo.annotation.biz.brat.task.entities.BaseAnnotationBiz;
 import cn.malgo.annotation.dao.AnnotationRepository;
 import cn.malgo.annotation.dto.AutoAnnotation;
+import cn.malgo.annotation.dto.DrugAutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.annotation.entity.AnnotationNew;
 import cn.malgo.annotation.enums.AnnotationStateEnum;
@@ -64,6 +65,13 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
     return updateAnnotationAlgorithmRequest;
   }
 
+  private DrugAutoAnnotationRequest getDrugAutoAnnotationAlgorithm(AnnotationNew annotationNew) {
+    final DrugAutoAnnotationRequest req = new DrugAutoAnnotationRequest();
+    req.setId(annotationNew.getId());
+    req.setText(annotationNew.getTerm());
+    return req;
+  }
+
   private AlgorithmAnnotationVO getWordAnnotationVO(AnnotationNew annotation) {
     if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
       final UpdateAnnotationAlgorithmRequest updateAnnotationAlgorithmRequest =
@@ -119,6 +127,23 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getDrugAnnotationVO(AnnotationNew annotation) {
+    if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
+      final DrugAutoAnnotationRequest req = getDrugAutoAnnotationAlgorithm(annotation);
+      final List<AutoAnnotation> autoAnnotationList =
+          algorithmApiService.listDrugAnnotationByAlgorithm(req);
+      String autoAnnotation = null;
+      if (autoAnnotationList != null
+          && autoAnnotationList.size() > 0
+          && autoAnnotationList.get(0) != null) {
+        autoAnnotation = autoAnnotationList.get(0).getAnnotation();
+        annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
+        annotation.setManualAnnotation("");
+        annotationRepository.save(annotation);
+      } else {
+        log.warn("调用算法后台药品预标注接口: {}, {}", annotation.getId(), autoAnnotation);
+        throw new DependencyServiceException("调用算法后台病历分词预标注接口，返回异常null");
+      }
+    }
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }

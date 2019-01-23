@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.feigns;
 
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
+import cn.malgo.annotation.dto.DrugAutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.core.definition.Document;
 import cn.malgo.service.exception.DependencyServiceException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiClient> {
+
   @Override
   public AlgorithmApiClient create(Throwable throwable) {
     return new AlgorithmApiClient() {
@@ -49,6 +51,14 @@ public class AlgorithmApiClientFallBack implements FallbackFactory<AlgorithmApiC
       @Override
       public List<Document> batchNer(final List<AutoAnnotationRequest> texts) {
         final String msg = "调用算法后台切分关联数据接口失败，request: " + texts;
+        log.error(msg, throwable);
+        throw new DependencyServiceException(msg, throwable);
+      }
+
+      /** 批量预标注药品标注 */
+      @Override
+      public List<AutoAnnotation> batchAutoDrugAnnotation(List<DrugAutoAnnotationRequest> texts) {
+        final String msg = "调用算法后台药品预标注接口失败，request: " + texts;
         log.error(msg, throwable);
         throw new DependencyServiceException(msg, throwable);
       }
