@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
 
   private final OriginalDocRepository originalDocRepository;
-  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-16_第一批清洗";
+  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-23_第二批疾病语料";
 
   public ImportTxtDocBiz(final OriginalDocRepository originalDocRepository) {
     this.originalDocRepository = originalDocRepository;
@@ -43,19 +43,12 @@ public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
                 pair ->
                     StringUtils.isNotBlank(pair.getLeft())
                         && StringUtils.isNotBlank(pair.getRight()))
-            .flatMap(
+            .map(
                 pair -> {
                   JSONObject jsonObject = JSONObject.parseObject(pair.getRight());
                   JSONArray jsonArray = jsonObject.getJSONArray("content");
                   String name = jsonObject.getString("title");
-                  return jsonArray
-                      .parallelStream()
-                      .map(
-                          o ->
-                              new OriginalDoc(
-                                  name, name + "\n" + o.toString(), "json", "万方|诊疗指南|教材"))
-                      .collect(Collectors.toList())
-                      .stream();
+                  return new OriginalDoc(name, jsonArray.get(0).toString(), "json", "万方|诊疗指南|教材");
                 })
             .collect(Collectors.toList()));
   }

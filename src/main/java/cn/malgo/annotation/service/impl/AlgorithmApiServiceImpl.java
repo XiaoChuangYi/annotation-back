@@ -1,6 +1,7 @@
 package cn.malgo.annotation.service.impl;
 
 import cn.malgo.annotation.dto.AutoAnnotation;
+import cn.malgo.annotation.dto.DrugAutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.annotation.service.AlgorithmApiService;
 import cn.malgo.annotation.service.feigns.AlgorithmApiClient;
@@ -17,6 +18,7 @@ import java.util.List;
 @Service
 @Slf4j
 public class AlgorithmApiServiceImpl implements AlgorithmApiService {
+
   private final String algorithmUrl;
   private final AlgorithmApiClient algorithmApiClient;
 
@@ -46,6 +48,27 @@ public class AlgorithmApiServiceImpl implements AlgorithmApiService {
       log.error(
           "调用算法接口：{}失败，错误原因：{}",
           algorithmUrl + "/api/batch-update-tokenize-pos",
+          ex.getLocalizedMessage());
+      throw new DependencyServiceException(
+          "call-algorithm-api-failed: " + ex.getLocalizedMessage());
+    }
+
+    return autoAnnotationList;
+  }
+
+  @Override
+  public List<AutoAnnotation> listDrugAnnotationByAlgorithm(DrugAutoAnnotationRequest request) {
+    final List<AutoAnnotation> autoAnnotationList;
+
+    try {
+      List<DrugAutoAnnotationRequest> data = Collections.singletonList(request);
+      log.info("调用算法接口：{}的请求参数：{}", algorithmUrl + "/api/batch-ner-drug-pos", data);
+      autoAnnotationList = algorithmApiClient.batchAutoDrugAnnotation(data);
+      log.info("调用算法接口：{}的返回结果：{}", algorithmUrl + "/api/batch-ner-drug-pos", autoAnnotationList);
+    } catch (Exception ex) {
+      log.error(
+          "调用算法接口：{}失败，错误原因：{}",
+          algorithmUrl + "/api/batch-ner-drug-pos",
           ex.getLocalizedMessage());
       throw new DependencyServiceException(
           "call-algorithm-api-failed: " + ex.getLocalizedMessage());

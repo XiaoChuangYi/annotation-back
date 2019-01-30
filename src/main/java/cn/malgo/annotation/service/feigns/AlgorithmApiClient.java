@@ -2,6 +2,7 @@ package cn.malgo.annotation.service.feigns;
 
 import cn.malgo.annotation.dto.AutoAnnotation;
 import cn.malgo.annotation.dto.AutoAnnotationRequest;
+import cn.malgo.annotation.dto.DrugAutoAnnotationRequest;
 import cn.malgo.annotation.dto.UpdateAnnotationAlgorithmRequest;
 import cn.malgo.core.definition.Document;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
     fallbackFactory = AlgorithmApiClientFallBack.class)
 @Component(value = "algorithmApiClient")
 public interface AlgorithmApiClient {
+
   /** 批量病历预标注 */
   @RequestMapping(method = RequestMethod.POST, value = "/api/batch-mr-tokenize-pos")
   List<AutoAnnotation> listCasePrepareAnnotation(
@@ -34,4 +36,8 @@ public interface AlgorithmApiClient {
 
   @RequestMapping(method = RequestMethod.POST, value = "/api/batch-ner")
   List<Document> batchNer(@RequestBody List<AutoAnnotationRequest> texts);
+
+  /** 批量预标注药品标注 */
+  @RequestMapping(method = RequestMethod.POST, value = "/api/batch-ner-drug-pos")
+  List<AutoAnnotation> batchAutoDrugAnnotation(@RequestBody List<DrugAutoAnnotationRequest> texts);
 }
