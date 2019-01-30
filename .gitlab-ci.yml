@@ -96,7 +96,7 @@ deploy-test:
     GIT_STRATEGY: none
     BIND_ADDRESS: 172.16.209.197:9021
     MIN_MEMORY: 1024m
-    MAX_MEMORY: 1024m
+    MAX_MEMORY: 2048m
     MEMORY_NEW_RATIO: 3
   <<: *deploy_definition
 
