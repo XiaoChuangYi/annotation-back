@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class ImportTxtDocBiz extends TransactionalBiz<Void, Object> {
 
   private final OriginalDocRepository originalDocRepository;
-  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-16_第一批全文本保留";
+  private final String medicalBooksPath = "/Users/cjl/Documents/2019-1-23_第二批疾病语料";
 
   public ImportTxtDocBiz(final OriginalDocRepository originalDocRepository) {
     this.originalDocRepository = originalDocRepository;

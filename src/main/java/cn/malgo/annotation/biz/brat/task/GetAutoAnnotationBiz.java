@@ -127,23 +127,23 @@ public class GetAutoAnnotationBiz extends BaseBiz<GetAutoAnnotationRequest, Algo
   }
 
   private AlgorithmAnnotationVO getDrugAnnotationVO(AnnotationNew annotation) {
-    if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
-      final DrugAutoAnnotationRequest req = getDrugAutoAnnotationAlgorithm(annotation);
-      final List<AutoAnnotation> autoAnnotationList =
-          algorithmApiService.listDrugAnnotationByAlgorithm(req);
-      String autoAnnotation = null;
-      if (autoAnnotationList != null
-          && autoAnnotationList.size() > 0
-          && autoAnnotationList.get(0) != null) {
-        autoAnnotation = autoAnnotationList.get(0).getAnnotation();
-        annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
-        annotation.setManualAnnotation("");
-        annotationRepository.save(annotation);
-      } else {
-        log.warn("调用算法后台药品预标注接口: {}, {}", annotation.getId(), autoAnnotation);
-        throw new DependencyServiceException("调用算法后台病历分词预标注接口，返回异常null");
-      }
-    }
+    //    if (annotation.getState() == AnnotationStateEnum.PRE_ANNOTATION) {
+    //      final DrugAutoAnnotationRequest req = getDrugAutoAnnotationAlgorithm(annotation);
+    //      final List<AutoAnnotation> autoAnnotationList =
+    //          algorithmApiService.listDrugAnnotationByAlgorithm(req);
+    //      String autoAnnotation = null;
+    //      if (autoAnnotationList != null
+    //          && autoAnnotationList.size() > 0
+    //          && autoAnnotationList.get(0) != null) {
+    //        autoAnnotation = autoAnnotationList.get(0).getAnnotation();
+    //        annotation.setFinalAnnotation(AnnotationConvert.addUncomfirmed(autoAnnotation));
+    //        annotation.setManualAnnotation("");
+    //        annotationRepository.save(annotation);
+    //      } else {
+    //        log.warn("调用算法后台药品预标注接口: {}, {}", annotation.getId(), autoAnnotation);
+    //        throw new DependencyServiceException("调用算法后台病历分词预标注接口，返回异常null");
+    //      }
+    //    }
     return new AlgorithmAnnotationVO(
         annotation.getFinalAnnotation(), AnnotationConvert.convert2AnnotationBratVO(annotation));
   }

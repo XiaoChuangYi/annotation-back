@@ -10,6 +10,7 @@ import cn.malgo.annotation.config.PermissionConstant;
 import cn.malgo.annotation.dao.OriginalDocRepository;
 import cn.malgo.annotation.entity.OriginalDoc;
 import cn.malgo.annotation.enums.AnnotationTypeEnum;
+import cn.malgo.annotation.enums.OriginalDocState;
 import cn.malgo.annotation.request.doc.ListDocRequest;
 import cn.malgo.annotation.request.task.CreateBlocksFromDocRequest;
 import cn.malgo.annotation.request.task.ImportDocRequest;
@@ -96,7 +97,7 @@ public class OriginalDocController {
     final CreateBlocksFromDocRequest request =
         new CreateBlocksFromDocRequest(
             originalDocRepository
-                .findAllBySourceEquals("万方|诊疗指南|教材")
+                .findAllBySourceEqualsAndStateEquals("万方|诊疗指南|教材", OriginalDocState.IMPORTED)
                 .parallelStream()
                 .map(originalDoc -> originalDoc.getId())
                 .collect(Collectors.toSet()),
