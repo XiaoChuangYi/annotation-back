@@ -2,14 +2,17 @@ package cn.malgo.annotation.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+@Slf4j
 public class FileUtil {
 
   public static List<Pair<String, String>> getContent(String directory, boolean isClassPath)
@@ -31,7 +34,10 @@ public class FileUtil {
       for (File current : files) {
         if (current.isDirectory()) {
           File deepFile = current.listFiles()[0];
-          pairs.add(Pair.of(deepFile.getName(), FileUtils.readFileToString(deepFile)));
+          final String content = FileUtils.readFileToString(deepFile);
+          pairs.add(
+              Pair.of(
+                  deepFile.getName(), FileUtils.readFileToString(deepFile, getEncoding(content))));
         }
         if (current.isFile()) {
           pairs.add(Pair.of(current.getName(), FileUtils.readFileToString(current)));
@@ -40,6 +46,12 @@ public class FileUtil {
       return pairs;
     }
     return Collections.emptyList();
+  }
+
+  private static String getEncoding(String str) {
+    String gEncode = "GB2312";
+    String uEncode = "UTF-8";
+    return Charset.forName(gEncode).newEncoder().canEncode(str) ? uEncode : gEncode;
   }
 
   //  public static List<Pair<String, String>> getDirectoryContent(
