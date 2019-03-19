@@ -68,10 +68,26 @@ public class CreateBlocksFromDocFastBiz
             .collect(Collectors.toList());
     if (docs.size() > 0) {
       docs.parallelStream()
-          .forEach(originalDoc -> originalDoc.setState(OriginalDocState.PROCESSING));
+          .forEach(
+              originalDoc -> {
+                originalDoc.setState(OriginalDocState.PROCESSING);
+                final List<AnnotationTaskBlock> docBlocks =
+                    getSpecificDocBlocks(originalDoc.getText(), annotationTaskBlocks);
+                docBlocks.stream().forEach(docBlock -> originalDoc.addBlock(docBlock, 1));
+              });
     }
     annotationTaskBlockRepository.saveAll(annotationTaskBlocks);
     originalDocRepository.saveAll(docs);
     return true;
+  }
+
+  private List<AnnotationTaskBlock> getSpecificDocBlocks(
+      String docText, List<AnnotationTaskBlock> annotationTaskBlocks) {
+    List<AnnotationTaskBlock> blocks =
+        annotationTaskBlocks
+            .parallelStream()
+            .filter(annotationTaskBlock -> annotationTaskBlock.getText().equals(docText))
+            .collect(Collectors.toList());
+    return blocks;
   }
 }

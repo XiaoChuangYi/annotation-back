@@ -96,7 +96,7 @@ public class OriginalDocController {
     final CreateBlocksFromDocRequest request =
         new CreateBlocksFromDocRequest(
             originalDocRepository
-                .findAllBySourceEqualsAndStateEquals("万方|诊疗指南|教材", OriginalDocState.IMPORTED)
+                .findAllBySourceEqualsAndStateEquals("万方|诊疗指南|教材|第三批", OriginalDocState.IMPORTED)
                 .parallelStream()
                 .map(originalDoc -> originalDoc.getId())
                 .collect(Collectors.toSet()),

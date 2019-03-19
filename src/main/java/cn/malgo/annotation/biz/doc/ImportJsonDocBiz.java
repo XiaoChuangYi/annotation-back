@@ -25,7 +25,7 @@ public class ImportJsonDocBiz extends TransactionalBiz<Void, Object> {
       Pattern.compile(
               "(药品名称|通用名|通用名称|产品名称|商品名|商品名称|化学名称|适应症|适应症/主治功能|适应症/功能主治|功能主治|主要作用|作用类别|保健功能|注射剂辅料|注意事项|禁忌|禁忌症|不良反应|药物过量| 药物互相作用|药物相互作用|药理作用|药用相互作用|不适宜人群|适宜人群|特殊人群用药|儿童用药|老年患者用药|老年用药|妊娠及哺乳期妇女用药|妊娠期妇女及哺乳期妇女用药|孕妇及哺乳其妇女用药|孕妇及哺乳妇女用药| 孕妇及哺乳期妇女用药|孕妇及哺乳期用药|给药说明)")
           .asPredicate();
-  private final String sanJiuPath = "/Users/cjl/Downloads/303疾病药品说明书导出";
+  private final String sanJiuPath = "/Users/cjl/Documents/2019-02-27_第二批药品/第二批药品";
 
   public ImportJsonDocBiz(final OriginalDocRepository originalDocRepository) {
     this.originalDocRepository = originalDocRepository;
@@ -55,7 +55,7 @@ public class ImportJsonDocBiz extends TransactionalBiz<Void, Object> {
                         StringUtils.substring(pair.getLeft(), 0, 512),
                         formatJson(pair.getRight()),
                         "json",
-                        "三九"))
+                        "三九第二期"))
             .collect(Collectors.toList()));
   }
 
@@ -64,7 +64,7 @@ public class ImportJsonDocBiz extends TransactionalBiz<Void, Object> {
     return jsonObject
         .entrySet()
         .parallelStream()
-        .filter(stringObjectEntry -> stringPredicate.test(stringObjectEntry.getKey()))
+        //        .filter(stringObjectEntry -> stringPredicate.test(stringObjectEntry.getKey()))
         .map(
             stringObjectEntry ->
                 stringObjectEntry
