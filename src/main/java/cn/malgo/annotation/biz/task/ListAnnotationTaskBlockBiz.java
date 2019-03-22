@@ -145,6 +145,7 @@ public class ListAnnotationTaskBlockBiz
                 annotationTaskBlock ->
                     new AnnotationTaskBlockResponse(
                         annotationTaskBlock,
-                        longStringMap.getOrDefault(annotationTaskBlock.getAssignee(), ""))));
+                        longStringMap.getOrDefault(annotationTaskBlock.getAssignee(), ""),
+                        false)));
   }
 }
