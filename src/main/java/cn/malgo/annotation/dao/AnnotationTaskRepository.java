@@ -42,4 +42,6 @@ public interface AnnotationTaskRepository
   List<AnnotationTask> findByStateIn(List<AnnotationTaskState> states, Sort sort);
 
   Set<AnnotationTask> findByTaskBlocks_Block_DocBlocks_DocEquals(OriginalDoc doc);
+
+  List<AnnotationTask> findAllByNameEquals(String taskName);
 }
