@@ -6,6 +6,8 @@ import cn.malgo.service.biz.BaseBiz;
 import cn.malgo.service.exception.InvalidInputException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +23,8 @@ public class ListAnTypeBiz extends BaseBiz<Object, List<AnTypeVO>> {
 
   @Override
   protected List<AnTypeVO> doBiz(Object o) {
-    return anTypeRepository.findAll().stream().map(AnTypeVO::new).collect(Collectors.toList());
+    return anTypeRepository.findAll(Sort.by(Sort.Direction.DESC, "created_time")).stream()
+        .map(AnTypeVO::new)
+        .collect(Collectors.toList());
   }
 }
