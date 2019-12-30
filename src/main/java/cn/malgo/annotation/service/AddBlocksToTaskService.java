@@ -11,5 +11,6 @@ public interface AddBlocksToTaskService {
   AnnotationTask addBlocksToTask(
       AnnotationTask annotationTask, Collection<AnnotationTaskBlock> blocks);
 
-
+  AnnotationTask addBlocksToTaskFast(
+          AnnotationTask annotationTask, Collection<AnnotationTaskBlock> blocks);
 }

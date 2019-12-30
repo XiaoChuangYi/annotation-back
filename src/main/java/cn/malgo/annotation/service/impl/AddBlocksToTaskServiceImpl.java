@@ -68,4 +68,32 @@ public class AddBlocksToTaskServiceImpl implements AddBlocksToTaskService {
     return annotationTaskRepository.updateState(
         annotationSummaryService.updateTaskSummary(annotationTask.getId()));
   }
+
+  @Override
+  public AnnotationTask addBlocksToTaskFast(
+      AnnotationTask annotationTask, Collection<AnnotationTaskBlock> blocks) {
+    final List<AnnotationNew> annotationNews = new ArrayList<>();
+    blocks.forEach(
+        annotationTaskBlock -> {
+          annotationTaskBlock.setState(AnnotationTaskState.DOING);
+          final AnnotationNew annotationNew = new AnnotationNew();
+          annotationNew.setAssignee(0);
+          annotationNew.setState(AnnotationStateEnum.UN_DISTRIBUTED);
+          annotationNew.setTerm(annotationTaskBlock.getText());
+          annotationNew.setAnnotationType(annotationTaskBlock.getAnnotationType());
+          annotationNew.setManualAnnotation(annotationTaskBlock.getAnnotation());
+          annotationNew.setFinalAnnotation(annotationTaskBlock.getAnnotation());
+          annotationNew.setBlockId(annotationTaskBlock.getId());
+          annotationNew.setTaskId(annotationTask.getId());
+          annotationNew.setDeleteToken(0l);
+          annotationNew.setComment(
+              String.format(
+                  "[block:{%d}] add to [task:{%d}]",
+                  annotationTaskBlock.getId(), annotationTask.getId()));
+          annotationNews.add(annotationNew);
+        });
+    annotationRepository.saveAll(annotationNews);
+    return annotationTaskRepository.updateState(
+        annotationSummaryService.updateTaskSummary(annotationTask.getId()));
+  }
 }
