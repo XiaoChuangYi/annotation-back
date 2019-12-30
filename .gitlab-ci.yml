@@ -34,11 +34,13 @@ maven-build:
   script:
     - mvn $MAVEN_CLI_OPTS package
     - mvn $MAVEN_CLI_OPTS org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -Doutput=./target/.version
-  artifacts:
-    expire_in: 1h
-    paths:
-      - target/*.jar
-      - target/.version
+    - cp target/*.jar /gitlab/artifacts/
+    - cp target/.version /gitlab/artifacts/
+  #  artifacts:
+  #    expire_in: 1h
+  #    paths:
+  #      - target/*.jar
+  #      - target/.version
   only:
     - develop
     - release
@@ -55,8 +57,12 @@ docker-build:
   before_script:
     - docker info
   script:
+    - export ARTIFACT_NAME=$REPO_NAME-`cat /gitlab/artifacts/.version`.jar
+    - mkdir .artifacts
+    - cp /gitlab/artifacts/$ARTIFACT_NAME .artifacts/
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY_SERVER
-    - docker build -t $PUSH_REPO --build-arg JAR_FILE=$REPO_NAME-`cat ./target/.version`.jar -f APP-META/Dockerfile .
+    - docker build -t $PUSH_REPO --build-arg JAR_FILE=.artifacts/$ARTIFACT_NAME  -f APP-META/Dockerfile .
+#    - docker build -t $PUSH_REPO --build-arg JAR_FILE=$REPO_NAME-`cat ./target/.version`.jar -f APP-META/Dockerfile .
     - docker push $PUSH_REPO
   only:
     - develop
