@@ -23,7 +23,7 @@ public class ListAnTypeBiz extends BaseBiz<Object, List<AnTypeVO>> {
 
   @Override
   protected List<AnTypeVO> doBiz(Object o) {
-    return anTypeRepository.findAll(Sort.by(Sort.Direction.DESC, "created_time")).stream()
+    return anTypeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdTime")).stream()
         .map(AnTypeVO::new)
         .collect(Collectors.toList());
   }
