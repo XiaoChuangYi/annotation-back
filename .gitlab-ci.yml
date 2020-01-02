@@ -132,13 +132,13 @@ deploy-prod:
     - deploy
   environment:
     name: prod
-    url: 116.62.144.95
+    url: 118.31.10.105
   when: manual
   only:
     - master
   variables:
     GIT_STRATEGY: none
-    BIND_ADDRESS: 172.16.209.200:9023
+    BIND_ADDRESS: 172.16.209.197:9023
     MIN_MEMORY: 1024m
     MAX_MEMORY: 2048m
     MEMORY_NEW_RATIO: 3
